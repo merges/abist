@@ -1,0 +1,30 @@
+{
+  "name": "abist",
+  "version": "0.0.1",
+  "description": "This application will:",
+  "main": "index.js",
+  "dependencies": {
+    "bower": "~1.3.12",
+    "express": "~4.9.5",
+    "gulp": "~3.8.8",
+    "gulp-less": "~1.3.6",
+    "install": "~0.1.7",
+    "npm": "~2.1.2",
+    "react": "~0.11.2",
+    "gulp-react": "~1.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/merges/abist.git"
+  },
+  "author": "adam baker",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/merges/abist/issues"
+  },
+  "homepage": "https://github.com/merges/abist"
+}
