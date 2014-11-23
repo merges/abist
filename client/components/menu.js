@@ -2,8 +2,6 @@
 
 goog.provide("app.Menu");
 
-goog.scope(function() {
-
 app.Menu = React.createClass({
   
   getDefaultProps: function() {
@@ -56,7 +54,5 @@ app.Menu = React.createClass({
   handleSelectChange: function(event) {
     console.log(event.target.value);
   }
-
-});
 
 });
