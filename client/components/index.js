@@ -6,7 +6,7 @@ goog.provide("app.Index");
 
 var Menu = app.Menu;
 
-var Index = React.createClass({
+app.Index = React.createClass({
   
   getDefaultProps: function() {
     return {
@@ -47,14 +47,6 @@ var Index = React.createClass({
     this.setState({
       items: dataJson.items
     });
-  },
-
-  componentDidMount: function() {
-    //
-  },
-
-  componentDidUpdate: function() {
-    //
   }
 
 });

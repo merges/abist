@@ -71,25 +71,26 @@ function renderPage(req, res) {
     '<!DOCTYPE html>',
     '<html lang="en">',
       '<head>',
-        '<script src="bower_components/closure-library/closure/goog/base.js"></script>',
-        '<script>goog.require("goog.dom.classlist");</script>',
-        '<script>goog.require("goog.array");</script>',
-        '<script>goog.require("goog.string");</script>',
+        '<script src="/bower_components/closure-library/closure/goog/base.js"></script>',
 
+        '<script>goog.require("goog.dom")</script>',
+        '<script>goog.require("goog.array")</script>',
+        '<script>goog.require("goog.string")</script>',
+        
         '<title>abist</title>',
 
-        '<link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">',
-        '<link href="bower_components/c3/c3.css" rel="stylesheet">',
+        '<link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">',
+        '<link href="/bower_components/c3/c3.css" rel="stylesheet">',
         '<link href="css/app.css" rel="stylesheet">',
 
-        '<script src="bower_components/jquery/dist/jquery.min.js"></script>',
-        '<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>',
-        '<script type="text/jsx" src="bower_components/d3/d3.min.js"></script>',
-        '<script src="bower_components/c3/c3.min.js"></script>',
-        '<script src="bower_components/underscore/underscore.js"></script>',
-        '<script src="bower_components/pourover/pourover.js"></script>',
-        '<script src="bower_components/react/react-with-addons.js"></script>',
-        '<script src="bower_components/react/JSXTransformer.js"></script>',
+        '<script src="/bower_components/jquery/dist/jquery.min.js"></script>',
+        '<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>',
+        '<script type="text/jsx" src="/bower_components/d3/d3.min.js"></script>',
+        '<script src="/bower_components/c3/c3.min.js"></script>',
+        '<script src="/bower_components/underscore/underscore.js"></script>',
+        '<script src="/bower_components/pourover/pourover.js"></script>',
+        '<script src="/bower_components/react/react-with-addons.js"></script>',
+        '<script src="/bower_components/react/JSXTransformer.js"></script>',
 
       '</head>',
 
@@ -104,7 +105,7 @@ function renderPage(req, res) {
         ' * @jsx React.DOM',
         ' */'];
 
-  var reactComponentHtml =  'React.renderComponent(<Index ';
+  var reactComponentHtml =  'React.renderComponent(<app.Index ';
 
   if (itemSelectedInitial) {
     reactComponentHtml += 'itemSelected="' + itemSelectedInitial + '" ';
@@ -143,6 +144,7 @@ if (env === 'production') {
   });
 
   // app.use(auth.connect(basic));
+  app.use('/bower_components', express.static(__dirname + '/../bower_components'));
   app.use('/', express.static(__dirname + '/../client'));
   app.get('*', function(req, res, next) {
     var html = renderPage(req, res);
@@ -152,6 +154,7 @@ if (env === 'production') {
 else {
   consoleLog('node env == *not* production');
 
+  app.use('/bower_components', express.static(__dirname + '/../bower_components'));
   app.use('/', express.static(__dirname + '/../client'));
   app.get('*', function(req, res, next) {
     var html = renderPage(req, res);
