@@ -1,6 +1,15 @@
-# Abist
+# abist
 
-This application will:
+adam baker's independent studies thesis.
 
- - Use node.js, React, LESS, d3, and c3
- - Be deployed on Heroku
+## Component names
+
+Camel case. In `app` namespace, components start with uppercase letter.
+
+`popUpMenu == app.PopUpMenu`
+
+## Variable names
+
+Camel case.
+
+`var menuOptions []`

@@ -1,0 +1,74 @@
+/*-- Chart --*/
+.c3 svg {
+  font: 17px sans-serif;
+}
+
+.c3-legend-item {
+  font-size: 17px;
+}
+
+.control-menu {
+  float: left;
+  width: 300px;
+  margin-left: 20px;
+
+}
+
+.charts {
+  padding-left: 50px;
+  margin-left: 400px;
+  margin-right: 50px;
+}
+
+.control-menu-widget {
+  margin: 0px 0 20px 0;
+}
+
+.control-menu-subwidget {
+  margin: 0px 0 20px 0;
+}
+
+.drug-comparison-dropdown {
+  width: 80%;
+  margin: 0 0 20px 0;
+}
+
+.drug-dropdown-list {
+  width: 80%;
+  float: left;
+  margin: 20px 0 0 0;
+}
+
+.drug-comparison-item {
+  display: block;
+}
+
+.dropdown-list {
+  width: 80%;
+  margin: 0 0 20px 0;
+}
+
+.dropdown-add-list {
+  width: 80%;
+  float: left;
+  margin: 0 0 20px 0;
+}
+
+.exit-button {
+  background-image: url("../images/x.png");
+}
+
+.filter {
+  margin-bottom: 10px;
+}
+
+.form-control:focus, button:focus {
+  outline: none !important;
+  outline-style: none;
+  -webkit-box-shadow: none !important;
+}
+
+.sum-button {
+  margin: 20px 0 0 0;
+  float: left !important;
+}
