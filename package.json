@@ -2,7 +2,7 @@
   "name": "abist",
   "version": "0.0.1",
   "description": "adam baker independent studies thesis project",
-  "main": "app.js",
+  "main": "server/app.js",
   "dependencies": {
     "express": "~4.9.5",
     "http-auth": "^2.1.9",
