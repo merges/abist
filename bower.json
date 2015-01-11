@@ -17,11 +17,7 @@
   ],
   "dependencies": {
     "bootstrap": "~3.2.0",
-    "c3": "~0.2.5",
-    "closure-library": "https://github.com/google/closure-library.git",
-    "d3": "~3.4.11",
     "jquery": "~2.1.1",
-    "pourover": "*",
-    "react": "~0.11.2"
+    "react": "~0.12.2"
   }
 }

@@ -1,8 +1,8 @@
 /** @jsx React.DOM */
 
-goog.provide("app.Menu");
+var React = require('react/addons');
 
-app.Menu = React.createClass({
+var Menu = React.createClass({
   
   getDefaultProps: function() {
     return {
@@ -56,3 +56,5 @@ app.Menu = React.createClass({
   }
 
 });
+
+module.exports = Menu;
