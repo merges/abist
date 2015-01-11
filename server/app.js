@@ -21,9 +21,7 @@ var consoleLog = function(message) {
   env != 'production' && console.log('abist ››› ' + message);
 };
 
-
-
-// // // App // // //
+// App
 
 var app = express();
 
@@ -32,15 +30,9 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-
 app.use('/bower_components', express.static(path.join(__dirname + '/../bower_components')));
 app.use('/', express.static(path.join(__dirname + '/../client')));
 app.use('/', reactServer);
-
-// app.get('*', function(req, res, next) {
-//   var html = renderPage(req, res);
-//   res.send(html);
-// });
 
 // Error pages
 app.use(function (err, req, res, next) {
@@ -58,7 +50,12 @@ if (env === 'production') {
     }
   });
 }
+else {
+  app.use(require('connect-livereload')());
+}
 
 app.listen(port, function() {
   consoleLog("server listening on port " + port);
 });
+
+module.exports.app = app;

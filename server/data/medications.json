@@ -1,0 +1,225 @@
+{
+	"medications": [
+    {
+      "name": "Methotrexate",
+      "name_generic": "methotrexate",
+      "name_common": "Methotrexate",
+      "name_phonetic": "meth-OH-trex-ate",
+      "name_generic_phonetic": "meth-OH-trex-ate",
+      "names_brand": [
+        "Otrexup",
+        "Rheumatrex",
+        "Trexall",
+        "Rasuvo"
+      ],
+      "class": [
+        "DMARD"
+      ],
+      "generic_available": true,
+      "forms": [
+        {
+          "name": "tablet",
+          "name": "injection"
+        }
+      ],
+      "ptda": {
+        "cost": {
+          "min": 35,
+          "max": 395
+        },
+        "onset": {
+          "unit": "week",
+          "min": 4,
+          "max": 6
+        },
+        "frequency": {
+          "unit": "week",
+          "dose": 1,
+          "multiple": 1
+        },
+        "side_effects": {
+          "common": [
+            "upset stomach",
+            "diarrhea",
+            "headache",
+            "rash",
+            "liver inflammation",
+            "cold symptoms"
+          ],
+          "rare": [
+            "lung inflammation"
+          ]
+        },
+        "risks": [
+          {
+            "name": "tb",
+            "risk": 0
+          },
+          {
+            "name": "pregnancy",
+            "risk": 2
+          },
+          {
+            "name": "alcohol",
+            "risk": 2
+          },
+          {
+            "name": "liver_disease",
+            "risk": 2
+          }
+        ]
+      },
+      "spl": [
+        {
+          "name": "Trexall tablet",
+          "setid": "e942f8db-510f-44d6-acb5-b822196f5e8c"
+        },
+        {
+          "name": "Rheumatrex tablet",
+          "setid": "2cb70aa1-f73a-41c8-9a7f-edbcf1a06efd"
+        },
+        {
+          "name": "generic tablet",
+          "setid": "70c09984-2b36-424f-8b27-3fd0cd4e833d"
+        }
+      ]
+    },
+    {
+      "name": "Humira",
+      "name_generic": "adalimumab",
+      "name_common": "Humira",
+      "name_phonetic": "hew-MEER-uh",
+      "name_generic_phonetic": "ad-uh-LIH-muh-mab",
+      "class": [
+        "DMARD",
+        "Biologic",
+        "TNF blocker"
+      ],
+      "generic_available": false,
+      "names_brand": [
+        "Humira"
+      ],
+      "ptda": {
+        "cost": {
+          "min": 1830,
+          "max": 1830
+        },
+        "onset": {
+          "unit": "week",
+          "min": 2,
+          "max": 4
+        },
+        "frequency": {
+          "unit": "month",
+          "dose": 2,
+          "multiple": 1
+        },
+        "side_effects": {
+          "common": [
+            "redness or soreness where needle enters skin",
+            "upset stomach",
+            "headache",
+            "dizziness",
+            "high blood pressure"
+          ],
+          "rare": [
+            "reactivation of tuberculosis",
+            "serious infection that needs antibiotic by vein in hospital",
+            "cancer (most often skin or blood, like lymphoma"
+          ]
+        },
+        "risks": [
+          {
+            "name": "tb",
+            "risk": 2
+          },
+          {
+            "name": "pregnancy",
+            "risk": 1
+          },
+          {
+            "name": "alcohol",
+            "risk": 0
+          },
+          {
+            "name": "liver_disease",
+            "risk": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "Enbrel",
+      "name_generic": "etanercept",
+      "name_common": "Enbrel",
+      "name_phonetic": "EN-brell",
+      "name_generic_phonetic": "eh-TAN-er-sept",
+      "class": [
+        "DMARD",
+        "TNF blocker",
+        "Immune system modulator"
+      ],
+      "generic_available": false,
+      "names_brand": [
+        "Enbrel"
+      ],
+      "names_for_query": [
+        "Enbrel",
+        "etanercept"
+      ],
+      "forms": [
+        {
+          "name": "injection"
+        }
+      ],
+      "ptda": {
+        "cost": {
+          "min": 1865,
+          "max": 1865
+        },
+        "onset": {
+          "unit": "week",
+          "min": 2,
+          "max": 4
+        },
+        "frequency": {
+          "unit": "week",
+          "dose": 1,
+          "multiple": 1
+        },
+        "side_effects": {
+          "common": [
+            "redness or soreness where needle enters skin",
+            "upset stomach",
+            "headache",
+            "dizziness",
+            "high blood pressure"
+          ],
+          "rare": [
+            "reactivation of tuberculosis",
+            "serious infection that needs antibiotic by vein in hospital",
+            "cancer (most often skin or blood, like lymphoma"
+          ]
+        },
+        "risks": [
+          {
+            "name": "tb",
+            "risk": 2
+          },
+          {
+            "name": "pregnancy",
+            "risk": 1
+          },
+          {
+            "name": "alcohol",
+            "risk": 0
+          },
+          {
+            "name": "liver_disease",
+            "risk": 0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,74 +1,41 @@
-/*-- Chart --*/
-.c3 svg {
-  font: 17px sans-serif;
+.ptda h1 {
+  color: #cccccc;
+  font-weight: lighter;
+  margin: 1em 0 2em 0;
 }
-
-.c3-legend-item {
-  font-size: 17px;
+.ptda .options h4 {
+  font-size: 1.4em;
+  font-weight: 700;
+  margin: .5em 0 1em 0;
 }
-
-.control-menu {
-  float: left;
-  width: 300px;
-  margin-left: 20px;
-
+.ptda .options h5 {
+  margin: 0;
+  color: #aaaaaa;
+  font-size: 11px;
 }
-
-.charts {
-  padding-left: 50px;
-  margin-left: 400px;
-  margin-right: 50px;
+.ptda .options .option {
+  margin-top: 3em;
 }
-
-.control-menu-widget {
-  margin: 0px 0 20px 0;
+.ptda .options .option .name {
+  padding-top: .5em;
+  padding-bottom: .4em;
+  background: #fff6f4;
+  border-bottom: 1px solid #ffd3ae;
 }
-
-.control-menu-subwidget {
-  margin: 0px 0 20px 0;
+.ptda .options .option .name h2,
+.ptda .options .option .name h3 {
+  font-size: 1.7em;
+  margin: 0;
 }
-
-.drug-comparison-dropdown {
-  width: 80%;
-  margin: 0 0 20px 0;
+.ptda .options .option .name h2 {
+  font-weight: bolder;
 }
-
-.drug-dropdown-list {
-  width: 80%;
-  float: left;
-  margin: 20px 0 0 0;
+.ptda .options .option .name small {
+  color: #aaaaaa;
 }
-
-.drug-comparison-item {
-  display: block;
+.ptda .options .option .side-effects h4 {
+  font-size: 13px;
 }
-
-.dropdown-list {
-  width: 80%;
-  margin: 0 0 20px 0;
-}
-
-.dropdown-add-list {
-  width: 80%;
-  float: left;
-  margin: 0 0 20px 0;
-}
-
-.exit-button {
-  background-image: url("../images/x.png");
-}
-
-.filter {
-  margin-bottom: 10px;
-}
-
-.form-control:focus, button:focus {
-  outline: none !important;
-  outline-style: none;
-  -webkit-box-shadow: none !important;
-}
-
-.sum-button {
-  margin: 20px 0 0 0;
-  float: left !important;
+.ptda .options .option .side-effects p {
+  margin: 0 0 .3em 0;
 }
