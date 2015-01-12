@@ -33,9 +33,20 @@
 .ptda .options .option .name small {
   color: #aaaaaa;
 }
-.ptda .options .option .side-effects h4 {
-  font-size: 13px;
+.ptda .options .option .side-effects h4,
+.ptda .options .option .risks h4 {
+  font-size: 15px;
 }
-.ptda .options .option .side-effects p {
+.ptda .options .option .side-effects p,
+.ptda .options .option .risks p {
   margin: 0 0 .3em 0;
+}
+.ptda .options .option .risks .safe {
+  color: green;
+}
+.ptda .options .option .risks .unsure {
+  color: #777;
+}
+.ptda .options .option .risks .unsafe {
+  color: red;
 }

@@ -7,9 +7,9 @@ var PageTitle = "PtDA";
 
 var Ptda = React.createClass({
 
-  getDefaultProps: function() {
+  getDefaultProps: function () {
     return {
-      "medications": [
+      medications: [
         {
           "name": "Methotrexate",
           "name_generic": "methotrexate",
@@ -297,25 +297,132 @@ var Ptda = React.createClass({
               }
             ]
           }
+        },
+        {
+          "name": "Hydroxychloroquine",
+          "name_generic": "hydroxychloroquine",
+          "name_common": "Hydroxychloroquine",
+          "name_phonetic": "high-drox-e-KLOR-oh-quine",
+          "name_generic_phonetic": "high-drox-e-KLOR-oh-quine",
+          "class": [
+            "DMARD",
+            "Antimalarial"
+          ],
+          "generic_available": true,
+          "names_brand": [
+            "Plaquenil"
+          ],
+          "forms": [
+            {
+              "name": "tablet"
+            }
+          ],
+          "ptda": {
+            "cost": {
+              "min": 430,
+              "max": 675
+            },
+            "onset": {
+              "unit": "week",
+              "min": 4,
+              "max": 8
+            },
+            "frequency": {
+              "unit": "day",
+              "dose": 1,
+              "multiple": 1
+            },
+            "side_effects": {
+              "common": [
+                "upset stomach",
+                "diarrhea",
+                "headache",
+                "rash",
+                "liver inflammation",
+                "cold symptoms"
+              ],
+              "rare": [
+                "severe liver injury"
+              ]
+            },
+            "risks": [
+              {
+                "name": "tb",
+                "risk": 0
+              },
+              {
+                "name": "pregnancy",
+                "risk": 2
+              },
+              {
+                "name": "alcohol",
+                "risk": 2
+              },
+              {
+                "name": "liver_disease",
+                "risk": 2
+              }
+            ]
+          }
         }
-      ]
+      ],
+      risks: {
+        "tb": "if you have or might be exposed to tuberculosis",
+        "pregnancy": "if you’re pregnant or considering it",
+        "liver_disease": "if you have liver disease",
+        "alcohol": "to take and drink alcohol"
+      }
     };
   },
 
-  render: function() {
-    var medications = this.props.medications;
+  getInitialState: function () {
+    return {
+      risksSelected: {}
+    }
+  },
 
+  render: function () {
+    console.log('render');
     return (
       <DocumentTitle title={PageTitle}>
         <div className="container ptda">
           <h1>PtDA replication</h1>
-          {this.renderOptions(medications)}
+          {this.renderRiskButtons(this.props.risks)}
+          {this.renderOptions(this.props.medications)}
         </div>
       </DocumentTitle>
     );
   },
 
-  renderOptions: function(medications) {
+  renderRiskButtons: function (risks) {
+    console.log('rendering buttons');
+    var risks = Object.keys(risks);
+    var filterRisks = this.filterRisks;
+    var notify = function(string) {
+      console.log(string);
+    };
+
+    return (
+      <section className="btn-group">
+        {risks.map(function (item) {
+          return (
+            <a className="btn btn-default" onClick={notify.bind(null, 'foobar')}>{item}</a>
+          );
+        })}
+      </section>
+    );
+  },
+
+  filterRisks: function (risk) {
+    console.log('filter', risk);
+    // this.setState({
+    //   risksSelected: true
+    // });
+  },
+
+  renderOptions: function (medications) {
+    var risks = this.props.risks;
+
     return (
       <section className="options">
         <div className="row">
@@ -360,7 +467,7 @@ var Ptda = React.createClass({
                   {item.name}<br />
                   <small>{item.name_phonetic}</small>
                 </h2>
-                {item.name.toLowerCase() != item.name_generic.toLowerCase() && 
+                {item.name.toLowerCase() != item.name_generic.toLowerCase() &&
                   <h3 className="col-sm-3">
                     ({item.name_generic})<br />
                     <small>{item.name_generic_phonetic}</small>
@@ -402,22 +509,32 @@ var Ptda = React.createClass({
                 <div className="col-sm-3 side-effects">
                   <h4>
                     <small>Common</small><br />
-                    {item.ptda.side_effects.common.map(function(effect) {
-                      return(<p>{effect}</p>)
+                    {item.ptda.side_effects.common.map(function (effect) {
+                      return (<p>{effect}</p>);
                     })}
                     <br />
                     <small>Rare</small><br />
-                    {item.ptda.side_effects.rare.map(function(effect) {
-                      return(<p>{effect}</p>)
-                    })} 
+                    {item.ptda.side_effects.rare.map(function (effect) {
+                      return (<p>{effect}</p>);
+                    })}
                   </h4>
                 </div>
                 <div className="col-sm-2 risks">
                   <h4>
-                    TK
+                    {item.ptda.risks.map(function (item) {
+                      if (item.risk == 2) {
+                        return (<p className="unsafe">Not safe {risks[item.name]}</p>);
+                      }
+                      else if (item.risk == 0) {
+                        return (<p className="safe">OK {risks[item.name]}</p>);
+                      }
+                      else {
+                        return (<p className="unsure">May be OK {risks[item.name]}</p>);
+                      }
+                    })}
                   </h4>
                 </div>
-              </div> 
+              </div>
             </section>
           )})
         }

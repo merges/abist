@@ -2,14 +2,14 @@
 @color-grey-l: #aaa;
 
 .ptda {
-	
+
 	h1 {
 		color: @color-grey-xl;
 		font-weight: lighter;
 		margin: 1em 0 2em 0;
 	}
 	.options {
-		
+
 		h4 {
 			font-size: 1.4em;
 			font-weight: 700;
@@ -22,7 +22,7 @@
 		}
 		.option {
 			margin-top: 3em;
-			
+
 			.name {
 				padding-top: .5em;
 				padding-bottom: .4em;
@@ -41,12 +41,24 @@
 					color: @color-grey-l;
 				}
 			}
-			.side-effects {
+			.side-effects,
+			.risks {
 				h4 {
-					font-size: 13px;
+					font-size: 15px;
 				}
 				p {
 					margin: 0 0 .3em 0;
+				}
+			}
+			.risks {
+				.safe {
+					color: green;
+				}
+				.unsure {
+					color: #777;
+				}
+				.unsafe {
+					color: red;
 				}
 			}
 		}
