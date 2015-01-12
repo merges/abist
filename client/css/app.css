@@ -1,7 +1,29 @@
+.ptda {
+  padding-bottom: 9em;
+}
 .ptda h1 {
   color: #cccccc;
   font-weight: lighter;
   margin: 1em 0 2em 0;
+}
+.ptda .buttons {
+  border-bottom: 3px solid #eeb063;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+.ptda .buttons h2 {
+  margin: 0 0 .75em 0;
+  color: #aaaaaa;
+  font-size: 1.1em;
+  font-weight: 300;
+}
+.ptda .buttons .btn ~ .btn {
+  margin-left: 1.5em;
+}
+.ptda .options .header h4 {
+  font-size: 1em;
+  font-weight: 200;
+  color: #aaaaaa;
 }
 .ptda .options h4 {
   font-size: 1.4em;
@@ -14,13 +36,21 @@
   font-size: 11px;
 }
 .ptda .options .option {
-  margin-top: 3em;
+  margin-top: 2em;
+}
+.ptda .options .option.disabled * {
+  color: #aaaaaa !important;
+}
+.ptda .options .option.disabled .name h2,
+.ptda .options .option.disabled .name h3 {
+  text-decoration: line-through;
 }
 .ptda .options .option .name {
   padding-top: .5em;
   padding-bottom: .4em;
-  background: #fff6f4;
-  border-bottom: 1px solid #ffd3ae;
+  color: #427199;
+  background: #f4f4f4;
+  border-bottom: 1px solid #c2cbd7;
 }
 .ptda .options .option .name h2,
 .ptda .options .option .name h3 {
@@ -30,23 +60,27 @@
 .ptda .options .option .name h2 {
   font-weight: bolder;
 }
+.ptda .options .option .name h3 {
+  font-weight: 400;
+}
 .ptda .options .option .name small {
   color: #aaaaaa;
+  font-size: 14px;
 }
 .ptda .options .option .side-effects h4,
 .ptda .options .option .risks h4 {
-  font-size: 15px;
+  font-size: 14px;
 }
 .ptda .options .option .side-effects p,
 .ptda .options .option .risks p {
-  margin: 0 0 .3em 0;
+  margin: 0 0 .4em 0;
 }
 .ptda .options .option .risks .safe {
-  color: green;
+  color: #478061;
 }
 .ptda .options .option .risks .unsure {
-  color: #777;
+  color: #999;
 }
 .ptda .options .option .risks .unsafe {
-  color: red;
+  color: #e7956c;
 }

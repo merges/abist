@@ -2,14 +2,38 @@
 @color-grey-l: #aaa;
 
 .ptda {
+	padding-bottom: 9em;
 
 	h1 {
 		color: @color-grey-xl;
 		font-weight: lighter;
 		margin: 1em 0 2em 0;
 	}
-	.options {
+	.buttons {
+		border-bottom: 3px solid #eeb063;
+		padding-top: 1em;
+		padding-bottom: 1em;
+		
+		h2 {
+			margin: 0 0 .75em 0;
+			color: @color-grey-l;
+			font-size: 1.1em;
+			font-weight: 300;
+		}
+		.btn ~ .btn {
+			margin-left: 1.5em;
+		}
+	}
 
+	.options {
+		
+		.header{
+			h4 {
+				font-size: 1em;
+				font-weight: 200;
+				color: @color-grey-l;
+			}
+		}
 		h4 {
 			font-size: 1.4em;
 			font-weight: 700;
@@ -21,13 +45,26 @@
 			font-size: 11px;
 		}
 		.option {
-			margin-top: 3em;
+			margin-top: 2em; 
+			
+			&.disabled {
+				* {
+					color: @color-grey-l !important;
+				}
+				.name {
+					h2,
+					h3 {
+						text-decoration: line-through;
+					}
+				}
+			}
 
 			.name {
 				padding-top: .5em;
 				padding-bottom: .4em;
-				background: #fff6f4;
-				border-bottom: 1px solid #ffd3ae;
+				color: #427199;
+				background: #f4f4f4;
+				border-bottom: 1px solid #c2cbd7;
 
 				h2,
 				h3 {
@@ -37,28 +74,32 @@
 				h2 {
 					font-weight: bolder;
 				}
+				h3 {
+					font-weight: 400;
+				}
 				small {
 					color: @color-grey-l;
+					font-size: 14px;
 				}
 			}
 			.side-effects,
 			.risks {
 				h4 {
-					font-size: 15px;
+					font-size: 14px;
 				}
 				p {
-					margin: 0 0 .3em 0;
+					margin: 0 0 .4em 0;
 				}
 			}
 			.risks {
 				.safe {
-					color: green;
+					color: #478061;
 				}
 				.unsure {
-					color: #777;
+					color: #999;
 				}
 				.unsafe {
-					color: red;
+					color: #e7956c;
 				}
 			}
 		}

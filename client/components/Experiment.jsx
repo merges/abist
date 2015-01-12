@@ -1,15 +1,61 @@
 /** @jsx React.DOM */
 
-var DocumentTitle = require('react-document-title');
 var React = require('react/addons');
 
-// var Router = require('react-router');
-// var RouteHandler = Router.RouteHandler;
-// var Link = Router.Link;
+var Menu = React.createClass({
+  
+  getDefaultProps: function() {
+    return {
+      items: ["one", "two", "three"]
+    }
+  },
 
-var PageTitle = "Experiment";
+  getInitialState: function() {
+    return {
+      itemSelected: null
+    }
+  },
 
-var Menu = require('./Menu');
+  render: function() {
+    var items = this.props.items;
+    var itemSelected = this.state.itemSelected;
+    
+    return(
+      <select onChange={this.handleSelectChange}>
+        {this.renderOptions(items, itemSelected)}
+      </select>
+    );
+  },
+
+  renderOptions: function(list, itemSelected) {
+    var options = [];
+    var itemSelected = this.state.itemSelected;
+
+    list.map(function(item) {
+      if (itemSelected && goog.string.caseInsensitiveEquals(item, itemSelected)) {
+        options.push(
+          <option selected="selected" value={item} key={item}>
+            {item}
+          </option>
+        );
+      }
+      else {
+        options.push(
+          <option value={item} key={item}>
+            {item}
+          </option>
+        );
+      }
+    });
+
+    return options;
+  },
+
+  handleSelectChange: function(event) {
+    console.log(event.target.value);
+  }
+
+});
 
 var Experiment = React.createClass({
 
@@ -40,13 +86,13 @@ var Experiment = React.createClass({
     var itemSelected = this.state.itemSelected;
 
     return (
-      <DocumentTitle title={PageTitle}>
+      <div>
         <div className="container">
           <h1>abist</h1>
           <h2>humble beginnings</h2>
           <Menu items={items} itemSelected={itemSelected} />
         </div>
-      </DocumentTitle>
+      </div>
     );
   },
 
