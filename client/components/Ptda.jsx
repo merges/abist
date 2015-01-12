@@ -382,7 +382,6 @@ var Ptda = React.createClass({
   },
 
   render: function () {
-    console.log('render');
     return (
       <DocumentTitle title={PageTitle}>
         <div className="container ptda">
@@ -395,7 +394,6 @@ var Ptda = React.createClass({
   },
 
   renderRiskButtons: function (risks) {
-    console.log('rendering buttons');
     var risks = Object.keys(risks);
     var filterRisks = this.filterRisks;
     var notify = function(string) {
