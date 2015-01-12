@@ -19,7 +19,7 @@ gulp.task('browserify', function () {
     b.transform(reactify);
     return b.bundle();
   });
-  return gulp.src(['js/*.js'])
+  return gulp.src(['client/js/*.js'])
     .pipe(browserified)
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('js'));
@@ -34,19 +34,21 @@ gulp.task('less', function() {
 
 gulp.task('server', function() {
   server.run({
-    file: 'server/app.js'
+    file: 'app.js'
   })
 });
 
 gulp.task('watch', function() {
   livereload.listen();
   gulp.watch('client/less/*.less', ['less']);
+  gulp.watch('client/components/*.jsx', ['browserify']);
   gulp.watch('client/components/*.jsx', function() {
-    console.log('abist >>> restarting server');
-    server.stop();
-    server.run({
-      file: 'server/app.js'
-    });
+    // server.stop();
+    // console.log('abist >>> restarting server');
+    // server.run({
+    //   file: 'app.js'
+    // });
+    server.run;
   });
 });
 

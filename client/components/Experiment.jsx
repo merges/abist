@@ -1,13 +1,6 @@
 /** @jsx React.DOM */
 
-var DocumentTitle = require('react-document-title');
 var React = require('react/addons');
-
-// var Router = require('react-router');
-// var RouteHandler = Router.RouteHandler;
-// var Link = Router.Link;
-
-var PageTitle = "Experiment";
 
 var Menu = React.createClass({
   
@@ -93,13 +86,13 @@ var Experiment = React.createClass({
     var itemSelected = this.state.itemSelected;
 
     return (
-      <DocumentTitle title={PageTitle}>
+      <div>
         <div className="container">
           <h1>abist</h1>
           <h2>humble beginnings</h2>
           <Menu items={items} itemSelected={itemSelected} />
         </div>
-      </DocumentTitle>
+      </div>
     );
   },
 
