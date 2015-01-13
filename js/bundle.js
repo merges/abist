@@ -991,12 +991,17 @@ var Ptda = React.createClass({displayName: "Ptda",
   },
 
   render: function () {
+    var medications = this.props.medications;
+    var risks = this.props.risks;
+
     return (
       React.createElement("div", null, 
         React.createElement("div", {className: "container ptda"}, 
-          React.createElement("h1", null, "PtDA"), 
-          this.renderRiskButtons(this.props.risks), 
-          this.renderOptions(this.props.medications)
+          React.createElement("h1", null, "PtDA tailoring demo"), 
+          this.renderRiskButtons(risks), 
+          this.renderCardCost(medications), 
+          this.renderCardOnset(medications), 
+          this.renderOptions(medications)
         )
       )
     );
@@ -1032,21 +1037,6 @@ var Ptda = React.createClass({displayName: "Ptda",
     );
   },
 
-  filterRisks: function (risk) {
-    var risksSelected = this.state.risksSelected;
-    
-    if (risksSelected[risk]) {
-      risksSelected[risk] = false;
-    }
-    else {
-      risksSelected[risk] = true;
-    }
-
-    this.setState({
-      risksSelected: risksSelected
-    });
-  },
-
   renderOptions: function (medications) {
     var counter = 0;
     var risks = this.props.risks;
@@ -1056,13 +1046,12 @@ var Ptda = React.createClass({displayName: "Ptda",
       React.createElement("section", {className: "options"}, 
         medications.map(function(item) {
           // TODO(merges)
-          // Generalize and simplify this logic.
+          // Generalize and simplify this filtering logic.
           if (Object.keys(risksSelected).length > 0) {
             for (var risk in risksSelected) {
               if (risksSelected[risk]) {
                 for (var i in item.ptda.risks) {
                   var drugRiskToCheck = item.ptda.risks[i];
-                  console.log(drugRiskToCheck.name, risk);
                   if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
                     return (
                       React.createElement("section", {key: item.name, className: "option disabled"}, 
@@ -1206,6 +1195,173 @@ var Ptda = React.createClass({displayName: "Ptda",
             )
           )})
         
+      )
+    );
+  },
+
+  filterRisks: function (risk) {
+    var risksSelected = this.state.risksSelected;
+    
+    if (risksSelected[risk]) {
+      risksSelected[risk] = false;
+    }
+    else {
+      risksSelected[risk] = true;
+    }
+
+    this.setState({
+      risksSelected: risksSelected
+    });
+  },
+
+  renderCardCost: function (medications) {
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    var risks = this.props.risks;
+    var risksSelected = this.state.risksSelected;
+    var disabledMedications = {};
+
+    // TODO(merges)
+    // Generalize and simplify this filtering logic.
+    if (Object.keys(risksSelected).length > 0) {
+      medications.forEach(function(item) {
+        for (var risk in risksSelected) {
+          if (risksSelected[risk]) {
+            for (var i in item.ptda.risks) {
+              var drugRiskToCheck = item.ptda.risks[i];
+              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
+                disabledMedications[item.name] = true;
+                return;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+      
+      content.push(
+        React.createElement("td", {key: item.name, className: disabled && 'disabled'}, 
+          React.createElement("h4", null, 
+            item.name, React.createElement("br", null), 
+            item.names_brand.map(function(name) {
+              return (React.createElement("div", null, "(", name, ")"));
+            })
+          ), 
+          React.createElement("h5", null, 
+            item.ptda.cost.min != item.ptda.cost.max ?
+              React.createElement("span", null, "$", item.ptda.cost.min, "-$", item.ptda.cost.max) :
+              React.createElement("span", null, "$", item.ptda.cost.max)
+            
+          )
+        )
+      );
+
+      counter++;
+      if (counter == 4) {
+        markup.push(React.createElement("tr", null, content));
+        content = [];
+        counter = 0;
+      }
+    }
+
+    return (
+      React.createElement("section", {className: "ptda-card cost"}, 
+        React.createElement("table", null, 
+          React.createElement("thead", null, 
+            React.createElement("th", {colSpan: "4"}, 
+              React.createElement("h2", null, "Cost"), 
+              React.createElement("h3", null, 
+                "Average costs per month.", React.createElement("br", null), 
+                "What you pay will depend on your insurance."
+              )
+            )
+          ), 
+          React.createElement("tbody", null, 
+            markup
+          )
+        )
+      )
+    );
+  },
+
+  renderCardOnset: function (medications) {
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    var risks = this.props.risks;
+    var risksSelected = this.state.risksSelected;
+    var disabledMedications = {};
+
+    // TODO(merges)
+    // Generalize and simplify this filtering logic.
+    if (Object.keys(risksSelected).length > 0) {
+      medications.forEach(function(item) {
+        for (var risk in risksSelected) {
+          if (risksSelected[risk]) {
+            for (var i in item.ptda.risks) {
+              var drugRiskToCheck = item.ptda.risks[i];
+              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
+                disabledMedications[item.name] = true;
+                return;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+      
+      content.push(
+        React.createElement("td", {key: item.name, className: disabled && 'disabled'}, 
+          React.createElement("h4", null, 
+            item.name, React.createElement("br", null), 
+            item.names_brand.map(function(name) {
+              return (React.createElement("div", null, "(", name, ")"));
+            })
+          ), 
+          React.createElement("h5", null, 
+            item.ptda.onset.max > 1 &&
+              React.createElement("span", null, 
+                item.ptda.onset.min, "-", item.ptda.onset.max, " ", item.ptda.onset.unit, "s"
+              )
+            
+          )
+        )
+      );
+
+      counter++;
+      if (counter == 4) {
+        markup.push(React.createElement("tr", null, content));
+        content = [];
+        counter = 0;
+      }
+    }
+
+    return (
+      React.createElement("section", {className: "ptda-card onset"}, 
+        React.createElement("table", null, 
+          React.createElement("thead", null, 
+            React.createElement("th", {colSpan: "4"}, 
+              React.createElement("h2", null, "How Soon?"), 
+              React.createElement("h3", null, 
+                "These medicines do not work right away. In general, these medications begin to work in between 2 and 12 weeks."
+              )
+            )
+          ), 
+          React.createElement("tbody", null, 
+            markup
+          )
+        )
       )
     );
   }

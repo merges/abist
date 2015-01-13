@@ -84,3 +84,84 @@
 .ptda .options .option .risks .unsafe {
   color: #e7956c;
 }
+.ptda-card {
+  margin: 3em auto 3em auto;
+  border-radius: 24px;
+  width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.ptda-card table {
+  table-layout: fixed;
+}
+.ptda-card table h2 {
+  border-radius: 24px 24px 0 0;
+  margin: 0;
+  padding: .5em 0;
+  text-align: center;
+  font-size: 2.4em;
+  font-weight: lighter;
+  color: white;
+}
+.ptda-card table h3 {
+  margin: 1.2em .5em;
+  text-align: center;
+  font-size: 1.3em;
+}
+.ptda-card table h4 {
+  font-size: .9em;
+  font-weight: bolder;
+}
+.ptda-card table h5 {
+  font-size: 1.4em;
+  font-weight: bolder;
+}
+.ptda-card table td {
+  width: 150px;
+  height: 150px;
+  text-align: center;
+  padding: .5em;
+  transition: background 0.2s ease-in-out;
+}
+.ptda-card table td h4,
+.ptda-card table td h5 {
+  transition: color 0.2s ease-in-out;
+}
+.ptda-card table td.disabled {
+  background: #f2f2f2 !important;
+}
+.ptda-card table td.disabled h4,
+.ptda-card table td.disabled h5 {
+  text-decoration: line-through;
+  color: #cccccc;
+}
+.ptda-card table tr:last-child td:first-child {
+  border-bottom-left-radius: 24px;
+}
+.ptda-card.cost h2 {
+  background: #78b1db;
+}
+.ptda-card.cost table tr ~ tr {
+  border-top: 1px solid white;
+}
+.ptda-card.cost table td:nth-child(odd) {
+  color: white;
+  background: #78b1db;
+}
+.ptda-card.cost table td:nth-child(even) {
+  color: #78b1db;
+  background: #ecf6fd;
+}
+.ptda-card.onset h2 {
+  background: #8e8ebd;
+}
+.ptda-card.onset table tr ~ tr {
+  border-top: 1px solid white;
+}
+.ptda-card.onset table td:nth-child(odd) {
+  color: white;
+  background: #8e8ebd;
+}
+.ptda-card.onset table td:nth-child(even) {
+  color: #8e8ebd;
+  background: #ecebff;
+}

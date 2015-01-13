@@ -860,12 +860,17 @@ var Ptda = React.createClass({
   },
 
   render: function () {
+    var medications = this.props.medications;
+    var risks = this.props.risks;
+
     return (
       <div>
         <div className="container ptda">
-          <h1>PtDA</h1>
-          {this.renderRiskButtons(this.props.risks)}
-          {this.renderOptions(this.props.medications)}
+          <h1>PtDA tailoring demo</h1>
+          {this.renderRiskButtons(risks)}
+          {this.renderCardCost(medications)}
+          {this.renderCardOnset(medications)}
+          {this.renderOptions(medications)}
         </div>
       </div>
     );
@@ -901,21 +906,6 @@ var Ptda = React.createClass({
     );
   },
 
-  filterRisks: function (risk) {
-    var risksSelected = this.state.risksSelected;
-    
-    if (risksSelected[risk]) {
-      risksSelected[risk] = false;
-    }
-    else {
-      risksSelected[risk] = true;
-    }
-
-    this.setState({
-      risksSelected: risksSelected
-    });
-  },
-
   renderOptions: function (medications) {
     var counter = 0;
     var risks = this.props.risks;
@@ -925,13 +915,12 @@ var Ptda = React.createClass({
       <section className="options">
         {medications.map(function(item) {
           // TODO(merges)
-          // Generalize and simplify this logic.
+          // Generalize and simplify this filtering logic.
           if (Object.keys(risksSelected).length > 0) {
             for (var risk in risksSelected) {
               if (risksSelected[risk]) {
                 for (var i in item.ptda.risks) {
                   var drugRiskToCheck = item.ptda.risks[i];
-                  console.log(drugRiskToCheck.name, risk);
                   if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
                     return (
                       <section key={item.name} className="option disabled">
@@ -1075,6 +1064,173 @@ var Ptda = React.createClass({
             </section>
           )})
         }
+      </section>
+    );
+  },
+
+  filterRisks: function (risk) {
+    var risksSelected = this.state.risksSelected;
+    
+    if (risksSelected[risk]) {
+      risksSelected[risk] = false;
+    }
+    else {
+      risksSelected[risk] = true;
+    }
+
+    this.setState({
+      risksSelected: risksSelected
+    });
+  },
+
+  renderCardCost: function (medications) {
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    var risks = this.props.risks;
+    var risksSelected = this.state.risksSelected;
+    var disabledMedications = {};
+
+    // TODO(merges)
+    // Generalize and simplify this filtering logic.
+    if (Object.keys(risksSelected).length > 0) {
+      medications.forEach(function(item) {
+        for (var risk in risksSelected) {
+          if (risksSelected[risk]) {
+            for (var i in item.ptda.risks) {
+              var drugRiskToCheck = item.ptda.risks[i];
+              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
+                disabledMedications[item.name] = true;
+                return;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+      
+      content.push(
+        <td key={item.name} className={disabled && 'disabled'}>
+          <h4>
+            {item.name}<br />
+            {item.names_brand.map(function(name) {
+              return (<div>({name})</div>);
+            })}
+          </h4>
+          <h5>
+            {item.ptda.cost.min != item.ptda.cost.max ?
+              <span>${item.ptda.cost.min}-${item.ptda.cost.max}</span> :
+              <span>${item.ptda.cost.max}</span>
+            }
+          </h5>
+        </td>
+      );
+
+      counter++;
+      if (counter == 4) {
+        markup.push(<tr>{content}</tr>);
+        content = [];
+        counter = 0;
+      }
+    }
+
+    return (
+      <section className='ptda-card cost'>
+        <table>
+          <thead>
+            <th colSpan="4">
+              <h2>Cost</h2>
+              <h3>
+                Average costs per month.<br />
+                What you pay will depend on your insurance.
+              </h3>
+            </th>
+          </thead>
+          <tbody>
+            {markup}
+          </tbody>
+        </table>
+      </section>
+    );
+  },
+
+  renderCardOnset: function (medications) {
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    var risks = this.props.risks;
+    var risksSelected = this.state.risksSelected;
+    var disabledMedications = {};
+
+    // TODO(merges)
+    // Generalize and simplify this filtering logic.
+    if (Object.keys(risksSelected).length > 0) {
+      medications.forEach(function(item) {
+        for (var risk in risksSelected) {
+          if (risksSelected[risk]) {
+            for (var i in item.ptda.risks) {
+              var drugRiskToCheck = item.ptda.risks[i];
+              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
+                disabledMedications[item.name] = true;
+                return;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+      
+      content.push(
+        <td key={item.name} className={disabled && 'disabled'}>
+          <h4>
+            {item.name}<br />
+            {item.names_brand.map(function(name) {
+              return (<div>({name})</div>);
+            })}
+          </h4>
+          <h5>
+            {item.ptda.onset.max > 1 &&
+              <span>
+                {item.ptda.onset.min}-{item.ptda.onset.max} {item.ptda.onset.unit}s
+              </span>
+            }
+          </h5>
+        </td>
+      );
+
+      counter++;
+      if (counter == 4) {
+        markup.push(<tr>{content}</tr>);
+        content = [];
+        counter = 0;
+      }
+    }
+
+    return (
+      <section className='ptda-card onset'>
+        <table>
+          <thead>
+            <th colSpan="4">
+              <h2>How Soon?</h2>
+              <h3>
+                These medicines do not work right away. In general, these medications begin to work in between 2 and 12 weeks.
+              </h3>
+            </th>
+          </thead>
+          <tbody>
+            {markup}
+          </tbody>
+        </table>
       </section>
     );
   }
