@@ -2,6 +2,233 @@
 
 var React = require('react/addons');
 
+// PtDA cost card
+
+var PtdaCost = React.createClass({
+  propTypes: {
+    active: React.PropTypes.bool,
+    medications: React.PropTypes.array.isRequired,
+    disabledMedications: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      disabledMedications: {}
+    }
+  },
+
+  render: function() {
+    var disabledMedications = this.props.disabledMedications;
+    var medications = this.props.medications;
+
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+
+      content.push(
+        <td key={item.name} className={disabled && 'disabled'}>
+          <h4>
+            {item.name}<br />
+            {item.names_brand.map(function(name) {
+              return (<div key={name}>({name})</div>);
+            })}
+          </h4>
+          <h5>
+            {item.ptda.cost.min != item.ptda.cost.max ?
+              <span>${item.ptda.cost.min}-${item.ptda.cost.max}</span> :
+              <span>${item.ptda.cost.max}</span>
+            }
+          </h5>
+        </td>
+      );
+
+      counter++;
+      if (counter % 4 == 0) {
+        markup.push(<tr key={counter}>{content}</tr>);
+        content = [];
+      }
+    }
+
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'ptda-card cost': true,
+      'active': this.props.active
+    });
+
+    return (
+      <section className={classes}>
+        <table>
+          <thead>
+            <th colSpan="4">
+              <h2>Cost</h2>
+              <h3>
+                Average costs per month.<br />
+                What you pay will depend on your insurance.
+              </h3>
+            </th>
+          </thead>
+          <tbody>
+            {markup}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+
+});
+
+// PtDA onset card
+
+var PtdaOnset = React.createClass({
+  propTypes: {
+    medications: React.PropTypes.array.isRequired,
+    disabledMedications: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      disabledMedications: {}
+    }
+  },
+
+  render: function() {
+    var disabledMedications = this.props.disabledMedications;
+    var medications = this.props.medications;
+
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+
+      content.push(
+        <td key={item.name} className={disabled && 'disabled'}>
+          <h4>
+            {item.name}<br />
+            {item.names_brand.map(function(name) {
+              return (<div key={name}>({name})</div>);
+            })}
+          </h4>
+          <h5>
+            {item.ptda.onset.max > 1 &&
+              <span>
+                {item.ptda.onset.min}-{item.ptda.onset.max} {item.ptda.onset.unit}s
+              </span>
+            }
+          </h5>
+        </td>
+      );
+
+      counter++;
+      if (counter % 4 == 0) {
+        markup.push(<tr key={counter}>{content}</tr>);
+        content = [];
+      }
+    }
+
+    return (
+      <section className='ptda-card onset'>
+        <table>
+          <thead>
+            <th colSpan="4">
+              <h2>How Soon?</h2>
+              <h3>
+                These medicines do not work right away. In general,<br />
+                these medications begin to work in between 2 and 12 weeks.
+              </h3>
+            </th>
+          </thead>
+          <tbody>
+            {markup}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+
+});
+
+// PtDA frequency card
+
+var PtdaFrequency = React.createClass({
+  propTypes: {
+    medications: React.PropTypes.array.isRequired,
+    disabledMedications: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      disabledMedications: {}
+    }
+  },
+
+  render: function() {
+    var disabledMedications = this.props.disabledMedications;
+    var medications = this.props.medications;
+
+    var markup = [];
+    var content = [];
+    var counter = 0;
+
+    for (var i = 0; i < medications.length; i++) {
+      var item = medications[i];
+      var disabled = disabledMedications[item.name];
+
+      content.push(
+        <td key={item.name} className={disabled && 'disabled'}>
+          <h4>
+            {item.name}<br />
+            {item.names_brand.map(function(name) {
+              return (<div key={name}>({name})</div>);
+            })}
+          </h4>
+          <h5>
+            {item.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+            {item.ptda.frequency.multiple > 1 ?
+              <span>every {item.ptda.frequency.multiple} {item.ptda.frequency.unit}s</span> :
+              <span>a {item.ptda.frequency.unit}</span>
+            }
+          </h5>
+        </td>
+      );
+
+      counter++;
+      if (counter % 4 == 0) {
+        markup.push(<tr key={counter}>{content}</tr>);
+        content = [];
+      }
+    }
+
+    return (
+      <section className='ptda-card frequency'>
+        <table>
+          <thead>
+            <th colSpan="4">
+              <h2>How Often?</h2>
+              <h3>
+                Each medication is taken on a different schedule.<br />
+                Some need to be taken at a hospital or clinic.
+              </h3>
+            </th>
+          </thead>
+          <tbody>
+            {markup}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+
+});
+
+// PtDA
+
 var Ptda = React.createClass({
 
   getDefaultProps: function () {
@@ -855,11 +1082,14 @@ var Ptda = React.createClass({
 
   getInitialState: function () {
     return {
+      activeCard: null,
+      disabledMedications: {},
       risksSelected: {}
     }
   },
 
   render: function () {
+    var disabledMedications = this.state.disabledMedications;
     var medications = this.props.medications;
     var risks = this.props.risks;
 
@@ -868,8 +1098,13 @@ var Ptda = React.createClass({
         <div className="container ptda">
           <h1>PtDA tailoring demo</h1>
           {this.renderRiskButtons(risks)}
-          {this.renderCardCost(medications)}
-          {this.renderCardOnset(medications)}
+
+          <section className="cards">
+            <PtdaCost active medications={medications} disabledMedications={disabledMedications} />
+            <PtdaOnset medications={medications} disabledMedications={disabledMedications} />
+            <PtdaFrequency medications={medications} disabledMedications={disabledMedications} />
+          </section>
+
           {this.renderOptions(medications)}
         </div>
       </div>
@@ -883,7 +1118,7 @@ var Ptda = React.createClass({
     var risksSelected = this.state.risksSelected;
 
     var cx = React.addons.classSet;
-    
+
     return (
       <section className="row buttons">
         <div className="col-sm-12">
@@ -908,42 +1143,31 @@ var Ptda = React.createClass({
 
   renderOptions: function (medications) {
     var counter = 0;
+    var disabledMedications = this.state.disabledMedications;
     var risks = this.props.risks;
-    var risksSelected = this.state.risksSelected;
 
     return (
       <section className="options">
         {medications.map(function(item) {
-          // TODO(merges)
-          // Generalize and simplify this filtering logic.
-          if (Object.keys(risksSelected).length > 0) {
-            for (var risk in risksSelected) {
-              if (risksSelected[risk]) {
-                for (var i in item.ptda.risks) {
-                  var drugRiskToCheck = item.ptda.risks[i];
-                  if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
-                    return (
-                      <section key={item.name} className="option disabled">
-                        <div className="row name">
-                          <h2 className="col-sm-2">
-                            {item.name}<br />
-                            <small>{item.name_phonetic}</small>
-                          </h2>
-                          {item.name.toLowerCase() != item.name_generic.toLowerCase() &&
-                            <h3 className="col-sm-3">
-                              ({item.name_generic})<br />
-                              <small>{item.name_generic_phonetic}</small>
-                            </h3>
-                          }
-                        </div>
-                      </section>
-                    );
+          if (disabledMedications[item.name]) {
+            return (
+              <section key={item.name} className="option disabled">
+                <div className="row name">
+                  <h2 className="col-sm-2">
+                    {item.name}<br />
+                    <small>{item.name_phonetic}</small>
+                  </h2>
+                  {item.name.toLowerCase() != item.name_generic.toLowerCase() &&
+                    <h3 className="col-sm-3">
+                      ({item.name_generic})<br />
+                      <small>{item.name_generic_phonetic}</small>
+                    </h3>
                   }
-                }
-              }
-            }
+                </div>
+              </section>
+            );
           }
-          
+
           var flag = false;
           if (counter == 0) {
             flag = true;
@@ -981,7 +1205,7 @@ var Ptda = React.createClass({
                   <h4>Other considerations</h4>
                 </div>
               </div>
-              
+
               {flag &&
                 <div className="row header-description">
                   <div className="col-sm-2">
@@ -1069,170 +1293,32 @@ var Ptda = React.createClass({
   },
 
   filterRisks: function (risk) {
+    var medications = this.props.medications;
     var risksSelected = this.state.risksSelected;
-    
-    if (risksSelected[risk]) {
-      risksSelected[risk] = false;
-    }
-    else {
-      risksSelected[risk] = true;
+
+    risksSelected[risk] = !risksSelected[risk];
+
+    var disabledMedications = {};
+    if (Object.keys(risksSelected).length > 0) {
+      medications.forEach(function(item) {
+        for (var risk in risksSelected) {
+          if (risksSelected[risk]) {
+            for (var i in item.ptda.risks) {
+              var drugRiskToCheck = item.ptda.risks[i];
+              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
+                disabledMedications[item.name] = true;
+                return;
+              }
+            }
+          }
+        }
+      });
     }
 
     this.setState({
+      disabledMedications: disabledMedications,
       risksSelected: risksSelected
     });
-  },
-
-  renderCardCost: function (medications) {
-    var markup = [];
-    var content = [];
-    var counter = 0;
-
-    var risks = this.props.risks;
-    var risksSelected = this.state.risksSelected;
-    var disabledMedications = {};
-
-    // TODO(merges)
-    // Generalize and simplify this filtering logic.
-    if (Object.keys(risksSelected).length > 0) {
-      medications.forEach(function(item) {
-        for (var risk in risksSelected) {
-          if (risksSelected[risk]) {
-            for (var i in item.ptda.risks) {
-              var drugRiskToCheck = item.ptda.risks[i];
-              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
-                disabledMedications[item.name] = true;
-                return;
-              }
-            }
-          }
-        }
-      });
-    }
-
-    for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
-      
-      content.push(
-        <td key={item.name} className={disabled && 'disabled'}>
-          <h4>
-            {item.name}<br />
-            {item.names_brand.map(function(name) {
-              return (<div>({name})</div>);
-            })}
-          </h4>
-          <h5>
-            {item.ptda.cost.min != item.ptda.cost.max ?
-              <span>${item.ptda.cost.min}-${item.ptda.cost.max}</span> :
-              <span>${item.ptda.cost.max}</span>
-            }
-          </h5>
-        </td>
-      );
-
-      counter++;
-      if (counter == 4) {
-        markup.push(<tr>{content}</tr>);
-        content = [];
-        counter = 0;
-      }
-    }
-
-    return (
-      <section className='ptda-card cost'>
-        <table>
-          <thead>
-            <th colSpan="4">
-              <h2>Cost</h2>
-              <h3>
-                Average costs per month.<br />
-                What you pay will depend on your insurance.
-              </h3>
-            </th>
-          </thead>
-          <tbody>
-            {markup}
-          </tbody>
-        </table>
-      </section>
-    );
-  },
-
-  renderCardOnset: function (medications) {
-    var markup = [];
-    var content = [];
-    var counter = 0;
-
-    var risks = this.props.risks;
-    var risksSelected = this.state.risksSelected;
-    var disabledMedications = {};
-
-    // TODO(merges)
-    // Generalize and simplify this filtering logic.
-    if (Object.keys(risksSelected).length > 0) {
-      medications.forEach(function(item) {
-        for (var risk in risksSelected) {
-          if (risksSelected[risk]) {
-            for (var i in item.ptda.risks) {
-              var drugRiskToCheck = item.ptda.risks[i];
-              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
-                disabledMedications[item.name] = true;
-                return;
-              }
-            }
-          }
-        }
-      });
-    }
-
-    for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
-      
-      content.push(
-        <td key={item.name} className={disabled && 'disabled'}>
-          <h4>
-            {item.name}<br />
-            {item.names_brand.map(function(name) {
-              return (<div>({name})</div>);
-            })}
-          </h4>
-          <h5>
-            {item.ptda.onset.max > 1 &&
-              <span>
-                {item.ptda.onset.min}-{item.ptda.onset.max} {item.ptda.onset.unit}s
-              </span>
-            }
-          </h5>
-        </td>
-      );
-
-      counter++;
-      if (counter == 4) {
-        markup.push(<tr>{content}</tr>);
-        content = [];
-        counter = 0;
-      }
-    }
-
-    return (
-      <section className='ptda-card onset'>
-        <table>
-          <thead>
-            <th colSpan="4">
-              <h2>How Soon?</h2>
-              <h3>
-                These medicines do not work right away. In general, these medications begin to work in between 2 and 12 weeks.
-              </h3>
-            </th>
-          </thead>
-          <tbody>
-            {markup}
-          </tbody>
-        </table>
-      </section>
-    );
   }
 
 });

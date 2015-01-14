@@ -4,7 +4,7 @@
 .ptda h1 {
   color: #cccccc;
   font-weight: lighter;
-  margin: 1em 0 2em 0;
+  margin: 1em 0 .5em 0;
 }
 .ptda .buttons {
   border-bottom: 3px solid #eeb063;
@@ -19,6 +19,23 @@
 }
 .ptda .buttons .btn ~ .btn {
   margin-left: 1.5em;
+}
+.ptda .cards {
+  position: relative;
+  width: 100%;
+  height: 700px;
+  padding: 0 2em;
+  white-space: nowrap;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+.ptda .cards .ptda-card {
+  display: inline-block;
+  vertical-align: text-top;
+  max-width: 600px;
+}
+.ptda .cards .ptda-card ~ .ptda-card {
+  margin-left: 100px;
 }
 .ptda .options .header h4 {
   font-size: 1em;
@@ -88,19 +105,22 @@
   margin: 3em auto 3em auto;
   border-radius: 24px;
   width: 600px;
+  background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 .ptda-card table {
+  width: 100%;
   table-layout: fixed;
 }
 .ptda-card table h2 {
   border-radius: 24px 24px 0 0;
   margin: 0;
-  padding: .5em 0;
-  text-align: center;
+  padding: .5em .5em;
   font-size: 2.4em;
   font-weight: lighter;
   color: white;
+  text-align: center;
 }
 .ptda-card table h3 {
   margin: 1.2em .5em;
@@ -118,8 +138,9 @@
 .ptda-card table td {
   width: 150px;
   height: 150px;
-  text-align: center;
   padding: .5em;
+  text-align: center;
+  vertical-align: top;
   transition: background 0.2s ease-in-out;
 }
 .ptda-card table td h4,
@@ -136,6 +157,9 @@
 }
 .ptda-card table tr:last-child td:first-child {
   border-bottom-left-radius: 24px;
+}
+.ptda-card table tr:last-child td:last-child {
+  border-bottom-right-radius: 24px;
 }
 .ptda-card.cost h2 {
   background: #78b1db;
@@ -164,4 +188,18 @@
 .ptda-card.onset table td:nth-child(even) {
   color: #8e8ebd;
   background: #ecebff;
+}
+.ptda-card.frequency h2 {
+  background: #8cb164;
+}
+.ptda-card.frequency table tr ~ tr {
+  border-top: 1px solid white;
+}
+.ptda-card.frequency table td:nth-child(odd) {
+  color: white;
+  background: #8cb164;
+}
+.ptda-card.frequency table td:nth-child(even) {
+  color: #8cb164;
+  background: #f0ffe0;
 }
