@@ -1,5 +1,6 @@
 @color-grey-xl: #ccc;
 @color-grey-l: #aaa;
+@color-grey-xd: #333;
 
 @color-cost: #78b1db;
 @color-cost-l: #ecf6fd;
@@ -9,6 +10,10 @@
 @color-frequency-l: #f0ffe0;
 @color-side-effects: #cd773b;
 @color-risks: #cab22d;
+
+html {
+	-webkit-font-smoothing: antialiased;
+}
 
 .ptda {
 	padding-bottom: 9em;
@@ -30,13 +35,13 @@
 			font-weight: 300;
 		}
 		.btn ~ .btn {
-			margin-left: 1.5em;
+			margin-left: .5em;
 		}
 	}
 	.cards {
 		position: relative;
 		width: 100%;
-		height: 700px;
+		height: 740px;
 		padding: 0 2em;
 		white-space: nowrap;
 		overflow-x: scroll;
@@ -147,10 +152,81 @@
 	}
 }
 
+.floating {
+	width: 90%;
+	display: inline-block;
+	background: white;
+	z-index: 21;
+	padding: 0 1em;
+	position: absolute;
+	bottom: -60px;
+	// box-shadow: 0 4px 12px rgba(0,0,0,.15);
+
+	.mini {
+		font-size: .8em;
+
+		.name {
+			color: white;
+			padding: .4em 0;
+			background: @color-grey-xd;
+
+			h2,
+			h3 {
+				font-size: 1.3em;
+				line-height: 1.1em;
+				margin: 0;
+			}
+			h2 {
+				font-weight: bolder;
+			}
+			h3 {
+				font-weight: 400;
+			}
+			small {
+				color: @color-grey-l;
+				font-size: 1em;
+			}
+		}
+		h3 {
+			font-weight: 300;
+			font-size: 1em;
+			color: #444;
+			margin: .6em 0 .2em 0;
+		}
+		h4 {
+			font-size: 1em;
+			margin: 0;
+		}
+		.side-effects {
+			h4 {
+				span ~ span {
+					&:before {
+						content: ', ';
+					}
+				}
+			}
+		}
+		.risks {
+			.safe {
+				color: #478061;
+			}
+			.unsure {
+				color: #999;
+			}
+			.unsafe {
+				color: #e7956c;
+			}
+		}
+		p {
+			margin-bottom: .1em;
+		}
+	}
+}
+
 .ptda-card {
 	margin: 3em auto 3em auto;
 	border-radius: 24px;
-	width: 600px;
+	width: 520px;
 	background: white;
 	box-shadow: 0 4px 12px rgba(0,0,0,.15);
 	cursor: pointer;
@@ -194,16 +270,16 @@
 			font-weight: bolder;
 		}
 		td {
-			width: 150px;
-			height: 150px;
+			width: 130px;
+			height: 130px;
 			padding: .5em;
 			text-align: center;
 			vertical-align: top;
-			transition: background .2s ease-in-out;
+			transition: background .07s ease-in-out;
 
 			h4,
 			h5 {
-				transition: color .2s ease-in-out;
+				transition: color .07s ease-in-out;
 			}
 			&.disabled {
 				background: #f2f2f2 !important;
@@ -214,8 +290,19 @@
 					color: @color-grey-xl;
 				}
 			}
+			&.selected {
+				color: white !important;
+				background: @color-grey-xd !important;
+			}
 		}
 		tr {
+			&.dosage-form {
+				td {
+					height: auto;
+					border-radius: 0;
+					background: none !important;
+				}
+			}
 			&:last-child {
 				td {
 					&:first-child {
@@ -247,6 +334,13 @@
 					background: @color-cost-l;
 				}
 			}
+			tr {
+				&.dosage-form {
+					td {
+						color: @color-cost;
+					}
+				}
+			}
 		}
 	}
 	&.onset {
@@ -267,6 +361,13 @@
 					background: @color-onset-l;
 				}
 			}
+			tr {
+				&.dosage-form {
+					td {
+						color: @color-onset;
+					}
+				}
+			}
 		}
 	}
 	&.frequency {
@@ -278,6 +379,9 @@
 				border-top: 1px solid white;
 			}
 			td {
+				h5 {
+					font-size: 1.2em;
+				}
 				&:nth-child(odd) {
 					color: white;
 					background: @color-frequency;
@@ -285,6 +389,13 @@
 				&:nth-child(even) {
 					color: @color-frequency;
 					background: @color-frequency-l;
+				}
+			}
+			tr {
+				&.dosage-form {
+					td {
+						color: @color-frequency;
+					}
 				}
 			}
 		}

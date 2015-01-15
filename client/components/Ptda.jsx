@@ -2,13 +2,62 @@
 
 var React = require('react/addons');
 
+
+
+// Ptda medication square
+
+var PtdaMedicationSquare = React.createClass({
+  propTypes: {
+  	content: React.PropTypes.object.isRequired,
+    disabled: React.PropTypes.bool,
+    handleClick: React.PropTypes.func,
+    medication: React.PropTypes.object.isRequired,
+    selected: React.PropTypes.bool
+  },
+
+  getDefaultProps: function() {
+  	return {
+  		selected: false
+  	}
+  },
+
+  render: function() {
+  	var medication = this.props.medication;
+
+  	var cx = React.addons.classSet;
+    var classes = cx({
+      'disabled': this.props.disabled,
+      'selected': this.props.selected
+    });
+
+    return (
+    	<td className={classes} onClick={this.handleClick.bind(this, medication.name)}>
+    		<h4>
+          {medication.name_generic}<br />
+          {medication.names_brand.map(function(name) {
+            return (<div key={name}>({name})</div>);
+          })}
+        </h4>
+        {this.props.content}
+      </td>
+    );
+  },
+
+  handleClick: function(name) {
+  	this.props.handleClick && this.props.handleClick(name);
+  }
+});
+
+
+
 // PtDA cost card
 
 var PtdaCost = React.createClass({
   propTypes: {
     active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -20,38 +69,60 @@ var PtdaCost = React.createClass({
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
+      
+      var specialContent =
+        <h5>
+          {medication.ptda.cost.min != medication.ptda.cost.max ?
+            <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
+            <span>${medication.ptda.cost.max}</span>
+          }
+        </h5>;
 
-      content.push(
-        <td key={item.name} className={disabled && 'disabled'}>
-          <h4>
-            {item.name}<br />
-            {item.names_brand.map(function(name) {
-              return (<div key={name}>({name})</div>);
-            })}
-          </h4>
-          <h5>
-            {item.ptda.cost.min != item.ptda.cost.max ?
-              <span>${item.ptda.cost.min}-${item.ptda.cost.max}</span> :
-              <span>${item.ptda.cost.max}</span>
-            }
-          </h5>
-        </td>
-      );
+      squares.push(<PtdaMedicationSquare
+						      	key={medication.name}
+      							medication={medication}
+      							content={specialContent} 
+      							disabled={disabled}
+      							selected={selected}
+      							handleClick={handleClick} />)
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(<tr key={counter}>{content}</tr>);
-        content = [];
+        markup.push(<tr key={counter}>{squares}</tr>);
+        squares = [];
       }
     }
+    markup.unshift(
+    	<tr key={'cost-oral'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By mouth (pills, tablets, or capsules)
+    		</td>
+    	</tr>
+    );
+    markup.splice(2,0,
+    	<tr key={'cost-injection'} className='dosage-form'>
+    		<td colSpan='4'>
+    			Injection, taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
+    markup.splice(4,0,
+    	<tr key={'cost-infusion'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By vein (IV infusion), taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
 
     var cx = React.addons.classSet;
     var classes = cx({
@@ -78,15 +149,16 @@ var PtdaCost = React.createClass({
       </section>
     );
   }
-
 });
 
 // PtDA onset card
 
 var PtdaOnset = React.createClass({
   propTypes: {
+  	active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -98,39 +170,61 @@ var PtdaOnset = React.createClass({
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
 
-      content.push(
-        <td key={item.name} className={disabled && 'disabled'}>
-          <h4>
-            {item.name}<br />
-            {item.names_brand.map(function(name) {
-              return (<div key={name}>({name})</div>);
-            })}
-          </h4>
-          <h5>
-            {item.ptda.onset.max > 1 &&
-              <span>
-                {item.ptda.onset.min}-{item.ptda.onset.max} {item.ptda.onset.unit}s
-              </span>
-            }
-          </h5>
-        </td>
-      );
+      var specialContent =
+        <h5>
+          {medication.ptda.onset.max > 1 &&
+            <span>
+              {medication.ptda.onset.min}-{medication.ptda.onset.max} {medication.ptda.onset.unit}s
+            </span>
+          }
+        </h5>;
+
+      squares.push(<PtdaMedicationSquare
+						      	key={medication.name}
+      							medication={medication}
+      							content={specialContent} 
+      							disabled={disabled}
+      							selected={selected}
+      							handleClick={handleClick} />)
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(<tr key={counter}>{content}</tr>);
-        content = [];
+        markup.push(<tr key={counter}>{squares}</tr>);
+        squares = [];
       }
     }
+    markup.unshift(
+    	<tr key={'onset-oral'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By mouth (pills, tablets, or capsules)
+    		</td>
+    	</tr>
+    );
+    markup.splice(2,0,
+    	<tr key={'onset-injection'} className='dosage-form'>
+    		<td colSpan='4'>
+    			Injection, taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
+    markup.splice(4,0,
+    	<tr key={'onset-infusion'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By vein (IV infusion), taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
 
     return (
       <section className='ptda-card onset'>
@@ -151,15 +245,18 @@ var PtdaOnset = React.createClass({
       </section>
     );
   }
-
 });
+
+
 
 // PtDA frequency card
 
 var PtdaFrequency = React.createClass({
   propTypes: {
+  	active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -171,39 +268,62 @@ var PtdaFrequency = React.createClass({
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
 
-      content.push(
-        <td key={item.name} className={disabled && 'disabled'}>
-          <h4>
-            {item.name}<br />
-            {item.names_brand.map(function(name) {
-              return (<div key={name}>({name})</div>);
-            })}
-          </h4>
-          <h5>
-            {item.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
-            {item.ptda.frequency.multiple > 1 ?
-              <span>every {item.ptda.frequency.multiple} {item.ptda.frequency.unit}s</span> :
-              <span>a {item.ptda.frequency.unit}</span>
-            }
-          </h5>
-        </td>
-      );
+      var specialContent =
+        <h5>
+          {medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+          <br />
+          {medication.ptda.frequency.multiple > 1 ?
+            <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
+            <span>a {medication.ptda.frequency.unit}</span>
+          }
+        </h5>;
+
+      squares.push(<PtdaMedicationSquare
+      							key={medication.name}
+	    							medication={medication}
+	    							content={specialContent} 
+	    							disabled={disabled}
+	    							selected={selected}
+	    							handleClick={handleClick} />)
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(<tr key={counter}>{content}</tr>);
-        content = [];
+        markup.push(<tr key={counter}>{squares}</tr>);
+        squares = [];
       }
     }
+    markup.unshift(
+    	<tr key={'frequency-oral'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By mouth (pills, tablets, or capsules)
+    		</td>
+    	</tr>
+    );
+    markup.splice(2,0,
+    	<tr key={'frequency-injection'} className='dosage-form'>
+    		<td colSpan='4'>
+    			Injection, taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
+    markup.splice(4,0,
+    	<tr key={'frequency-infusion'} className='dosage-form'>
+    		<td colSpan='4'>
+    			By vein (IV infusion), taken at home or at a clinic or hospital
+    		</td>
+    	</tr>
+    );
 
     return (
       <section className='ptda-card frequency'>
@@ -224,8 +344,307 @@ var PtdaFrequency = React.createClass({
       </section>
     );
   }
+});
+
+
+
+// PtDA medication mini-card
+
+var PtdaMini = React.createClass({
+	propTypes: {
+  	medication: React.PropTypes.object.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    disabled: React.PropTypes.bool
+  },
+
+	render: function () {
+		var medication = this.props.medication;
+    var risks = this.props.risks;
+    
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'mini': true
+    });
+    
+    return (
+      <section className={classes}>
+        <div className="row name">
+          <h2 className="col-sm-6">
+            {medication.name}<br />
+            <small>{medication.name_phonetic}</small>
+          </h2>
+        	{medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
+            <h3 className="col-sm-6">
+              ({medication.name_generic})<br />
+              <small>{medication.name_generic_phonetic}</small>
+            </h3>
+          }
+        </div>
+      	<div className="row">
+          <div className="col-sm-3 cost">
+          	<h3>Cost</h3>
+            <h4>
+              {medication.ptda.cost.min != medication.ptda.cost.max ?
+                <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
+                <span>${medication.ptda.cost.max}</span>
+              }
+            </h4>
+          </div>
+          <div className="col-sm-3 onset">
+          	<h3>How Soon?</h3>
+            <h4>
+              {medication.ptda.onset.max > 1 &&
+                <span>
+                  {medication.ptda.onset.min}-{medication.ptda.onset.max} {medication.ptda.onset.unit}s
+                </span>
+              }
+            </h4>
+          </div>
+          <div className="col-sm-3 frequency">
+          	<h3>How Often?</h3>
+            <h4>
+              {medication.ptda.frequency.dose &&
+                <span>
+                  {medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+                  {medication.ptda.frequency.multiple > 1 ?
+                    <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
+                    <span>a {medication.ptda.frequency.unit}</span>
+                  }
+                </span>
+              }
+            </h4>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-sm-6 side-effects">
+          	<h3>Side Effects</h3>
+            <h4>
+              {medication.ptda.side_effects.common.map(function (effect) {
+                return (<span key={effect}>{effect}</span>);
+              })}
+              {medication.ptda.side_effects.rare.map(function (effect) {
+                return (<span key={effect}>(rare) {effect}</span>);
+              })}
+            </h4>
+          </div>
+          <div className="col-sm-6 risks">
+	          <h3>Other Considerations</h3>
+            <h4>
+              {medication.ptda.risks.map(function (medication) {
+                if (medication.risk == 2) {
+                  return (<p key={medication.name} className="unsafe">Unsafe {risks[medication.name]}</p>);
+                }
+                else if (medication.risk == 0) {
+                  return (<p key={medication.name} className="safe">Safe {risks[medication.name]}</p>);
+                }
+                else {
+                  return (<p key={medication.name} className="unsure">Might not be safe {risks[medication.name]}</p>);
+                }
+              })}
+            </h4>
+          </div>
+        </div>
+      </section>
+    );
+  }
+});
+
+
+
+// PtDA option
+
+var PtdaOption = React.createClass({
+	propTypes: {
+  	medication: React.PropTypes.object.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    showDescriptions: React.PropTypes.bool,
+    disabled: React.PropTypes.bool
+  },
+
+	render: function () {
+		var medication = this.props.medication;
+    var risks = this.props.risks;
+    var showDescriptions = this.props.showDescriptions;
+    var disabled = this.props.disabled;
+
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'option': true,
+      'disabled': this.props.disabled
+    });
+    
+    return (
+      <section className={classes}>
+        <div className="row name">
+          <h2 className="col-sm-2">
+            {medication.name}<br />
+            <small>{medication.name_phonetic}</small>
+          </h2>
+          {medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
+            <h3 className="col-sm-3">
+              ({medication.name_generic})<br />
+              <small>{medication.name_generic_phonetic}</small>
+            </h3>
+          }
+        </div>
+
+      	<div className="row header">
+          <div className="col-sm-2">
+            <h4>Cost</h4>
+          </div>
+          <div className="col-sm-2">
+            <h4>How soon does it work?</h4>
+          </div>
+          <div className="col-sm-2">
+            <h4>How often?</h4>
+          </div>
+          <div className="col-sm-4">
+            <h4>Side effects</h4>
+          </div>
+          <div className="col-sm-2">
+            <h4>Other considerations</h4>
+          </div>
+        </div>
+
+        {!disabled && showDescriptions &&
+        	<div className="row header-description">
+	          <div className="col-sm-2">
+	            <h5>Average cost per month. What you pay will depend on your insurance.</h5>
+	          </div>
+	          <div className="col-sm-2">
+	            <h5>These medicines don’t start working right away.</h5>
+	          </div>
+	          <div className="col-sm-2">
+	            <h5>Each medicine is taken on a different schedule.</h5>
+	          </div>
+	          <div className="col-sm-4">
+	            <h5>Some side effects go away after your body adjusts to the medicine.</h5>
+	          </div>
+	          <div className="col-sm-2">
+	            <h5>Certain people can’t use some medicines.</h5>
+	          </div>
+	        </div>
+        }
+
+        {!disabled &&
+        	<div className="row">
+	          <div className="col-sm-2 cost">
+	            <h4>
+	              {medication.ptda.cost.min != medication.ptda.cost.max ?
+	                <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
+	                <span>${medication.ptda.cost.max}</span>
+	              }
+	            </h4>
+	          </div>
+	          <div className="col-sm-2 onset">
+	            <h4>
+	              {medication.ptda.onset.max > 1 &&
+	                <span>
+	                  {medication.ptda.onset.min}-{medication.ptda.onset.max} {medication.ptda.onset.unit}s
+	                </span>
+	              }
+	            </h4>
+	          </div>
+	          <div className="col-sm-2 frequency">
+	            <h4>
+	              {medication.ptda.frequency.dose &&
+	                <span>
+	                  {medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+	                  {medication.ptda.frequency.multiple > 1 ?
+	                    <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
+	                    <span>a {medication.ptda.frequency.unit}</span>
+	                  }
+	                </span>
+	              }
+	            </h4>
+	          </div>
+	          <div className="col-sm-4 side-effects">
+	            <h4>
+	              {medication.ptda.side_effects.common.map(function (effect) {
+	                return (<p key={effect}>{effect}</p>);
+	              })}
+	              <br />
+	              <small>Rare</small><br />
+	              {medication.ptda.side_effects.rare.map(function (effect) {
+	                return (<p key={effect}>{effect}</p>);
+	              })}
+	            </h4>
+	          </div>
+	          <div className="col-sm-2 risks">
+	            <h4>
+	              {medication.ptda.risks.map(function (medication) {
+	                if (medication.risk == 2) {
+	                  return (<p key={medication.name} className="unsafe">Unsafe {risks[medication.name]}</p>);
+	                }
+	                else if (medication.risk == 0) {
+	                  return (<p key={medication.name} className="safe">Safe {risks[medication.name]}</p>);
+	                }
+	                else {
+	                  return (<p key={medication.name} className="unsure">Might not be safe {risks[medication.name]}</p>);
+	                }
+	              })}
+	            </h4>
+	          </div>
+	        </div>
+        }
+      </section>
+    );
+  }
+});
+
+
+
+// PtDA options list
+
+var PtdaOptions = React.createClass({
+	propTypes: {
+  	active: React.PropTypes.bool,
+    medications: React.PropTypes.array.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    disabledMedications: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      disabledMedications: {}
+    }
+  },
+
+	render: function () {
+		var disabledMedications = this.props.disabledMedications;
+		var medications = this.props.medications;
+    var risks = this.props.risks;
+    var showDescriptions = true;
+   	
+   	return (
+      <section className="options">
+        {medications.map(function(medication) {
+        	if (showDescriptions) {
+        		showDescriptions = false;
+        		return (
+        			<PtdaOption
+        				key={medication.name}
+        				medication={medication}
+        				risks={risks}
+						    showDescriptions
+						    disabled={disabledMedications[medication.name]} />
+        		);
+        	}
+        	return (
+      			<PtdaOption
+      				key={medication.name}
+      				medication={medication}
+      				risks={risks}
+					    disabled={disabledMedications[medication.name]} />
+      		);
+      	})}
+      </section>
+    );
+  }
 
 });
+
+
 
 // PtDA
 
@@ -1081,17 +1500,27 @@ var Ptda = React.createClass({
   },
 
   getInitialState: function () {
+  	var medicationMap = {};
+    this.props.medications.forEach(function (medication, index) {
+    	medicationMap[medication.name] = index;
+    });
+
     return {
       activeCard: null,
       disabledMedications: {},
-      risksSelected: {}
+      medicationMap: medicationMap,
+      selectedRisks: {},
+      selectedMedication: null
     }
   },
 
   render: function () {
-    var disabledMedications = this.state.disabledMedications;
     var medications = this.props.medications;
     var risks = this.props.risks;
+
+    var disabledMedications = this.state.disabledMedications;
+    var selectedMedication = this.state.selectedMedication;
+    var medicationMap = this.state.medicationMap;
 
     return (
       <div>
@@ -1100,12 +1529,28 @@ var Ptda = React.createClass({
           {this.renderRiskButtons(risks)}
 
           <section className="cards">
-            <PtdaCost active medications={medications} disabledMedications={disabledMedications} />
-            <PtdaOnset medications={medications} disabledMedications={disabledMedications} />
-            <PtdaFrequency medications={medications} disabledMedications={disabledMedications} />
+            <PtdaCost
+            	active
+            	medications={medications}
+            	disabledMedications={disabledMedications}
+            	selectedMedication={selectedMedication}
+            	handleClick={this.handleMedicationClick} />
+            <PtdaOnset
+            	medications={medications}
+            	disabledMedications={disabledMedications}
+            	selectedMedication={selectedMedication}
+            	handleClick={this.handleMedicationClick} />
+            <PtdaFrequency
+            	medications={medications}
+            	disabledMedications={disabledMedications}
+            	selectedMedication={selectedMedication}
+            	handleClick={this.handleMedicationClick} />
           </section>
 
-          {this.renderOptions(medications)}
+          <PtdaOptions
+          	medications={medications}
+            disabledMedications={disabledMedications}
+            risks={risks} />
         </div>
       </div>
     );
@@ -1113,21 +1558,25 @@ var Ptda = React.createClass({
 
   renderRiskButtons: function (risks) {
     var filterRisks = this.filterRisks;
-    var risks = Object.keys(risks);
+    var risksForButtons = Object.keys(risks);
     var risksFriendly = this.props.risksFriendly;
-    var risksSelected = this.state.risksSelected;
+    var selectedRisks = this.state.selectedRisks;
+
+    var medications = this.props.medications;
+    var selectedMedication = this.state.selectedMedication;
+    var medicationMap = this.state.medicationMap;
 
     var cx = React.addons.classSet;
 
     return (
       <section className="row buttons">
-        <div className="col-sm-12">
+        <div className="col-sm-5">
           <h2>Filter for people concerned about:</h2>
 
-          {risks.map(function (item) {
+          {risksForButtons.map(function (item) {
             var classes = cx({
               'btn btn-default': true,
-              'active': risksSelected[item]
+              'active': selectedRisks[item]
             });
 
             return (
@@ -1137,172 +1586,38 @@ var Ptda = React.createClass({
             );
           })}
         </div>
+        <div className="col-sm-7">
+        	<div className="floating">
+	        	{selectedMedication && 
+	    				<PtdaMini
+	      				medication={medications[medicationMap[selectedMedication]]}
+	      				risks={risks} />
+	      		}
+      		</div>
+        </div>
       </section>
     );
   },
 
-  renderOptions: function (medications) {
-    var counter = 0;
-    var disabledMedications = this.state.disabledMedications;
-    var risks = this.props.risks;
+  handleMedicationClick: function (name) {
+  	var selected = name != this.state.selectedMedication ? name : null;
 
-    return (
-      <section className="options">
-        {medications.map(function(item) {
-          if (disabledMedications[item.name]) {
-            return (
-              <section key={item.name} className="option disabled">
-                <div className="row name">
-                  <h2 className="col-sm-2">
-                    {item.name}<br />
-                    <small>{item.name_phonetic}</small>
-                  </h2>
-                  {item.name.toLowerCase() != item.name_generic.toLowerCase() &&
-                    <h3 className="col-sm-3">
-                      ({item.name_generic})<br />
-                      <small>{item.name_generic_phonetic}</small>
-                    </h3>
-                  }
-                </div>
-              </section>
-            );
-          }
-
-          var flag = false;
-          if (counter == 0) {
-            flag = true;
-          }
-          counter++;
-
-          return (
-            <section key={item.name} className="option">
-              <div className="row name">
-                <h2 className="col-sm-2">
-                  {item.name}<br />
-                  <small>{item.name_phonetic}</small>
-                </h2>
-                {item.name.toLowerCase() != item.name_generic.toLowerCase() &&
-                  <h3 className="col-sm-3">
-                    ({item.name_generic})<br />
-                    <small>{item.name_generic_phonetic}</small>
-                  </h3>
-                }
-              </div>
-              <div className="row header">
-                <div className="col-sm-2">
-                  <h4>Cost</h4>
-                </div>
-                <div className="col-sm-2">
-                  <h4>How soon does it work?</h4>
-                </div>
-                <div className="col-sm-2">
-                  <h4>How often?</h4>
-                </div>
-                <div className="col-sm-4">
-                  <h4>Side effects</h4>
-                </div>
-                <div className="col-sm-2">
-                  <h4>Other considerations</h4>
-                </div>
-              </div>
-
-              {flag &&
-                <div className="row header-description">
-                  <div className="col-sm-2">
-                    <h5>Average cost per month. What you pay will depend on your insurance.</h5>
-                  </div>
-                  <div className="col-sm-2">
-                    <h5>These medicines don’t start working right away.</h5>
-                  </div>
-                  <div className="col-sm-2">
-                    <h5>Each medicine is taken on a different schedule.</h5>
-                  </div>
-                  <div className="col-sm-4">
-                    <h5>Some side effects go away after your body adjusts to the medicine.</h5>
-                  </div>
-                  <div className="col-sm-2">
-                    <h5>Certain people can’t use some medicines.</h5>
-                  </div>
-                </div>
-              }
-
-              <div className="row">
-                <div className="col-sm-2 cost">
-                  <h4>
-                    {item.ptda.cost.min != item.ptda.cost.max ?
-                      <span>${item.ptda.cost.min}-${item.ptda.cost.max}</span> :
-                      <span>${item.ptda.cost.max}</span>
-                    }
-                  </h4>
-                </div>
-                <div className="col-sm-2 onset">
-                  <h4>
-                    {item.ptda.onset.max > 1 &&
-                      <span>
-                        {item.ptda.onset.min}-{item.ptda.onset.max} {item.ptda.onset.unit}s
-                      </span>
-                    }
-                  </h4>
-                </div>
-                <div className="col-sm-2 frequency">
-                  <h4>
-                    {item.ptda.frequency.dose &&
-                      <span>
-                        {item.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
-                        {item.ptda.frequency.multiple > 1 ?
-                          <span>every {item.ptda.frequency.multiple} {item.ptda.frequency.unit}s</span> :
-                          <span>a {item.ptda.frequency.unit}</span>
-                        }
-                      </span>
-                    }
-                  </h4>
-                </div>
-                <div className="col-sm-4 side-effects">
-                  <h4>
-                    {item.ptda.side_effects.common.map(function (effect) {
-                      return (<p key={effect}>{effect}</p>);
-                    })}
-                    <br />
-                    <small>Rare</small><br />
-                    {item.ptda.side_effects.rare.map(function (effect) {
-                      return (<p key={effect}>{effect}</p>);
-                    })}
-                  </h4>
-                </div>
-                <div className="col-sm-2 risks">
-                  <h4>
-                    {item.ptda.risks.map(function (item) {
-                      if (item.risk == 2) {
-                        return (<p key={item.name} className="unsafe">Unsafe {risks[item.name]}</p>);
-                      }
-                      else if (item.risk == 0) {
-                        return (<p key={item.name} className="safe">Safe {risks[item.name]}</p>);
-                      }
-                      else {
-                        return (<p key={item.name} className="unsure">Might not be safe {risks[item.name]}</p>);
-                      }
-                    })}
-                  </h4>
-                </div>
-              </div>
-            </section>
-          )})
-        }
-      </section>
-    );
+  	this.setState({
+  		selectedMedication: selected
+  	});
   },
 
   filterRisks: function (risk) {
     var medications = this.props.medications;
-    var risksSelected = this.state.risksSelected;
+    var selectedRisks = this.state.selectedRisks;
 
-    risksSelected[risk] = !risksSelected[risk];
+    selectedRisks[risk] = !selectedRisks[risk];
 
     var disabledMedications = {};
-    if (Object.keys(risksSelected).length > 0) {
+    if (Object.keys(selectedRisks).length > 0) {
       medications.forEach(function(item) {
-        for (var risk in risksSelected) {
-          if (risksSelected[risk]) {
+        for (var risk in selectedRisks) {
+          if (selectedRisks[risk]) {
             for (var i in item.ptda.risks) {
               var drugRiskToCheck = item.ptda.risks[i];
               if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
@@ -1317,10 +1632,9 @@ var Ptda = React.createClass({
 
     this.setState({
       disabledMedications: disabledMedications,
-      risksSelected: risksSelected
+      selectedRisks: selectedRisks
     });
   }
-
 });
 
 module.exports = Ptda;

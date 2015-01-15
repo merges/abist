@@ -133,13 +133,62 @@ module.exports = Experiment;
 
 var React = require('react/addons');
 
+
+
+// Ptda medication square
+
+var PtdaMedicationSquare = React.createClass({displayName: "PtdaMedicationSquare",
+  propTypes: {
+  	content: React.PropTypes.object.isRequired,
+    disabled: React.PropTypes.bool,
+    handleClick: React.PropTypes.func,
+    medication: React.PropTypes.object.isRequired,
+    selected: React.PropTypes.bool
+  },
+
+  getDefaultProps: function() {
+  	return {
+  		selected: false
+  	}
+  },
+
+  render: function() {
+  	var medication = this.props.medication;
+
+  	var cx = React.addons.classSet;
+    var classes = cx({
+      'disabled': this.props.disabled,
+      'selected': this.props.selected
+    });
+
+    return (
+    	React.createElement("td", {className: classes, onClick: this.handleClick.bind(this, medication.name)}, 
+    		React.createElement("h4", null, 
+          medication.name_generic, React.createElement("br", null), 
+          medication.names_brand.map(function(name) {
+            return (React.createElement("div", {key: name}, "(", name, ")"));
+          })
+        ), 
+        this.props.content
+      )
+    );
+  },
+
+  handleClick: function(name) {
+  	this.props.handleClick && this.props.handleClick(name);
+  }
+});
+
+
+
 // PtDA cost card
 
 var PtdaCost = React.createClass({displayName: "PtdaCost",
   propTypes: {
     active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -151,38 +200,60 @@ var PtdaCost = React.createClass({displayName: "PtdaCost",
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
+      
+      var specialContent =
+        React.createElement("h5", null, 
+          medication.ptda.cost.min != medication.ptda.cost.max ?
+            React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
+            React.createElement("span", null, "$", medication.ptda.cost.max)
+          
+        );
 
-      content.push(
-        React.createElement("td", {key: item.name, className: disabled && 'disabled'}, 
-          React.createElement("h4", null, 
-            item.name, React.createElement("br", null), 
-            item.names_brand.map(function(name) {
-              return (React.createElement("div", {key: name}, "(", name, ")"));
-            })
-          ), 
-          React.createElement("h5", null, 
-            item.ptda.cost.min != item.ptda.cost.max ?
-              React.createElement("span", null, "$", item.ptda.cost.min, "-$", item.ptda.cost.max) :
-              React.createElement("span", null, "$", item.ptda.cost.max)
-            
-          )
-        )
-      );
+      squares.push(React.createElement(PtdaMedicationSquare, {
+						      	key: medication.name, 
+      							medication: medication, 
+      							content: specialContent, 
+      							disabled: disabled, 
+      							selected: selected, 
+      							handleClick: handleClick}))
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(React.createElement("tr", {key: counter}, content));
-        content = [];
+        markup.push(React.createElement("tr", {key: counter}, squares));
+        squares = [];
       }
     }
+    markup.unshift(
+    	React.createElement("tr", {key: 'cost-oral', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By mouth (pills, tablets, or capsules)"
+    		)
+    	)
+    );
+    markup.splice(2,0,
+    	React.createElement("tr", {key: 'cost-injection', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"Injection, taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
+    markup.splice(4,0,
+    	React.createElement("tr", {key: 'cost-infusion', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By vein (IV infusion), taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
 
     var cx = React.addons.classSet;
     var classes = cx({
@@ -209,15 +280,16 @@ var PtdaCost = React.createClass({displayName: "PtdaCost",
       )
     );
   }
-
 });
 
 // PtDA onset card
 
 var PtdaOnset = React.createClass({displayName: "PtdaOnset",
   propTypes: {
+  	active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -229,39 +301,61 @@ var PtdaOnset = React.createClass({displayName: "PtdaOnset",
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
 
-      content.push(
-        React.createElement("td", {key: item.name, className: disabled && 'disabled'}, 
-          React.createElement("h4", null, 
-            item.name, React.createElement("br", null), 
-            item.names_brand.map(function(name) {
-              return (React.createElement("div", {key: name}, "(", name, ")"));
-            })
-          ), 
-          React.createElement("h5", null, 
-            item.ptda.onset.max > 1 &&
-              React.createElement("span", null, 
-                item.ptda.onset.min, "-", item.ptda.onset.max, " ", item.ptda.onset.unit, "s"
-              )
-            
-          )
-        )
-      );
+      var specialContent =
+        React.createElement("h5", null, 
+          medication.ptda.onset.max > 1 &&
+            React.createElement("span", null, 
+              medication.ptda.onset.min, "-", medication.ptda.onset.max, " ", medication.ptda.onset.unit, "s"
+            )
+          
+        );
+
+      squares.push(React.createElement(PtdaMedicationSquare, {
+						      	key: medication.name, 
+      							medication: medication, 
+      							content: specialContent, 
+      							disabled: disabled, 
+      							selected: selected, 
+      							handleClick: handleClick}))
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(React.createElement("tr", {key: counter}, content));
-        content = [];
+        markup.push(React.createElement("tr", {key: counter}, squares));
+        squares = [];
       }
     }
+    markup.unshift(
+    	React.createElement("tr", {key: 'onset-oral', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By mouth (pills, tablets, or capsules)"
+    		)
+    	)
+    );
+    markup.splice(2,0,
+    	React.createElement("tr", {key: 'onset-injection', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"Injection, taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
+    markup.splice(4,0,
+    	React.createElement("tr", {key: 'onset-infusion', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By vein (IV infusion), taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
 
     return (
       React.createElement("section", {className: "ptda-card onset"}, 
@@ -282,15 +376,18 @@ var PtdaOnset = React.createClass({displayName: "PtdaOnset",
       )
     );
   }
-
 });
+
+
 
 // PtDA frequency card
 
 var PtdaFrequency = React.createClass({displayName: "PtdaFrequency",
   propTypes: {
+  	active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object
+    disabledMedications: React.PropTypes.object,
+    selectedMedication: React.PropTypes.string
   },
 
   getDefaultProps: function() {
@@ -302,39 +399,62 @@ var PtdaFrequency = React.createClass({displayName: "PtdaFrequency",
   render: function() {
     var disabledMedications = this.props.disabledMedications;
     var medications = this.props.medications;
+    var handleClick = this.props.handleClick;
 
     var markup = [];
-    var content = [];
+    var squares = [];
     var counter = 0;
 
     for (var i = 0; i < medications.length; i++) {
-      var item = medications[i];
-      var disabled = disabledMedications[item.name];
+      var medication = medications[i];
+      var disabled = disabledMedications[medication.name];
+      var selected = this.props.selectedMedication == medication.name;
 
-      content.push(
-        React.createElement("td", {key: item.name, className: disabled && 'disabled'}, 
-          React.createElement("h4", null, 
-            item.name, React.createElement("br", null), 
-            item.names_brand.map(function(name) {
-              return (React.createElement("div", {key: name}, "(", name, ")"));
-            })
-          ), 
-          React.createElement("h5", null, 
-            item.ptda.frequency.dose == 1 ? 'Once ' : 'Twice ', 
-            item.ptda.frequency.multiple > 1 ?
-              React.createElement("span", null, "every ", item.ptda.frequency.multiple, " ", item.ptda.frequency.unit, "s") :
-              React.createElement("span", null, "a ", item.ptda.frequency.unit)
-            
-          )
-        )
-      );
+      var specialContent =
+        React.createElement("h5", null, 
+          medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice ', 
+          React.createElement("br", null), 
+          medication.ptda.frequency.multiple > 1 ?
+            React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :
+            React.createElement("span", null, "a ", medication.ptda.frequency.unit)
+          
+        );
+
+      squares.push(React.createElement(PtdaMedicationSquare, {
+      							key: medication.name, 
+	    							medication: medication, 
+	    							content: specialContent, 
+	    							disabled: disabled, 
+	    							selected: selected, 
+	    							handleClick: handleClick}))
 
       counter++;
       if (counter % 4 == 0) {
-        markup.push(React.createElement("tr", {key: counter}, content));
-        content = [];
+        markup.push(React.createElement("tr", {key: counter}, squares));
+        squares = [];
       }
     }
+    markup.unshift(
+    	React.createElement("tr", {key: 'frequency-oral', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By mouth (pills, tablets, or capsules)"
+    		)
+    	)
+    );
+    markup.splice(2,0,
+    	React.createElement("tr", {key: 'frequency-injection', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"Injection, taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
+    markup.splice(4,0,
+    	React.createElement("tr", {key: 'frequency-infusion', className: "dosage-form"}, 
+    		React.createElement("td", {colSpan: "4"}, 
+    			"By vein (IV infusion), taken at home or at a clinic or hospital"
+    		)
+    	)
+    );
 
     return (
       React.createElement("section", {className: "ptda-card frequency"}, 
@@ -355,8 +475,307 @@ var PtdaFrequency = React.createClass({displayName: "PtdaFrequency",
       )
     );
   }
+});
+
+
+
+// PtDA medication mini-card
+
+var PtdaMini = React.createClass({displayName: "PtdaMini",
+	propTypes: {
+  	medication: React.PropTypes.object.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    disabled: React.PropTypes.bool
+  },
+
+	render: function () {
+		var medication = this.props.medication;
+    var risks = this.props.risks;
+    
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'mini': true
+    });
+    
+    return (
+      React.createElement("section", {className: classes}, 
+        React.createElement("div", {className: "row name"}, 
+          React.createElement("h2", {className: "col-sm-6"}, 
+            medication.name, React.createElement("br", null), 
+            React.createElement("small", null, medication.name_phonetic)
+          ), 
+        	medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
+            React.createElement("h3", {className: "col-sm-6"}, 
+              "(", medication.name_generic, ")", React.createElement("br", null), 
+              React.createElement("small", null, medication.name_generic_phonetic)
+            )
+          
+        ), 
+      	React.createElement("div", {className: "row"}, 
+          React.createElement("div", {className: "col-sm-3 cost"}, 
+          	React.createElement("h3", null, "Cost"), 
+            React.createElement("h4", null, 
+              medication.ptda.cost.min != medication.ptda.cost.max ?
+                React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
+                React.createElement("span", null, "$", medication.ptda.cost.max)
+              
+            )
+          ), 
+          React.createElement("div", {className: "col-sm-3 onset"}, 
+          	React.createElement("h3", null, "How Soon?"), 
+            React.createElement("h4", null, 
+              medication.ptda.onset.max > 1 &&
+                React.createElement("span", null, 
+                  medication.ptda.onset.min, "-", medication.ptda.onset.max, " ", medication.ptda.onset.unit, "s"
+                )
+              
+            )
+          ), 
+          React.createElement("div", {className: "col-sm-3 frequency"}, 
+          	React.createElement("h3", null, "How Often?"), 
+            React.createElement("h4", null, 
+              medication.ptda.frequency.dose &&
+                React.createElement("span", null, 
+                  medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice ', 
+                  medication.ptda.frequency.multiple > 1 ?
+                    React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :
+                    React.createElement("span", null, "a ", medication.ptda.frequency.unit)
+                  
+                )
+              
+            )
+          )
+        ), 
+        React.createElement("div", {className: "row"}, 
+          React.createElement("div", {className: "col-sm-6 side-effects"}, 
+          	React.createElement("h3", null, "Side Effects"), 
+            React.createElement("h4", null, 
+              medication.ptda.side_effects.common.map(function (effect) {
+                return (React.createElement("span", {key: effect}, effect));
+              }), 
+              medication.ptda.side_effects.rare.map(function (effect) {
+                return (React.createElement("span", {key: effect}, "(rare) ", effect));
+              })
+            )
+          ), 
+          React.createElement("div", {className: "col-sm-6 risks"}, 
+	          React.createElement("h3", null, "Other Considerations"), 
+            React.createElement("h4", null, 
+              medication.ptda.risks.map(function (medication) {
+                if (medication.risk == 2) {
+                  return (React.createElement("p", {key: medication.name, className: "unsafe"}, "Unsafe ", risks[medication.name]));
+                }
+                else if (medication.risk == 0) {
+                  return (React.createElement("p", {key: medication.name, className: "safe"}, "Safe ", risks[medication.name]));
+                }
+                else {
+                  return (React.createElement("p", {key: medication.name, className: "unsure"}, "Might not be safe ", risks[medication.name]));
+                }
+              })
+            )
+          )
+        )
+      )
+    );
+  }
+});
+
+
+
+// PtDA option
+
+var PtdaOption = React.createClass({displayName: "PtdaOption",
+	propTypes: {
+  	medication: React.PropTypes.object.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    showDescriptions: React.PropTypes.bool,
+    disabled: React.PropTypes.bool
+  },
+
+	render: function () {
+		var medication = this.props.medication;
+    var risks = this.props.risks;
+    var showDescriptions = this.props.showDescriptions;
+    var disabled = this.props.disabled;
+
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'option': true,
+      'disabled': this.props.disabled
+    });
+    
+    return (
+      React.createElement("section", {className: classes}, 
+        React.createElement("div", {className: "row name"}, 
+          React.createElement("h2", {className: "col-sm-2"}, 
+            medication.name, React.createElement("br", null), 
+            React.createElement("small", null, medication.name_phonetic)
+          ), 
+          medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
+            React.createElement("h3", {className: "col-sm-3"}, 
+              "(", medication.name_generic, ")", React.createElement("br", null), 
+              React.createElement("small", null, medication.name_generic_phonetic)
+            )
+          
+        ), 
+
+      	React.createElement("div", {className: "row header"}, 
+          React.createElement("div", {className: "col-sm-2"}, 
+            React.createElement("h4", null, "Cost")
+          ), 
+          React.createElement("div", {className: "col-sm-2"}, 
+            React.createElement("h4", null, "How soon does it work?")
+          ), 
+          React.createElement("div", {className: "col-sm-2"}, 
+            React.createElement("h4", null, "How often?")
+          ), 
+          React.createElement("div", {className: "col-sm-4"}, 
+            React.createElement("h4", null, "Side effects")
+          ), 
+          React.createElement("div", {className: "col-sm-2"}, 
+            React.createElement("h4", null, "Other considerations")
+          )
+        ), 
+
+        !disabled && showDescriptions &&
+        	React.createElement("div", {className: "row header-description"}, 
+	          React.createElement("div", {className: "col-sm-2"}, 
+	            React.createElement("h5", null, "Average cost per month. What you pay will depend on your insurance.")
+	          ), 
+	          React.createElement("div", {className: "col-sm-2"}, 
+	            React.createElement("h5", null, "These medicines don’t start working right away.")
+	          ), 
+	          React.createElement("div", {className: "col-sm-2"}, 
+	            React.createElement("h5", null, "Each medicine is taken on a different schedule.")
+	          ), 
+	          React.createElement("div", {className: "col-sm-4"}, 
+	            React.createElement("h5", null, "Some side effects go away after your body adjusts to the medicine.")
+	          ), 
+	          React.createElement("div", {className: "col-sm-2"}, 
+	            React.createElement("h5", null, "Certain people can’t use some medicines.")
+	          )
+	        ), 
+        
+
+        !disabled &&
+        	React.createElement("div", {className: "row"}, 
+	          React.createElement("div", {className: "col-sm-2 cost"}, 
+	            React.createElement("h4", null, 
+	              medication.ptda.cost.min != medication.ptda.cost.max ?
+	                React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
+	                React.createElement("span", null, "$", medication.ptda.cost.max)
+	              
+	            )
+	          ), 
+	          React.createElement("div", {className: "col-sm-2 onset"}, 
+	            React.createElement("h4", null, 
+	              medication.ptda.onset.max > 1 &&
+	                React.createElement("span", null, 
+	                  medication.ptda.onset.min, "-", medication.ptda.onset.max, " ", medication.ptda.onset.unit, "s"
+	                )
+	              
+	            )
+	          ), 
+	          React.createElement("div", {className: "col-sm-2 frequency"}, 
+	            React.createElement("h4", null, 
+	              medication.ptda.frequency.dose &&
+	                React.createElement("span", null, 
+	                  medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice ', 
+	                  medication.ptda.frequency.multiple > 1 ?
+	                    React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :
+	                    React.createElement("span", null, "a ", medication.ptda.frequency.unit)
+	                  
+	                )
+	              
+	            )
+	          ), 
+	          React.createElement("div", {className: "col-sm-4 side-effects"}, 
+	            React.createElement("h4", null, 
+	              medication.ptda.side_effects.common.map(function (effect) {
+	                return (React.createElement("p", {key: effect}, effect));
+	              }), 
+	              React.createElement("br", null), 
+	              React.createElement("small", null, "Rare"), React.createElement("br", null), 
+	              medication.ptda.side_effects.rare.map(function (effect) {
+	                return (React.createElement("p", {key: effect}, effect));
+	              })
+	            )
+	          ), 
+	          React.createElement("div", {className: "col-sm-2 risks"}, 
+	            React.createElement("h4", null, 
+	              medication.ptda.risks.map(function (medication) {
+	                if (medication.risk == 2) {
+	                  return (React.createElement("p", {key: medication.name, className: "unsafe"}, "Unsafe ", risks[medication.name]));
+	                }
+	                else if (medication.risk == 0) {
+	                  return (React.createElement("p", {key: medication.name, className: "safe"}, "Safe ", risks[medication.name]));
+	                }
+	                else {
+	                  return (React.createElement("p", {key: medication.name, className: "unsure"}, "Might not be safe ", risks[medication.name]));
+	                }
+	              })
+	            )
+	          )
+	        )
+        
+      )
+    );
+  }
+});
+
+
+
+// PtDA options list
+
+var PtdaOptions = React.createClass({displayName: "PtdaOptions",
+	propTypes: {
+  	active: React.PropTypes.bool,
+    medications: React.PropTypes.array.isRequired,
+    risks: React.PropTypes.object.isRequired,
+    disabledMedications: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      disabledMedications: {}
+    }
+  },
+
+	render: function () {
+		var disabledMedications = this.props.disabledMedications;
+		var medications = this.props.medications;
+    var risks = this.props.risks;
+    var showDescriptions = true;
+   	
+   	return (
+      React.createElement("section", {className: "options"}, 
+        medications.map(function(medication) {
+        	if (showDescriptions) {
+        		showDescriptions = false;
+        		return (
+        			React.createElement(PtdaOption, {
+        				key: medication.name, 
+        				medication: medication, 
+        				risks: risks, 
+						    showDescriptions: true, 
+						    disabled: disabledMedications[medication.name]})
+        		);
+        	}
+        	return (
+      			React.createElement(PtdaOption, {
+      				key: medication.name, 
+      				medication: medication, 
+      				risks: risks, 
+					    disabled: disabledMedications[medication.name]})
+      		);
+      	})
+      )
+    );
+  }
 
 });
+
+
 
 // PtDA
 
@@ -1212,17 +1631,27 @@ var Ptda = React.createClass({displayName: "Ptda",
   },
 
   getInitialState: function () {
+  	var medicationMap = {};
+    this.props.medications.forEach(function (medication, index) {
+    	medicationMap[medication.name] = index;
+    });
+
     return {
       activeCard: null,
       disabledMedications: {},
-      risksSelected: {}
+      medicationMap: medicationMap,
+      selectedRisks: {},
+      selectedMedication: null
     }
   },
 
   render: function () {
-    var disabledMedications = this.state.disabledMedications;
     var medications = this.props.medications;
     var risks = this.props.risks;
+
+    var disabledMedications = this.state.disabledMedications;
+    var selectedMedication = this.state.selectedMedication;
+    var medicationMap = this.state.medicationMap;
 
     return (
       React.createElement("div", null, 
@@ -1231,12 +1660,28 @@ var Ptda = React.createClass({displayName: "Ptda",
           this.renderRiskButtons(risks), 
 
           React.createElement("section", {className: "cards"}, 
-            React.createElement(PtdaCost, {active: true, medications: medications, disabledMedications: disabledMedications}), 
-            React.createElement(PtdaOnset, {medications: medications, disabledMedications: disabledMedications}), 
-            React.createElement(PtdaFrequency, {medications: medications, disabledMedications: disabledMedications})
+            React.createElement(PtdaCost, {
+            	active: true, 
+            	medications: medications, 
+            	disabledMedications: disabledMedications, 
+            	selectedMedication: selectedMedication, 
+            	handleClick: this.handleMedicationClick}), 
+            React.createElement(PtdaOnset, {
+            	medications: medications, 
+            	disabledMedications: disabledMedications, 
+            	selectedMedication: selectedMedication, 
+            	handleClick: this.handleMedicationClick}), 
+            React.createElement(PtdaFrequency, {
+            	medications: medications, 
+            	disabledMedications: disabledMedications, 
+            	selectedMedication: selectedMedication, 
+            	handleClick: this.handleMedicationClick})
           ), 
 
-          this.renderOptions(medications)
+          React.createElement(PtdaOptions, {
+          	medications: medications, 
+            disabledMedications: disabledMedications, 
+            risks: risks})
         )
       )
     );
@@ -1244,21 +1689,25 @@ var Ptda = React.createClass({displayName: "Ptda",
 
   renderRiskButtons: function (risks) {
     var filterRisks = this.filterRisks;
-    var risks = Object.keys(risks);
+    var risksForButtons = Object.keys(risks);
     var risksFriendly = this.props.risksFriendly;
-    var risksSelected = this.state.risksSelected;
+    var selectedRisks = this.state.selectedRisks;
+
+    var medications = this.props.medications;
+    var selectedMedication = this.state.selectedMedication;
+    var medicationMap = this.state.medicationMap;
 
     var cx = React.addons.classSet;
 
     return (
       React.createElement("section", {className: "row buttons"}, 
-        React.createElement("div", {className: "col-sm-12"}, 
+        React.createElement("div", {className: "col-sm-5"}, 
           React.createElement("h2", null, "Filter for people concerned about:"), 
 
-          risks.map(function (item) {
+          risksForButtons.map(function (item) {
             var classes = cx({
               'btn btn-default': true,
-              'active': risksSelected[item]
+              'active': selectedRisks[item]
             });
 
             return (
@@ -1267,173 +1716,39 @@ var Ptda = React.createClass({displayName: "Ptda",
               )
             );
           })
+        ), 
+        React.createElement("div", {className: "col-sm-7"}, 
+        	React.createElement("div", {className: "floating"}, 
+	        	selectedMedication && 
+	    				React.createElement(PtdaMini, {
+	      				medication: medications[medicationMap[selectedMedication]], 
+	      				risks: risks})
+	      		
+      		)
         )
       )
     );
   },
 
-  renderOptions: function (medications) {
-    var counter = 0;
-    var disabledMedications = this.state.disabledMedications;
-    var risks = this.props.risks;
+  handleMedicationClick: function (name) {
+  	var selected = name != this.state.selectedMedication ? name : null;
 
-    return (
-      React.createElement("section", {className: "options"}, 
-        medications.map(function(item) {
-          if (disabledMedications[item.name]) {
-            return (
-              React.createElement("section", {key: item.name, className: "option disabled"}, 
-                React.createElement("div", {className: "row name"}, 
-                  React.createElement("h2", {className: "col-sm-2"}, 
-                    item.name, React.createElement("br", null), 
-                    React.createElement("small", null, item.name_phonetic)
-                  ), 
-                  item.name.toLowerCase() != item.name_generic.toLowerCase() &&
-                    React.createElement("h3", {className: "col-sm-3"}, 
-                      "(", item.name_generic, ")", React.createElement("br", null), 
-                      React.createElement("small", null, item.name_generic_phonetic)
-                    )
-                  
-                )
-              )
-            );
-          }
-
-          var flag = false;
-          if (counter == 0) {
-            flag = true;
-          }
-          counter++;
-
-          return (
-            React.createElement("section", {key: item.name, className: "option"}, 
-              React.createElement("div", {className: "row name"}, 
-                React.createElement("h2", {className: "col-sm-2"}, 
-                  item.name, React.createElement("br", null), 
-                  React.createElement("small", null, item.name_phonetic)
-                ), 
-                item.name.toLowerCase() != item.name_generic.toLowerCase() &&
-                  React.createElement("h3", {className: "col-sm-3"}, 
-                    "(", item.name_generic, ")", React.createElement("br", null), 
-                    React.createElement("small", null, item.name_generic_phonetic)
-                  )
-                
-              ), 
-              React.createElement("div", {className: "row header"}, 
-                React.createElement("div", {className: "col-sm-2"}, 
-                  React.createElement("h4", null, "Cost")
-                ), 
-                React.createElement("div", {className: "col-sm-2"}, 
-                  React.createElement("h4", null, "How soon does it work?")
-                ), 
-                React.createElement("div", {className: "col-sm-2"}, 
-                  React.createElement("h4", null, "How often?")
-                ), 
-                React.createElement("div", {className: "col-sm-4"}, 
-                  React.createElement("h4", null, "Side effects")
-                ), 
-                React.createElement("div", {className: "col-sm-2"}, 
-                  React.createElement("h4", null, "Other considerations")
-                )
-              ), 
-
-              flag &&
-                React.createElement("div", {className: "row header-description"}, 
-                  React.createElement("div", {className: "col-sm-2"}, 
-                    React.createElement("h5", null, "Average cost per month. What you pay will depend on your insurance.")
-                  ), 
-                  React.createElement("div", {className: "col-sm-2"}, 
-                    React.createElement("h5", null, "These medicines don’t start working right away.")
-                  ), 
-                  React.createElement("div", {className: "col-sm-2"}, 
-                    React.createElement("h5", null, "Each medicine is taken on a different schedule.")
-                  ), 
-                  React.createElement("div", {className: "col-sm-4"}, 
-                    React.createElement("h5", null, "Some side effects go away after your body adjusts to the medicine.")
-                  ), 
-                  React.createElement("div", {className: "col-sm-2"}, 
-                    React.createElement("h5", null, "Certain people can’t use some medicines.")
-                  )
-                ), 
-              
-
-              React.createElement("div", {className: "row"}, 
-                React.createElement("div", {className: "col-sm-2 cost"}, 
-                  React.createElement("h4", null, 
-                    item.ptda.cost.min != item.ptda.cost.max ?
-                      React.createElement("span", null, "$", item.ptda.cost.min, "-$", item.ptda.cost.max) :
-                      React.createElement("span", null, "$", item.ptda.cost.max)
-                    
-                  )
-                ), 
-                React.createElement("div", {className: "col-sm-2 onset"}, 
-                  React.createElement("h4", null, 
-                    item.ptda.onset.max > 1 &&
-                      React.createElement("span", null, 
-                        item.ptda.onset.min, "-", item.ptda.onset.max, " ", item.ptda.onset.unit, "s"
-                      )
-                    
-                  )
-                ), 
-                React.createElement("div", {className: "col-sm-2 frequency"}, 
-                  React.createElement("h4", null, 
-                    item.ptda.frequency.dose &&
-                      React.createElement("span", null, 
-                        item.ptda.frequency.dose == 1 ? 'Once ' : 'Twice ', 
-                        item.ptda.frequency.multiple > 1 ?
-                          React.createElement("span", null, "every ", item.ptda.frequency.multiple, " ", item.ptda.frequency.unit, "s") :
-                          React.createElement("span", null, "a ", item.ptda.frequency.unit)
-                        
-                      )
-                    
-                  )
-                ), 
-                React.createElement("div", {className: "col-sm-4 side-effects"}, 
-                  React.createElement("h4", null, 
-                    item.ptda.side_effects.common.map(function (effect) {
-                      return (React.createElement("p", {key: effect}, effect));
-                    }), 
-                    React.createElement("br", null), 
-                    React.createElement("small", null, "Rare"), React.createElement("br", null), 
-                    item.ptda.side_effects.rare.map(function (effect) {
-                      return (React.createElement("p", {key: effect}, effect));
-                    })
-                  )
-                ), 
-                React.createElement("div", {className: "col-sm-2 risks"}, 
-                  React.createElement("h4", null, 
-                    item.ptda.risks.map(function (item) {
-                      if (item.risk == 2) {
-                        return (React.createElement("p", {key: item.name, className: "unsafe"}, "Unsafe ", risks[item.name]));
-                      }
-                      else if (item.risk == 0) {
-                        return (React.createElement("p", {key: item.name, className: "safe"}, "Safe ", risks[item.name]));
-                      }
-                      else {
-                        return (React.createElement("p", {key: item.name, className: "unsure"}, "Might not be safe ", risks[item.name]));
-                      }
-                    })
-                  )
-                )
-              )
-            )
-          )})
-        
-      )
-    );
+  	this.setState({
+  		selectedMedication: selected
+  	});
   },
 
   filterRisks: function (risk) {
     var medications = this.props.medications;
-    var risksSelected = this.state.risksSelected;
+    var selectedRisks = this.state.selectedRisks;
 
-    risksSelected[risk] = !risksSelected[risk];
+    selectedRisks[risk] = !selectedRisks[risk];
 
     var disabledMedications = {};
-    if (Object.keys(risksSelected).length > 0) {
+    if (Object.keys(selectedRisks).length > 0) {
       medications.forEach(function(item) {
-        for (var risk in risksSelected) {
-          if (risksSelected[risk]) {
+        for (var risk in selectedRisks) {
+          if (selectedRisks[risk]) {
             for (var i in item.ptda.risks) {
               var drugRiskToCheck = item.ptda.risks[i];
               if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
@@ -1448,10 +1763,9 @@ var Ptda = React.createClass({displayName: "Ptda",
 
     this.setState({
       disabledMedications: disabledMedications,
-      risksSelected: risksSelected
+      selectedRisks: selectedRisks
     });
   }
-
 });
 
 module.exports = Ptda;
