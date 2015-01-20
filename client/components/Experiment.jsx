@@ -3,10 +3,10 @@
 var React = require('react/addons');
 
 var Menu = React.createClass({
-  
+
   getDefaultProps: function() {
     return {
-      items: ["one", "two", "three"]
+      items: ['one', 'two', 'three']
     }
   },
 
@@ -19,7 +19,7 @@ var Menu = React.createClass({
   render: function() {
     var items = this.props.items;
     var itemSelected = this.state.itemSelected;
-    
+
     return(
       <select onChange={this.handleSelectChange}>
         {this.renderOptions(items, itemSelected)}
@@ -34,7 +34,7 @@ var Menu = React.createClass({
     list.map(function(item) {
       if (itemSelected && goog.string.caseInsensitiveEquals(item, itemSelected)) {
         options.push(
-          <option selected="selected" value={item} key={item}>
+          <option selected='selected' value={item} key={item}>
             {item}
           </option>
         );
@@ -54,14 +54,13 @@ var Menu = React.createClass({
   handleSelectChange: function(event) {
     console.log(event.target.value);
   }
-
 });
 
 var Experiment = React.createClass({
 
   getDefaultProps: function() {
     return {
-      items: ["apple", "orange", "banana"],
+      items: ['apple', 'orange', 'banana'],
       itemSelected: null
     }
   },
@@ -76,7 +75,7 @@ var Experiment = React.createClass({
   componentWillMount: function() {
     var processData = this.processData;
 
-    // $.getJSON("/itemsData", function(itemsDataJson) {
+    // $.getJSON('/itemsData', function(itemsDataJson) {
     //   processData(itemsDataJson);
     // });
   },
@@ -87,10 +86,11 @@ var Experiment = React.createClass({
 
     return (
       <div>
-        <div className="container">
-          <h1>abist</h1>
-          <h2>humble beginnings</h2>
-          <Menu items={items} itemSelected={itemSelected} />
+        <div className='container'>
+          <h1>Adam Baker Independent Studies Thesis</h1>
+          <a href='https://abist.tumblr.com/'>Log of progress</a>
+          <h2><a href='/ptda'>Ptda prototype</a></h2>
+          {/*<Menu items={items} itemSelected={itemSelected} />*/}
         </div>
       </div>
     );

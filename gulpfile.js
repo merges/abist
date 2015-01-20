@@ -41,8 +41,8 @@ gulp.task('server', function() {
 gulp.task('watch', function() {
   livereload.listen();
   gulp.watch('client/less/*.less', ['less']);
-  gulp.watch('client/components/*.jsx', ['browserify']);
-  gulp.watch('client/components/*.jsx', function() {
+  gulp.watch('client/components/**/*.jsx', ['browserify']);
+  gulp.watch('client/components/**/*.jsx', function() {
     // server.stop();
     // console.log('abist >>> restarting server');
     // server.run({

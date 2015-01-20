@@ -1,5 +1,13 @@
+// Colors
+
+@color-grey-xxxxxl: #f4f4f4;
+@color-grey-xxxxl: #e8e8e8;
+@color-grey-xxxl: #eee;
+@color-grey-xxl: #ddd;
 @color-grey-xl: #ccc;
 @color-grey-l: #aaa;
+@color-grey-m: #999;
+@color-grey-d: #666;
 @color-grey-xd: #333;
 
 @color-cost: #78b1db;
@@ -9,66 +17,51 @@
 @color-frequency: #8cb164;
 @color-frequency-l: #f0ffe0;
 @color-side-effects: #cd773b;
+@color-side-effects-l: #f5e8de;
 @color-risks: #cab22d;
+@color-risks-l: #f7f4dc;
 
 html {
 	-webkit-font-smoothing: antialiased;
 }
 
-.ptda {
-	padding-bottom: 9em;
-
+.header {
+	width: 100%;
+	position: fixed;
+	margin: 0 auto;
+	padding: 1em 0;
+	background: white;
+	box-shadow: 0 1px 1px rgba(0,0,0,.3);
+	z-index: 11;
 	h1 {
-		color: @color-grey-xl;
+		color: @color-grey-m;
+		font-size: 1.7em;
 		font-weight: lighter;
-		margin: 1em 0 .5em 0;
+		margin: 0;
+		padding-left: .5em;
 	}
 	.buttons {
-		border-bottom: 3px solid #eeb063;
-		padding-top: 1em;
-		padding-bottom: 1em;
+		text-align: center;
 
-		h2 {
-			margin: 0 0 .75em 0;
-			color: @color-grey-l;
-			font-size: 1.1em;
-			font-weight: 300;
+		.btn {
+			display: inline-block;
 		}
 		.btn ~ .btn {
-			margin-left: .5em;
+			margin-left: .25em;
 		}
 	}
+}
+
+.ptda {
+	padding: 5em 0 9em 0;
+
 	.cards {
 		position: relative;
-		width: 100%;
-		height: 740px;
 		padding: 0 2em;
-		white-space: nowrap;
-		overflow-x: scroll;
-		overflow-y: hidden;
 
 		.ptda-card {
-			display: inline-block;
 			vertical-align: text-top;
-			max-width: 600px;
-			// float: left;
-			// position: absolute;
-
-			// &:nth-child(2) {
-			// 	z-index: 10;
-			// 	left: 120px;
-			// }
-			// &:nth-child(3) {
-			// 	z-index: 9;
-			// 	left: 240px;
-			// }
-			// &:nth-child(4) {
-			// 	z-index: 8;
-			// 	left: 360px;
-			// }
-		}
-		.ptda-card ~ .ptda-card {
-			margin-left: 100px;
+			max-width: 720px;
 		}
 	}
 	.options {
@@ -152,95 +145,75 @@ html {
 	}
 }
 
-.floating {
-	width: 90%;
-	display: inline-block;
-	background: white;
-	z-index: 21;
-	padding: 0 1em;
-	position: absolute;
-	bottom: -60px;
-	// box-shadow: 0 4px 12px rgba(0,0,0,.15);
+.mini {
+	font-size: 1em;
 
-	.mini {
-		font-size: .8em;
+	.name {
+		color: white;
+		padding: .4em 0;
+		background: @color-grey-xd;
 
-		.name {
-			color: white;
-			padding: .4em 0;
-			background: @color-grey-xd;
-
-			h2,
-			h3 {
-				font-size: 1.3em;
-				line-height: 1.1em;
-				margin: 0;
-			}
-			h2 {
-				font-weight: bolder;
-			}
-			h3 {
-				font-weight: 400;
-			}
-			small {
-				color: @color-grey-l;
-				font-size: 1em;
-			}
-		}
+		h2,
 		h3 {
-			font-weight: 300;
-			font-size: 1em;
-			color: #444;
-			margin: .6em 0 .2em 0;
-		}
-		h4 {
-			font-size: 1em;
+			font-size: 1.3em;
+			line-height: 1.1em;
 			margin: 0;
 		}
-		.side-effects {
-			h4 {
-				span ~ span {
-					&:before {
-						content: ', ';
-					}
+		h2 {
+			font-weight: bolder;
+		}
+		h3 {
+			font-weight: 400;
+		}
+		small {
+			color: @color-grey-l;
+			font-size: 1em;
+		}
+	}
+	h3 {
+		font-weight: 300;
+		font-size: 1em;
+		color: #444;
+		margin: .6em 0 .2em 0;
+	}
+	h4 {
+		font-size: 1em;
+		margin: 0;
+	}
+	.side-effects {
+		h4 {
+			span ~ span {
+				&:before {
+					content: ', ';
 				}
 			}
 		}
-		.risks {
-			.safe {
-				color: #478061;
-			}
-			.unsure {
-				color: #999;
-			}
-			.unsafe {
-				color: #e7956c;
-			}
+	}
+	.risks {
+		.safe {
+			color: #478061;
 		}
-		p {
-			margin-bottom: .1em;
+		.unsure {
+			color: #999;
 		}
+		.unsafe {
+			color: #e7956c;
+		}
+	}
+	p {
+		margin-bottom: .1em;
 	}
 }
 
 .ptda-card {
 	margin: 3em auto 3em auto;
 	border-radius: 24px;
-	width: 520px;
+	width: 720px;
 	background: white;
 	box-shadow: 0 4px 12px rgba(0,0,0,.15);
 	cursor: pointer;
+	user-select: none !important;
 
-	// &.active {
-	// 	z-index: 11;
-	// 	box-shadow: 0 4px 24px rgba(0,0,0,.35);
-
-	// 	table {
-	// 		h2 {
-	// 			text-align: center;
-	// 		}
-	// 	}
-	// }
 	table {
 		width: 100%;
 		table-layout: fixed;
@@ -254,7 +227,6 @@ html {
 			font-weight: lighter;
 			color: white;
 			text-align: center;
-			// text-align: right;
 		}
 		h3 {
 			margin: 1.2em .5em;
@@ -270,8 +242,8 @@ html {
 			font-weight: bolder;
 		}
 		td {
-			width: 130px;
-			height: 130px;
+			width: 180px;
+			height: 180px;
 			padding: .5em;
 			text-align: center;
 			vertical-align: top;
@@ -395,6 +367,92 @@ html {
 				&.dosage-form {
 					td {
 						color: @color-frequency;
+					}
+				}
+			}
+		}
+	}
+	&.risks {
+		h2 {
+			background: @color-risks;
+		}
+		table {
+			tr ~ tr {
+				border-top: 1px solid white;
+			}
+			td {
+				h5 {
+					font-size: 1.2em;
+
+					p {
+						margin: 0 0 .1em 0;
+					}
+					.unsure {
+						border-bottom: 1px dotted;
+
+						&:after {
+							content: '?';
+						}
+					}
+					.unsafe {
+						text-decoration: line-through;
+					}
+				}
+				&:nth-child(odd) {
+					color: white;
+					background: @color-risks;
+				}
+				&:nth-child(even) {
+					color: @color-risks;
+					background: @color-risks-l;
+				}
+			}
+			tr {
+				&.dosage-form {
+					td {
+						color: @color-risks;
+					}
+				}
+			}
+		}
+	}
+	&.side-effects {
+		h2 {
+			background: @color-side-effects;
+		}
+		table {
+			tr ~ tr {
+				border-top: 1px solid white;
+			}
+			td {
+				h5 {
+					font-size: 1em;
+					font-weight: 300;
+
+					ul {
+						list-style-type: none;
+						margin: 0;
+						padding: 0;
+
+						li {
+							margin: 0;
+							padding: 0;
+						}
+					}
+				}
+				&:nth-child(odd) {
+					color: white;
+					background: @color-side-effects;
+				}
+				&:nth-child(even) {
+					color: @color-side-effects;
+					background: @color-side-effects-l;
+				}
+			}
+			tr {
+				&.dosage-form {
+					td {
+						color: @color-side-effects;
 					}
 				}
 			}

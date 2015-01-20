@@ -1,44 +1,41 @@
 html {
   -webkit-font-smoothing: antialiased;
 }
-.ptda {
-  padding-bottom: 9em;
+.header {
+  width: 100%;
+  position: fixed;
+  margin: 0 auto;
+  padding: 1em 0;
+  background: white;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  z-index: 11;
 }
-.ptda h1 {
-  color: #cccccc;
+.header h1 {
+  color: #999999;
+  font-size: 1.7em;
   font-weight: lighter;
-  margin: 1em 0 .5em 0;
+  margin: 0;
+  padding-left: .5em;
 }
-.ptda .buttons {
-  border-bottom: 3px solid #eeb063;
-  padding-top: 1em;
-  padding-bottom: 1em;
+.header .buttons {
+  text-align: center;
 }
-.ptda .buttons h2 {
-  margin: 0 0 .75em 0;
-  color: #aaaaaa;
-  font-size: 1.1em;
-  font-weight: 300;
+.header .buttons .btn {
+  display: inline-block;
 }
-.ptda .buttons .btn ~ .btn {
-  margin-left: .5em;
+.header .buttons .btn ~ .btn {
+  margin-left: .25em;
+}
+.ptda {
+  padding: 5em 0 9em 0;
 }
 .ptda .cards {
   position: relative;
-  width: 100%;
-  height: 740px;
   padding: 0 2em;
-  white-space: nowrap;
-  overflow-x: scroll;
-  overflow-y: hidden;
 }
 .ptda .cards .ptda-card {
-  display: inline-block;
   vertical-align: text-top;
-  max-width: 600px;
-}
-.ptda .cards .ptda-card ~ .ptda-card {
-  margin-left: 100px;
+  max-width: 720px;
 }
 .ptda .options .header h4 {
   font-size: 1em;
@@ -104,71 +101,63 @@ html {
 .ptda .options .option .risks .unsafe {
   color: #e7956c;
 }
-.floating {
-  width: 90%;
-  display: inline-block;
-  background: white;
-  z-index: 21;
-  padding: 0 1em;
-  position: absolute;
-  bottom: -60px;
+.mini {
+  font-size: 1em;
 }
-.floating .mini {
-  font-size: .8em;
-}
-.floating .mini .name {
+.mini .name {
   color: white;
   padding: .4em 0;
   background: #333333;
 }
-.floating .mini .name h2,
-.floating .mini .name h3 {
+.mini .name h2,
+.mini .name h3 {
   font-size: 1.3em;
   line-height: 1.1em;
   margin: 0;
 }
-.floating .mini .name h2 {
+.mini .name h2 {
   font-weight: bolder;
 }
-.floating .mini .name h3 {
+.mini .name h3 {
   font-weight: 400;
 }
-.floating .mini .name small {
+.mini .name small {
   color: #aaaaaa;
   font-size: 1em;
 }
-.floating .mini h3 {
+.mini h3 {
   font-weight: 300;
   font-size: 1em;
   color: #444;
   margin: .6em 0 .2em 0;
 }
-.floating .mini h4 {
+.mini h4 {
   font-size: 1em;
   margin: 0;
 }
-.floating .mini .side-effects h4 span ~ span:before {
+.mini .side-effects h4 span ~ span:before {
   content: ', ';
 }
-.floating .mini .risks .safe {
+.mini .risks .safe {
   color: #478061;
 }
-.floating .mini .risks .unsure {
+.mini .risks .unsure {
   color: #999;
 }
-.floating .mini .risks .unsafe {
+.mini .risks .unsafe {
   color: #e7956c;
 }
-.floating .mini p {
+.mini p {
   margin-bottom: .1em;
 }
 .ptda-card {
   margin: 3em auto 3em auto;
   border-radius: 24px;
-  width: 520px;
+  width: 720px;
   background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  user-select: none !important;
 }
 .ptda-card table {
   width: 100%;
@@ -197,8 +186,8 @@ html {
   font-weight: bolder;
 }
 .ptda-card table td {
-  width: 130px;
-  height: 130px;
+  width: 180px;
+  height: 180px;
   padding: .5em;
   text-align: center;
   vertical-align: top;
@@ -284,4 +273,66 @@ html {
 }
 .ptda-card.frequency table tr.dosage-form td {
   color: #8cb164;
+}
+.ptda-card.risks h2 {
+  background: #cab22d;
+}
+.ptda-card.risks table tr ~ tr {
+  border-top: 1px solid white;
+}
+.ptda-card.risks table td h5 {
+  font-size: 1.2em;
+}
+.ptda-card.risks table td h5 p {
+  margin: 0 0 .1em 0;
+}
+.ptda-card.risks table td h5 .unsure {
+  border-bottom: 1px dotted;
+}
+.ptda-card.risks table td h5 .unsure:after {
+  content: '?';
+}
+.ptda-card.risks table td h5 .unsafe {
+  text-decoration: line-through;
+}
+.ptda-card.risks table td:nth-child(odd) {
+  color: white;
+  background: #cab22d;
+}
+.ptda-card.risks table td:nth-child(even) {
+  color: #cab22d;
+  background: #f7f4dc;
+}
+.ptda-card.risks table tr.dosage-form td {
+  color: #cab22d;
+}
+.ptda-card.side-effects h2 {
+  background: #cd773b;
+}
+.ptda-card.side-effects table tr ~ tr {
+  border-top: 1px solid white;
+}
+.ptda-card.side-effects table td h5 {
+  font-size: 1em;
+  font-weight: 300;
+}
+.ptda-card.side-effects table td h5 ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.ptda-card.side-effects table td h5 ul li {
+  margin: 0;
+  padding: 0;
+}
+.ptda-card.side-effects table td:nth-child(odd) {
+  color: white;
+  background: #cd773b;
+}
+.ptda-card.side-effects table td:nth-child(even) {
+  color: #cd773b;
+  background: #f5e8de;
+}
+.ptda-card.side-effects table tr.dosage-form td {
+  color: #cd773b;
 }
