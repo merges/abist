@@ -19,7 +19,7 @@ gulp.task('browserify', function () {
     b.transform(reactify);
     return b.bundle();
   });
-  return gulp.src(['client/js/*.js'])
+  return gulp.src(['bower_components/jquery/dist/jquery.js', 'client/js/*.js'])
     .pipe(browserified)
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('js'));

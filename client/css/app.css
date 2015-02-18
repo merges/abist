@@ -336,3 +336,7 @@ html {
 .ptda-card.side-effects table tr.dosage-form td {
   color: #cd773b;
 }
+.adverse-events .header {
+  position: relative;
+  margin-bottom: 2em;
+}
