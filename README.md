@@ -17,4 +17,8 @@ This is a Node.js-based application, written in JavaScript with front-end in JSX
 
 The app is deployed to Heroku at [https://abist.herokuapp.com](https://abist.herokuapp.com).
 
+## Helpful documentation
+
+[https://blog.engineyard.com/2015/client-side-javascript-project-gulp-and-browserify](https://blog.engineyard.com/2015/client-side-javascript-project-gulp-and-browserify)
+
 
