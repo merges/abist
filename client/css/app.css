@@ -6593,6 +6593,9 @@ html a {
   margin-left: -15px;
   margin-right: -15px;
 }
+.adverse-events > section:first-of-type > div {
+  padding-top: 6em;
+}
 .adverse-events > section > div {
   position: relative;
   min-height: 1px;
@@ -6611,5 +6614,5 @@ html a {
   }
 }
 .adverse-events .chart {
-  width: 70%;
+  width: 85%;
 }

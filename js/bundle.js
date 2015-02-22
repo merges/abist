@@ -1038,25 +1038,25 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
     });
   },
 
+  componentDidUpdate: function() {
+    this.renderCharts();
+  },
+
   render: function () {
     var medicationNames = this.state.medicationNames;
-    var medicationCharts = this.state.medicationCharts;
-    var medicationData = this.state.medicationData;
+    var medicationTotals = this.state.medicationTotals;
 
     return (
       React.createElement("div", {className: "adverse-events"}, 
         React.createElement("div", {className: "header"}, 
           React.createElement("h1", null, "Adverse events prototype")
         ), 
-        React.createElement("section", null, 
-          React.createElement("div", null, React.createElement("a", {onClick: this.renderCharts}, "Render"))
-        ), 
 
         Object.keys(medicationNames).map(function(name, i) {
           return (
             React.createElement("section", null, 
               React.createElement("div", null, 
-                React.createElement("h3", null, i, " ", React.createElement("strong", null, name)), 
+                React.createElement("h3", null, i+1, " ", React.createElement("strong", null, name), " ", React.createElement("span", {className: "light"}, medicationTotals[name])), 
                 React.createElement("div", {ref: 'chart-' + name})
               )
             )
@@ -1126,9 +1126,18 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
   },
 
   renderChart: function(name) {
-    var chartHeight = 340;
+    var medicationCharts = this.state.medicationCharts;
+    var medicationData = this.state.medicationData;
+    var medicationTotals = this.state.medicationTotals;
 
-    if (this.refs['chart-' + name]) {
+    var readyToRender = !medicationCharts[name] &&
+                        medicationData[name] &&
+                        medicationTotals[name] &&
+                        this.refs['chart-' + name];
+
+    var chartHeight = 460;
+
+    if (readyToRender) {
       var chartData = this.getChartData(name);
       var chartElement = this.refs['chart-' + name].getDOMNode();
 
@@ -1208,7 +1217,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
     else {
       var endpoint = 'https://api.fda.gov/drug/event.json?';
       var apiKey = 'OoYA4HLz6ksoiZegL3xxJbHPjScSqOpeUpp1Gajg';
-      var threshold = 15;
+      var reactionLimit = 25;
 
       var queryPrefix = endpoint
                       + 'api_key='
@@ -1228,7 +1237,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
 
       var countReactionsSuffix = '&count=patient.reaction.reactionmeddrapt.exact'
                                + '&limit='
-                               + threshold;
+                               + reactionLimit;
 
       var totalSuffix = '&limit=1';
 

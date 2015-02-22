@@ -582,12 +582,17 @@ html {
 	> section {
 		.make-row();
 
+		&:first-of-type {
+			> div {
+				padding-top: 6em;
+			}
+		}
 		> div {
 			.make-sm-column(8);
 			.make-sm-column-offset(2);
 		}
 	}
 	.chart {
-		width: 70%;
+		width: 85%;
 	}
 }
