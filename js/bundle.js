@@ -38,7 +38,9 @@ var medications = [
     "generic_available": true,
     "forms": [
       {
-        "name": "tablet",
+        "name": "tablet"
+      },
+      {
         "name": "injection"
       }
     ],
@@ -315,7 +317,7 @@ var medications = [
       "DMARD",
       "TNF inhibitor"
     ],
-    "generic_available": true,
+    "generic_available": false,
     "names_brand": [
       "Simponi"
     ],
@@ -388,6 +390,11 @@ var medications = [
     "names_brand": [
       "Humira"
     ],
+    "forms": [
+      {
+        "name": "injection"
+      }
+    ],
     "ptda": {
       "cost": {
         "min": 1830,
@@ -450,6 +457,11 @@ var medications = [
     "generic_available": false,
     "names_brand": [
       "Cimzia"
+    ],
+    "forms": [
+      {
+        "name": "injection"
+      }
     ],
     "ptda": {
       "cost": {
@@ -1011,6 +1023,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
 
     return {
       medicationNames: medicationNames,
+      medicationCharts: {},
       medicationData: {},
       medicationTotals: {}
     }
@@ -1026,104 +1039,230 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
   },
 
   render: function () {
+    var medicationNames = this.state.medicationNames;
+    var medicationCharts = this.state.medicationCharts;
+    var medicationData = this.state.medicationData;
+
     return (
       React.createElement("div", {className: "adverse-events"}, 
-        React.createElement("section", {className: "header"}, 
+        React.createElement("div", {className: "header"}, 
           React.createElement("h1", null, "Adverse events prototype")
         ), 
-        this.renderQueryResults()
-      )
-    );
-  },
+        React.createElement("section", null, 
+          React.createElement("div", null, React.createElement("a", {onClick: this.renderCharts}, "Render"))
+        ), 
 
-  renderQueryResults: function() {
-    var medicationNames = this.state.medicationNames;
-    var medicationData = this.state.medicationData;
-    var medicationTotals = this.state.medicationTotals;
-
-    return (
-      React.createElement("div", null, 
         Object.keys(medicationNames).map(function(name, i) {
-          if (medicationData[name]) {
-            var data = medicationData[name];
-            return (
-              React.createElement("section", null, 
+          return (
+            React.createElement("section", null, 
+              React.createElement("div", null, 
                 React.createElement("h3", null, i, " ", React.createElement("strong", null, name)), 
-                React.createElement("ul", null, 
-                  Object.keys(data).map(function(i) {
-                    var reaction = data[i];
-                    console.log(reaction);
-                    return (
-                      React.createElement("li", null, 
-                        reaction.term, " ", React.createElement("strong", null, reaction.count / medicationTotals[name])
-                      )
-                    );
-                  })
-                )
+                React.createElement("div", {ref: 'chart-' + name})
               )
-            );
-          }
+            )
+          );
         })
       )
     );
   },
 
-  sendQuery: function(name, medicationList) {
-    var endpoint = 'https://api.fda.gov/drug/event.json?';
-    var apiKey = 'OoYA4HLz6ksoiZegL3xxJbHPjScSqOpeUpp1Gajg';
-    var threshold = 3;
+  renderCharts: function() {
+    var medicationNames = this.state.medicationNames;
+    var renderChart = this.renderChart;
+    Object.keys(medicationNames).forEach(function(name) {
+      renderChart(name);
+    });
+  },
 
-    var queryPrefix = endpoint
-                    + 'api_key='
-                    + apiKey
-                    + '&search='
-                    + 'patient.drug.medicinalproduct:'
-                    + '(';
-
-    // Construct drug name query.
-    for (var i = 0; i < medicationList.length; i++) {
-      var drugName = medicationList[i].replace(/\s/g, "+");
-      // Split names on slashes, which are actually two medication names.
-      drugName = drugName.replace(/\//g, '"+AND+"');
-      queryPrefix = queryPrefix + '("' + drugName + '")+';
-    }
-    queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
-
-    var countReactionsSuffix = '&count=patient.reaction.reactionmeddrapt.exact'
-                             + '&limit='
-                             + threshold;
-
-    var totalSuffix = '&limit=1';
-
-    var queryForReactions = queryPrefix + countReactionsSuffix;
-    var queryForTotal = queryPrefix + totalSuffix;
-
+  renderQueryResults: function(name) {
     var medicationData = this.state.medicationData;
     var medicationTotals = this.state.medicationTotals;
-    var instance = this;
 
-    $.getJSON(queryForReactions)
-    .then(function(data) {
-      medicationData[name] = data.results;
-      instance.setState({
-        medicationData: medicationData
-      });
-    })
-    .fail(function() {
-      console.log('FAILED');
+    if (medicationData[name]) {
+      var data = medicationData[name];
+      return (
+        React.createElement("ul", null, 
+          Object.keys(data).map(function(i) {
+            var reaction = data[i];
+            console.log(reaction);
+            return (
+              React.createElement("li", null, 
+                reaction.term, " ", React.createElement("strong", null, reaction.count / medicationTotals[name])
+              )
+            );
+          })
+        )
+      );
+    }
+  },
+
+  getChartData: function(name) {
+    // c3 requires data and labels separately, in this form:
+    //    labels = [label0, label1, label2, ...]
+    //    data = [
+    //      ["Drug rate", value0, value1, ...],
+    //      ["Placebo rate", placebo_value0, placebo_value1, ...],
+    //    ]
+
+    var data = this.state.medicationData[name];
+    var total = this.state.medicationTotals[name];
+
+    var adverseLabels = [];
+    var adverseValues = [];
+
+    adverseValues.push(name + " reports");
+
+    data.forEach(function(item) {
+      adverseLabels.push(item.term.toLowerCase());
+      adverseValues.push(item.count / total);
     });
 
-    $.getJSON(queryForTotal)
-    .then(function(data) {
-      medicationTotals[name] = data.meta.results.total;
-      instance.setState({
+    return ({
+      data: [adverseValues],
+      labels: adverseLabels,
+      total: total,
+      source: null
+    });
+  },
+
+  renderChart: function(name) {
+    var chartHeight = 340;
+
+    if (this.refs['chart-' + name]) {
+      var chartData = this.getChartData(name);
+      var chartElement = this.refs['chart-' + name].getDOMNode();
+
+      var chart = c3.generate({
+          bindto: chartElement,
+          data: {
+            type: 'bar',
+            columns: chartData.data
+          },
+          padding: {
+            left: 180
+          },
+          axis: {
+            rotated: true,
+            x: {
+              type: 'categorized',
+              categories: chartData.labels
+            },
+            y: {
+              min: 0,
+              max: .9,
+              padding: {
+                top: 0,
+                bottom: 0
+              },
+              tick: {
+                format: d3.format('%')
+              }
+            }
+          },
+          color: {
+            pattern: ['#7655bd', '#bababa']
+          },
+          bar: {
+            width: {
+              ratio: .5
+            }
+          },
+          labels: true,
+          size: {
+            height: chartHeight
+          },
+          legend: {
+            show: false
+          },
+          zoom: {
+            enabled: false
+          }
+        });
+
+      var medicationCharts = this.state.medicationCharts;
+      medicationCharts[name] = chart;
+      this.setState({
+        medicationCharts: medicationCharts
+      });
+    }
+  },
+
+  sendQuery: function(name, medicationList, offline) {
+    if (offline) {
+      console.log('offline query for', name);
+
+      // Offline / mock data
+      var total = {"meta":{"disclaimer":"openFDA is a beta research project and not for clinical use. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated.","license":"http://open.fda.gov/license","last_updated":"2015-01-21","results":{"skip":0,"limit":1,"total":113679}}};
+      var data = {"meta":{"disclaimer":"openFDA is a beta research project and not for clinical use. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated.","license":"http://open.fda.gov/license","last_updated":"2015-01-21"},"results":[{"term":"INJECTION SITE PAIN","count":8618},{"term":"ARTHRALGIA","count":6156},{"term":"DRUG INEFFECTIVE","count":5732},{"term":"RHEUMATOID ARTHRITIS","count":4923},{"term":"PYREXIA","count":4498},{"term":"NAUSEA","count":4335},{"term":"HEADACHE","count":4228},{"term":"INJECTION SITE ERYTHEMA","count":4208},{"term":"PAIN","count":4203},{"term":"FATIGUE","count":4082},{"term":"PNEUMONIA","count":3552},{"term":"PAIN IN EXTREMITY","count":3518},{"term":"DYSPNOEA","count":3153},{"term":"DIARRHOEA","count":2459},{"term":"VOMITING","count":2356}]};
+
+      var medicationData = this.state.medicationData;
+      var medicationTotals = this.state.medicationTotals;
+      medicationData[name] = data.results;
+      medicationTotals[name] = total.meta.results.total;
+
+      this.setState({
+        medicationData: medicationData,
         medicationTotals: medicationTotals
       });
-    })
-    .fail(function() {
-      console.log('FAILED');
-    });
+    }
+    else {
+      var endpoint = 'https://api.fda.gov/drug/event.json?';
+      var apiKey = 'OoYA4HLz6ksoiZegL3xxJbHPjScSqOpeUpp1Gajg';
+      var threshold = 15;
+
+      var queryPrefix = endpoint
+                      + 'api_key='
+                      + apiKey
+                      + '&search='
+                      + 'patient.drug.medicinalproduct:'
+                      + '(';
+
+      // Construct drug name query.
+      for (var i = 0; i < medicationList.length; i++) {
+        var drugName = medicationList[i].replace(/\s/g, "+");
+        // Split names on slashes, which are actually two medication names.
+        drugName = drugName.replace(/\//g, '"+AND+"');
+        queryPrefix = queryPrefix + '("' + drugName + '")+';
+      }
+      queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
+
+      var countReactionsSuffix = '&count=patient.reaction.reactionmeddrapt.exact'
+                               + '&limit='
+                               + threshold;
+
+      var totalSuffix = '&limit=1';
+
+      var queryForReactions = queryPrefix + countReactionsSuffix;
+      var queryForTotal = queryPrefix + totalSuffix;
+
+      var medicationData = this.state.medicationData;
+      var medicationTotals = this.state.medicationTotals;
+      var instance = this;
+
+      $.getJSON(queryForReactions)
+      .then(function(data) {
+        medicationData[name] = data.results;
+        instance.setState({
+          medicationData: medicationData
+        });
+      })
+      .fail(function() {
+        console.log('FAILED');
+      });
+
+      $.getJSON(queryForTotal)
+      .then(function(data) {
+        medicationTotals[name] = data.meta.results.total;
+        instance.setState({
+          medicationTotals: medicationTotals
+        });
+      })
+      .fail(function() {
+        console.log('FAILED');
+      });
+    }
   }
+
 });
 
 module.exports = AdverseEvents;
@@ -1142,6 +1281,8 @@ var PtdaMini = require('./PtdaMini');
 var PtdaOnset = require('./PtdaOnset');
 var PtdaSideEffects = require('./PtdaSideEffects');
 
+var DropdownButton = require('react-bootstrap').DropdownButton;
+var MenuItem = require('react-bootstrap').MenuItem;
 var Modal = require('react-bootstrap').Modal;
 
 var medications = require('../Data.jsx');
@@ -1185,7 +1326,7 @@ var PtdaOption = React.createClass({displayName: "PtdaOption",
           
         ), 
 
-      	React.createElement("div", {className: "row header"}, 
+      	React.createElement("div", {className: "row option-header"}, 
           React.createElement("div", {className: "col-sm-2"}, 
             React.createElement("h4", null, "Cost")
           ), 
@@ -1349,6 +1490,56 @@ var Ptda = React.createClass({displayName: "Ptda",
   getDefaultProps: function () {
     return {
       medications: medications,
+      preferences: {
+        'alcohol': {
+          'key': 'key',
+          'name': 'Alcohol',
+          'type': 'boolean',
+          'description': 'if you drink alcohol'
+        },
+        'cost': {
+          'key': 'cost',
+          'name': 'Cost',
+          'type': 'number',
+          'description': 'Average cost per month'
+        },
+        'class': {
+          'key': 'class',
+          'name': 'Drug class',
+          'type': 'list',
+          'description': 'Drug classes'
+        },
+        'forms': {
+          'key': 'forms',
+          'name': 'Dosage form',
+          'type': 'list',
+          'description': 'Dosage form'
+        },
+        'generic_available': {
+          'key': 'generic_available',
+          'name': 'Generic',
+          'type': 'boolean',
+          'description': 'Generic available'
+        },
+        'liver_disease': {
+          'key': 'liver_disease',
+          'name': 'Liver disease',
+          'type': 'boolean',
+          'description': 'if you have liver disease'
+        },
+        'pregnancy': {
+          'key': 'pregnancy',
+          'name': 'Pregnancy',
+          'type': 'boolean',
+          'description': 'if you’re pregnant or considering it'
+        },
+        'tb': {
+          'key': 'tb',
+          'name': 'Tuberculosis',
+          'type': 'boolean',
+          'description': 'if you have or might be exposed to tuberculosis'
+        }
+      },
       risks: {
         "tb": "if you have or might be exposed to tuberculosis",
         "pregnancy": "if you’re pregnant or considering it",
@@ -1370,10 +1561,45 @@ var Ptda = React.createClass({displayName: "Ptda",
     	medicationMap[medication.name] = index;
     });
 
+    var getDosageForms = function(medications) {
+      var dosageForms = {};
+      medications.map(function(medication) {
+        if (medication.forms) {
+          medication.forms.forEach(function(form) {
+            dosageForms[form.name] = false;
+          });
+        }
+      });
+      return dosageForms;
+    };
+
+    var getClasses = function(medications) {
+      var classes = {};
+      medications.map(function(medication) {
+        if (medication.class) {
+          medication.class.forEach(function(name) {
+            classes[name] = false;
+          });
+        }
+      });
+      return classes;
+    };
+
     return {
       activeCard: null,
       disabledMedications: {},
       medicationMap: medicationMap,
+      preferences: this.props.preferences,
+      preferencesSelected: {
+        alcohol: false,
+        class: getClasses(this.props.medications),
+        cost: null,
+        forms: getDosageForms(this.props.medications),
+        generic_available: false,
+        liver_disease: false,
+        pregnancy: false,
+        tb: false
+      },
       selectedRisks: {},
       selectedMedication: null
     }
@@ -1381,6 +1607,7 @@ var Ptda = React.createClass({displayName: "Ptda",
 
   render: function () {
     var medications = this.props.medications;
+    var preferences = this.props.preferences;
     var risks = this.props.risks;
     var risksFriendly = this.props.risksFriendly;
 
@@ -1390,64 +1617,78 @@ var Ptda = React.createClass({displayName: "Ptda",
 
     return (
       React.createElement("div", null, 
-        React.createElement("section", {className: "header"}, 
-          React.createElement("div", {className: "row"}, 
-            React.createElement("div", {className: "col-sm-3"}, 
-              React.createElement("h1", null, "PtDA tailoring demo")
-            ), 
-            React.createElement("div", {className: "col-sm-6"}, 
-              this.renderRiskButtons(risks)
+        React.createElement("div", {className: "ptda"}, 
+          React.createElement("div", {className: "header"}, 
+            React.createElement("div", {className: "row"}, 
+              React.createElement("div", {className: "col-sm-2 hidden-xs"}, 
+                React.createElement("h1", null, "PtDA demo")
+              ), 
+              React.createElement("div", {className: "col-sm-10"}, 
+                this.renderPreferenceControls(preferences)
+              )
             )
-          )
-        ), 
-        React.createElement("div", {className: "container ptda"}, 
-          selectedMedication &&
-            React.createElement(Modal, {
-              title: "Medication", 
-              backdrop: true, 
-              animation: false, 
-              onRequestHide: this.handleModalHide}, 
-                React.createElement("div", {className: "modal-body"}, 
-                  React.createElement(PtdaMini, {
-                    medication: medications[medicationMap[selectedMedication]], 
-                    risks: risks})
-                )
-            ), 
-          
+          ), 
+          React.createElement("section", null, 
+            selectedMedication &&
+              React.createElement(Modal, {
+                title: "Medication", 
+                backdrop: true, 
+                animation: false, 
+                onRequestHide: this.handleModalHide}, 
+                  React.createElement("div", {className: "modal-body"}, 
+                    React.createElement(PtdaMini, {
+                      medication: medications[medicationMap[selectedMedication]], 
+                      risks: risks})
+                  )
+              ), 
+            
 
-          React.createElement("section", {className: "cards"}, 
-            React.createElement(PtdaCost, {
-            	active: true, 
-            	medications: medications, 
-            	disabledMedications: disabledMedications, 
-            	selectedMedication: selectedMedication, 
-            	handleClick: this.handleMedicationClick}), 
-            React.createElement(PtdaOnset, {
-            	medications: medications, 
-            	disabledMedications: disabledMedications, 
-            	selectedMedication: selectedMedication, 
-            	handleClick: this.handleMedicationClick}), 
-            React.createElement(PtdaFrequency, {
-            	medications: medications, 
-            	disabledMedications: disabledMedications, 
-            	selectedMedication: selectedMedication, 
-            	handleClick: this.handleMedicationClick}), 
-            React.createElement(PtdaConsiderations, {
-              medications: medications, 
-              risks: risksFriendly, 
-              disabledMedications: disabledMedications, 
-              selectedMedication: selectedMedication, 
-              handleClick: this.handleMedicationClick}), 
-            React.createElement(PtdaSideEffects, {
-              medications: medications, 
-              disabledMedications: disabledMedications, 
-              selectedMedication: selectedMedication, 
-              handleClick: this.handleMedicationClick})
+            React.createElement("div", {className: "card-container"}, 
+              React.createElement("div", null, 
+                "An attempt to be vaguely issue-centric.", 
+                React.createElement("ul", null, 
+                  React.createElement("li", null, "**Pregnant or planning to become pregnant ", React.createElement("strong", null, "On/off toggle")), 
+                  React.createElement("li", null, "**Interference with life/dosing schedule/location ", React.createElement("strong", null, "Frequency/injection or not?")), 
+                  React.createElement("li", null, "**Cost ", React.createElement("strong", null, "Cost tolerance—add your copay and see")), 
+                  React.createElement("li", null, "**Alcohol-friendly (so to speak) ", React.createElement("strong", null, "Do you like to drink?")), 
+                  React.createElement("li", null, "??Avoid side effects ", React.createElement("strong", null, "Anything you absolutely don’t want to feel"))
+                )
+              ), 
+              React.createElement("div", {className: "cards"}, 
+                React.createElement(PtdaCost, {
+                	active: true, 
+                	medications: medications, 
+                	disabledMedications: disabledMedications, 
+                	selectedMedication: selectedMedication, 
+                	handleClick: this.handleMedicationClick}), 
+                React.createElement(PtdaOnset, {
+                	medications: medications, 
+                	disabledMedications: disabledMedications, 
+                	selectedMedication: selectedMedication, 
+                	handleClick: this.handleMedicationClick}), 
+                React.createElement(PtdaFrequency, {
+                	medications: medications, 
+                	disabledMedications: disabledMedications, 
+                	selectedMedication: selectedMedication, 
+                	handleClick: this.handleMedicationClick}), 
+                React.createElement(PtdaConsiderations, {
+                  medications: medications, 
+                  risks: risksFriendly, 
+                  disabledMedications: disabledMedications, 
+                  selectedMedication: selectedMedication, 
+                  handleClick: this.handleMedicationClick}), 
+                React.createElement(PtdaSideEffects, {
+                  medications: medications, 
+                  disabledMedications: disabledMedications, 
+                  selectedMedication: selectedMedication, 
+                  handleClick: this.handleMedicationClick})
+              )
+            )
           ), 
 
-          React.createElement("div", {className: "row"}, 
+          React.createElement("section", null, 
             React.createElement(PtdaOptions, {
-            	medications: medications, 
+              medications: medications, 
               disabledMedications: disabledMedications, 
               risks: risks})
           )
@@ -1456,33 +1697,186 @@ var Ptda = React.createClass({displayName: "Ptda",
     );
   },
 
-  renderRiskButtons: function (risks) {
-    var filterRisks = this.filterRisks;
-    var risksForButtons = Object.keys(risks);
-    var risksFriendly = this.props.risksFriendly;
-    var selectedRisks = this.state.selectedRisks;
-
-    var medications = this.props.medications;
-    var selectedMedication = this.state.selectedMedication;
-    var medicationMap = this.state.medicationMap;
+  renderPreferenceControls: function (preferences) {
+    var filterPreference = this.filterPreference;
+    var preferences = this.props.preferences;
+    var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
 
     return (
-      React.createElement("section", {className: "buttons"}, 
-        risksForButtons.map(function (item) {
-          var classes = cx({
-            'btn btn-default': true,
-            'active': selectedRisks[item]
-          });
-          return (
-            React.createElement("a", {className: classes, key: item, onClick: filterRisks.bind(null, item)}, 
-              risksFriendly[item]
-            )
-          );
+      React.createElement("div", {className: "preference-controls"}, 
+        Object.keys(preferences).map(function(key) {
+          var preference = preferences[key];
+
+          // Boolean preferences become a push button
+          if (preference.type == 'boolean') {
+            var classes = cx({
+              'btn btn-default': true,
+              'active': preferencesSelected[key]
+            });
+            return (
+              React.createElement("a", {className: classes, key: key, onClick: filterPreference.bind(null, key, false)}, 
+                preference.name
+              )
+            );
+          }
+          // List preferences become a list
+          else if (preference.type == 'list') {
+            // Get the possible options for this preference from this.state.preferencesSelected.
+            // There is a function in getInitialState() that iterates through the provided medications,
+            // collecting the "options" they provide for vis à vis this preference.
+            var options = Object.keys(preferencesSelected[key]);
+
+            return (
+              React.createElement(DropdownButton, {key: key, bsStyle: 'default', title: preference.name}, 
+                options.map(function(option, i) {
+                  return (
+                    React.createElement(MenuItem, {key: option, eventKey: i, onSelect: filterPreference.bind(null, key, option)}, option)
+                  );
+                })
+              )
+            );
+          }
+          else {
+            return (
+              React.createElement("a", {className: "btn"}, preference.name)
+            );
+          }
         })
       )
     );
+  },
+
+  filterPreference: function (preferenceKey, optionKey) {
+    var disabledMedications = {};
+    var medications = this.props.medications;
+    var preferencesSelected = this.state.preferencesSelected;
+
+    // Toggle the preference. If there's an 'option' provided, the preference is a list type,
+    // for example dosage form. So we use the 'preference' to access the dosage forms object,
+    // and use the preference to set true/false on the appropriate dosage form.
+    //
+    // forms: {
+    //   tablet: true,
+    //   injection: true
+    // }
+    //
+
+    // TOGGLE PREFERENCES
+    if (optionKey) {
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+    }
+    else {
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+    }
+
+    // FIND MATCHING DRUGS TO DISABLE
+    // TODO: HARMONIZATION FOR HANDLING THIS STUFF
+    medications.forEach(function(medication) {
+      for (var preference in preferencesSelected) {
+
+        if (preferencesSelected[preference]) {
+
+          // Simple boolean preference
+          if (typeof preferencesSelected[preference] === 'boolean') {
+
+            // Look for a matching key in the medication object
+            // Boolean? e.g. 'generic_available' -- inverse match
+            if (medication[preference] == false) {
+              disabledMedications[medication.name] = true;
+            }
+            // Not a key in medication object, so check ptda.risks
+            else {
+              for (var risk in medication.ptda.risks) {
+                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
+                  disabledMedications[medication.name] = true;
+                }
+              }
+            }
+          }
+          // List preference
+          else if (typeof preferencesSelected[preference] === 'object') {
+
+            // The user chose one or more options (to avoid), so the medication must match
+            // each option in order to get disabled.
+            var medicationMatchingOptions = {};
+            var selectedOptions = {};
+
+            // Check each option for a match
+            for (var option in preferencesSelected[preference]) {
+
+              // Option is selected
+              if (preferencesSelected[preference][option]) {
+                selectedOptions[option] = true;
+
+                // Look for a matching key in the medication object
+                if (medication[preference]) {
+
+                  // Is it an array or an object?
+                  if (typeof medication[preference] === 'object') {
+
+                    // Array
+                    if (Array.isArray(medication[preference])) {
+                      var list = medication[preference];
+
+                      // Check for our option in the list
+                      for (var item in list) {
+                        // Straight up list item?
+                        if (typeof list[item] === 'string') {
+                          if (list[item].toLowerCase() == option.toLowerCase()) {
+                            // disabledMedications[medication.name] = true;
+                            medicationMatchingOptions[option] = true;
+                          }
+                        }
+                        // Object? Look for a 'name' that we'll check against
+                        else if (list[item].hasOwnProperty('name')) {
+                          if (list[item].name.toLowerCase() == option.toLowerCase()) {
+                            // disabledMedications[medication.name] = true;
+                            medicationMatchingOptions[option] = true;
+                          }
+                        }
+                      }
+                    }
+                    // Object
+                    else {
+                      // Check for our option in the object
+                      if (medication[preference][optionKey]) {
+                        medicationMatchingOptions[option] = true;
+                        // disabledMedications[medication.name] = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            // Compare the drug's matching options to the selected options.
+            // If all selected options are also matching in the drug, disable the drug.
+            if (Object.keys(selectedOptions).length > 0) {
+              var disableMedication = false;
+
+              for (var selected in selectedOptions) {
+                if (medicationMatchingOptions[selected]) {
+                  disableMedication = true;
+                }
+              }
+              if (disableMedication) {
+                disabledMedications[medication.name] = true;
+              }
+              else {
+                disabledMedications[medication.name] = false;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    this.setState({
+      disabledMedications: disabledMedications,
+      preferencesSelected: preferencesSelected
+    });
   },
 
   handleModalHide: function () {
@@ -1496,36 +1890,8 @@ var Ptda = React.createClass({displayName: "Ptda",
   	this.setState({
   		selectedMedication: selected
   	});
-  },
-
-  filterRisks: function (risk) {
-    var medications = this.props.medications;
-    var selectedRisks = this.state.selectedRisks;
-
-    selectedRisks[risk] = !selectedRisks[risk];
-
-    var disabledMedications = {};
-    if (Object.keys(selectedRisks).length > 0) {
-      medications.forEach(function(item) {
-        for (var risk in selectedRisks) {
-          if (selectedRisks[risk]) {
-            for (var i in item.ptda.risks) {
-              var drugRiskToCheck = item.ptda.risks[i];
-              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
-                disabledMedications[item.name] = true;
-                return;
-              }
-            }
-          }
-        }
-      });
-    }
-
-    this.setState({
-      disabledMedications: disabledMedications,
-      selectedRisks: selectedRisks
-    });
   }
+
 });
 
 module.exports = Ptda;

@@ -10,6 +10,8 @@ var PtdaMini = require('./PtdaMini');
 var PtdaOnset = require('./PtdaOnset');
 var PtdaSideEffects = require('./PtdaSideEffects');
 
+var DropdownButton = require('react-bootstrap').DropdownButton;
+var MenuItem = require('react-bootstrap').MenuItem;
 var Modal = require('react-bootstrap').Modal;
 
 var medications = require('../Data.jsx');
@@ -53,7 +55,7 @@ var PtdaOption = React.createClass({
           }
         </div>
 
-      	<div className="row header">
+      	<div className="row option-header">
           <div className="col-sm-2">
             <h4>Cost</h4>
           </div>
@@ -217,6 +219,56 @@ var Ptda = React.createClass({
   getDefaultProps: function () {
     return {
       medications: medications,
+      preferences: {
+        'alcohol': {
+          'key': 'key',
+          'name': 'Alcohol',
+          'type': 'boolean',
+          'description': 'if you drink alcohol'
+        },
+        'cost': {
+          'key': 'cost',
+          'name': 'Cost',
+          'type': 'number',
+          'description': 'Average cost per month'
+        },
+        'class': {
+          'key': 'class',
+          'name': 'Drug class',
+          'type': 'list',
+          'description': 'Drug classes'
+        },
+        'forms': {
+          'key': 'forms',
+          'name': 'Dosage form',
+          'type': 'list',
+          'description': 'Dosage form'
+        },
+        'generic_available': {
+          'key': 'generic_available',
+          'name': 'Generic',
+          'type': 'boolean',
+          'description': 'Generic available'
+        },
+        'liver_disease': {
+          'key': 'liver_disease',
+          'name': 'Liver disease',
+          'type': 'boolean',
+          'description': 'if you have liver disease'
+        },
+        'pregnancy': {
+          'key': 'pregnancy',
+          'name': 'Pregnancy',
+          'type': 'boolean',
+          'description': 'if you’re pregnant or considering it'
+        },
+        'tb': {
+          'key': 'tb',
+          'name': 'Tuberculosis',
+          'type': 'boolean',
+          'description': 'if you have or might be exposed to tuberculosis'
+        }
+      },
       risks: {
         "tb": "if you have or might be exposed to tuberculosis",
         "pregnancy": "if you’re pregnant or considering it",
@@ -238,10 +290,45 @@ var Ptda = React.createClass({
     	medicationMap[medication.name] = index;
     });
 
+    var getDosageForms = function(medications) {
+      var dosageForms = {};
+      medications.map(function(medication) {
+        if (medication.forms) {
+          medication.forms.forEach(function(form) {
+            dosageForms[form.name] = false;
+          });
+        }
+      });
+      return dosageForms;
+    };
+
+    var getClasses = function(medications) {
+      var classes = {};
+      medications.map(function(medication) {
+        if (medication.class) {
+          medication.class.forEach(function(name) {
+            classes[name] = false;
+          });
+        }
+      });
+      return classes;
+    };
+
     return {
       activeCard: null,
       disabledMedications: {},
       medicationMap: medicationMap,
+      preferences: this.props.preferences,
+      preferencesSelected: {
+        alcohol: false,
+        class: getClasses(this.props.medications),
+        cost: null,
+        forms: getDosageForms(this.props.medications),
+        generic_available: false,
+        liver_disease: false,
+        pregnancy: false,
+        tb: false
+      },
       selectedRisks: {},
       selectedMedication: null
     }
@@ -249,6 +336,7 @@ var Ptda = React.createClass({
 
   render: function () {
     var medications = this.props.medications;
+    var preferences = this.props.preferences;
     var risks = this.props.risks;
     var risksFriendly = this.props.risksFriendly;
 
@@ -258,99 +346,266 @@ var Ptda = React.createClass({
 
     return (
       <div>
-        <section className="header">
-          <div className="row">
-            <div className="col-sm-3">
-              <h1>PtDA tailoring demo</h1>
-            </div>
-            <div className="col-sm-6">
-              {this.renderRiskButtons(risks)}
+        <div className="ptda">
+          <div className="header">
+            <div className="row">
+              <div className="col-sm-2 hidden-xs">
+                <h1>PtDA demo</h1>
+              </div>
+              <div className="col-sm-10">
+                {this.renderPreferenceControls(preferences)}
+              </div>
             </div>
           </div>
-        </section>
-        <div className="container ptda">
-          {selectedMedication &&
-            <Modal
-              title='Medication'
-              backdrop={true}
-              animation={false}
-              onRequestHide={this.handleModalHide}>
-                <div className="modal-body">
-                  <PtdaMini
-                    medication={medications[medicationMap[selectedMedication]]}
-                    risks={risks} />
-                </div>
-            </Modal>
-          }
+          <section>
+            {selectedMedication &&
+              <Modal
+                title='Medication'
+                backdrop={true}
+                animation={false}
+                onRequestHide={this.handleModalHide}>
+                  <div className="modal-body">
+                    <PtdaMini
+                      medication={medications[medicationMap[selectedMedication]]}
+                      risks={risks} />
+                  </div>
+              </Modal>
+            }
 
-          <section className="cards">
-            <PtdaCost
-            	active
-            	medications={medications}
-            	disabledMedications={disabledMedications}
-            	selectedMedication={selectedMedication}
-            	handleClick={this.handleMedicationClick} />
-            <PtdaOnset
-            	medications={medications}
-            	disabledMedications={disabledMedications}
-            	selectedMedication={selectedMedication}
-            	handleClick={this.handleMedicationClick} />
-            <PtdaFrequency
-            	medications={medications}
-            	disabledMedications={disabledMedications}
-            	selectedMedication={selectedMedication}
-            	handleClick={this.handleMedicationClick} />
-            <PtdaConsiderations
-              medications={medications}
-              risks={risksFriendly}
-              disabledMedications={disabledMedications}
-              selectedMedication={selectedMedication}
-              handleClick={this.handleMedicationClick} />
-            <PtdaSideEffects
-              medications={medications}
-              disabledMedications={disabledMedications}
-              selectedMedication={selectedMedication}
-              handleClick={this.handleMedicationClick} />
+            <div className="card-container">
+              <div>
+                An attempt to be vaguely issue-centric.
+                <ul>
+                  <li>**Pregnant or planning to become pregnant <strong>On/off toggle</strong></li>
+                  <li>**Interference with life/dosing schedule/location <strong>Frequency/injection or not?</strong></li>
+                  <li>**Cost <strong>Cost tolerance—add your copay and see</strong></li>
+                  <li>**Alcohol-friendly (so to speak) <strong>Do you like to drink?</strong></li>
+                  <li>??Avoid side effects <strong>Anything you absolutely don’t want to feel</strong></li>
+                </ul>
+              </div>
+              <div className="cards">
+                <PtdaCost
+                	active
+                	medications={medications}
+                	disabledMedications={disabledMedications}
+                	selectedMedication={selectedMedication}
+                	handleClick={this.handleMedicationClick} />
+                <PtdaOnset
+                	medications={medications}
+                	disabledMedications={disabledMedications}
+                	selectedMedication={selectedMedication}
+                	handleClick={this.handleMedicationClick} />
+                <PtdaFrequency
+                	medications={medications}
+                	disabledMedications={disabledMedications}
+                	selectedMedication={selectedMedication}
+                	handleClick={this.handleMedicationClick} />
+                <PtdaConsiderations
+                  medications={medications}
+                  risks={risksFriendly}
+                  disabledMedications={disabledMedications}
+                  selectedMedication={selectedMedication}
+                  handleClick={this.handleMedicationClick} />
+                <PtdaSideEffects
+                  medications={medications}
+                  disabledMedications={disabledMedications}
+                  selectedMedication={selectedMedication}
+                  handleClick={this.handleMedicationClick} />
+              </div>
+            </div>
           </section>
 
-          <div className="row">
+          <section>
             <PtdaOptions
-            	medications={medications}
+              medications={medications}
               disabledMedications={disabledMedications}
               risks={risks} />
-          </div>
+          </section>
         </div>
       </div>
     );
   },
 
-  renderRiskButtons: function (risks) {
-    var filterRisks = this.filterRisks;
-    var risksForButtons = Object.keys(risks);
-    var risksFriendly = this.props.risksFriendly;
-    var selectedRisks = this.state.selectedRisks;
-
-    var medications = this.props.medications;
-    var selectedMedication = this.state.selectedMedication;
-    var medicationMap = this.state.medicationMap;
+  renderPreferenceControls: function (preferences) {
+    var filterPreference = this.filterPreference;
+    var preferences = this.props.preferences;
+    var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
 
     return (
-      <section className="buttons">
-        {risksForButtons.map(function (item) {
-          var classes = cx({
-            'btn btn-default': true,
-            'active': selectedRisks[item]
-          });
-          return (
-            <a className={classes} key={item} onClick={filterRisks.bind(null, item)}>
-              {risksFriendly[item]}
-            </a>
-          );
+      <div className="preference-controls">
+        {Object.keys(preferences).map(function(key) {
+          var preference = preferences[key];
+
+          // Boolean preferences become a push button
+          if (preference.type == 'boolean') {
+            var classes = cx({
+              'btn btn-default': true,
+              'active': preferencesSelected[key]
+            });
+            return (
+              <a className={classes} key={key} onClick={filterPreference.bind(null, key, false)}>
+                {preference.name}
+              </a>
+            );
+          }
+          // List preferences become a list
+          else if (preference.type == 'list') {
+            // Get the possible options for this preference from this.state.preferencesSelected.
+            // There is a function in getInitialState() that iterates through the provided medications,
+            // collecting the "options" they provide for vis à vis this preference.
+            var options = Object.keys(preferencesSelected[key]);
+
+            return (
+              <DropdownButton key={key} bsStyle={'default'} title={preference.name}>
+                {options.map(function(option, i) {
+                  return (
+                    <MenuItem key={option} eventKey={i} onSelect={filterPreference.bind(null, key, option)}>{option}</MenuItem>
+                  );
+                })}
+              </DropdownButton>
+            );
+          }
+          else {
+            return (
+              <a className="btn">{preference.name}</a>
+            );
+          }
         })}
-      </section>
+      </div>
     );
+  },
+
+  filterPreference: function (preferenceKey, optionKey) {
+    var disabledMedications = {};
+    var medications = this.props.medications;
+    var preferencesSelected = this.state.preferencesSelected;
+
+    // Toggle the preference. If there's an 'option' provided, the preference is a list type,
+    // for example dosage form. So we use the 'preference' to access the dosage forms object,
+    // and use the preference to set true/false on the appropriate dosage form.
+    //
+    // forms: {
+    //   tablet: true,
+    //   injection: true
+    // }
+    //
+
+    // TOGGLE PREFERENCES
+    if (optionKey) {
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+    }
+    else {
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+    }
+
+    // FIND MATCHING DRUGS TO DISABLE
+    // TODO: HARMONIZATION FOR HANDLING THIS STUFF
+    medications.forEach(function(medication) {
+      for (var preference in preferencesSelected) {
+
+        if (preferencesSelected[preference]) {
+
+          // Simple boolean preference
+          if (typeof preferencesSelected[preference] === 'boolean') {
+
+            // Look for a matching key in the medication object
+            // Boolean? e.g. 'generic_available' -- inverse match
+            if (medication[preference] == false) {
+              disabledMedications[medication.name] = true;
+            }
+            // Not a key in medication object, so check ptda.risks
+            else {
+              for (var risk in medication.ptda.risks) {
+                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
+                  disabledMedications[medication.name] = true;
+                }
+              }
+            }
+          }
+          // List preference
+          else if (typeof preferencesSelected[preference] === 'object') {
+
+            // The user chose one or more options (to avoid), so the medication must match
+            // each option in order to get disabled.
+            var medicationMatchingOptions = {};
+            var selectedOptions = {};
+
+            // Check each option for a match
+            for (var option in preferencesSelected[preference]) {
+
+              // Option is selected
+              if (preferencesSelected[preference][option]) {
+                selectedOptions[option] = true;
+
+                // Look for a matching key in the medication object
+                if (medication[preference]) {
+
+                  // Is it an array or an object?
+                  if (typeof medication[preference] === 'object') {
+
+                    // Array
+                    if (Array.isArray(medication[preference])) {
+                      var list = medication[preference];
+
+                      // Check for our option in the list
+                      for (var item in list) {
+                        // Straight up list item?
+                        if (typeof list[item] === 'string') {
+                          if (list[item].toLowerCase() == option.toLowerCase()) {
+                            // disabledMedications[medication.name] = true;
+                            medicationMatchingOptions[option] = true;
+                          }
+                        }
+                        // Object? Look for a 'name' that we'll check against
+                        else if (list[item].hasOwnProperty('name')) {
+                          if (list[item].name.toLowerCase() == option.toLowerCase()) {
+                            // disabledMedications[medication.name] = true;
+                            medicationMatchingOptions[option] = true;
+                          }
+                        }
+                      }
+                    }
+                    // Object
+                    else {
+                      // Check for our option in the object
+                      if (medication[preference][optionKey]) {
+                        medicationMatchingOptions[option] = true;
+                        // disabledMedications[medication.name] = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            // Compare the drug's matching options to the selected options.
+            // If all selected options are also matching in the drug, disable the drug.
+            if (Object.keys(selectedOptions).length > 0) {
+              var disableMedication = false;
+
+              for (var selected in selectedOptions) {
+                if (medicationMatchingOptions[selected]) {
+                  disableMedication = true;
+                }
+              }
+              if (disableMedication) {
+                disabledMedications[medication.name] = true;
+              }
+              else {
+                disabledMedications[medication.name] = false;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    this.setState({
+      disabledMedications: disabledMedications,
+      preferencesSelected: preferencesSelected
+    });
   },
 
   handleModalHide: function () {
@@ -364,36 +619,8 @@ var Ptda = React.createClass({
   	this.setState({
   		selectedMedication: selected
   	});
-  },
-
-  filterRisks: function (risk) {
-    var medications = this.props.medications;
-    var selectedRisks = this.state.selectedRisks;
-
-    selectedRisks[risk] = !selectedRisks[risk];
-
-    var disabledMedications = {};
-    if (Object.keys(selectedRisks).length > 0) {
-      medications.forEach(function(item) {
-        for (var risk in selectedRisks) {
-          if (selectedRisks[risk]) {
-            for (var i in item.ptda.risks) {
-              var drugRiskToCheck = item.ptda.risks[i];
-              if (drugRiskToCheck.name == risk && drugRiskToCheck.risk == 2) {
-                disabledMedications[item.name] = true;
-                return;
-              }
-            }
-          }
-        }
-      });
-    }
-
-    this.setState({
-      disabledMedications: disabledMedications,
-      selectedRisks: selectedRisks
-    });
   }
+
 });
 
 module.exports = Ptda;

@@ -1,3 +1,53 @@
+//Core variables and mixins
+@import "./bower_components/bootstrap/less/variables.less";
+@import "./bower_components/bootstrap/less/mixins.less";
+
+// Reset
+@import "./bower_components/bootstrap/less/normalize.less";
+@import "./bower_components/bootstrap/less/print.less";
+
+// Core CSS
+@import "./bower_components/bootstrap/less/scaffolding.less";
+@import "./bower_components/bootstrap/less/type.less";
+@import "./bower_components/bootstrap/less/code.less";
+@import "./bower_components/bootstrap/less/grid.less";
+@import "./bower_components/bootstrap/less/tables.less";
+@import "./bower_components/bootstrap/less/forms.less";
+@import "./bower_components/bootstrap/less/buttons.less";
+
+// Components
+@import "./bower_components/bootstrap/less/component-animations.less";
+@import "./bower_components/bootstrap/less/dropdowns.less";
+@import "./bower_components/bootstrap/less/button-groups.less";
+@import "./bower_components/bootstrap/less/input-groups.less";
+@import "./bower_components/bootstrap/less/navs.less";
+@import "./bower_components/bootstrap/less/navbar.less";
+@import "./bower_components/bootstrap/less/breadcrumbs.less";
+@import "./bower_components/bootstrap/less/pagination.less";
+@import "./bower_components/bootstrap/less/pager.less";
+@import "./bower_components/bootstrap/less/labels.less";
+@import "./bower_components/bootstrap/less/badges.less";
+@import "./bower_components/bootstrap/less/jumbotron.less";
+@import "./bower_components/bootstrap/less/thumbnails.less";
+@import "./bower_components/bootstrap/less/alerts.less";
+@import "./bower_components/bootstrap/less/progress-bars.less";
+@import "./bower_components/bootstrap/less/media.less";
+@import "./bower_components/bootstrap/less/list-group.less";
+@import "./bower_components/bootstrap/less/panels.less";
+@import "./bower_components/bootstrap/less/wells.less";
+@import "./bower_components/bootstrap/less/close.less";
+@import "./bower_components/bootstrap/less/glyphicons.less";
+
+// Components w/ JavaScript
+@import "./bower_components/bootstrap/less/modals.less";
+@import "./bower_components/bootstrap/less/tooltip.less";
+@import "./bower_components/bootstrap/less/popovers.less";
+@import "./bower_components/bootstrap/less/carousel.less";
+
+// Utility classes
+@import "./bower_components/bootstrap/less/utilities.less";
+@import "./bower_components/bootstrap/less/responsive-utilities.less";
+
 // Colors
 
 @color-grey-xxxxxl: #f4f4f4;
@@ -23,16 +73,23 @@
 
 html {
 	-webkit-font-smoothing: antialiased;
+
+	a {
+		cursor: pointer;
+	}
 }
 
 .header {
 	width: 100%;
 	position: fixed;
-	margin: 0 auto;
+	top: 0;
+	left: 0;
+	right: 0;
 	padding: 1em 0;
 	background: white;
 	box-shadow: 0 1px 1px rgba(0,0,0,.3);
 	z-index: 11;
+
 	h1 {
 		color: @color-grey-m;
 		font-size: 1.7em;
@@ -40,33 +97,76 @@ html {
 		margin: 0;
 		padding-left: .5em;
 	}
-	.buttons {
-		text-align: center;
 
-		.btn {
-			display: inline-block;
-		}
-		.btn ~ .btn {
-			margin-left: .25em;
-		}
+	@media (max-width: @screen-xs-max) {
+		position: absolute;
 	}
 }
 
 .ptda {
-	padding: 5em 0 9em 0;
+	margin-top: 2em;
+	.container-fluid;
 
-	.cards {
-		position: relative;
-		padding: 0 2em;
+	// @media (max-width: @screen-xs-max) {
+	// 	margin-left: -15px;
+	// 	margin-right: -15px;
+	// }
 
-		.ptda-card {
-			vertical-align: text-top;
-			max-width: 720px;
+	> section {
+		.make-row();
+	}
+	.preference-controls {
+		text-align: right;
+
+		.btn,
+		.btn-group {
+			display: inline-block;
+		}
+		.btn {
+			@media (max-width: @screen-xs-max) {
+				.btn-sm;
+			}
+		}
+		.btn + .btn,
+		.btn + .btn-group,
+		.btn-group + .btn,
+		.btn-group + .btn-group {
+			margin-left: .25em;
+		}
+
+		@media (max-width: @screen-xs-max) {
+			padding: 0;
+			text-align: center;
+
+			> .btn,
+			> .btn-group {
+				width: 26% !important;
+				margin: .125em 2.5% !important;
+			}
+		}
+	}
+	.card-container {
+		.make-sm-column(12);
+		padding-top: 4em;
+
+		.cards {
+			position: relative;
+
+			.ptda-card {
+				vertical-align: text-top;
+				max-width: 720px;
+
+				@media (max-width: @screen-xs-max) {
+					width: 100%;
+					max-width: 100%;
+				}
+			}
 		}
 	}
 	.options {
 
-		.header{
+		.option-header {
+
 			h4 {
 				font-size: 1em;
 				font-weight: 200;
@@ -88,7 +188,7 @@ html {
 
 			&.disabled {
 				* {
-					color: @color-grey-l !important;
+					color: @color-grey-xl !important;
 				}
 				.name {
 					h2,
@@ -254,7 +354,7 @@ html {
 				transition: color .07s ease-in-out;
 			}
 			&.disabled {
-				background: #f2f2f2 !important;
+				background: #f6f6f6 !important;
 
 				h4,
 				h5 {
@@ -284,6 +384,20 @@ html {
 						border-bottom-right-radius: 24px;
 					}
 				}
+			}
+		}
+	}
+
+	@media (max-width: @screen-xs-max) {
+		margin: 0;
+		border-radius: 0;
+		width: 100%;
+		box-shadow: none;
+
+		table {
+			h2,
+			td {
+				border-radius: 0 !important;
 			}
 		}
 	}
@@ -463,8 +577,17 @@ html {
 // Adverse events
 
 .adverse-events {
-	.header {
-		position: relative;
-		margin-bottom: 2em;
+	.container-fluid;
+
+	> section {
+		.make-row();
+
+		> div {
+			.make-sm-column(8);
+			.make-sm-column-offset(2);
+		}
+	}
+	.chart {
+		width: 70%;
 	}
 }

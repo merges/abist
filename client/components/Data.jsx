@@ -17,7 +17,9 @@ var medications = [
     "generic_available": true,
     "forms": [
       {
-        "name": "tablet",
+        "name": "tablet"
+      },
+      {
         "name": "injection"
       }
     ],
@@ -294,7 +296,7 @@ var medications = [
       "DMARD",
       "TNF inhibitor"
     ],
-    "generic_available": true,
+    "generic_available": false,
     "names_brand": [
       "Simponi"
     ],
@@ -367,6 +369,11 @@ var medications = [
     "names_brand": [
       "Humira"
     ],
+    "forms": [
+      {
+        "name": "injection"
+      }
+    ],
     "ptda": {
       "cost": {
         "min": 1830,
@@ -429,6 +436,11 @@ var medications = [
     "generic_available": false,
     "names_brand": [
       "Cimzia"
+    ],
+    "forms": [
+      {
+        "name": "injection"
+      }
     ],
     "ptda": {
       "cost": {

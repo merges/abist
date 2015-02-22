@@ -9,6 +9,7 @@ var reactify = require('reactify');
 var rename = require('gulp-rename');
 var server = require('gulp-express');
 var transform = require('vinyl-transform');
+var util = require('gulp-util');
 
 gulp.task('browserify', function () {
   var browserified = transform(function(filename) {
@@ -27,7 +28,7 @@ gulp.task('browserify', function () {
 
 gulp.task('less', function() {
   gulp.src('client/less/*.less')
-    .pipe(less())
+    .pipe(less().on('error', util.log))
     .pipe(gulp.dest('client/css'))
     .pipe(livereload());
 });
