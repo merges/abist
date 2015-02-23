@@ -86,9 +86,9 @@ var Experiment = React.createClass({
 
     return (
       <div>
-        <div className='container'>
+        <div className='experiment'>
           <h1>Adam Baker Independent Studies Thesis</h1>
-          <a href='http://abist.tumblr.com/'>Log of progress</a>
+          <h2><a href='http://abist.tumblr.com/'>Log of progress</a></h2>
           <h2><a href='/ptda'>PtDA prototype</a></h2>
           <h2><a href='/adverse'>Adverse events prototype</a></h2>
           {/*<Menu items={items} itemSelected={itemSelected} />*/}

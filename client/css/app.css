@@ -5873,6 +5873,8 @@ button.close {
 .panel-body:after,
 .modal-footer:before,
 .modal-footer:after,
+.experiment:before,
+.experiment:after,
 .ptda:before,
 .ptda:after,
 .ptda > section:before,
@@ -5899,6 +5901,7 @@ button.close {
 .pager:after,
 .panel-body:after,
 .modal-footer:after,
+.experiment:after,
 .ptda:after,
 .ptda > section:after,
 .adverse-events:after,
@@ -8943,6 +8946,13 @@ html a {
 .shadow-l-right {
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
 }
+.animation-hue {
+  color: #f35626;
+  background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 1440s infinite linear;
+}
 .header {
   width: 100%;
   position: fixed;
@@ -8969,6 +8979,67 @@ html a {
   .header {
     position: absolute;
   }
+}
+.experiment {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .experiment {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .experiment {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .experiment {
+    width: 1170px;
+  }
+}
+.experiment > .navbar-header,
+.experiment > .navbar-collapse {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+@media (min-width: 768px) {
+  .experiment > .navbar-header,
+  .experiment > .navbar-collapse {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+.experiment h1,
+.experiment h2 {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin: 0;
+  padding: 1em 0;
+  border-bottom: 1px solid #f4f4f4;
+}
+@media (min-width: 768px) {
+  .experiment h1,
+  .experiment h2 {
+    float: left;
+    width: 100%;
+  }
+}
+.experiment h1 {
+  font-weight: 200;
+  color: #f35626;
+  background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 1440s infinite linear;
+}
+.experiment a {
+  color: #474ce0;
 }
 .ptda {
   margin-right: auto;

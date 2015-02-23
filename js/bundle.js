@@ -956,9 +956,9 @@ var Experiment = React.createClass({displayName: "Experiment",
 
     return (
       React.createElement("div", null, 
-        React.createElement("div", {className: "container"}, 
+        React.createElement("div", {className: "experiment"}, 
           React.createElement("h1", null, "Adam Baker Independent Studies Thesis"), 
-          React.createElement("a", {href: "https://abist.tumblr.com/"}, "Log of progress"), 
+          React.createElement("h2", null, React.createElement("a", {href: "http://abist.tumblr.com/"}, "Log of progress")), 
           React.createElement("h2", null, React.createElement("a", {href: "/ptda"}, "PtDA prototype")), 
           React.createElement("h2", null, React.createElement("a", {href: "/adverse"}, "Adverse events prototype"))
           /*<Menu items={items} itemSelected={itemSelected} />*/
