@@ -148,19 +148,30 @@ html {
 .experiment {
   .container;
 
-  h1,
-  h2, {
+  > h1,
+  > h2, {
     .make-sm-column(12);
+    font-weight: 200;
     margin: 0;
-    padding: 1em 0;
+    padding: .5em 0;
     border-bottom: 1px solid @color-grey-xxxxxl;
   }
-  h1 {
-    font-weight: 200;
+  > h1 {
     .animation-hue;
   }
+  > h2 {
+    font-size: 1.3em;
+
+    &:hover {
+      background: @color-grey-xxxxxxl;
+    }
+  }
   a {
+    display: block;
     color: #474ce0;
+  }
+  > img {
+    display: block;
   }
 }
 

@@ -9013,33 +9013,43 @@ html a {
     margin-left: 0;
   }
 }
-.experiment h1,
-.experiment h2 {
+.experiment > h1,
+.experiment > h2 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
+  font-weight: 200;
   margin: 0;
-  padding: 1em 0;
+  padding: .5em 0;
   border-bottom: 1px solid #f4f4f4;
 }
 @media (min-width: 768px) {
-  .experiment h1,
-  .experiment h2 {
+  .experiment > h1,
+  .experiment > h2 {
     float: left;
     width: 100%;
   }
 }
-.experiment h1 {
-  font-weight: 200;
+.experiment > h1 {
   color: #f35626;
   background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   -webkit-animation: hue 1440s infinite linear;
 }
+.experiment > h2 {
+  font-size: 1.3em;
+}
+.experiment > h2:hover {
+  background: #fafafa;
+}
 .experiment a {
+  display: block;
   color: #474ce0;
+}
+.experiment > img {
+  display: block;
 }
 .ptda {
   margin-right: auto;

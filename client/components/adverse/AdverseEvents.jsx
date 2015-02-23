@@ -242,17 +242,20 @@ var AdverseEvents = React.createClass({
                       + 'api_key='
                       + apiKey
                       + '&search='
+                      + 'patient.drug.drugindication:"rheumatoid+arthritis"'
+                      + '+AND+'
                       + 'patient.drug.medicinalproduct:'
                       + '(';
 
-      // Construct drug name query.
-      for (var i = 0; i < medicationList.length; i++) {
-        var drugName = medicationList[i].replace(/\s/g, "+");
-        // Split names on slashes, which are actually two medication names.
-        drugName = drugName.replace(/\//g, '"+AND+"');
-        queryPrefix = queryPrefix + '("' + drugName + '")+';
-      }
-      queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
+          // Construct drug name query.
+          for (var i = 0; i < medicationList.length; i++) {
+            var drugName = medicationList[i].replace(/\s/g, "+");
+            // Split names on slashes, which are actually two medication names.
+            drugName = drugName.replace(/\//g, '"+AND+"');
+            queryPrefix = queryPrefix + '("' + drugName + '")+';
+          }
+
+          queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
 
       var countReactionsSuffix = '&count=patient.reaction.reactionmeddrapt.exact'
                                + '&limit='

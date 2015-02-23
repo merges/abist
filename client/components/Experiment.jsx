@@ -91,6 +91,7 @@ var Experiment = React.createClass({
           <h2><a href='http://abist.tumblr.com/'>Log of progress</a></h2>
           <h2><a href='/ptda'>PtDA prototype</a></h2>
           <h2><a href='/adverse'>Adverse events prototype</a></h2>
+          <img src='./images/p_conceptual.png' className='img-responsive' />
           {/*<Menu items={items} itemSelected={itemSelected} />*/}
         </div>
       </div>

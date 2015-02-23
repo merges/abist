@@ -960,7 +960,8 @@ var Experiment = React.createClass({displayName: "Experiment",
           React.createElement("h1", null, "Adam Baker Independent Studies Thesis"), 
           React.createElement("h2", null, React.createElement("a", {href: "http://abist.tumblr.com/"}, "Log of progress")), 
           React.createElement("h2", null, React.createElement("a", {href: "/ptda"}, "PtDA prototype")), 
-          React.createElement("h2", null, React.createElement("a", {href: "/adverse"}, "Adverse events prototype"))
+          React.createElement("h2", null, React.createElement("a", {href: "/adverse"}, "Adverse events prototype")), 
+          React.createElement("img", {src: "./images/p_conceptual.png", className: "img-responsive"})
           /*<Menu items={items} itemSelected={itemSelected} />*/
         )
       )
@@ -1223,17 +1224,20 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
                       + 'api_key='
                       + apiKey
                       + '&search='
+                      + 'patient.drug.drugindication:"rheumatoid+arthritis"'
+                      + '+AND+'
                       + 'patient.drug.medicinalproduct:'
                       + '(';
 
-      // Construct drug name query.
-      for (var i = 0; i < medicationList.length; i++) {
-        var drugName = medicationList[i].replace(/\s/g, "+");
-        // Split names on slashes, which are actually two medication names.
-        drugName = drugName.replace(/\//g, '"+AND+"');
-        queryPrefix = queryPrefix + '("' + drugName + '")+';
-      }
-      queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
+          // Construct drug name query.
+          for (var i = 0; i < medicationList.length; i++) {
+            var drugName = medicationList[i].replace(/\s/g, "+");
+            // Split names on slashes, which are actually two medication names.
+            drugName = drugName.replace(/\//g, '"+AND+"');
+            queryPrefix = queryPrefix + '("' + drugName + '")+';
+          }
+
+          queryPrefix = queryPrefix.substring(0, queryPrefix.length - 1) + ')';
 
       var countReactionsSuffix = '&count=patient.reaction.reactionmeddrapt.exact'
                                + '&limit='
