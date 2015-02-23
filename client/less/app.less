@@ -508,7 +508,7 @@ html {
 					h4,
 					h5 {
 						text-decoration: line-through;
-						color: @color-grey-xl;
+						color: @color-grey-xxl;
 					}
 				}
 				&.selected {
@@ -516,8 +516,13 @@ html {
 					background: @color-grey-xd !important;
 				}
 			}
+      td + td {
+        border-left: 1px solid white;
+      }
 			tr {
 				&.dosage-form {
+          display: none;
+
 					td {
 						height: auto;
 						border-radius: 0;
@@ -560,17 +565,22 @@ html {
 					border-top: 1px solid white;
 				}
 				td {
-					&:nth-child(odd) {
-						color: white;
-						background: @color-cost;
-					}
-					&:nth-child(even) {
-						color: @color-cost;
-						background: @color-cost-l;
-					}
+          color: white;
+          background: @color-cost;
+
+					// &:nth-child(odd) {
+					// 	color: white;
+					// 	background: @color-cost;
+					// }
+					// &:nth-child(even) {
+					// 	color: @color-cost;
+					// 	background: @color-cost-l;
+					// }
 				}
 				tr {
 					&.dosage-form {
+            display: none;
+
 						td {
 							color: @color-cost;
 						}
@@ -587,17 +597,22 @@ html {
 					border-top: 1px solid white;
 				}
 				td {
-					&:nth-child(odd) {
-						color: white;
-						background: @color-onset;
-					}
-					&:nth-child(even) {
-						color: @color-onset;
-						background: @color-onset-l;
-					}
+          color: white;
+          background: @color-onset;
+					
+          // &:nth-child(odd) {
+					// 	color: white;
+					// 	background: @color-onset;
+					// }
+					// &:nth-child(even) {
+					// 	color: @color-onset;
+					// 	background: @color-onset-l;
+					// }
 				}
 				tr {
 					&.dosage-form {
+            display: none;
+
 						td {
 							color: @color-onset;
 						}
@@ -614,20 +629,25 @@ html {
 					border-top: 1px solid white;
 				}
 				td {
-					h5 {
+          color: white;
+          background: @color-frequency;
+					
+          h5 {
 						font-size: 1.2em;
 					}
-					&:nth-child(odd) {
-						color: white;
-						background: @color-frequency;
-					}
-					&:nth-child(even) {
-						color: @color-frequency;
-						background: @color-frequency-l;
-					}
+					// &:nth-child(odd) {
+					// 	color: white;
+					// 	background: @color-frequency;
+					// }
+					// &:nth-child(even) {
+					// 	color: @color-frequency;
+					// 	background: @color-frequency-l;
+					// }
 				}
 				tr {
 					&.dosage-form {
+            display: none;
+
 						td {
 							color: @color-frequency;
 						}
@@ -644,34 +664,38 @@ html {
 					border-top: 1px solid white;
 				}
 				td {
-					h5 {
+          color: white;
+          background: @color-risks;
+					
+          h5 {
 						font-size: 1.2em;
 
 						p {
 							margin: 0 0 .1em 0;
 						}
 						.unsure {
-							border-bottom: 1px dotted;
-
 							&:after {
 								content: '?';
 							}
 						}
 						.unsafe {
+              opacity: .5;
 							text-decoration: line-through;
 						}
 					}
-					&:nth-child(odd) {
-						color: white;
-						background: @color-risks;
-					}
-					&:nth-child(even) {
-						color: @color-risks;
-						background: @color-risks-l;
-					}
+					// &:nth-child(odd) {
+					// 	color: white;
+					// 	background: @color-risks;
+					// }
+					// &:nth-child(even) {
+					// 	color: @color-risks;
+					// 	background: @color-risks-l;
+					// }
 				}
 				tr {
 					&.dosage-form {
+            display: none;
+
 						td {
 							color: @color-risks;
 						}
@@ -688,8 +712,11 @@ html {
 					border-top: 1px solid white;
 				}
 				td {
+          color: white;
+          background: @color-side-effects;
+
 					h5 {
-						font-size: 1em;
+						font-size: .9em;
 						font-weight: 300;
 
 						ul {
@@ -698,22 +725,24 @@ html {
 							padding: 0;
 
 							li {
-								margin: 0;
+								margin: 0 0 .3em 0;
 								padding: 0;
 							}
 						}
 					}
-					&:nth-child(odd) {
-						color: white;
-						background: @color-side-effects;
-					}
-					&:nth-child(even) {
-						color: @color-side-effects;
-						background: @color-side-effects-l;
-					}
+					// &:nth-child(odd) {
+					// 	color: white;
+					// 	background: @color-side-effects;
+					// }
+					// &:nth-child(even) {
+					// 	color: @color-side-effects;
+					// 	background: @color-side-effects-l;
+					// }
 				}
 				tr {
 					&.dosage-form {
+            display: none;
+
 						td {
 							color: @color-side-effects;
 						}

@@ -1522,7 +1522,7 @@ var Ptda = React.createClass({displayName: "Ptda",
           'key': 'forms',
           'name': 'Dosage form',
           'type': 'list',
-          'description': 'if you want to avoid a certain dosage form'
+          'description': 'preferred way of taking your medicine'
         },
         'generic_available': {
           'key': 'generic_available',

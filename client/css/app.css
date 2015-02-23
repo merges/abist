@@ -9333,11 +9333,17 @@ html a {
 .ptda .ptda-card table td.disabled h4,
 .ptda .ptda-card table td.disabled h5 {
   text-decoration: line-through;
-  color: #bbbbbb;
+  color: #dddddd;
 }
 .ptda .ptda-card table td.selected {
   color: white !important;
   background: #444444 !important;
+}
+.ptda .ptda-card table td + td {
+  border-left: 1px solid white;
+}
+.ptda .ptda-card table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card table tr.dosage-form td {
   height: auto;
@@ -9368,13 +9374,12 @@ html a {
 .ptda .ptda-card.cost table tr ~ tr {
   border-top: 1px solid white;
 }
-.ptda .ptda-card.cost table td:nth-child(odd) {
+.ptda .ptda-card.cost table td {
   color: white;
   background: #78b1db;
 }
-.ptda .ptda-card.cost table td:nth-child(even) {
-  color: #78b1db;
-  background: #ecf6fd;
+.ptda .ptda-card.cost table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card.cost table tr.dosage-form td {
   color: #78b1db;
@@ -9385,13 +9390,12 @@ html a {
 .ptda .ptda-card.onset table tr ~ tr {
   border-top: 1px solid white;
 }
-.ptda .ptda-card.onset table td:nth-child(odd) {
+.ptda .ptda-card.onset table td {
   color: white;
   background: #8e8ebd;
 }
-.ptda .ptda-card.onset table td:nth-child(even) {
-  color: #8e8ebd;
-  background: #ecebff;
+.ptda .ptda-card.onset table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card.onset table tr.dosage-form td {
   color: #8e8ebd;
@@ -9402,16 +9406,15 @@ html a {
 .ptda .ptda-card.frequency table tr ~ tr {
   border-top: 1px solid white;
 }
-.ptda .ptda-card.frequency table td h5 {
-  font-size: 1.2em;
-}
-.ptda .ptda-card.frequency table td:nth-child(odd) {
+.ptda .ptda-card.frequency table td {
   color: white;
   background: #8cb164;
 }
-.ptda .ptda-card.frequency table td:nth-child(even) {
-  color: #8cb164;
-  background: #f0ffe0;
+.ptda .ptda-card.frequency table td h5 {
+  font-size: 1.2em;
+}
+.ptda .ptda-card.frequency table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card.frequency table tr.dosage-form td {
   color: #8cb164;
@@ -9422,28 +9425,25 @@ html a {
 .ptda .ptda-card.risks table tr ~ tr {
   border-top: 1px solid white;
 }
+.ptda .ptda-card.risks table td {
+  color: white;
+  background: #cab22d;
+}
 .ptda .ptda-card.risks table td h5 {
   font-size: 1.2em;
 }
 .ptda .ptda-card.risks table td h5 p {
   margin: 0 0 .1em 0;
 }
-.ptda .ptda-card.risks table td h5 .unsure {
-  border-bottom: 1px dotted;
-}
 .ptda .ptda-card.risks table td h5 .unsure:after {
   content: '?';
 }
 .ptda .ptda-card.risks table td h5 .unsafe {
+  opacity: .5;
   text-decoration: line-through;
 }
-.ptda .ptda-card.risks table td:nth-child(odd) {
-  color: white;
-  background: #cab22d;
-}
-.ptda .ptda-card.risks table td:nth-child(even) {
-  color: #cab22d;
-  background: #f7f4dc;
+.ptda .ptda-card.risks table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card.risks table tr.dosage-form td {
   color: #cab22d;
@@ -9454,8 +9454,12 @@ html a {
 .ptda .ptda-card.side-effects table tr ~ tr {
   border-top: 1px solid white;
 }
+.ptda .ptda-card.side-effects table td {
+  color: white;
+  background: #cd773b;
+}
 .ptda .ptda-card.side-effects table td h5 {
-  font-size: 1em;
+  font-size: .9em;
   font-weight: 300;
 }
 .ptda .ptda-card.side-effects table td h5 ul {
@@ -9464,16 +9468,11 @@ html a {
   padding: 0;
 }
 .ptda .ptda-card.side-effects table td h5 ul li {
-  margin: 0;
+  margin: 0 0 .3em 0;
   padding: 0;
 }
-.ptda .ptda-card.side-effects table td:nth-child(odd) {
-  color: white;
-  background: #cd773b;
-}
-.ptda .ptda-card.side-effects table td:nth-child(even) {
-  color: #cd773b;
-  background: #f5e8de;
+.ptda .ptda-card.side-effects table tr.dosage-form {
+  display: none;
 }
 .ptda .ptda-card.side-effects table tr.dosage-form td {
   color: #cd773b;
