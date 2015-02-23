@@ -1502,33 +1502,33 @@ var Ptda = React.createClass({displayName: "Ptda",
       preferences: {
         'alcohol': {
           'key': 'key',
-          'name': 'Alcohol',
+          'name': 'Alcohol-friendly',
           'type': 'boolean',
-          'description': 'if you drink alcohol'
+          'description': 'If you drink alcohol'
         },
-        'cost': {
-          'key': 'cost',
-          'name': 'Cost',
-          'type': 'number',
-          'description': 'Average cost per month'
-        },
-        'class': {
-          'key': 'class',
-          'name': 'Drug class',
-          'type': 'list',
-          'description': 'Drug classes'
-        },
+        // 'cost': {
+        //   'key': 'cost',
+        //   'name': 'Cost',
+        //   'type': 'number',
+        //   'description': 'average cost per month'
+        // },
+        // 'class': {
+        //   'key': 'class',
+        //   'name': 'Drug class',
+        //   'type': 'list',
+        //   'description': 'Drug classes'
+        // },
         'forms': {
           'key': 'forms',
           'name': 'Dosage form',
           'type': 'list',
-          'description': 'Dosage form'
+          'description': 'if you want to avoid a certain dosage form'
         },
         'generic_available': {
           'key': 'generic_available',
-          'name': 'Generic',
+          'name': 'Generic available',
           'type': 'boolean',
-          'description': 'Generic available'
+          'description': 'A cheaper, generic version is available'
         },
         'liver_disease': {
           'key': 'liver_disease',
@@ -1566,7 +1566,7 @@ var Ptda = React.createClass({displayName: "Ptda",
 
   getInitialState: function () {
   	var medicationMap = {};
-    this.props.medications.forEach(function (medication, index) {
+    this.props.medications.forEach(function(medication, index) {
     	medicationMap[medication.name] = index;
     });
 
@@ -1598,6 +1598,7 @@ var Ptda = React.createClass({displayName: "Ptda",
       activeCard: null,
       disabledMedications: {},
       medicationMap: medicationMap,
+      menuOpen: null,
       preferences: this.props.preferences,
       preferencesSelected: {
         alcohol: false,
@@ -1609,7 +1610,6 @@ var Ptda = React.createClass({displayName: "Ptda",
         pregnancy: false,
         tb: false
       },
-      selectedRisks: {},
       selectedMedication: null
     }
   },
@@ -1624,19 +1624,24 @@ var Ptda = React.createClass({displayName: "Ptda",
     var selectedMedication = this.state.selectedMedication;
     var medicationMap = this.state.medicationMap;
 
+    var cx = React.addons.classSet;
+    var cardContainerClasses = cx({
+      'card-container': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
+
     return (
       React.createElement("div", null, 
         React.createElement("div", {className: "ptda"}, 
           React.createElement("div", {className: "header"}, 
             React.createElement("div", {className: "row"}, 
-              React.createElement("div", {className: "col-sm-2 hidden-xs"}, 
+              React.createElement("div", {className: "col-sm-12"}, 
                 React.createElement("h1", null, "PtDA demo")
-              ), 
-              React.createElement("div", {className: "col-sm-10"}, 
-                this.renderPreferenceControls(preferences)
               )
             )
           ), 
+          this.renderPreferenceControls(preferences), 
           React.createElement("section", null, 
             selectedMedication &&
               React.createElement(Modal, {
@@ -1652,17 +1657,21 @@ var Ptda = React.createClass({displayName: "Ptda",
               ), 
             
 
-            React.createElement("div", {className: "card-container"}, 
-              React.createElement("div", null, 
-                "An attempt to be vaguely issue-centric.", 
-                React.createElement("ul", null, 
-                  React.createElement("li", null, "**Pregnant or planning to become pregnant ", React.createElement("strong", null, "On/off toggle")), 
-                  React.createElement("li", null, "**Interference with life/dosing schedule/location ", React.createElement("strong", null, "Frequency/injection or not?")), 
-                  React.createElement("li", null, "**Cost ", React.createElement("strong", null, "Cost tolerance—add your copay and see")), 
-                  React.createElement("li", null, "**Alcohol-friendly (so to speak) ", React.createElement("strong", null, "Do you like to drink?")), 
-                  React.createElement("li", null, "??Avoid side effects ", React.createElement("strong", null, "Anything you absolutely don’t want to feel"))
-                )
-              ), 
+            React.createElement("div", {className: cardContainerClasses}, 
+              
+              /*
+              <div>
+                An attempt to be vaguely issue-centric.
+                <ul>
+                  <li>**Pregnant or planning to become pregnant <strong>On/off toggle</strong></li>
+                  <li>**Interference with life/dosing schedule/location <strong>Frequency/injection or not?</strong></li>
+                  <li>**Cost <strong>Cost tolerance—add your copay and see</strong></li>
+                  <li>**Alcohol-friendly (so to speak) <strong>Do you like to drink?</strong></li>
+                  <li>??Avoid side effects <strong>Anything you absolutely don’t want to feel</strong></li>
+                </ul>
+              </div>
+              */
+              
               React.createElement("div", {className: "cards"}, 
                 React.createElement(PtdaCost, {
                 	active: true, 
@@ -1706,27 +1715,48 @@ var Ptda = React.createClass({displayName: "Ptda",
     );
   },
 
+  togglePreferenceControls: function () {
+    var isOpen = this.state.menuOpen;
+    isOpen = !isOpen;
+    this.setState({
+      menuOpen: isOpen
+    })
+  },
+
   renderPreferenceControls: function (preferences) {
     var filterPreference = this.filterPreference;
+    var togglePreferenceControls = this.togglePreferenceControls;
+
     var preferences = this.props.preferences;
     var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
+    var preferenceControlClasses = cx({
+      'preference-controls': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
 
     return (
-      React.createElement("div", {className: "preference-controls"}, 
+      React.createElement("div", {className: preferenceControlClasses, onClick: togglePreferenceControls}, 
+        React.createElement("h2", null, 
+          "Narrow your options", 
+          React.createElement("strong", null, this.state.menuOpen? '‹' : '›')
+        ), 
+
         Object.keys(preferences).map(function(key) {
           var preference = preferences[key];
 
           // Boolean preferences become a push button
           if (preference.type == 'boolean') {
             var classes = cx({
-              'btn btn-default': true,
+              'preference': true,
               'active': preferencesSelected[key]
             });
             return (
-              React.createElement("a", {className: classes, key: key, onClick: filterPreference.bind(null, key, false)}, 
-                preference.name
+              React.createElement("section", {className: classes, key: key, onClick: filterPreference.bind(null, key, false)}, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description)
               )
             );
           }
@@ -1738,10 +1768,22 @@ var Ptda = React.createClass({displayName: "Ptda",
             var options = Object.keys(preferencesSelected[key]);
 
             return (
-              React.createElement(DropdownButton, {key: key, bsStyle: 'default', title: preference.name}, 
+              React.createElement("section", null, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description), 
+
                 options.map(function(option, i) {
+                  var classes = cx({
+                    'option': true,
+                    'active': !preferencesSelected[key][option]
+                  });
                   return (
-                    React.createElement(MenuItem, {key: option, eventKey: i, onSelect: filterPreference.bind(null, key, option)}, option)
+                    React.createElement("div", {
+                      className: classes, 
+                      key: option, 
+                      onClick: filterPreference.bind(null, key, option)}, 
+                        React.createElement("strong", null, "› "), option
+                    )
                   );
                 })
               )
@@ -1749,7 +1791,10 @@ var Ptda = React.createClass({displayName: "Ptda",
           }
           else {
             return (
-              React.createElement("a", {className: "btn"}, preference.name)
+              React.createElement("section", null, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description)
+              )
             );
           }
         })
@@ -1757,7 +1802,11 @@ var Ptda = React.createClass({displayName: "Ptda",
     );
   },
 
-  filterPreference: function (preferenceKey, optionKey) {
+  filterPreference: function (preferenceKey, optionKey, event) {
+    if (this.state.menuOpen) {
+      event.stopPropagation();
+    }
+
     var disabledMedications = {};
     var medications = this.props.medications;
     var preferencesSelected = this.state.preferencesSelected;
@@ -1834,42 +1883,62 @@ var Ptda = React.createClass({displayName: "Ptda",
                         // Straight up list item?
                         if (typeof list[item] === 'string') {
                           if (list[item].toLowerCase() == option.toLowerCase()) {
-                            // disabledMedications[medication.name] = true;
                             medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].toLowerCase()] = true;
                           }
                         }
                         // Object? Look for a 'name' that we'll check against
                         else if (list[item].hasOwnProperty('name')) {
                           if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            // disabledMedications[medication.name] = true;
                             medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
                           }
                         }
                       }
                     }
                     // Object
                     else {
-                      // Check for our option in the object
-                      if (medication[preference][optionKey]) {
-                        medicationMatchingOptions[option] = true;
-                        // disabledMedications[medication.name] = true;
+                      for (var item in Object.keys(medication[preference])) {
+                        if (list[item].toLowerCase() == option.toLowerCase()) {
+                          medicationMatchingOptions[option] = true;
+                        }
+                        else {
+                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                        }
                       }
+                      // // Check for our option in the object
+                      // if (medication[preference][optionKey]) {
+                      //   medicationMatchingOptions[option] = true;
+                      // }
                     }
                   }
                 }
               }
             }
 
-            // Compare the drug's matching options to the selected options.
-            // If all selected options are also matching in the drug, disable the drug.
+            // Check if the drug should be disabled
             if (Object.keys(selectedOptions).length > 0) {
               var disableMedication = false;
 
+              // Disabled options present in the drug? Disable it.
               for (var selected in selectedOptions) {
-                if (medicationMatchingOptions[selected]) {
-                  disableMedication = true;
+                for (var option in medicationMatchingOptions) {
+                  if (medicationMatchingOptions[option] && selectedOptions[option]) {
+                    disableMedication = true;
+                  }
                 }
               }
+              // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
+              for (var option in medicationMatchingOptions) {
+                if (medicationMatchingOptions[option] && !selectedOptions[option]) {
+                  disableMedication = false;
+                }
+              }
+
               if (disableMedication) {
                 disabledMedications[medication.name] = true;
               }
@@ -2696,7 +2765,7 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
     var buf = new ArrayBuffer(0)
     var arr = new Uint8Array(buf)
     arr.foo = function () { return 42 }
-    return arr.foo() === 42 && // typed array instances can be augmented
+    return 42 === arr.foo() && // typed array instances can be augmented
         typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
         new Uint8Array(1).subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
   } catch (e) {
@@ -2725,66 +2794,59 @@ function Buffer (subject, encoding, noZero) {
   // Find the length
   var length
   if (type === 'number')
-    length = +subject
+    length = subject > 0 ? subject >>> 0 : 0
   else if (type === 'string') {
     length = Buffer.byteLength(subject, encoding)
   } else if (type === 'object' && subject !== null) { // assume object is array-like
     if (subject.type === 'Buffer' && isArray(subject.data))
       subject = subject.data
-    length = +subject.length
-  } else {
+    length = +subject.length > 0 ? Math.floor(+subject.length) : 0
+  } else
     throw new TypeError('must start with number, buffer, array or string')
-  }
 
   if (length > kMaxLength)
     throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
       'size: 0x' + kMaxLength.toString(16) + ' bytes')
 
-  if (length < 0)
-    length = 0
-  else
-    length >>>= 0 // Coerce to uint32.
-
-  var self = this
+  var buf
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    /*eslint-disable consistent-this */
-    self = Buffer._augment(new Uint8Array(length))
-    /*eslint-enable consistent-this */
+    buf = Buffer._augment(new Uint8Array(length))
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
-    self.length = length
-    self._isBuffer = true
+    buf = this
+    buf.length = length
+    buf._isBuffer = true
   }
 
   var i
   if (Buffer.TYPED_ARRAY_SUPPORT && typeof subject.byteLength === 'number') {
     // Speed optimization -- use set if we're copying from a typed array
-    self._set(subject)
+    buf._set(subject)
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
     if (Buffer.isBuffer(subject)) {
       for (i = 0; i < length; i++)
-        self[i] = subject.readUInt8(i)
+        buf[i] = subject.readUInt8(i)
     } else {
       for (i = 0; i < length; i++)
-        self[i] = ((subject[i] % 256) + 256) % 256
+        buf[i] = ((subject[i] % 256) + 256) % 256
     }
   } else if (type === 'string') {
-    self.write(subject, 0, encoding)
+    buf.write(subject, 0, encoding)
   } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
     for (i = 0; i < length; i++) {
-      self[i] = 0
+      buf[i] = 0
     }
   }
 
   if (length > 0 && length <= Buffer.poolSize)
-    self.parent = rootParent
+    buf.parent = rootParent
 
-  return self
+  return buf
 }
 
-function SlowBuffer (subject, encoding, noZero) {
+function SlowBuffer(subject, encoding, noZero) {
   if (!(this instanceof SlowBuffer))
     return new SlowBuffer(subject, encoding, noZero)
 
@@ -2800,8 +2862,6 @@ Buffer.isBuffer = function (b) {
 Buffer.compare = function (a, b) {
   if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
     throw new TypeError('Arguments must be Buffers')
-
-  if (a === b) return 0
 
   var x = a.length
   var y = b.length
@@ -2943,7 +3003,6 @@ Buffer.prototype.toString = function (encoding, start, end) {
 
 Buffer.prototype.equals = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
   return Buffer.compare(this, b) === 0
 }
 
@@ -2960,7 +3019,6 @@ Buffer.prototype.inspect = function () {
 
 Buffer.prototype.compare = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return 0
   return Buffer.compare(this, b)
 }
 
@@ -3045,7 +3103,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   offset = Number(offset) || 0
 
   if (length < 0 || offset < 0 || offset > this.length)
-    throw new RangeError('attempt to write outside buffer bounds')
+    throw new RangeError('attempt to write outside buffer bounds');
 
   var remaining = this.length - offset
   if (!length) {
@@ -3168,7 +3226,7 @@ Buffer.prototype.slice = function (start, end) {
   end = end === undefined ? len : ~~end
 
   if (start < 0) {
-    start += len
+    start += len;
     if (start < 0)
       start = 0
   } else if (start > len) {
@@ -3237,7 +3295,7 @@ Buffer.prototype.readUIntBE = function (offset, byteLength, noAssert) {
   var val = this[offset + --byteLength]
   var mul = 1
   while (byteLength > 0 && (mul *= 0x100))
-    val += this[offset + --byteLength] * mul
+    val += this[offset + --byteLength] * mul;
 
   return val
 }
@@ -3645,7 +3703,7 @@ Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
 Buffer.prototype.copy = function (target, target_start, start, end) {
-  var self = this // source
+  var source = this
 
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
@@ -3655,12 +3713,12 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 
   // Copy 0 bytes; we're done
   if (end === start) return 0
-  if (target.length === 0 || self.length === 0) return 0
+  if (target.length === 0 || source.length === 0) return 0
 
   // Fatal error conditions
   if (target_start < 0)
     throw new RangeError('targetStart out of bounds')
-  if (start < 0 || start >= self.length) throw new RangeError('sourceStart out of bounds')
+  if (start < 0 || start >= source.length) throw new RangeError('sourceStart out of bounds')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
@@ -3834,50 +3892,61 @@ function toHex (n) {
   return n.toString(16)
 }
 
-function utf8ToBytes (string, units) {
-  units = units || Infinity
-  var codePoint
-  var length = string.length
+function utf8ToBytes(string, units) {
+  var codePoint, length = string.length
   var leadSurrogate = null
+  units = units || Infinity
   var bytes = []
   var i = 0
 
-  for (; i < length; i++) {
+  for (; i<length; i++) {
     codePoint = string.charCodeAt(i)
 
     // is surrogate component
     if (codePoint > 0xD7FF && codePoint < 0xE000) {
+
       // last char was a lead
       if (leadSurrogate) {
+
         // 2 leads in a row
         if (codePoint < 0xDC00) {
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           leadSurrogate = codePoint
           continue
-        } else {
-          // valid surrogate pair
+        }
+
+        // valid surrogate pair
+        else {
           codePoint = leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00 | 0x10000
           leadSurrogate = null
         }
-      } else {
-        // no lead yet
+      }
 
+      // no lead yet
+      else {
+
+        // unexpected trail
         if (codePoint > 0xDBFF) {
-          // unexpected trail
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        } else if (i + 1 === length) {
-          // unpaired lead
+        }
+
+        // unpaired lead
+        else if (i + 1 === length) {
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        } else {
-          // valid lead
+        }
+
+        // valid lead
+        else {
           leadSurrogate = codePoint
           continue
         }
       }
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
+    }
+
+    // valid bmp char, but last char was a lead
+    else if (leadSurrogate) {
       if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
       leadSurrogate = null
     }
@@ -3886,28 +3955,32 @@ function utf8ToBytes (string, units) {
     if (codePoint < 0x80) {
       if ((units -= 1) < 0) break
       bytes.push(codePoint)
-    } else if (codePoint < 0x800) {
+    }
+    else if (codePoint < 0x800) {
       if ((units -= 2) < 0) break
       bytes.push(
         codePoint >> 0x6 | 0xC0,
         codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x10000) {
+      );
+    }
+    else if (codePoint < 0x10000) {
       if ((units -= 3) < 0) break
       bytes.push(
         codePoint >> 0xC | 0xE0,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x200000) {
+      );
+    }
+    else if (codePoint < 0x200000) {
       if ((units -= 4) < 0) break
       bytes.push(
         codePoint >> 0x12 | 0xF0,
         codePoint >> 0xC & 0x3F | 0x80,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      )
-    } else {
+      );
+    }
+    else {
       throw new Error('Invalid code point')
     }
   }
@@ -3928,6 +4001,7 @@ function utf16leToBytes (str, units) {
   var c, hi, lo
   var byteArray = []
   for (var i = 0; i < str.length; i++) {
+
     if ((units -= 2) < 0) break
 
     c = str.charCodeAt(i)
@@ -3945,7 +4019,7 @@ function base64ToBytes (str) {
 }
 
 function blitBuffer (src, dst, offset, length, unitSize) {
-  if (unitSize) length -= length % unitSize
+  if (unitSize) length -= length % unitSize;
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -6950,8 +7024,15 @@ module.exports = {
       this._mountOverlayTarget();
     }
 
+    var overlay = this.renderOverlay();
+
     // Save reference to help testing
-    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
+    if (overlay !== null) {
+      this._overlayInstance = React.render(overlay, this._overlayTarget);
+    } else {
+      // Unrender if the component is null for transitions to null
+      this._unrenderOverlay();
+    }
   },
 
   _unrenderOverlay: function () {
@@ -6964,7 +7045,11 @@ module.exports = {
       throw new Error('getOverlayDOMNode(): A component must be mounted to have a DOM node.');
     }
 
-    return this._overlayInstance.getDOMNode();
+    if (this._overlayInstance) {
+      return this._overlayInstance.getDOMNode();
+    }
+
+    return null;
   },
 
   getContainerDOMNode: function () {

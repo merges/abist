@@ -222,33 +222,33 @@ var Ptda = React.createClass({
       preferences: {
         'alcohol': {
           'key': 'key',
-          'name': 'Alcohol',
+          'name': 'Alcohol-friendly',
           'type': 'boolean',
-          'description': 'if you drink alcohol'
+          'description': 'If you drink alcohol'
         },
-        'cost': {
-          'key': 'cost',
-          'name': 'Cost',
-          'type': 'number',
-          'description': 'Average cost per month'
-        },
-        'class': {
-          'key': 'class',
-          'name': 'Drug class',
-          'type': 'list',
-          'description': 'Drug classes'
-        },
+        // 'cost': {
+        //   'key': 'cost',
+        //   'name': 'Cost',
+        //   'type': 'number',
+        //   'description': 'average cost per month'
+        // },
+        // 'class': {
+        //   'key': 'class',
+        //   'name': 'Drug class',
+        //   'type': 'list',
+        //   'description': 'Drug classes'
+        // },
         'forms': {
           'key': 'forms',
           'name': 'Dosage form',
           'type': 'list',
-          'description': 'Dosage form'
+          'description': 'if you want to avoid a certain dosage form'
         },
         'generic_available': {
           'key': 'generic_available',
-          'name': 'Generic',
+          'name': 'Generic available',
           'type': 'boolean',
-          'description': 'Generic available'
+          'description': 'A cheaper, generic version is available'
         },
         'liver_disease': {
           'key': 'liver_disease',
@@ -286,7 +286,7 @@ var Ptda = React.createClass({
 
   getInitialState: function () {
   	var medicationMap = {};
-    this.props.medications.forEach(function (medication, index) {
+    this.props.medications.forEach(function(medication, index) {
     	medicationMap[medication.name] = index;
     });
 
@@ -318,6 +318,7 @@ var Ptda = React.createClass({
       activeCard: null,
       disabledMedications: {},
       medicationMap: medicationMap,
+      menuOpen: null,
       preferences: this.props.preferences,
       preferencesSelected: {
         alcohol: false,
@@ -329,7 +330,6 @@ var Ptda = React.createClass({
         pregnancy: false,
         tb: false
       },
-      selectedRisks: {},
       selectedMedication: null
     }
   },
@@ -344,19 +344,24 @@ var Ptda = React.createClass({
     var selectedMedication = this.state.selectedMedication;
     var medicationMap = this.state.medicationMap;
 
+    var cx = React.addons.classSet;
+    var cardContainerClasses = cx({
+      'card-container': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
+
     return (
       <div>
         <div className="ptda">
           <div className="header">
             <div className="row">
-              <div className="col-sm-2 hidden-xs">
+              <div className="col-sm-12">
                 <h1>PtDA demo</h1>
-              </div>
-              <div className="col-sm-10">
-                {this.renderPreferenceControls(preferences)}
               </div>
             </div>
           </div>
+          {this.renderPreferenceControls(preferences)}
           <section>
             {selectedMedication &&
               <Modal
@@ -372,7 +377,9 @@ var Ptda = React.createClass({
               </Modal>
             }
 
-            <div className="card-container">
+            <div className={cardContainerClasses}>
+              {
+              /*
               <div>
                 An attempt to be vaguely issue-centric.
                 <ul>
@@ -383,6 +390,8 @@ var Ptda = React.createClass({
                   <li>??Avoid side effects <strong>Anything you absolutely don’t want to feel</strong></li>
                 </ul>
               </div>
+              */
+              }
               <div className="cards">
                 <PtdaCost
                 	active
@@ -426,28 +435,49 @@ var Ptda = React.createClass({
     );
   },
 
+  togglePreferenceControls: function () {
+    var isOpen = this.state.menuOpen;
+    isOpen = !isOpen;
+    this.setState({
+      menuOpen: isOpen
+    })
+  },
+
   renderPreferenceControls: function (preferences) {
     var filterPreference = this.filterPreference;
+    var togglePreferenceControls = this.togglePreferenceControls;
+
     var preferences = this.props.preferences;
     var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
+    var preferenceControlClasses = cx({
+      'preference-controls': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
 
     return (
-      <div className="preference-controls">
+      <div className={preferenceControlClasses} onClick={togglePreferenceControls}>
+        <h2>
+          Narrow your options
+          <strong>{this.state.menuOpen? '‹' : '›'}</strong>
+        </h2>
+
         {Object.keys(preferences).map(function(key) {
           var preference = preferences[key];
 
           // Boolean preferences become a push button
           if (preference.type == 'boolean') {
             var classes = cx({
-              'btn btn-default': true,
+              'preference': true,
               'active': preferencesSelected[key]
             });
             return (
-              <a className={classes} key={key} onClick={filterPreference.bind(null, key, false)}>
+              <section className={classes} key={key} onClick={filterPreference.bind(null, key, false)}>
                 {preference.name}
-              </a>
+                <span className='description'>{preference.description}</span>
+              </section>
             );
           }
           // List preferences become a list
@@ -458,18 +488,33 @@ var Ptda = React.createClass({
             var options = Object.keys(preferencesSelected[key]);
 
             return (
-              <DropdownButton key={key} bsStyle={'default'} title={preference.name}>
+              <section>
+                {preference.name}
+                <span className='description'>{preference.description}</span>
+
                 {options.map(function(option, i) {
+                  var classes = cx({
+                    'option': true,
+                    'active': !preferencesSelected[key][option]
+                  });
                   return (
-                    <MenuItem key={option} eventKey={i} onSelect={filterPreference.bind(null, key, option)}>{option}</MenuItem>
+                    <div
+                      className={classes}
+                      key={option}
+                      onClick={filterPreference.bind(null, key, option)}>
+                        <strong>› </strong>{option}
+                    </div>
                   );
                 })}
-              </DropdownButton>
+              </section>
             );
           }
           else {
             return (
-              <a className="btn">{preference.name}</a>
+              <section>
+                {preference.name}
+                <span className='description'>{preference.description}</span>
+              </section>
             );
           }
         })}
@@ -477,7 +522,11 @@ var Ptda = React.createClass({
     );
   },
 
-  filterPreference: function (preferenceKey, optionKey) {
+  filterPreference: function (preferenceKey, optionKey, event) {
+    if (this.state.menuOpen) {
+      event.stopPropagation();
+    }
+
     var disabledMedications = {};
     var medications = this.props.medications;
     var preferencesSelected = this.state.preferencesSelected;
@@ -554,42 +603,62 @@ var Ptda = React.createClass({
                         // Straight up list item?
                         if (typeof list[item] === 'string') {
                           if (list[item].toLowerCase() == option.toLowerCase()) {
-                            // disabledMedications[medication.name] = true;
                             medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].toLowerCase()] = true;
                           }
                         }
                         // Object? Look for a 'name' that we'll check against
                         else if (list[item].hasOwnProperty('name')) {
                           if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            // disabledMedications[medication.name] = true;
                             medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
                           }
                         }
                       }
                     }
                     // Object
                     else {
-                      // Check for our option in the object
-                      if (medication[preference][optionKey]) {
-                        medicationMatchingOptions[option] = true;
-                        // disabledMedications[medication.name] = true;
+                      for (var item in Object.keys(medication[preference])) {
+                        if (list[item].toLowerCase() == option.toLowerCase()) {
+                          medicationMatchingOptions[option] = true;
+                        }
+                        else {
+                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                        }
                       }
+                      // // Check for our option in the object
+                      // if (medication[preference][optionKey]) {
+                      //   medicationMatchingOptions[option] = true;
+                      // }
                     }
                   }
                 }
               }
             }
 
-            // Compare the drug's matching options to the selected options.
-            // If all selected options are also matching in the drug, disable the drug.
+            // Check if the drug should be disabled
             if (Object.keys(selectedOptions).length > 0) {
               var disableMedication = false;
 
+              // Disabled options present in the drug? Disable it.
               for (var selected in selectedOptions) {
-                if (medicationMatchingOptions[selected]) {
-                  disableMedication = true;
+                for (var option in medicationMatchingOptions) {
+                  if (medicationMatchingOptions[option] && selectedOptions[option]) {
+                    disableMedication = true;
+                  }
                 }
               }
+              // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
+              for (var option in medicationMatchingOptions) {
+                if (medicationMatchingOptions[option] && !selectedOptions[option]) {
+                  disableMedication = false;
+                }
+              }
+
               if (disableMedication) {
                 disabledMedications[medication.name] = true;
               }
