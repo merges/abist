@@ -442,10 +442,12 @@ var Ptda = React.createClass({
           </section>
 
           <section>
-            <PtdaOptions
+            {/*
+              <PtdaOptions
               medications={medications}
               disabledMedications={disabledMedications}
               risks={risks} />
+            */}
           </section>
         </div>
       </div>

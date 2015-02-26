@@ -1726,11 +1726,13 @@ var Ptda = React.createClass({displayName: "Ptda",
             )
           ), 
 
-          React.createElement("section", null, 
-            React.createElement(PtdaOptions, {
-              medications: medications, 
-              disabledMedications: disabledMedications, 
-              risks: risks})
+          React.createElement("section", null
+            /*
+              <PtdaOptions
+              medications={medications}
+              disabledMedications={disabledMedications}
+              risks={risks} />
+            */
           )
         )
       )
