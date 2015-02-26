@@ -549,38 +549,45 @@ var Ptda = React.createClass({
       preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
     }
 
-    // FIND MATCHING DRUGS TO DISABLE
-    // TODO: HARMONIZATION FOR HANDLING THIS STUFF
-    medications.forEach(function(medication) {
+    // Check each medication against the selected preferences and options,
+    // disabling any that doesn't satisfy.
+    //
+    medications.forEach(function(medication, i) {
+      var medicationMatchingPreferences = {};
+
+      // 1. Examine all the preferences for a match.
+      //
       for (var preference in preferencesSelected) {
-
         if (preferencesSelected[preference]) {
-
-          // Simple boolean preference
+          
+          // a. Simple boolean preference
           if (typeof preferencesSelected[preference] === 'boolean') {
 
             // Look for a matching key in the medication object
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
-              disabledMedications[medication.name] = true;
+              medicationMatchingPreferences[preference] = true;
+              // disabledMedications[medication.name] = true;
             }
             // Not a key in medication object, so check ptda.risks
             else {
               for (var risk in medication.ptda.risks) {
                 if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
-                  disabledMedications[medication.name] = true;
+                  medicationMatchingPreferences[preference] = true;
+                  // disabledMedications[medication.name] = true;
                 }
               }
             }
           }
-          // List preference
+
+          // b. List preference
           else if (typeof preferencesSelected[preference] === 'object') {
 
             // The user chose one or more options (to avoid), so the medication must match
             // each option in order to get disabled.
-            var medicationMatchingOptions = {};
             var selectedOptions = {};
-
+            var medicationMatchingOptions = {};
+            
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
@@ -638,35 +645,55 @@ var Ptda = React.createClass({
                   }
                 }
               }
-            }
+            }            
 
-            // Check if the drug should be disabled
+            // Check if the drug should be disabled based on one of the options matching.
             if (Object.keys(selectedOptions).length > 0) {
-              var disableMedication = false;
-
               // Disabled options present in the drug? Disable it.
               for (var selected in selectedOptions) {
                 for (var option in medicationMatchingOptions) {
                   if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    disableMedication = true;
+                    medicationMatchingPreferences[preference] = true;
                   }
                 }
               }
               // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
               for (var option in medicationMatchingOptions) {
                 if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  disableMedication = false;
+                  medicationMatchingPreferences[preference] = false;
                 }
-              }
-
-              if (disableMedication) {
-                disabledMedications[medication.name] = true;
-              }
-              else {
-                disabledMedications[medication.name] = false;
               }
             }
           }
+        }
+      }
+
+      // 2. Check if the drug should be disabled.
+      //
+      if (Object.keys(preferencesSelected).length > 0) {
+        var disableMedication = false;
+
+        // Disabled options present in the drug? Disable it.
+        for (var selected in preferencesSelected) {
+          for (var preference in medicationMatchingPreferences) {
+            if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
+              disableMedication = true;
+            }
+          }
+        }
+        // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
+        for (var preference in medicationMatchingPreferences) {
+          if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
+            disableMedication = false;
+          }
+        }
+
+        // Add the medication to disabledMedications.
+        if (disableMedication) {
+          disabledMedications[medication.name] = true;
+        }
+        else {
+          disabledMedications[medication.name] = false;
         }
       }
     });
