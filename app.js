@@ -41,7 +41,7 @@ app.use(function (req, res) {
     res.render('layout', {
       html: content
     })
-  })
+  });
 });
 
 if (env != 'production') {

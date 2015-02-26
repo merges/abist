@@ -8975,11 +8975,6 @@ html a {
   -webkit-text-fill-color: transparent;
   -webkit-animation: hue 1440s infinite linear;
 }
-@media (max-width: 767px) {
-  .header {
-    position: absolute;
-  }
-}
 .experiment {
   margin-right: auto;
   margin-left: auto;
@@ -9069,15 +9064,22 @@ html a {
     margin-left: 0;
   }
 }
-@media (max-width: 767px) {
-  .ptda {
-    margin-left: -15px;
-    margin-right: -15px;
-  }
-}
 .ptda > section {
   margin-left: -15px;
   margin-right: -15px;
+}
+.ptda > .header a.mobile-toggle {
+  cursor: pointer;
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: .6em 1em 0 1em;
+  background: #fe6939;
+  color: white;
+  font-size: 1.4em;
+  font-weight: 500;
 }
 .ptda .preference-controls {
   cursor: pointer;
@@ -9107,17 +9109,6 @@ html a {
   left: -300px;
   transform: translateX(0);
 }
-@media (max-width: 1199px) {
-  .ptda .preference-controls {
-    font-size: 1.4em;
-    left: -340px;
-    width: 400px;
-    padding-top: 4.5em;
-  }
-  .ptda .preference-controls.closed {
-    left: -400px;
-  }
-}
 .ptda .preference-controls h2 {
   position: relative;
   margin: 0 -30px 1px 0;
@@ -9136,12 +9127,6 @@ html a {
   right: 10px;
   top: -43%;
 }
-@media (max-width: 1199px) {
-  .ptda .preference-controls h2 > strong {
-    font-size: 2.5em;
-    top: -47%;
-  }
-}
 .ptda .preference-controls > section {
   line-height: 1.2;
   padding: 5px 15px 15px 15px;
@@ -9155,14 +9140,20 @@ html a {
   font-weight: lighter;
   display: block;
 }
-.ptda .preference-controls > .preference:hover,
-.ptda .preference-controls > section > .option:hover {
-  color: #fe6939;
-  background: #fafafa;
+.ptda .preference-controls > .preference,
+.ptda .preference-controls > section > .option {
+  color: #3846e0;
 }
-.ptda .preference-controls > .preference:hover > .description,
-.ptda .preference-controls > section > .option:hover > .description {
-  color: #fe6939;
+@media (min-width: 1199px) {
+  .ptda .preference-controls > .preference:hover,
+  .ptda .preference-controls > section > .option:hover {
+    color: #fe6939;
+    background: #fafafa;
+  }
+  .ptda .preference-controls > .preference:hover > .description,
+  .ptda .preference-controls > section > .option:hover > .description {
+    color: #fe6939;
+  }
 }
 .ptda .preference-controls > .preference:active,
 .ptda .preference-controls > section > .option:active {
@@ -9219,13 +9210,6 @@ html a {
     width: 100%;
   }
 }
-@media (max-width: 767px) {
-  .ptda .card-container {
-    margin-left: -15px;
-    margi-right: -15px;
-    padding: 0;
-  }
-}
 @media (min-width: 1200px) {
   .ptda .card-container.open {
     padding-left: 350px;
@@ -9240,13 +9224,6 @@ html a {
 .ptda .card-container .cards .ptda-card {
   vertical-align: text-top;
   max-width: 720px;
-}
-@media (max-width: 767px) {
-  .ptda .card-container .cards .ptda-card {
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 3em;
-  }
 }
 .ptda .options .option-header h4 {
   font-size: 1em;
@@ -9370,11 +9347,11 @@ html a {
   cursor: pointer;
   user-select: none !important;
 }
-.ptda .ptda-card table {
+.ptda .ptda-card > table {
   width: 100%;
   table-layout: fixed;
 }
-.ptda .ptda-card table h2 {
+.ptda .ptda-card > table h2 {
   border-radius: 24px 24px 0 0;
   margin: 0;
   padding: .5em .5em;
@@ -9383,20 +9360,20 @@ html a {
   color: white;
   text-align: center;
 }
-.ptda .ptda-card table h3 {
+.ptda .ptda-card > table h3 {
   margin: 1.2em .5em;
   text-align: center;
   font-size: 1.3em;
 }
-.ptda .ptda-card table h4 {
+.ptda .ptda-card > table h4 {
   font-size: .9em;
   font-weight: bolder;
 }
-.ptda .ptda-card table h5 {
+.ptda .ptda-card > table h5 {
   font-size: 1.4em;
   font-weight: bolder;
 }
-.ptda .ptda-card table td {
+.ptda .ptda-card > table td {
   width: 180px;
   height: 180px;
   padding: .5em;
@@ -9404,37 +9381,37 @@ html a {
   vertical-align: top;
   transition: background 0.07s ease-in-out;
 }
-.ptda .ptda-card table td h4,
-.ptda .ptda-card table td h5 {
+.ptda .ptda-card > table td h4,
+.ptda .ptda-card > table td h5 {
   transition: color 0.07s ease-in-out;
 }
-.ptda .ptda-card table td.disabled {
+.ptda .ptda-card > table td.disabled {
   background: #f6f6f6 !important;
 }
-.ptda .ptda-card table td.disabled h4,
-.ptda .ptda-card table td.disabled h5 {
+.ptda .ptda-card > table td.disabled h4,
+.ptda .ptda-card > table td.disabled h5 {
   text-decoration: line-through;
   color: #dddddd;
 }
-.ptda .ptda-card table td.selected {
+.ptda .ptda-card > table td.selected {
   color: white !important;
   background: #444444 !important;
 }
-.ptda .ptda-card table td + td {
+.ptda .ptda-card > table td + td {
   border-left: 1px solid white;
 }
-.ptda .ptda-card table tr.dosage-form {
+.ptda .ptda-card > table tr.dosage-form {
   display: none;
 }
-.ptda .ptda-card table tr.dosage-form td {
+.ptda .ptda-card > table tr.dosage-form td {
   height: auto;
   border-radius: 0;
   background: none !important;
 }
-.ptda .ptda-card table tr:last-child td:first-child {
+.ptda .ptda-card > table tr:last-child td:first-child {
   border-bottom-left-radius: 24px;
 }
-.ptda .ptda-card table tr:last-child td:last-child {
+.ptda .ptda-card > table tr:last-child td:last-child {
   border-bottom-right-radius: 24px;
 }
 @media (max-width: 767px) {
@@ -9557,6 +9534,59 @@ html a {
 }
 .ptda .ptda-card.side-effects table tr.dosage-form td {
   color: #cd773b;
+}
+.ptda.no-scroll {
+  overflow: hidden;
+}
+.ptda.mobile {
+  font-size: .75em;
+}
+.ptda.mobile > .header .mobile-toggle {
+  display: block;
+}
+.ptda.mobile .preference-controls {
+  left: 0;
+  top: -200%;
+  width: 100%;
+  height: 100%;
+  padding-top: 5em;
+  border-bottom: 12px solid #fe6939;
+  font-size: 1.3em;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+.ptda.mobile .preference-controls h2 {
+  display: none;
+}
+.ptda.mobile .preference-controls.open {
+  top: 0;
+  left: 0;
+  transform: translateY(0);
+}
+.ptda.mobile .preference-controls.closed {
+  top: -200%;
+  left: 0;
+  transform: translateY(0);
+}
+.ptda.mobile .card-container {
+  width: 100%;
+  transition: none;
+  padding: 6em 0 0 0;
+}
+@media (min-width: 992px) {
+  .ptda.mobile .card-container {
+    padding: 6em 30px 0 30px;
+  }
+}
+.ptda.mobile .card-container .cards .ptda-card {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 5em;
+}
+.ptda.mobile .card-container .cards .ptda-card > table td {
+  word-wrap: break-word;
+  height: 100px;
 }
 .adverse-events {
   margin-right: auto;

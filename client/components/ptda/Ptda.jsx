@@ -2,6 +2,13 @@
 
 var React = require('react/addons');
 
+// // Detect mobile if we're on client side.
+var isMobile = require('ismobilejs');
+var mobile;
+if (typeof window !== 'undefined') {
+  mobile = isMobile.any;
+}
+
 var PtdaConsiderations = require('./PtdaConsiderations');
 var PtdaCost = require('./PtdaCost');
 var PtdaFrequency = require('./PtdaFrequency');
@@ -15,8 +22,6 @@ var MenuItem = require('react-bootstrap').MenuItem;
 var Modal = require('react-bootstrap').Modal;
 
 var medications = require('../Data.jsx');
-
-
 
 // PtDA option
 
@@ -334,7 +339,15 @@ var Ptda = React.createClass({
     }
   },
 
-  render: function () {
+  componentDidMount: function() {
+    if (this.isMounted) {
+      this.setState({
+        mobile: isMobile.any
+      });
+    }
+  },
+
+  render: function() {
     var medications = this.props.medications;
     var preferences = this.props.preferences;
     var risks = this.props.risks;
@@ -350,16 +363,20 @@ var Ptda = React.createClass({
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
     });
+    var ptdaClasses = cx({
+      'ptda': true,
+      'mobile': this.state.mobile,
+      'no-scroll': this.state.mobile && this.state.menuOpen
+    });
 
     return (
       <div>
-        <div className="ptda">
+        <div className={ptdaClasses}>
           <div className="header">
-            <div className="row">
-              <div className="col-sm-12">
-                <h1>PtDA demo</h1>
-              </div>
-            </div>
+            <h1>PtDA demo</h1>
+            <a className="mobile-toggle" onClick={this.togglePreferenceControls}>
+              {!this.state.menuOpen ? 'Filter your options' : 'Close filter'}
+            </a>
           </div>
           {this.renderPreferenceControls(preferences)}
           <section>
@@ -458,9 +475,9 @@ var Ptda = React.createClass({
     });
 
     return (
-      <div className={preferenceControlClasses} onClick={togglePreferenceControls}>
-        <h2>
-          Narrow your options
+      <div className={preferenceControlClasses}>
+        <h2 onClick={togglePreferenceControls}>
+          Filter your options
           <strong>{this.state.menuOpen? '‹' : '›'}</strong>
         </h2>
 
@@ -469,12 +486,12 @@ var Ptda = React.createClass({
 
           // Boolean preferences become a push button
           if (preference.type == 'boolean') {
-            var classes = cx({
+            var preferenceClasses = cx({
               'preference': true,
               'active': preferencesSelected[key]
             });
             return (
-              <section className={classes} key={key} onClick={filterPreference.bind(null, key, false)}>
+              <section className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
                 {preference.name}
                 <span className='description'>{preference.description}</span>
               </section>
@@ -493,13 +510,13 @@ var Ptda = React.createClass({
                 <span className='description'>{preference.description}</span>
 
                 {options.map(function(option, i) {
-                  var classes = cx({
+                  var optionClasses = cx({
                     'option': true,
                     'active': !preferencesSelected[key][option]
                   });
                   return (
                     <div
-                      className={classes}
+                      className={optionClasses}
                       key={option}
                       onClick={filterPreference.bind(null, key, option)}>
                         <strong>› </strong>{option}

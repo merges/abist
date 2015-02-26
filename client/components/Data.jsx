@@ -17,7 +17,7 @@ var medications = [
     "generic_available": true,
     "forms": [
       {
-        "name": "tablet"
+        "name": "tablet (by mouth)"
       },
       {
         "name": "injection"
@@ -101,7 +101,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "tablet"
+        "name": "tablet (by mouth)"
       }
     ],
     "ptda": {
@@ -168,7 +168,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "tablet"
+        "name": "tablet (by mouth)"
       }
     ],
     "ptda": {
@@ -234,7 +234,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "tablet"
+        "name": "tablet (by mouth)"
       }
     ],
     "ptda": {
@@ -580,7 +580,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "intravenous"
+        "name": "infusion (IV, by vein)"
       }
     ],
     "ptda": {
@@ -649,7 +649,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "intravenous"
+        "name": "infusion (IV, by vein)"
       }
     ],
     "ptda": {
@@ -718,7 +718,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "intravenous"
+        "name": "infusion (IV, by vein)"
       }
     ],
     "ptda": {
@@ -788,7 +788,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "intravenous"
+        "name": "infusion (IV, by vein)"
       }
     ],
     "ptda": {
