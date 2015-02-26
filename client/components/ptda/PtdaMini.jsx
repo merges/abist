@@ -23,18 +23,18 @@ var PtdaMini = React.createClass({
     return (
       <section className={classes}>
         <div className="row name">
-          <h2 className="col-sm-6">
+          <h2>
             {medication.name}<br />
             <small>{medication.name_phonetic}</small>
           </h2>
           {medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
-            <h3 className="col-sm-6">
+            <h3>
               ({medication.name_generic})<br />
               <small>{medication.name_generic_phonetic}</small>
             </h3>
           }
         </div>
-        <div className="row">
+        <div className="row content">
           <div className="col-sm-3 cost">
             <h3>Cost</h3>
             <h4>

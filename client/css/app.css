@@ -9297,16 +9297,18 @@ html a {
   padding: .4em 0;
   background: #444444;
 }
-.ptda .mini .name h2,
-.ptda .mini .name h3 {
+.ptda .mini .name > h2,
+.ptda .mini .name > h3 {
+  display: inline-block;
   font-size: 1.3em;
   line-height: 1.1em;
-  margin: 0;
+  margin: 0 0 0 15px;
 }
 .ptda .mini .name h2 {
   font-weight: bolder;
 }
 .ptda .mini .name h3 {
+  color: #f4f4f4;
   font-weight: 400;
 }
 .ptda .mini .name small {
@@ -9323,7 +9325,10 @@ html a {
   font-size: 1em;
   margin: 0;
 }
-.ptda .mini .side-effects h4 span ~ span:before {
+.ptda .mini .content {
+  font-size: 1.3em;
+}
+.ptda .mini .side-effects h4 > span + span:before {
   content: ', ';
 }
 .ptda .mini .risks .safe {
@@ -9389,9 +9394,10 @@ html a {
   background: #f6f6f6 !important;
 }
 .ptda .ptda-card > table td.disabled h4,
-.ptda .ptda-card > table td.disabled h5 {
+.ptda .ptda-card > table td.disabled h5,
+.ptda .ptda-card > table td.disabled h5 > p {
   text-decoration: line-through;
-  color: #dddddd;
+  color: #dddddd !important;
 }
 .ptda .ptda-card > table td.selected {
   color: white !important;
@@ -9493,12 +9499,23 @@ html a {
 .ptda .ptda-card.risks table td h5 p {
   margin: 0 0 .1em 0;
 }
+.ptda .ptda-card.risks table td h5 p:after {
+  font-weight: 200;
+  content: ' OK';
+}
+.ptda .ptda-card.risks table td h5 .unsure {
+  color: rgba(255, 255, 255, 0.5);
+}
 .ptda .ptda-card.risks table td h5 .unsure:after {
+  font-weight: 500;
   content: '?';
 }
 .ptda .ptda-card.risks table td h5 .unsafe {
-  opacity: .5;
+  color: #e01d00;
   text-decoration: line-through;
+}
+.ptda .ptda-card.risks table td h5 .unsafe:after {
+  content: none;
 }
 .ptda .ptda-card.risks table tr.dosage-form {
   display: none;

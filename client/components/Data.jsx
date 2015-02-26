@@ -580,7 +580,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -637,7 +637,7 @@ var medications = [
     "name": "Remicade",
     "name_generic": "infliximab",
     "name_common": "Remicade",
-    "name_phonetic": "REM-ih-kaid",
+    "name_phonetic": "REM-ih-kade",
     "name_generic_phonetic": "in-FLIX-ih-mab",
     "class": [
       "DMARD",
@@ -649,7 +649,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -718,7 +718,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -788,7 +788,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {

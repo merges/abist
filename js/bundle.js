@@ -602,7 +602,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -659,7 +659,7 @@ var medications = [
     "name": "Remicade",
     "name_generic": "infliximab",
     "name_common": "Remicade",
-    "name_phonetic": "REM-ih-kaid",
+    "name_phonetic": "REM-ih-kade",
     "name_generic_phonetic": "in-FLIX-ih-mab",
     "class": [
       "DMARD",
@@ -671,7 +671,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -740,7 +740,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -810,7 +810,7 @@ var medications = [
     ],
     "forms": [
       {
-        "name": "infusion (IV, by vein)"
+        "name": "infusion (by vein at clinic)"
       }
     ],
     "ptda": {
@@ -2434,18 +2434,18 @@ var PtdaMini = React.createClass({displayName: "PtdaMini",
     return (
       React.createElement("section", {className: classes}, 
         React.createElement("div", {className: "row name"}, 
-          React.createElement("h2", {className: "col-sm-6"}, 
+          React.createElement("h2", null, 
             medication.name, React.createElement("br", null), 
             React.createElement("small", null, medication.name_phonetic)
           ), 
           medication.name.toLowerCase() != medication.name_generic.toLowerCase() &&
-            React.createElement("h3", {className: "col-sm-6"}, 
+            React.createElement("h3", null, 
               "(", medication.name_generic, ")", React.createElement("br", null), 
               React.createElement("small", null, medication.name_generic_phonetic)
             )
           
         ), 
-        React.createElement("div", {className: "row"}, 
+        React.createElement("div", {className: "row content"}, 
           React.createElement("div", {className: "col-sm-3 cost"}, 
             React.createElement("h3", null, "Cost"), 
             React.createElement("h4", null, 

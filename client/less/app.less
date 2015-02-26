@@ -437,16 +437,18 @@ html {
 			padding: .4em 0;
 			background: @color-grey-xd;
 
-			h2,
-			h3 {
+			> h2,
+			> h3 {
+				display: inline-block;
 				font-size: 1.3em;
 				line-height: 1.1em;
-				margin: 0;
+				margin: 0 0 0 15px;
 			}
 			h2 {
 				font-weight: bolder;
 			}
 			h3 {
+        color: @color-grey-xxxxxl;
 				font-weight: 400;
 			}
 			small {
@@ -464,9 +466,12 @@ html {
 			font-size: 1em;
 			margin: 0;
 		}
+		.content {
+			font-size: 1.3em;
+		}
 		.side-effects {
 			h4 {
-				span ~ span {
+				> span + span {
 					&:before {
 						content: ', ';
 					}
@@ -540,9 +545,10 @@ html {
 					background: #f6f6f6 !important;
 
 					h4,
-					h5 {
+					h5,
+					h5 > p {
 						text-decoration: line-through;
-						color: @color-grey-xxl;
+						color: @color-grey-xxl !important;
 					}
 				}
 				&.selected {
@@ -702,19 +708,31 @@ html {
           background: @color-risks;
 					
           h5 {
-						font-size: 1.2em;
+          	font-size: 1.2em;
 
 						p {
 							margin: 0 0 .1em 0;
+
+							&:after {
+								font-weight: 200;
+	          		content: ' OK';
+	          	}
 						}
 						.unsure {
+							color: rgba(255,255,255,.5);
+
 							&:after {
+								font-weight: 500;
 								content: '?';
 							}
 						}
 						.unsafe {
-              opacity: .5;
+              color: #e01d00;
 							text-decoration: line-through;
+
+							&:after {
+								content: none;
+							}
 						}
 					}
 					// &:nth-child(odd) {
