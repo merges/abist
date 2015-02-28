@@ -55,8 +55,8 @@
 
 @color-grey-xxxxxxl: #fafafa;
 @color-grey-xxxxxl: #f4f4f4;
-@color-grey-xxxxl: #e8e8e8;
-@color-grey-xxxl: #eee;
+@color-grey-xxxxl: #eee;
+@color-grey-xxxl: #e8e8e8;
 @color-grey-xxl: #ddd;
 @color-grey-xl: #bbb;
 @color-grey-l: #999;
@@ -65,7 +65,7 @@
 @color-grey-xd: #444;
 @color-grey-xxd: #222;
 
-@color-blue: #3846e0;
+@color-blue: #3d5adc;
 
 @color-orange: #fe6939;
 @color-orange-d: #e05c32;
@@ -81,13 +81,78 @@
 @color-risks: #cab22d;
 @color-risks-l: #f7f4dc;
 
+// Shadows
+
+.shadow-l {
+	box-shadow: 0 1px 1px rgba(0,0,0,.3);
+}
+.shadow-l-right {
+  box-shadow: 1px 0 1px rgba(0,0,0,.3);
+}
+
+// Animations
+
+.animation-hue-text {
+  color: #f35626;
+  background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 1440s infinite linear;
+}
+
+.animation-hue-bg {
+  background: #f35626;
+  background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+  -webkit-animation: hue 1440s infinite linear;
+}
+
 // Broad site styles
 
 html {
 	-webkit-font-smoothing: antialiased;
 
 	a {
+		color: @color-blue;
 		cursor: pointer;
+
+		&:hover {
+			color: @color-blue;
+		}
+	}
+}
+
+
+// Site-wide navigation
+
+.site-wide-nav {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	max-height: 2em;
+	line-height: 2em;
+	padding: 0 15px;
+	color: white;
+	background: @color-grey-d;
+	text-align: right;
+
+	> a,
+	> span {
+		color: white;
+		font-size: 1.3em;
+		font-weight: 300;
+		display: inline;
+		margin-right: .3em;
+	}
+	a {
+		&:hover {
+			text-decoration: none;
+			color: inherit;
+			text-shadow: 0 0 7px rgba(255,255,255,.5);
+		}
+	}
+	.fa {
+		margin-bottom: -.1em;
 	}
 }
 
@@ -102,22 +167,7 @@ html {
   }
 }
 
-// Shadows
 
-.shadow-l {
-	box-shadow: 0 1px 1px rgba(0,0,0,.3);
-}
-.shadow-l-right {
-  box-shadow: 1px 0 1px rgba(0,0,0,.3);
-}
-
-.animation-hue {
-  color: #f35626;
-  background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-animation: hue 1440s infinite linear;
-}
 
 // Header
 
@@ -137,7 +187,7 @@ html {
 		font-weight: 300;
 		margin: 0;
 		padding-left: .5em;
-    .animation-hue;
+    .animation-hue-text;
 	}
 
 	// @media (max-width: @screen-xs-max) {
@@ -149,31 +199,92 @@ html {
 
 .experiment {
   .container;
+  padding-bottom: 11em;
 
-  > h1,
-  > h2, {
-    .make-sm-column(12);
-    font-weight: 200;
-    margin: 0;
-    padding: .5em 0;
-    border-bottom: 1px solid @color-grey-xxxxxl;
+  .skeleton {
+  	.make-sm-column(8);
+		.make-sm-column-offset(2);
   }
-  > h1 {
-    .animation-hue;
-  }
-  > h2 {
-    font-size: 1.3em;
+  > section,
+  > nav {
+  	.make-row();
 
-    &:hover {
-      background: @color-grey-xxxxxxl;
-    }
+  	> section,
+  	> h1,
+  	> h2 {
+  		.skeleton;
+  	}
   }
-  a {
-    display: block;
-    color: #474ce0;
+
+  > nav {
+  	> h2 {
+  		margin-top: 0;
+  		margin-bottom: 0;
+  		padding-top: .5em;
+  		padding-bottom: 2.5em;
+  		font-size: 1.3em;
+	    border-top: 3px solid @color-grey-xxxxl;
+
+	    &:hover {
+	      background: @color-grey-xxxxxxl;
+	    }
+	    > p {
+	    	color: @color-grey-m;
+	    	margin: .5em 0 0 0;
+	    	font-weight: 300;
+	    	font-size: .8em;
+	    }
+	  }
+	}
+  h1 {
+  	margin: 0 0 4em 0;
+  	font-size: 2em;
+  	color: @color-grey-l;
+  	font-weight: 200;
+  	border-top: 1em solid @color-grey-xxxl;
+
+  	> p {
+  		margin-top: 1.5em;
+  		font-weight: normal;
+  		color: @color-grey-m;
+  		font-size: .5em;
+  	}
   }
-  > img {
+  p {
+  	margin: 0;
+		line-height: 1.3;
+
+		&.emphasize {
+			font-size: 1.3em;
+			color: @color-grey-xd;
+		}
+		&.pull-quote {
+			margin-top: 3em;
+			margin-bottom: 1em;
+			color: @color-orange;
+			font-weight: bolder;
+			font-size: 1.5em;
+			line-height: 1.1;
+		}
+	}
+	p + p,
+	p + ul,
+	p + ol {
+		margin-top: .85em;
+	}
+	.description {
+		background: @color-grey-xxxxxxl;
+		padding-top: 1em;
+		padding-bottom: 1em;
+		padding-right: 15%;
+		margin-bottom: 2em;
+		color: @color-grey-d;
+	}
+  img {
+  	border-top: 1px solid @color-grey-xxl;
+  	border-bottom: 1px solid @color-grey-xxl;
     display: block;
+    margin: 1.5em inherit 3em inherit;
   }
 }
 

@@ -68,7 +68,7 @@ var AdverseEvents = React.createClass({
     return (
       <div className="adverse-events">
         <div className="header">
-          <h1>Adverse events prototype</h1>
+          <h1>RA DMARD adverse events prototype</h1>
         </div>
 
         {Object.keys(medicationNames).map(function(name, i) {
@@ -103,7 +103,6 @@ var AdverseEvents = React.createClass({
         <ul>
           {Object.keys(data).map(function(i) {
             var reaction = data[i];
-            console.log(reaction);
             return (
               <li>
                 {reaction.term} <strong>{reaction.count / medicationTotals[name]}</strong>
@@ -217,7 +216,7 @@ var AdverseEvents = React.createClass({
 
   sendQuery: function(name, medicationList, offline) {
     if (offline) {
-      console.log('offline query for', name);
+      // console.log('offline query for', name);
 
       // Offline / mock data
       var total = {"meta":{"disclaimer":"openFDA is a beta research project and not for clinical use. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated.","license":"http://open.fda.gov/license","last_updated":"2015-01-21","results":{"skip":0,"limit":1,"total":113679}}};
@@ -278,7 +277,7 @@ var AdverseEvents = React.createClass({
         });
       })
       .fail(function() {
-        console.log('FAILED');
+        console.error('FAILED');
       });
 
       $.getJSON(queryForTotal)
@@ -289,7 +288,7 @@ var AdverseEvents = React.createClass({
         });
       })
       .fail(function() {
-        console.log('FAILED');
+        console.error('FAILED');
       });
     }
   }

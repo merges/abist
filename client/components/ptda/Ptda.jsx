@@ -373,7 +373,7 @@ var Ptda = React.createClass({
       <div>
         <div className={ptdaClasses}>
           <div className="header">
-            <h1>PtDA demo</h1>
+            <h1>RA treatment decision aid demo</h1>
             <a className="mobile-toggle" onClick={this.togglePreferenceControls}>
               {!this.state.menuOpen ? 'Filter your options' : 'Close filter'}
             </a>

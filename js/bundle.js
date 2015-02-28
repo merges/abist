@@ -7,11 +7,19 @@ var Router = require('react-router');
 var RouteHandler = Router.RouteHandler;
 var Link = Router.Link;
 
-
 var App = React.createClass({displayName: "App",
 	render: function() {
-    return (
-      React.createElement(RouteHandler, null)
+		return (
+    	React.createElement("div", null, 
+				React.createElement(RouteHandler, React.__spread({},  this.props)), 
+
+	      React.createElement("nav", {className: "site-wide-nav"}, 
+	      	React.createElement("a", {href: "/"}, 
+	    			React.createElement("span", {className: "fa fa-home fa-fw"}), 
+	    			"Adam Baker IS thesis project website"
+	    		)
+	      )
+	    )
     );
   }
 });
@@ -873,73 +881,11 @@ module.exports = medications;
 
 var React = require('react/addons');
 
-var Menu = React.createClass({displayName: "Menu",
-
-  getDefaultProps: function() {
-    return {
-      items: ['one', 'two', 'three']
-    }
-  },
-
-  getInitialState: function() {
-    return {
-      itemSelected: null
-    }
-  },
-
-  render: function() {
-    var items = this.props.items;
-    var itemSelected = this.state.itemSelected;
-
-    return(
-      React.createElement("select", {onChange: this.handleSelectChange}, 
-        this.renderOptions(items, itemSelected)
-      )
-    );
-  },
-
-  renderOptions: function(list, itemSelected) {
-    var options = [];
-    var itemSelected = this.state.itemSelected;
-
-    list.map(function(item) {
-      if (itemSelected && goog.string.caseInsensitiveEquals(item, itemSelected)) {
-        options.push(
-          React.createElement("option", {selected: "selected", value: item, key: item}, 
-            item
-          )
-        );
-      }
-      else {
-        options.push(
-          React.createElement("option", {value: item, key: item}, 
-            item
-          )
-        );
-      }
-    });
-
-    return options;
-  },
-
-  handleSelectChange: function(event) {
-    console.log(event.target.value);
-  }
-});
-
 var Experiment = React.createClass({displayName: "Experiment",
 
-  getDefaultProps: function() {
-    return {
-      items: ['apple', 'orange', 'banana'],
-      itemSelected: null
-    }
-  },
-
   getInitialState: function() {
     return {
-      items: this.props.items,
-      itemSelected: null
+      showDetail: false
     }
   },
 
@@ -951,28 +897,67 @@ var Experiment = React.createClass({displayName: "Experiment",
     // });
   },
 
-  render: function() {
-    var items = this.state.items;
-    var itemSelected = this.state.itemSelected;
+  toggleDetail: function() {
+    this.setState({
+      showDetail: true
+    });
+  },
 
+  renderDescription: function() {
     return (
-      React.createElement("div", null, 
-        React.createElement("div", {className: "experiment"}, 
-          React.createElement("h1", null, "Adam Baker Independent Studies Thesis"), 
-          React.createElement("h2", null, React.createElement("a", {href: "http://abist.tumblr.com/"}, "Log of progress")), 
-          React.createElement("h2", null, React.createElement("a", {href: "/ptda"}, "PtDA prototype")), 
-          React.createElement("h2", null, React.createElement("a", {href: "/adverse"}, "Adverse events prototype")), 
-          React.createElement("img", {src: "./images/p_conceptual.png", className: "img-responsive"})
-          /*<Menu items={items} itemSelected={itemSelected} />*/
+      React.createElement("section", null, 
+        React.createElement("section", {className: "description"}, 
+          React.createElement("p", {className: "emphasize"}, "This is the online home of my thesis project, an evolving prototype application to demonstrate ", React.createElement("strong", null, "how data from medical evidence can be extracted, encoded, harmonized and translated, and made “user-friendly” to laypeople through contemporary user interface design."), " The prototype will focus on one important ", React.createElement("strong", null, "issue"), " facing people with rheumatoid arthritis (RA), probably either ", React.createElement("em", null, "ability to exercise"), " or ", React.createElement("em", null, "ability to cook or work with my hands"), "."
+          ), 
+          !this.state.showDetail &&
+            React.createElement("p", null, React.createElement("a", {onClick: this.toggleDetail}, "Read more about my thesis project")), 
+          
+
+          this.state.showDetail &&
+            React.createElement("div", null, 
+              React.createElement("p", {className: "pull-quote"}, "I have two or three options to treat my rheumatoid arthritis. They vary in cost, dosage form, and probably in other ways I don’t even know yet. But what I really want to know is: Which one will help me the most to continue my job and exercise as much as I do, and work the best for the rest of my life? I love to cook and play tennis."), 
+              React.createElement("p", null, "My prototype will try to help the person in that scenario explore and understand what the evidence has to say about that issue. If she goes with option A, what will it mean for her? What about option B? And option C? Bringing together that evidence is a tough challenge—and that’s the meat of my thesis project, which will try to answer the following questions:"), 
+              React.createElement("ol", null, 
+                React.createElement("li", null, "How can evidence be ", React.createElement("strong", null, "broken down"), " or its ", React.createElement("strong", null, "key discoveries extracted as data"), ", focusing on patient-important data, and be ", React.createElement("strong", null, "easily"), " encoded for machine-readability?"), 
+                React.createElement("li", null, "Can a patient-important issue-oriented ", React.createElement("strong", null, "translation or harmonization layer"), " (a data thesaurus, if you will) be built to “bring together” these heterogeneous, machine-readable encoded data, for use in a Web-based application?"), 
+                React.createElement("li", null, "How can different kinds of information from these sources (outcome data, adverse event data, treatment regimens, cost data, testimonials, or whatever else may be appropriate) be ", React.createElement("strong", null, "designed and presented"), " in ways that correspond to the mental models and issues facing real people with rheumatoid arthritis?"), 
+                React.createElement("li", null, "What are the best ways to design a user interface to query, explore, tailor to the user, and make sense of the evidence?")
+              ), 
+              React.createElement("p", null, "I want to find answers to these questions, and reusable ", React.createElement("strong", null, "patterns, methods, designs, and findings"), " that can be used by other designers, technologists, patient educators, medical practictioners, and so on. While my prototype will be built with real people with RA (patients adn non-experts) as the “north star” to guide ", React.createElement("strong", null, "all"), " the work, my audience is people who want to make tools to help people who want to know what their options are, and what the evidence has to say about what choosing one will mean for them."), 
+              React.createElement("img", {src: "./images/p_conceptual.png", className: "img-responsive"})
+            )
+          
         )
       )
     );
   },
 
-  processData: function(dataJson) {
-    this.setState({
-      items: dataJson.items
-    });
+  render: function() {
+    return (
+      React.createElement("div", {className: "experiment"}, 
+        React.createElement("section", null, 
+          React.createElement("h1", null, 
+            "Adam Baker Independent Studies thesis project", 
+            React.createElement("p", {className: "annotation"}, "I’m a thesis student in the University of Waterloo’s ", React.createElement("a", {href: "//uwaterloo.ca/independent-studies/"}, "Independent Studies"), " program, head of design at ", React.createElement("a", {href: "//iodine.com"}, "Iodine"), ", and designer on the ", React.createElement("a", {href: "//open.fda.gov/"}, "openFDA"), " team. My thesis project work is independent and self-funded. ", React.createElement("a", {href: "mailto:ab+thesis@merges.net"}, "Contact me by email."))
+          )
+
+        ), 
+
+        this.renderDescription(), 
+
+        React.createElement("nav", null, 
+          React.createElement("h2", null, React.createElement("a", {href: "http://abist.tumblr.com/"}, "Progress reports (blog)")), 
+          React.createElement("h2", null, 
+            React.createElement("a", {href: "/ptda"}, "RA treatment decision aid demo"), 
+            React.createElement("p", null, "This is an interactive, tailorable digital derivation of a ", React.createElement("a", {href: "//www.ncbi.nlm.nih.gov/pubmed/25649726"}, "low-literacy decision aid about RA medications"), " designed by one of my supervisors, Dr. Jennifer Barton, and her colleagues at UCSF and elsewhere. I developed it in the first few weeks of my thesis work, as a testbed for technology choices and to explore ideas that will be used in my eventual RA prototype.")
+          ), 
+          React.createElement("h2", null, 
+            React.createElement("a", {href: "/adverse"}, "RA DMARD adverse events prototype"), 
+            React.createElement("p", null, "This is a prototype to explore querying an FDA database for reported adverse events where at least one of 12 commonly used disease-modifying antirheumatic drugs was being used to treat RA.")
+          )
+        )
+      )
+    );
   }
 
 });
@@ -1051,7 +1036,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
     return (
       React.createElement("div", {className: "adverse-events"}, 
         React.createElement("div", {className: "header"}, 
-          React.createElement("h1", null, "Adverse events prototype")
+          React.createElement("h1", null, "RA DMARD adverse events prototype")
         ), 
 
         Object.keys(medicationNames).map(function(name, i) {
@@ -1086,7 +1071,6 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
         React.createElement("ul", null, 
           Object.keys(data).map(function(i) {
             var reaction = data[i];
-            console.log(reaction);
             return (
               React.createElement("li", null, 
                 reaction.term, " ", React.createElement("strong", null, reaction.count / medicationTotals[name])
@@ -1200,7 +1184,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
 
   sendQuery: function(name, medicationList, offline) {
     if (offline) {
-      console.log('offline query for', name);
+      // console.log('offline query for', name);
 
       // Offline / mock data
       var total = {"meta":{"disclaimer":"openFDA is a beta research project and not for clinical use. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated.","license":"http://open.fda.gov/license","last_updated":"2015-01-21","results":{"skip":0,"limit":1,"total":113679}}};
@@ -1261,7 +1245,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
         });
       })
       .fail(function() {
-        console.log('FAILED');
+        console.error('FAILED');
       });
 
       $.getJSON(queryForTotal)
@@ -1272,7 +1256,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
         });
       })
       .fail(function() {
-        console.log('FAILED');
+        console.error('FAILED');
       });
     }
   }
@@ -1658,7 +1642,7 @@ var Ptda = React.createClass({displayName: "Ptda",
       React.createElement("div", null, 
         React.createElement("div", {className: ptdaClasses}, 
           React.createElement("div", {className: "header"}, 
-            React.createElement("h1", null, "PtDA demo"), 
+            React.createElement("h1", null, "RA treatment decision aid demo"), 
             React.createElement("a", {className: "mobile-toggle", onClick: this.togglePreferenceControls}, 
               !this.state.menuOpen ? 'Filter your options' : 'Close filter'
             )
