@@ -10,6 +10,7 @@ var rename = require('gulp-rename');
 var server = require('gulp-express');
 var transform = require('vinyl-transform');
 var util = require('gulp-util');
+var yaml = require('gulp-yaml');
 
 gulp.task('browserify', function () {
   var browserified = transform(function(filename) {
@@ -54,3 +55,15 @@ gulp.task('watch', function() {
 });
 
 gulp.task('default', ['browserify', 'less', 'server', 'watch']);
+
+
+// // Compile YAMLs to JSON
+
+// gulp.task('compile-yaml', function() {
+//   gulp.src('data/*.yaml')
+//     .pipe(yaml({
+//       safe: true,
+//       space: 2
+//     }))
+//     .pipe(gulp.dest('client/data/'))
+// });

@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Myalgia",
+    "value": "thingy",
+    "and": "foo",
+    "plus": true,
+    "boo": 0.2
+  },
+  {
+    "name": "foobar",
+    "value": "crapo",
+    "and": "foobar",
+    "plus": false,
+    "boo": 0.9,
+    "another": "thing"
+  }
+]
