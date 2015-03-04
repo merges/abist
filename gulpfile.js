@@ -15,13 +15,13 @@ var yaml = require('gulp-yaml');
 gulp.task('browserify', function () {
   var browserified = transform(function(filename) {
     var b = browserify(filename, {
+      extensions: ['.jsx'],
       insertGlobals: true,
-      extensions: ['.jsx']
     });
     b.transform(reactify);
     return b.bundle();
   });
-  return gulp.src(['bower_components/jquery/dist/jquery.js', 'client/js/*.js'])
+  return gulp.src(['client/js/client.js'])
     .pipe(browserified)
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('js'));
