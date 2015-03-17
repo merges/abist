@@ -69,6 +69,9 @@ var Experiment = React.createClass({
         <nav>
           <h2><a href='http://abist.tumblr.com/'>Progress reports (blog)</a></h2>
           <h2>
+            <a href='/processing'>Data live from a Google Spreadsheet</a>
+          </h2>
+          <h2>
             <a href='/ptda'>RA treatment decision aid demo</a>
             <p>This is an interactive, tailorable digital derivation of a <a href='//www.ncbi.nlm.nih.gov/pubmed/25649726'>low-literacy decision aid about RA medications</a> designed by one of my supervisors, Dr. Jennifer Barton, and her colleagues at UCSF and elsewhere. I developed it in the first few weeks of my thesis work, as a testbed for technology choices and to explore ideas that will be used in my eventual RA prototype.</p>
           </h2>
