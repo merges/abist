@@ -23,6 +23,12 @@ gulp.task('browserify', function () {
   });
   return gulp.src(['client/js/client.js'])
     .pipe(browserified)
+    .on('error', function (err) {
+      var error = util.colors.red(err);
+      util.log(error);
+      // uutil.beep();
+      this.emit('end');
+    })
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('js'));
 });
