@@ -992,7 +992,7 @@ var Processing = React.createClass({displayName: "Processing",
       measures: {},
       metrics: {},
       grades: {},
-      csr: {},
+      data: {},
       side_effects: {}
     };
   },
@@ -1000,12 +1000,12 @@ var Processing = React.createClass({displayName: "Processing",
   componentDidMount: function() {
     var instance = this;
     var processData = this.processData;
-    
+
     var sheets = {
       measures: 'o5079mk',
       metrics: 'ojmf289',
       grades: 'oo3g5h2',
-      csr: {
+      data: {
         biologics: 'oij9tdp',
         hydroxycholoroquine: 'oozzuoc',
         etanercept: 'oogh8lu',
@@ -1018,7 +1018,7 @@ var Processing = React.createClass({displayName: "Processing",
 
     // Visit this with a browser to get the worksheet unique IDs
     var xmlListing = 'https://spreadsheets.google.com/feeds/worksheets/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/private/full';
-    
+
     var key  = '1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0';
     var base = 'https://spreadsheets.google.com/feeds/list/'
              + key
@@ -1040,14 +1040,63 @@ var Processing = React.createClass({displayName: "Processing",
     var urlGrades = base + sheets.grades + end;
     $.getJSON(urlGrades, processGrades);
 
+    // Get GRADE levels
+    var processGrades = this.processGrades;
+    var urlGrades = base + sheets.grades + end;
+    $.getJSON(urlGrades, processGrades);
+
+    // Get data
+    // Loop through the data source spreadsheets, projecting each one into a more useful format.
+    var processData = this.processData;
+    Object.keys(sheets.data).forEach(function (source) {
+      var urlData = base + sheets.data[source] + end;
+      $.getJSON(urlData, processData);
+    });
   },
 
   processData: function(data) {
-    // console.log(data.feed);
+    var processedData = [];
+
+    $.each(data.feed.entry, function (index, value) {
+      if (index == 0) {
+        return;
+      }
+      var entry = {};
+          entry['which'] = value.gsx$which;
+          entry['measure'] = value.gsx$measure;
+          entry['metric'] = value.gsx$metric;
+          entry['value'] = value.gsx$value;
+          entry['value_ci_low'] = value.gsx$valuecilow;
+          entry['value_ci_high'] = value.gsx$valuecihigh;
+          entry['grade'] = value.gsx$grade;
+          entry['n_total'] = value.gsx$ntotal;
+          entry['duration_low'] = value.gsx$durationlow;
+          entry['duration_high'] = value.gsx$durationhigh;
+          entry['duration_interval'] = value.gsx$durationinterval;
+          entry['intervention'] = value.gsx$intervention;
+          entry['comparison'] = value.gsx$comparison;
+          entry['intervention_dosage'] = value.gsx$interventiondosage;
+          entry['dosage_form'] = value.gsx$dosageform;
+          entry['dosage_frequency'] = value.gsx$dosagefrequency;
+          entry['dosage_interval'] = value.gsx$dosageinterval;
+          entry['source'] = value.gsx$source;
+          entry['notes'] = value.gsx$notes;
+      processedData.push(entry);
+    });
+
+    // Get the sheet title, which will be used as its unique key
+    var title = data.feed.title.$t;
+    var newData = this.state.data;
+        newData[title] = processedData;
+
+    this.setState({
+      data: newData
+    });
   },
 
   processGrades: function(data) {
     var grades = {};
+
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
         return;
@@ -1062,7 +1111,7 @@ var Processing = React.createClass({displayName: "Processing",
           entry['source'] = value.gsx$source.$t;
       grades[key] = entry;
     });
-    
+
     this.setState({
       grades: grades
     });
@@ -1070,6 +1119,8 @@ var Processing = React.createClass({displayName: "Processing",
 
   processMeasures: function(data) {
     var measures = {};
+    var tagMap = {};
+
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
         return;
@@ -1089,16 +1140,104 @@ var Processing = React.createClass({displayName: "Processing",
           entry['source'] = value.gsx$source.$t;
           entry['notes'] = value.gsx$notes.$t;
       measures[key] = entry;
+
+      // Populate tags object based on any applied to this measure
+      if (measures[key]['tags'].length > 0) {
+        measures[key]['tags'].forEach(function (tag) {
+          // If there's no entry for this particular tag, create an object to house measure that match that tag.
+          !tagMap[tag] && (tagMap[tag] = {});
+          tagMap[tag][key] = true;
+        });
+      }
     });
-    
+
     this.setState({
-      measures: measures
+      measures: measures,
+      tags: tagMap
     });
+  },
+
+  renderDataBySource: function(data) {
+    Object.keys(data).map(function (source) {
+      return (
+        React.createElement("section", {className: "data"}, 
+          React.createElement("h2", null, source, " data"), 
+          React.createElement("ul", null, 
+            data[source].map(function (entry, i) {
+              return (
+                React.createElement("li", {key: i}, 
+                  React.createElement("h3", null, i), 
+                  React.createElement("p", null, entry.which), 
+                  React.createElement("div", null, 
+                    React.createElement("ul", null, 
+                      Object.keys(entry).map(function (key, i) {
+                        return (
+                          React.createElement("li", {key: i}, 
+                            React.createElement("small", null, key), 
+                            entry[key]
+                          )
+                        );
+                      })
+                    )
+                  )
+                )
+              );
+            })
+          )
+        )
+      );
+    });
+  },
+
+  renderDataByTag: function(tags, data) {
+    if (tags && data != {}) {
+      // Use tags to organize search through data for matching measures
+
+      Object.keys(tags).map(function (tag) {
+        Object.keys(data).map(function (source) {
+          data[source].map(function (entry) {
+            if (tags[entry.measure]) {
+              console.log(source, tag, entry.measure);
+            }
+          });
+        });
+      });
+    }
+
+    // Object.keys(data).map(function (source) {
+    //   return (
+    //     <section className='data'>
+    //       <h2>{source} data</h2>
+    //       <ul>
+    //         {data[source].map(function (entry, i) {
+    //           return (
+    //             <li key={i}>
+    //               <h3>{i}</h3>
+    //               <p>{entry.which}</p>
+    //               <div>
+    //                 <ul>
+    //                   {Object.keys(entry).map(function (key, i) {
+    //                     return (
+    //                       <li key={i}>
+    //                         <small>{key}</small>
+    //                         {entry[key]}
+    //                       </li>
+    //                     );
+    //                   })}
+    //                 </ul>
+    //               </div>
+    //             </li>
+    //           );
+    //         })}
+    //       </ul>
+    //     </section>
+    //   );
+    // });
   },
 
   render: function() {
     var medications = this.props.medications;
-    
+
     var cx = React.addons.classSet;
     var classes = cx({
       'processing': true
@@ -1106,6 +1245,8 @@ var Processing = React.createClass({displayName: "Processing",
 
     var grades = this.state.grades;
     var measures = this.state.measures;
+    var data = this.state.data;
+    var tags = this.state.tags;
 
     return (
       React.createElement("div", {className: classes}, 
@@ -1118,6 +1259,8 @@ var Processing = React.createClass({displayName: "Processing",
           React.createElement("p", null, "My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth."), 
           React.createElement("p", null, "The summaries below are connected to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"), " where I am encoding medical evidence. Updates made in those spreadsheets are instantly applied here.")
         ), 
+
+        this.renderDataByTag(tags, data), 
 
         React.createElement("section", {className: "grades"}, 
           React.createElement("h2", null, "GRADE working group levels of evidence"), 
@@ -1155,43 +1298,43 @@ var Processing = React.createClass({displayName: "Processing",
                     React.createElement("ul", null, 
                       item.tags &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "tags"), React.createElement("br", null), 
+                          React.createElement("small", null, "tags"), 
                           item.tags.join(',')
                         ), 
                       
                       item.notes &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "notes"), React.createElement("br", null), 
+                          React.createElement("small", null, "notes"), 
                           item.notes
                         ), 
                       
                       item.kind &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "kind"), React.createElement("br", null), 
+                          React.createElement("small", null, "kind"), 
                           item.kind
                         ), 
                       
                       item.assessor &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "assessor"), React.createElement("br", null), 
+                          React.createElement("small", null, "assessor"), 
                           item.assessor
                         ), 
                       
                       item.variable &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "variable"), React.createElement("br", null), 
+                          React.createElement("small", null, "variable"), 
                           item.variable
                         ), 
                       
                       item.included_measures &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "included_measures"), React.createElement("br", null), 
+                          React.createElement("small", null, "included_measures"), 
                           item.included_measures.join(', ')
                         ), 
                       
                       item.related_measures &&
                         React.createElement("li", null, 
-                          React.createElement("small", null, "related_measures"), React.createElement("br", null), 
+                          React.createElement("small", null, "related_measures"), 
                           item.related_measures.join(', ')
                         )
                       
@@ -1202,12 +1345,9 @@ var Processing = React.createClass({displayName: "Processing",
             })
           )
         )
-
-
       )
     );
   }
-
 });
 
 module.exports = Processing;
@@ -3050,7 +3190,7 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
     var buf = new ArrayBuffer(0)
     var arr = new Uint8Array(buf)
     arr.foo = function () { return 42 }
-    return 42 === arr.foo() && // typed array instances can be augmented
+    return arr.foo() === 42 && // typed array instances can be augmented
         typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
         new Uint8Array(1).subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
   } catch (e) {
@@ -3079,59 +3219,66 @@ function Buffer (subject, encoding, noZero) {
   // Find the length
   var length
   if (type === 'number')
-    length = subject > 0 ? subject >>> 0 : 0
+    length = +subject
   else if (type === 'string') {
     length = Buffer.byteLength(subject, encoding)
   } else if (type === 'object' && subject !== null) { // assume object is array-like
     if (subject.type === 'Buffer' && isArray(subject.data))
       subject = subject.data
-    length = +subject.length > 0 ? Math.floor(+subject.length) : 0
-  } else
+    length = +subject.length
+  } else {
     throw new TypeError('must start with number, buffer, array or string')
+  }
 
   if (length > kMaxLength)
     throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
       'size: 0x' + kMaxLength.toString(16) + ' bytes')
 
-  var buf
+  if (length < 0)
+    length = 0
+  else
+    length >>>= 0 // Coerce to uint32.
+
+  var self = this
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    buf = Buffer._augment(new Uint8Array(length))
+    /*eslint-disable consistent-this */
+    self = Buffer._augment(new Uint8Array(length))
+    /*eslint-enable consistent-this */
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
-    buf = this
-    buf.length = length
-    buf._isBuffer = true
+    self.length = length
+    self._isBuffer = true
   }
 
   var i
   if (Buffer.TYPED_ARRAY_SUPPORT && typeof subject.byteLength === 'number') {
     // Speed optimization -- use set if we're copying from a typed array
-    buf._set(subject)
+    self._set(subject)
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
     if (Buffer.isBuffer(subject)) {
       for (i = 0; i < length; i++)
-        buf[i] = subject.readUInt8(i)
+        self[i] = subject.readUInt8(i)
     } else {
       for (i = 0; i < length; i++)
-        buf[i] = ((subject[i] % 256) + 256) % 256
+        self[i] = ((subject[i] % 256) + 256) % 256
     }
   } else if (type === 'string') {
-    buf.write(subject, 0, encoding)
+    self.write(subject, 0, encoding)
   } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
     for (i = 0; i < length; i++) {
-      buf[i] = 0
+      self[i] = 0
     }
   }
 
   if (length > 0 && length <= Buffer.poolSize)
-    buf.parent = rootParent
+    self.parent = rootParent
 
-  return buf
+  return self
 }
 
-function SlowBuffer(subject, encoding, noZero) {
+function SlowBuffer (subject, encoding, noZero) {
   if (!(this instanceof SlowBuffer))
     return new SlowBuffer(subject, encoding, noZero)
 
@@ -3147,6 +3294,8 @@ Buffer.isBuffer = function (b) {
 Buffer.compare = function (a, b) {
   if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
     throw new TypeError('Arguments must be Buffers')
+
+  if (a === b) return 0
 
   var x = a.length
   var y = b.length
@@ -3288,6 +3437,7 @@ Buffer.prototype.toString = function (encoding, start, end) {
 
 Buffer.prototype.equals = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return true
   return Buffer.compare(this, b) === 0
 }
 
@@ -3304,6 +3454,7 @@ Buffer.prototype.inspect = function () {
 
 Buffer.prototype.compare = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return 0
   return Buffer.compare(this, b)
 }
 
@@ -3388,7 +3539,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   offset = Number(offset) || 0
 
   if (length < 0 || offset < 0 || offset > this.length)
-    throw new RangeError('attempt to write outside buffer bounds');
+    throw new RangeError('attempt to write outside buffer bounds')
 
   var remaining = this.length - offset
   if (!length) {
@@ -3511,7 +3662,7 @@ Buffer.prototype.slice = function (start, end) {
   end = end === undefined ? len : ~~end
 
   if (start < 0) {
-    start += len;
+    start += len
     if (start < 0)
       start = 0
   } else if (start > len) {
@@ -3580,7 +3731,7 @@ Buffer.prototype.readUIntBE = function (offset, byteLength, noAssert) {
   var val = this[offset + --byteLength]
   var mul = 1
   while (byteLength > 0 && (mul *= 0x100))
-    val += this[offset + --byteLength] * mul;
+    val += this[offset + --byteLength] * mul
 
   return val
 }
@@ -3988,7 +4139,7 @@ Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
 Buffer.prototype.copy = function (target, target_start, start, end) {
-  var source = this
+  var self = this // source
 
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
@@ -3998,12 +4149,12 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 
   // Copy 0 bytes; we're done
   if (end === start) return 0
-  if (target.length === 0 || source.length === 0) return 0
+  if (target.length === 0 || self.length === 0) return 0
 
   // Fatal error conditions
   if (target_start < 0)
     throw new RangeError('targetStart out of bounds')
-  if (start < 0 || start >= source.length) throw new RangeError('sourceStart out of bounds')
+  if (start < 0 || start >= self.length) throw new RangeError('sourceStart out of bounds')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
@@ -4177,61 +4328,50 @@ function toHex (n) {
   return n.toString(16)
 }
 
-function utf8ToBytes(string, units) {
-  var codePoint, length = string.length
-  var leadSurrogate = null
+function utf8ToBytes (string, units) {
   units = units || Infinity
+  var codePoint
+  var length = string.length
+  var leadSurrogate = null
   var bytes = []
   var i = 0
 
-  for (; i<length; i++) {
+  for (; i < length; i++) {
     codePoint = string.charCodeAt(i)
 
     // is surrogate component
     if (codePoint > 0xD7FF && codePoint < 0xE000) {
-
       // last char was a lead
       if (leadSurrogate) {
-
         // 2 leads in a row
         if (codePoint < 0xDC00) {
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           leadSurrogate = codePoint
           continue
-        }
-
-        // valid surrogate pair
-        else {
+        } else {
+          // valid surrogate pair
           codePoint = leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00 | 0x10000
           leadSurrogate = null
         }
-      }
+      } else {
+        // no lead yet
 
-      // no lead yet
-      else {
-
-        // unexpected trail
         if (codePoint > 0xDBFF) {
+          // unexpected trail
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        }
-
-        // unpaired lead
-        else if (i + 1 === length) {
+        } else if (i + 1 === length) {
+          // unpaired lead
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        }
-
-        // valid lead
-        else {
+        } else {
+          // valid lead
           leadSurrogate = codePoint
           continue
         }
       }
-    }
-
-    // valid bmp char, but last char was a lead
-    else if (leadSurrogate) {
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
       if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
       leadSurrogate = null
     }
@@ -4240,32 +4380,28 @@ function utf8ToBytes(string, units) {
     if (codePoint < 0x80) {
       if ((units -= 1) < 0) break
       bytes.push(codePoint)
-    }
-    else if (codePoint < 0x800) {
+    } else if (codePoint < 0x800) {
       if ((units -= 2) < 0) break
       bytes.push(
         codePoint >> 0x6 | 0xC0,
         codePoint & 0x3F | 0x80
-      );
-    }
-    else if (codePoint < 0x10000) {
+      )
+    } else if (codePoint < 0x10000) {
       if ((units -= 3) < 0) break
       bytes.push(
         codePoint >> 0xC | 0xE0,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      );
-    }
-    else if (codePoint < 0x200000) {
+      )
+    } else if (codePoint < 0x200000) {
       if ((units -= 4) < 0) break
       bytes.push(
         codePoint >> 0x12 | 0xF0,
         codePoint >> 0xC & 0x3F | 0x80,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      );
-    }
-    else {
+      )
+    } else {
       throw new Error('Invalid code point')
     }
   }
@@ -4286,7 +4422,6 @@ function utf16leToBytes (str, units) {
   var c, hi, lo
   var byteArray = []
   for (var i = 0; i < str.length; i++) {
-
     if ((units -= 2) < 0) break
 
     c = str.charCodeAt(i)
@@ -4304,7 +4439,7 @@ function base64ToBytes (str) {
 }
 
 function blitBuffer (src, dst, offset, length, unitSize) {
-  if (unitSize) length -= length % unitSize;
+  if (unitSize) length -= length % unitSize
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -7424,15 +7559,8 @@ module.exports = {
       this._mountOverlayTarget();
     }
 
-    var overlay = this.renderOverlay();
-
     // Save reference to help testing
-    if (overlay !== null) {
-      this._overlayInstance = React.render(overlay, this._overlayTarget);
-    } else {
-      // Unrender if the component is null for transitions to null
-      this._unrenderOverlay();
-    }
+    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
   },
 
   _unrenderOverlay: function () {
@@ -7445,11 +7573,7 @@ module.exports = {
       throw new Error('getOverlayDOMNode(): A component must be mounted to have a DOM node.');
     }
 
-    if (this._overlayInstance) {
-      return this._overlayInstance.getDOMNode();
-    }
-
-    return null;
+    return this._overlayInstance.getDOMNode();
   },
 
   getContainerDOMNode: function () {

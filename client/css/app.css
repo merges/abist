@@ -9085,7 +9085,7 @@ html a:hover {
   margin-left: -15px;
   margin-right: -15px;
   color: #666666;
-  border-top: 1px solid #999999;
+  border-top: 1px solid #dddddd;
   padding-top: 5em;
 }
 .processing > section > h2 {
@@ -9224,10 +9224,12 @@ html a:hover {
   color: #bbbbbb;
   background: #dddddd;
 }
-.processing > section.measures > ul > li + li {
+.processing > section.measures > ul > li + li,
+.processing > section.data > ul > li + li {
   border-top: 1px solid #e8e8e8;
 }
-.processing > section.measures > ul > li > h3 {
+.processing > section.measures > ul > li > h3,
+.processing > section.data > ul > li > h3 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
@@ -9235,28 +9237,34 @@ html a:hover {
   padding-bottom: .5em;
 }
 @media (min-width: 768px) {
-  .processing > section.measures > ul > li > h3 {
+  .processing > section.measures > ul > li > h3,
+  .processing > section.data > ul > li > h3 {
     float: left;
     width: 100%;
   }
 }
-.processing > section.measures > ul > li > p {
+.processing > section.measures > ul > li > p,
+.processing > section.data > ul > li > p {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .processing > section.measures > ul > li > p {
+  .processing > section.measures > ul > li > p,
+  .processing > section.data > ul > li > p {
     float: left;
     width: 33.33333333%;
   }
 }
-.processing > section.measures > ul > li small {
+.processing > section.measures > ul > li small,
+.processing > section.data > ul > li small {
+  display: block;
   font-size: 1em;
   color: #dddddd;
 }
-.processing > section.measures p {
+.processing > section.measures p,
+.processing > section.data p {
   font-weight: 400;
 }
 .processing .header {
