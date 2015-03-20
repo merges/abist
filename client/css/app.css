@@ -9224,12 +9224,10 @@ html a:hover {
   color: #bbbbbb;
   background: #dddddd;
 }
-.processing > section.measures > ul > li + li,
-.processing > section.data > ul > li + li {
+.processing > section.measures > ul > li + li {
   border-top: 1px solid #e8e8e8;
 }
-.processing > section.measures > ul > li > h3,
-.processing > section.data > ul > li > h3 {
+.processing > section.measures > ul > li > h3 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
@@ -9237,35 +9235,58 @@ html a:hover {
   padding-bottom: .5em;
 }
 @media (min-width: 768px) {
-  .processing > section.measures > ul > li > h3,
-  .processing > section.data > ul > li > h3 {
+  .processing > section.measures > ul > li > h3 {
     float: left;
     width: 100%;
   }
 }
-.processing > section.measures > ul > li > p,
-.processing > section.data > ul > li > p {
+.processing > section.measures > ul > li > p {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .processing > section.measures > ul > li > p,
-  .processing > section.data > ul > li > p {
+  .processing > section.measures > ul > li > p {
     float: left;
     width: 33.33333333%;
   }
 }
-.processing > section.measures > ul > li small,
-.processing > section.data > ul > li small {
+.processing > section.measures > ul > li small {
   display: block;
   font-size: 1em;
   color: #dddddd;
 }
-.processing > section.measures p,
-.processing > section.data p {
+.processing > section.measures p {
   font-weight: 400;
+}
+.processing > section.data > h2 {
+  font-size: 1.2em;
+}
+.processing > section.data > div > ul {
+  width: 100%;
+  display: table;
+  table-layout: fixed;
+}
+.processing > section.data > div > ul > li {
+  display: table-row;
+}
+.processing > section.data > div > ul > li > h3,
+.processing > section.data > div > ul > li > h4 {
+  padding: .75em .5em;
+  display: table-cell;
+  font-size: 10pt !important;
+}
+.processing > section.data > div > ul > li > h3 {
+  background: #f4f4f4;
+}
+.processing > section.data > div > ul > li > h3 + h3 {
+  border-left: 1px solid white;
+}
+.processing > section.data > div > ul > li:first-of-type > h3 {
+  color: #333;
+  display: block;
+  background: #D3EBFF;
 }
 .processing .header {
   position: relative;

@@ -309,8 +309,7 @@ html {
 				}
 			}
 		}
-		&.measures,
-    &.data {
+		&.measures {
 			> ul {
 				> li {
 					+ li {
@@ -332,6 +331,41 @@ html {
 			}
 			p {
 				font-weight: 400;
+			}
+		}
+		&.data {
+			> h2 {
+				font-size: 1.2em;
+			}
+			> div > ul {
+				width: 100%;
+				display: table;
+				table-layout: fixed;
+
+				> li {
+					display: table-row;
+					
+					> h3,
+					> h4 {
+						padding: .75em .5em;
+						display: table-cell;
+						font-size: 10pt !important;
+					}
+					> h3 {
+						background: @color-grey-xxxxxl;
+					}
+					> h3 + h3 {
+						border-left: 1px solid white;
+					}
+
+					&:first-of-type {
+						> h3 {
+							color: #333;
+							display: block;
+							background: #D3EBFF;
+						}
+					}
+				}
 			}
 		}
 	}

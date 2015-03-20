@@ -977,7 +977,9 @@ var medications = require('./Data.jsx');
 
 // Processing / data processing tests
 
-// var url = 'https://spreadsheets.google.com/feeds/list/' + key + '/od6/public/values';
+String.prototype.capitalizeFirstletter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
 
 var Processing = React.createClass({displayName: "Processing",
 
@@ -989,11 +991,11 @@ var Processing = React.createClass({displayName: "Processing",
 
   getInitialState: function() {
     return {
-      measures: {},
-      metrics: {},
-      grades: {},
-      data: {},
-      side_effects: {}
+      // measures: {},
+      // metrics: {},
+      // grades: {},
+      data: {}
+      // side_effects: {}
     };
   },
 
@@ -1062,25 +1064,25 @@ var Processing = React.createClass({displayName: "Processing",
         return;
       }
       var entry = {};
-          entry['which'] = value.gsx$which;
-          entry['measure'] = value.gsx$measure;
-          entry['metric'] = value.gsx$metric;
-          entry['value'] = value.gsx$value;
-          entry['value_ci_low'] = value.gsx$valuecilow;
-          entry['value_ci_high'] = value.gsx$valuecihigh;
-          entry['grade'] = value.gsx$grade;
-          entry['n_total'] = value.gsx$ntotal;
-          entry['duration_low'] = value.gsx$durationlow;
-          entry['duration_high'] = value.gsx$durationhigh;
-          entry['duration_interval'] = value.gsx$durationinterval;
-          entry['intervention'] = value.gsx$intervention;
-          entry['comparison'] = value.gsx$comparison;
-          entry['intervention_dosage'] = value.gsx$interventiondosage;
-          entry['dosage_form'] = value.gsx$dosageform;
-          entry['dosage_frequency'] = value.gsx$dosagefrequency;
-          entry['dosage_interval'] = value.gsx$dosageinterval;
-          entry['source'] = value.gsx$source;
-          entry['notes'] = value.gsx$notes;
+          entry['which']                = value.gsx$which ? value.gsx$which.$t : null;
+          entry['measure']              = value.gsx$measure ? value.gsx$measure.$t : null;
+          entry['metric']               = value.gsx$metric ? value.gsx$metric.$t : null;
+          entry['value']                = value.gsx$value ? parseFloat(value.gsx$value.$t) : null;
+          entry['value_ci_low']         = value.gsx$valuecilow ? parseFloat(value.gsx$valuecilow.$t) : null;
+          entry['value_ci_high']        = value.gsx$valuecihigh ? parseFloat(value.gsx$valuecihigh.$t) : null;
+          entry['grade']                = value.gsx$grade ? value.gsx$grade.$t : null;
+          entry['n_total']              = value.gsx$ntotal ? parseFloat(value.gsx$ntotal.$t) : null;
+          entry['duration_low']         = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
+          entry['duration_high']        = value.gsx$durationhigh ? value.gsx$durationhigh.$t : null;
+          entry['duration_interval']    = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
+          entry['intervention']         = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
+          entry['comparison']           = value.gsx$comparison ? value.gsx$comparison.$t.split(',') : null;
+          entry['intervention_dosage']  = value.gsx$interventiondosage ? value.gsx$interventiondosage.$t : null; 
+          entry['dosage_form']          = value.gsx$dosageform ? value.gsx$dosageform.$t.split(',') : null;
+          entry['dosage_frequency']     = value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null;
+          entry['dosage_interval']      = value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null;
+          entry['source']               = value.gsx$source ? value.gsx$source.$t : null;
+          entry['notes']                = value.gsx$notes ? value.gsx$notes.$t : null;
       processedData.push(entry);
     });
 
@@ -1127,25 +1129,29 @@ var Processing = React.createClass({displayName: "Processing",
       }
       var key = value.gsx$name.$t;
       var entry = {};
-          entry['name'] = key;
-          entry['name_short'] = value.gsx$nameshort.$t;
-          entry['name_long'] = value.gsx$namelong.$t;
-          entry['description'] = value.gsx$description.$t;
-          entry['tags'] = value.gsx$tags.$t && value.gsx$tags.$t.split(',');
-          entry['kind'] = value.gsx$kind.$t;
-          entry['variable'] = value.gsx$variable.$t;
-          entry['assessor'] = value.gsx$assessor.$t;
-          entry['related_measures'] = value.gsx$relatedmeasures.$t && value.gsx$relatedmeasures.$t.split(',');
-          entry['included_measures'] = value.gsx$includedmeasures.$t && value.gsx$includedmeasures.$t.split(',');
-          entry['source'] = value.gsx$source.$t;
-          entry['notes'] = value.gsx$notes.$t;
+          entry['name']                 = key;
+          entry['name_short']           = value.gsx$nameshort.$t;
+          entry['name_long']            = value.gsx$namelong.$t;
+          entry['description']          = value.gsx$description.$t;
+          entry['tags']                 = value.gsx$tags.$t && value.gsx$tags.$t.split(',');
+          entry['kind']                 = value.gsx$kind.$t;
+          entry['variable']             = value.gsx$variable.$t;
+          entry['assessor']             = value.gsx$assessor.$t;
+          entry['related_measures']     = value.gsx$relatedmeasures.$t && value.gsx$relatedmeasures.$t.split(',');
+          entry['included_measures']    = value.gsx$includedmeasures.$t && value.gsx$includedmeasures.$t.split(',');
+          entry['source']               = value.gsx$source.$t;
+          entry['notes']                = value.gsx$notes.$t;
       measures[key] = entry;
 
       // Populate tags object based on any applied to this measure
       if (measures[key]['tags'].length > 0) {
         measures[key]['tags'].forEach(function (tag) {
-          // If there's no entry for this particular tag, create an object to house measure that match that tag.
-          !tagMap[tag] && (tagMap[tag] = {});
+          // If there's no entry for this particular tag, create an object to house
+          // corresponding measures and data that match that tag.
+          if (!tagMap[tag]) {
+            tagMap[tag] = {};
+            // tagMap[tag]['data'] = [];
+          }
           tagMap[tag][key] = true;
         });
       }
@@ -1189,50 +1195,232 @@ var Processing = React.createClass({displayName: "Processing",
     });
   },
 
-  renderDataByTag: function(tags, data) {
-    if (tags && data != {}) {
-      // Use tags to organize search through data for matching measures
-
+  renderDataByTag: function(data, tags, grades, measures) {
+    
+    // Reproject data by tag
+    var getDataByTag = function(tags, data) {
+      var dataByTag = JSON.parse(JSON.stringify(tags));
+      
+      // Loop
+      // Each tag (pain, function, etc.)
       Object.keys(tags).map(function (tag) {
+        // Each source
         Object.keys(data).map(function (source) {
+          // Each entry in the source data
           data[source].map(function (entry) {
-            if (tags[entry.measure]) {
-              console.log(source, tag, entry.measure);
+            // Entry has a measure that is associated with one of the tags?
+            // e.g. tags['pain']['patient_pain']
+            if (tags[tag][entry.measure]) {
+              // Create a place for data about each measure
+              dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
+              !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+
+              dataByTag[tag][entry.measure]['data'].push(entry);
             }
           });
         });
       });
+      return dataByTag;
     }
+    
+    var dataByTag = getDataByTag(tags, data);
 
-    // Object.keys(data).map(function (source) {
-    //   return (
-    //     <section className='data'>
-    //       <h2>{source} data</h2>
-    //       <ul>
-    //         {data[source].map(function (entry, i) {
-    //           return (
-    //             <li key={i}>
-    //               <h3>{i}</h3>
-    //               <p>{entry.which}</p>
-    //               <div>
-    //                 <ul>
-    //                   {Object.keys(entry).map(function (key, i) {
-    //                     return (
-    //                       <li key={i}>
-    //                         <small>{key}</small>
-    //                         {entry[key]}
-    //                       </li>
-    //                     );
-    //                   })}
-    //                 </ul>
-    //               </div>
-    //             </li>
-    //           );
-    //         })}
-    //       </ul>
-    //     </section>
-    //   );
-    // });
+
+    /*  
+        Comparison == key.
+        <li> is match on measure, intervention, comparison
+    */
+
+    // TODO reproject data into comparison-intervention groups
+
+    console.log(dataByTag);
+
+    return Object.keys(dataByTag).map(function (tag) {
+      return (
+        React.createElement("section", {key: tag, className: "data"}, 
+          React.createElement("h2", null, React.createElement("strong", null, tag.capitalizeFirstletter())), 
+          React.createElement("div", null, 
+            Object.keys(dataByTag[tag]).map(function (measure, i) {
+              var entries = dataByTag[tag][measure].data;
+              if (entries) {
+                var keyIntervention;
+                var keyComparison;
+                var reprojected = {};
+
+                entries.forEach(function (entry, i) {
+                  // Comparison row is key, sets up rest…
+                  var key;
+
+                  if (entry.which == 'comparison') {
+                    key = entry.measure + entry.comparison + entry.intervention;
+                    reprojected[key] = {};
+                    reprojected[key]['intervention']        = entry.intervention.join(' + ');
+                    reprojected[key]['comparison']          = entry.comparison.join(' + ');
+
+                    // TODO follow-up display calculator function / component
+                    reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
+                    
+                    // TODO metric display calculator functions / components
+                    reprojected[key]['assumed_risk_metric'] = entry.metric;
+                    reprojected[key]['assumed_risk']        = (
+                      React.createElement("span", null, 
+                        React.createElement("strong", null, entry.value)
+                      )
+                    );
+                    reprojected[key]['n']                   = entry.n_total;
+                    // TODO quality calculator function / component
+                    reprojected[key]['quality']             = (
+                      React.createElement("span", null, 
+                        React.createElement("strong", null, entry.grade), React.createElement("br", null), 
+                        React.createElement("small", null, entry.grade != 'undefined' && grades[entry.grade].name_friendly)
+                      )
+                    );
+                  }
+
+                  // TODO generalize!
+                  else if (entry.which == 'intervention') {
+                    key = entry.measure + entry.comparison + entry.intervention;
+
+                    // Already set up an object with comparison
+                    if (reprojected[key]) {
+                      // Non-comparison rows fill out remaining detail
+                      (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, entry.value), React.createElement("br", null), 
+                          "(", entry.value_ci_low, " to ", entry.value_ci_high, ")"
+                        )
+                      ));
+                      (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, entry.value), React.createElement("br", null), 
+                          "(", entry.value_ci_low, " to ", entry.value_ci_high, ")"
+                        )
+                      ));
+                      (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, Math.round(entry.value * 100) + '%'), React.createElement("br", null), 
+                          "(", Math.round(entry.value_ci_low * 100) + '%', " to ", Math.round(entry.value_ci_high * 100) + '%', ")"
+                        )
+                      ));
+                      (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, Math.round(entry.value * 100) + '%'), React.createElement("br", null), 
+                          "(", Math.round(entry.value_ci_low * 100) + '%', " to ", Math.round(entry.value_ci_high * 100) + '%', ")"
+                        )
+                      ));
+                    }
+
+                    // This is an entry with no corresponding 'comparison'
+                    else {
+                      reprojected[key] = {};
+                      reprojected[key]['intervention']        = entry.intervention.join(' + ');
+                      reprojected[key]['comparison']          = entry.comparison.join(' + ');
+
+                      // TODO follow-up display calculator function / component
+                      reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
+                      
+                      // NO ASSUMED RISK BECAUSE NO COMPARISON
+
+                      // TODO metric display calculator functions / components
+                      reprojected[key]['assumed_risk_metric'] = entry.metric;
+                      reprojected[key]['corresponding_risk']        = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, entry.value)
+                        )
+                      );
+
+
+                      reprojected[key]['n']                   = entry.n_total;
+                      // TODO quality calculator function / component
+                      reprojected[key]['quality']             = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, entry.grade), React.createElement("br", null), 
+                          React.createElement("small", null, grades[entry.grade].name_friendly)
+                        )
+                      );
+                      // Non-comparison rows fill out remaining detail
+                      (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, entry.value), React.createElement("br", null), 
+                          "(", entry.value_ci_low, " to ", entry.value_ci_high, ")"
+                        )
+                      ));
+                      // (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
+                      //   <span>
+                      //     <strong>{entry.value}</strong><br />
+                      //     ({entry.value_ci_low} to {entry.value_ci_high})
+                      //   </span>
+                      // ));
+                      (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, Math.round(entry.value * 100) + '%'), React.createElement("br", null), 
+                          "(", Math.round(entry.value_ci_low * 100) + '%', " to ", Math.round(entry.value_ci_high * 100) + '%', ")"
+                        )
+                      ));
+                      (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
+                        React.createElement("span", null, 
+                          React.createElement("strong", null, Math.round(entry.value * 100) + '%'), React.createElement("br", null), 
+                          "(", Math.round(entry.value_ci_low * 100) + '%', " to ", Math.round(entry.value_ci_high * 100) + '%', ")"
+                        )
+                      ));
+                    }
+                  }
+                });
+
+                return (
+                  React.createElement("ul", {key: measure}, 
+                    React.createElement("li", null, 
+                      React.createElement("h3", null, 
+                        React.createElement("strong", null, measures[measure].name_short), React.createElement("br", null), 
+                        measures[measure].name_long
+                      )
+                    ), 
+                    React.createElement("li", null, 
+                      React.createElement("h3", null, "Intervention"), 
+                      React.createElement("h3", null, "Comparison"), 
+                      React.createElement("h3", null, "Follow-up"), 
+                      React.createElement("h3", null, 
+                        "Assumed risk", React.createElement("br", null), 
+                        "(95% CI)", React.createElement("br", null), 
+                        React.createElement("strong", null, "Comparison")
+                      ), 
+                      React.createElement("h3", null, 
+                        "Corresponding risk", React.createElement("br", null), 
+                        "(95% CI)", React.createElement("br", null), 
+                        React.createElement("strong", null, "Intervention")
+                      ), 
+                      React.createElement("h3", null, "Relative effect (95% CI)"), 
+                      React.createElement("h3", null, "Absolute treatment benefit (95% CI)"), 
+                      React.createElement("h3", null, "Relative percent change (95% CI)"), 
+                      React.createElement("h3", null, "Quality of the evidence")
+                    ), 
+                    Object.keys(reprojected).map(function (data, i) {
+                      var entry = reprojected[data];
+                      return (
+                        React.createElement("li", {key: i}, 
+                          React.createElement("h4", null, entry.intervention), 
+                          React.createElement("h4", null, entry.comparison), 
+                          React.createElement("h4", null, entry.follow_up), 
+                          React.createElement("h4", null, 
+                            entry.assumed_risk, React.createElement("br", null), 
+                            React.createElement("small", null, entry.assumed_risk_metric)
+                          ), 
+                          React.createElement("h4", null, entry.corresponding_risk), 
+                          React.createElement("h4", null, entry.relative_effect), 
+                          React.createElement("h4", null, entry.absolute_benefit), 
+                          React.createElement("h4", null, entry.relative_change), 
+                          React.createElement("h4", null, entry.quality)
+                        )
+                      );
+                    })
+                  )
+                );
+              }
+            })
+          )
+        )
+      );
+    });
   },
 
   render: function() {
@@ -1245,108 +1433,111 @@ var Processing = React.createClass({displayName: "Processing",
 
     var grades = this.state.grades;
     var measures = this.state.measures;
-    var data = this.state.data;
     var tags = this.state.tags;
+    var data = this.state.data;
+    
+    if (grades && measures && tags && data != {}) {
+      return (
+        React.createElement("div", {className: classes}, 
+          React.createElement("div", {className: "header"}, 
+            React.createElement("h1", null, "Spreadsheets as backend demo")
+          ), 
 
-    return (
-      React.createElement("div", {className: classes}, 
-        React.createElement("div", {className: "header"}, 
-          React.createElement("h1", null, "Spreadsheets as backend demo")
-        ), 
+          React.createElement("section", null, 
+            React.createElement("h2", null, "Live connection to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet")), 
+            React.createElement("p", null, "My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth."), 
+            React.createElement("p", null, "The summaries below are connected to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"), " where I am encoding medical evidence. Updates made in those spreadsheets are instantly applied here.")
+          ), 
 
-        React.createElement("section", null, 
-          React.createElement("h2", null, "Live connection to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet")), 
-          React.createElement("p", null, "My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth."), 
-          React.createElement("p", null, "The summaries below are connected to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"), " where I am encoding medical evidence. Updates made in those spreadsheets are instantly applied here.")
-        ), 
+          this.renderDataByTag(data, tags, grades, measures), 
 
-        this.renderDataByTag(tags, data), 
-
-        React.createElement("section", {className: "grades"}, 
-          React.createElement("h2", null, "GRADE working group levels of evidence"), 
-          React.createElement("ul", null, 
-            Object.keys(grades).map(function (key, i) {
-              var item = grades[key];
-              return (
-                React.createElement("li", {key: i}, 
-                  React.createElement("h3", null, item.grade, " ", React.createElement("strong", null, item.name_friendly)), 
-                  React.createElement("div", null, 
-                    React.createElement("p", null, item.description, " ", item.source && React.createElement("a", {href: item.source}, "Source"))
-                  )
-                )
-              );
-            })
-          )
-        ), 
-
-        React.createElement("section", {className: "measures"}, 
-          React.createElement("h2", null, "Measures"), 
-          React.createElement("ul", null, 
-            Object.keys(measures).map(function (key, i) {
-              var item = measures[key];
-              return (
-                React.createElement("li", {key: i}, 
-                  React.createElement("h3", null, 
-                    React.createElement("strong", null, item.name_short), React.createElement("br", null), 
-                    item.name_long
-                  ), 
-                  React.createElement("p", null, 
-                    item.description && item.description, 
-                    item.source && React.createElement("span", null, " - ", React.createElement("a", {href: item.source}, "Source"))
-                  ), 
-                  React.createElement("div", null, 
-                    React.createElement("ul", null, 
-                      item.tags &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "tags"), 
-                          item.tags.join(',')
-                        ), 
-                      
-                      item.notes &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "notes"), 
-                          item.notes
-                        ), 
-                      
-                      item.kind &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "kind"), 
-                          item.kind
-                        ), 
-                      
-                      item.assessor &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "assessor"), 
-                          item.assessor
-                        ), 
-                      
-                      item.variable &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "variable"), 
-                          item.variable
-                        ), 
-                      
-                      item.included_measures &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "included_measures"), 
-                          item.included_measures.join(', ')
-                        ), 
-                      
-                      item.related_measures &&
-                        React.createElement("li", null, 
-                          React.createElement("small", null, "related_measures"), 
-                          item.related_measures.join(', ')
-                        )
-                      
+          React.createElement("section", {className: "grades"}, 
+            React.createElement("h2", null, "GRADE working group levels of evidence"), 
+            React.createElement("ul", null, 
+              Object.keys(grades).map(function (key, i) {
+                var item = grades[key];
+                return (
+                  React.createElement("li", {key: i}, 
+                    React.createElement("h3", null, item.grade, " ", React.createElement("strong", null, item.name_friendly)), 
+                    React.createElement("div", null, 
+                      React.createElement("p", null, item.description, " ", item.source && React.createElement("a", {href: item.source}, "Source"))
                     )
                   )
-                )
-              );
-            })
+                );
+              })
+            )
+          ), 
+
+          React.createElement("section", {className: "measures"}, 
+            React.createElement("h2", null, "Measures"), 
+            React.createElement("ul", null, 
+              Object.keys(measures).map(function (key, i) {
+                var item = measures[key];
+                return (
+                  React.createElement("li", {key: i}, 
+                    React.createElement("h3", null, 
+                      React.createElement("strong", null, item.name_short), React.createElement("br", null), 
+                      item.name_long
+                    ), 
+                    React.createElement("p", null, 
+                      item.description && item.description, 
+                      item.source && React.createElement("span", null, " - ", React.createElement("a", {href: item.source}, "Source"))
+                    ), 
+                    React.createElement("div", null, 
+                      React.createElement("ul", null, 
+                        item.tags &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "tags"), 
+                            item.tags.join(',')
+                          ), 
+                        
+                        item.notes &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "notes"), 
+                            item.notes
+                          ), 
+                        
+                        item.kind &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "kind"), 
+                            item.kind
+                          ), 
+                        
+                        item.assessor &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "assessor"), 
+                            item.assessor
+                          ), 
+                        
+                        item.variable &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "variable"), 
+                            item.variable
+                          ), 
+                        
+                        item.included_measures &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "included_measures"), 
+                            item.included_measures.join(', ')
+                          ), 
+                        
+                        item.related_measures &&
+                          React.createElement("li", null, 
+                            React.createElement("small", null, "related_measures"), 
+                            item.related_measures.join(', ')
+                          )
+                        
+                      )
+                    )
+                  )
+                );
+              })
+            )
           )
         )
-      )
-    );
+      );
+    }
+    return (React.createElement("noscript", null));
   }
 });
 
@@ -3190,7 +3381,7 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
     var buf = new ArrayBuffer(0)
     var arr = new Uint8Array(buf)
     arr.foo = function () { return 42 }
-    return arr.foo() === 42 && // typed array instances can be augmented
+    return 42 === arr.foo() && // typed array instances can be augmented
         typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
         new Uint8Array(1).subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
   } catch (e) {
@@ -3219,66 +3410,59 @@ function Buffer (subject, encoding, noZero) {
   // Find the length
   var length
   if (type === 'number')
-    length = +subject
+    length = subject > 0 ? subject >>> 0 : 0
   else if (type === 'string') {
     length = Buffer.byteLength(subject, encoding)
   } else if (type === 'object' && subject !== null) { // assume object is array-like
     if (subject.type === 'Buffer' && isArray(subject.data))
       subject = subject.data
-    length = +subject.length
-  } else {
+    length = +subject.length > 0 ? Math.floor(+subject.length) : 0
+  } else
     throw new TypeError('must start with number, buffer, array or string')
-  }
 
   if (length > kMaxLength)
     throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
       'size: 0x' + kMaxLength.toString(16) + ' bytes')
 
-  if (length < 0)
-    length = 0
-  else
-    length >>>= 0 // Coerce to uint32.
-
-  var self = this
+  var buf
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    /*eslint-disable consistent-this */
-    self = Buffer._augment(new Uint8Array(length))
-    /*eslint-enable consistent-this */
+    buf = Buffer._augment(new Uint8Array(length))
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
-    self.length = length
-    self._isBuffer = true
+    buf = this
+    buf.length = length
+    buf._isBuffer = true
   }
 
   var i
   if (Buffer.TYPED_ARRAY_SUPPORT && typeof subject.byteLength === 'number') {
     // Speed optimization -- use set if we're copying from a typed array
-    self._set(subject)
+    buf._set(subject)
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
     if (Buffer.isBuffer(subject)) {
       for (i = 0; i < length; i++)
-        self[i] = subject.readUInt8(i)
+        buf[i] = subject.readUInt8(i)
     } else {
       for (i = 0; i < length; i++)
-        self[i] = ((subject[i] % 256) + 256) % 256
+        buf[i] = ((subject[i] % 256) + 256) % 256
     }
   } else if (type === 'string') {
-    self.write(subject, 0, encoding)
+    buf.write(subject, 0, encoding)
   } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
     for (i = 0; i < length; i++) {
-      self[i] = 0
+      buf[i] = 0
     }
   }
 
   if (length > 0 && length <= Buffer.poolSize)
-    self.parent = rootParent
+    buf.parent = rootParent
 
-  return self
+  return buf
 }
 
-function SlowBuffer (subject, encoding, noZero) {
+function SlowBuffer(subject, encoding, noZero) {
   if (!(this instanceof SlowBuffer))
     return new SlowBuffer(subject, encoding, noZero)
 
@@ -3294,8 +3478,6 @@ Buffer.isBuffer = function (b) {
 Buffer.compare = function (a, b) {
   if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
     throw new TypeError('Arguments must be Buffers')
-
-  if (a === b) return 0
 
   var x = a.length
   var y = b.length
@@ -3437,7 +3619,6 @@ Buffer.prototype.toString = function (encoding, start, end) {
 
 Buffer.prototype.equals = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
   return Buffer.compare(this, b) === 0
 }
 
@@ -3454,7 +3635,6 @@ Buffer.prototype.inspect = function () {
 
 Buffer.prototype.compare = function (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return 0
   return Buffer.compare(this, b)
 }
 
@@ -3539,7 +3719,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   offset = Number(offset) || 0
 
   if (length < 0 || offset < 0 || offset > this.length)
-    throw new RangeError('attempt to write outside buffer bounds')
+    throw new RangeError('attempt to write outside buffer bounds');
 
   var remaining = this.length - offset
   if (!length) {
@@ -3662,7 +3842,7 @@ Buffer.prototype.slice = function (start, end) {
   end = end === undefined ? len : ~~end
 
   if (start < 0) {
-    start += len
+    start += len;
     if (start < 0)
       start = 0
   } else if (start > len) {
@@ -3731,7 +3911,7 @@ Buffer.prototype.readUIntBE = function (offset, byteLength, noAssert) {
   var val = this[offset + --byteLength]
   var mul = 1
   while (byteLength > 0 && (mul *= 0x100))
-    val += this[offset + --byteLength] * mul
+    val += this[offset + --byteLength] * mul;
 
   return val
 }
@@ -4139,7 +4319,7 @@ Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
 Buffer.prototype.copy = function (target, target_start, start, end) {
-  var self = this // source
+  var source = this
 
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
@@ -4149,12 +4329,12 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 
   // Copy 0 bytes; we're done
   if (end === start) return 0
-  if (target.length === 0 || self.length === 0) return 0
+  if (target.length === 0 || source.length === 0) return 0
 
   // Fatal error conditions
   if (target_start < 0)
     throw new RangeError('targetStart out of bounds')
-  if (start < 0 || start >= self.length) throw new RangeError('sourceStart out of bounds')
+  if (start < 0 || start >= source.length) throw new RangeError('sourceStart out of bounds')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
@@ -4328,50 +4508,61 @@ function toHex (n) {
   return n.toString(16)
 }
 
-function utf8ToBytes (string, units) {
-  units = units || Infinity
-  var codePoint
-  var length = string.length
+function utf8ToBytes(string, units) {
+  var codePoint, length = string.length
   var leadSurrogate = null
+  units = units || Infinity
   var bytes = []
   var i = 0
 
-  for (; i < length; i++) {
+  for (; i<length; i++) {
     codePoint = string.charCodeAt(i)
 
     // is surrogate component
     if (codePoint > 0xD7FF && codePoint < 0xE000) {
+
       // last char was a lead
       if (leadSurrogate) {
+
         // 2 leads in a row
         if (codePoint < 0xDC00) {
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           leadSurrogate = codePoint
           continue
-        } else {
-          // valid surrogate pair
+        }
+
+        // valid surrogate pair
+        else {
           codePoint = leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00 | 0x10000
           leadSurrogate = null
         }
-      } else {
-        // no lead yet
+      }
 
+      // no lead yet
+      else {
+
+        // unexpected trail
         if (codePoint > 0xDBFF) {
-          // unexpected trail
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        } else if (i + 1 === length) {
-          // unpaired lead
+        }
+
+        // unpaired lead
+        else if (i + 1 === length) {
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        } else {
-          // valid lead
+        }
+
+        // valid lead
+        else {
           leadSurrogate = codePoint
           continue
         }
       }
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
+    }
+
+    // valid bmp char, but last char was a lead
+    else if (leadSurrogate) {
       if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
       leadSurrogate = null
     }
@@ -4380,28 +4571,32 @@ function utf8ToBytes (string, units) {
     if (codePoint < 0x80) {
       if ((units -= 1) < 0) break
       bytes.push(codePoint)
-    } else if (codePoint < 0x800) {
+    }
+    else if (codePoint < 0x800) {
       if ((units -= 2) < 0) break
       bytes.push(
         codePoint >> 0x6 | 0xC0,
         codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x10000) {
+      );
+    }
+    else if (codePoint < 0x10000) {
       if ((units -= 3) < 0) break
       bytes.push(
         codePoint >> 0xC | 0xE0,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x200000) {
+      );
+    }
+    else if (codePoint < 0x200000) {
       if ((units -= 4) < 0) break
       bytes.push(
         codePoint >> 0x12 | 0xF0,
         codePoint >> 0xC & 0x3F | 0x80,
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
-      )
-    } else {
+      );
+    }
+    else {
       throw new Error('Invalid code point')
     }
   }
@@ -4422,6 +4617,7 @@ function utf16leToBytes (str, units) {
   var c, hi, lo
   var byteArray = []
   for (var i = 0; i < str.length; i++) {
+
     if ((units -= 2) < 0) break
 
     c = str.charCodeAt(i)
@@ -4439,7 +4635,7 @@ function base64ToBytes (str) {
 }
 
 function blitBuffer (src, dst, offset, length, unitSize) {
-  if (unitSize) length -= length % unitSize
+  if (unitSize) length -= length % unitSize;
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -7559,8 +7755,15 @@ module.exports = {
       this._mountOverlayTarget();
     }
 
+    var overlay = this.renderOverlay();
+
     // Save reference to help testing
-    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
+    if (overlay !== null) {
+      this._overlayInstance = React.render(overlay, this._overlayTarget);
+    } else {
+      // Unrender if the component is null for transitions to null
+      this._unrenderOverlay();
+    }
   },
 
   _unrenderOverlay: function () {
@@ -7573,7 +7776,11 @@ module.exports = {
       throw new Error('getOverlayDOMNode(): A component must be mounted to have a DOM node.');
     }
 
-    return this._overlayInstance.getDOMNode();
+    if (this._overlayInstance) {
+      return this._overlayInstance.getDOMNode();
+    }
+
+    return null;
   },
 
   getContainerDOMNode: function () {
