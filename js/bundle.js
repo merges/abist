@@ -1268,8 +1268,135 @@ var Processing = React.createClass({displayName: "Processing",
         });
       });
     });
+
     return dataByTag;
   },
+
+
+  // {Object.keys(dataByTag[tag]).map(function (measure, i) {
+  //   var entries = dataByTag[tag][measure].data;
+  //   if (entries) {
+  //     var keyIntervention;
+  //     var keyComparison;
+  //     var reprojected = {};
+
+  //     entries.forEach(function (entry, i) {
+  //       // Comparison row is key, sets up rest…
+  //       var key;
+
+  //       if (entry.which == 'comparison') {
+  //         key = entry.measure + entry.comparison + entry.intervention;
+  //         reprojected[key] = {};
+  //         reprojected[key]['intervention']        = entry.intervention.join(' + ');
+  //         reprojected[key]['comparison']          = entry.comparison.join(' + ');
+
+  //         reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
+
+  //         // TODO metric display calculator functions / components
+  //         reprojected[key]['assumed_risk_metric'] = entry.metric;
+  //         reprojected[key]['assumed_risk']				= entry.value;
+  //         reprojected[key]['assumed_risk_markup'] = (
+  //           <span>
+  //             {entry.comparison}<br />
+  //             <strong>{entry.value}</strong>
+  //             <AbsoluteFrequency frequency={entry.value} metric={entry.metric} denominator={100} breakpoint={20} />
+  //           </span>
+  //         );
+  //         reprojected[key]['n']                   = entry.n_total;
+  //         reprojected[key]['quality']             = (<GradeQuality grade={entry.grade} gradeMap={grades} />);
+  //       }
+
+  //       // TODO generalize!
+  //       else if (entry.which == 'intervention') {
+  //         key = entry.measure + entry.comparison + entry.intervention;
+
+  //         // Already set up an object with comparison
+  //         if (reprojected[key]) {
+  //           // Non-comparison rows fill out remaining detail
+  //           (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{entry.value}</strong> ({entry.value_ci_low} to {entry.value_ci_high})
+  //               <AbsoluteFrequency frequency={entry.value} baseline={reprojected[key].assumed_risk} metric={entry.metric} denominator={100} breakpoint={20} />
+  //             </span>
+  //           ));
+  //           (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{entry.value}</strong> ({entry.value_ci_low} to {entry.value_ci_high})
+  //             </span>
+  //           ));
+  //           (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
+  //               ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
+  //             </span>
+  //           ));
+  //           (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
+  //               ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
+  //             </span>
+  //           ));
+  //         }
+
+  //         // This is an entry with no corresponding 'comparison'
+  //         else {
+  //         	reprojected[key] = {};
+  //           reprojected[key]['intervention']        = entry.intervention.join(' + ');
+  //           reprojected[key]['comparison']          = entry.comparison.join(' + ');
+  //           reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
+
+  //           // NO ASSUMED RISK BECAUSE NO COMPARISON
+
+  //           // TODO metric display calculator functions / components
+  //           reprojected[key]['assumed_risk_metric'] = entry.metric;
+  //           (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
+  //             <span>
+  //               {entry.intervention}<br />
+  //               <strong>{entry.value}</strong>
+  //               <AbsoluteFrequency frequency={entry.value} metric={entry.metric} denominator={100} breakpoint={20} />
+  //             </span>
+  //           ));
+
+
+  //           reprojected[key]['n']                   = entry.n_total;
+  //           // TODO quality calculator function / component
+  //           reprojected[key]['quality']             = (<GradeQuality grade={entry.grade} gradeMap={grades} />);
+  //           // Non-comparison rows fill out remaining detail
+  //           (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
+  //             <span>
+  //               {entry.intervention}<br />
+  //               <strong>{entry.value}</strong>
+  //               ({entry.value_ci_low} to {entry.value_ci_high})
+  //               <AbsoluteFrequency frequency={entry.value} metric={entry.metric} denominator={100} breakpoint={20} />
+  //             </span>
+  //           ));
+  //           // (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
+  //           //   <span>
+  //           //     <strong>{entry.value}</strong><br />
+  //           //     ({entry.value_ci_low} to {entry.value_ci_high})
+  //           //   </span>
+  //           // ));
+  //           (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
+  //               ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
+  //             </span>
+  //           ));
+  //           (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
+  //             <span>
+  //             	{entry.intervention}<br />
+  //               <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
+  //               ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
+  //             </span>
+  //           ));
+  //         }
+  //       }
+  //     });
 
   renderDataByTag: function(data, tags, grades, measures, selectedTag) {
 		var dataByTag = this.getDataByTag(tags, data);
@@ -1318,7 +1445,7 @@ var Processing = React.createClass({displayName: "Processing",
                       React.createElement("span", null, 
                         entry.comparison, React.createElement("br", null), 
                         React.createElement("strong", null, entry.value), 
-                        React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, breakpoint: 20})
+                        React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, denominator: 100, breakpoint: 20})
                       )
                     );
                     reprojected[key]['n']                   = entry.n_total;
@@ -1336,7 +1463,7 @@ var Processing = React.createClass({displayName: "Processing",
                         React.createElement("span", null, 
                         	entry.intervention, React.createElement("br", null), 
                           React.createElement("strong", null, entry.value), " (", entry.value_ci_low, " to ", entry.value_ci_high, ")", 
-                          React.createElement(AbsoluteFrequency, {frequency: entry.value, baseline: reprojected[key].assumed_risk, metric: entry.metric, breakpoint: 20})
+                          React.createElement(AbsoluteFrequency, {frequency: entry.value, baseline: reprojected[key].assumed_risk, metric: entry.metric, denominator: 100, breakpoint: 20})
                         )
                       ));
                       (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
@@ -1363,23 +1490,22 @@ var Processing = React.createClass({displayName: "Processing",
 
                     // This is an entry with no corresponding 'comparison'
                     else {
-                      reprojected[key] = {};
+                    	reprojected[key] = {};
                       reprojected[key]['intervention']        = entry.intervention.join(' + ');
                       reprojected[key]['comparison']          = entry.comparison.join(' + ');
-
                       reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
 
                       // NO ASSUMED RISK BECAUSE NO COMPARISON
 
                       // TODO metric display calculator functions / components
                       reprojected[key]['assumed_risk_metric'] = entry.metric;
-                      reprojected[key]['corresponding_risk']  = (
+                      (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         React.createElement("span", null, 
                           entry.intervention, React.createElement("br", null), 
                           React.createElement("strong", null, entry.value), 
-                          React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, breakpoint: 20})
+                          React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, denominator: 100, breakpoint: 20})
                         )
-                      );
+                      ));
 
 
                       reprojected[key]['n']                   = entry.n_total;
@@ -1391,7 +1517,7 @@ var Processing = React.createClass({displayName: "Processing",
                           entry.intervention, React.createElement("br", null), 
                           React.createElement("strong", null, entry.value), 
                           "(", entry.value_ci_low, " to ", entry.value_ci_high, ")", 
-                          React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, breakpoint: 20})
+                          React.createElement(AbsoluteFrequency, {frequency: entry.value, metric: entry.metric, denominator: 100, breakpoint: 20})
                         )
                       ));
                       // (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
@@ -3440,6 +3566,13 @@ var AbsoluteFrequency = React.createClass({displayName: "AbsoluteFrequency",
     else if (this.props.metric == 'ar_1000') {
       !this.props.breakpoint && (breakpoint = 50);
       !this.props.denominator && (denominator = 1000);
+
+      // If a denominator of 100 is specified, divide and re-present as frequency per 100
+      // for easier comparison, especially in small spaces.
+      if (this.props.denominator == 100) {
+        frequency = Math.floor(frequency * 0.1);
+        !this.props.breakpoint && (breakpoint = 20);
+      }
     }
 
     var rows = [];

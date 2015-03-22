@@ -49,6 +49,13 @@ var AbsoluteFrequency = React.createClass({
     else if (this.props.metric == 'ar_1000') {
       !this.props.breakpoint && (breakpoint = 50);
       !this.props.denominator && (denominator = 1000);
+
+      // If a denominator of 100 is specified, divide and re-present as frequency per 100
+      // for easier comparison, especially in small spaces.
+      if (this.props.denominator == 100) {
+        frequency = Math.floor(frequency * 0.1);
+        !this.props.breakpoint && (breakpoint = 20);
+      }
     }
 
     var rows = [];

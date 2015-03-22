@@ -11056,7 +11056,7 @@ html:hover [class^="ss-"] {
   color: inherit !important;
 }
 .visualization.absolute .ss-icon {
-  transition: color .12s;
+  transition: color .12s ease;
 }
 .visualization.grade-quality {
   cursor: pointer;
