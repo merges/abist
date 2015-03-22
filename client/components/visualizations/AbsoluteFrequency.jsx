@@ -58,7 +58,9 @@ var AbsoluteFrequency = React.createClass({
     for (var i = 1; i <= denominator; i++) {
       var iconClasses = cx({
         'ss-icon ss-user': true,
-        'highlight': i <= frequency
+        'highlight': i <= frequency,
+        'lower': baseline && (frequency < baseline) && (i > frequency && i <= baseline),
+        'higher': baseline && (i > baseline && i <= frequency)
       });
       icons.push(<td key={i}><i className={iconClasses}></i></td>);
       counter++;
@@ -73,9 +75,7 @@ var AbsoluteFrequency = React.createClass({
     }
 
     var visualizationClasses = cx({
-      'visualization absolute': true,
-      'better': this.props.classNames == 'better',
-      'worse': this.props.classNames == 'worse'
+      'visualization absolute': true
     });
 
     if (frequency > denominator) {

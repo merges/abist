@@ -1,0 +1,65 @@
+// Mixins
+
+// Colors
+
+@color-grey-xxxxxxl: #fafafa;
+@color-grey-xxxxxl: #f4f4f4;
+@color-grey-xxxxl: #eee;
+@color-grey-xxxl: #e8e8e8;
+@color-grey-xxl: #ddd;
+@color-grey-xl: #bbb;
+@color-grey-l: #999;
+@color-grey-m: #888;
+@color-grey-d: #666;
+@color-grey-xd: #444;
+@color-grey-xxd: #222;
+
+@color-blue: #3d5adc;
+
+@color-orange: #fe6939;
+@color-orange-d: #e05c32;
+
+@color-cost: #78b1db;
+@color-cost-l: #ecf6fd;
+@color-onset: #8e8ebd;
+@color-onset-l: #ecebff;
+@color-frequency: #8cb164;
+@color-frequency-l: #f0ffe0;
+@color-side-effects: #cd773b;
+@color-side-effects-l: #f5e8de;
+@color-risks: #cab22d;
+@color-risks-l: #f7f4dc;
+
+// Shadows
+
+.shadow-l {
+	box-shadow: 0 1px 1px rgba(0,0,0,.3);
+}
+.shadow-l-right {
+  box-shadow: 1px 0 1px rgba(0,0,0,.3);
+}
+
+// Animations
+
+@-webkit-keyframes hue {
+  from {
+    -webkit-filter: hue-rotate(0deg);
+  }
+  to {
+    -webkit-filter: hue-rotate(-360deg);
+  }
+}
+
+.animation-hue-text {
+  color: #f35626;
+  background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 1440s infinite linear;
+}
+
+.animation-hue-bg {
+  background: #f35626;
+  background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+  -webkit-animation: hue 1440s infinite linear;
+}

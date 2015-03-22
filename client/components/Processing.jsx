@@ -4,6 +4,9 @@ var React = require('react/addons');
 
 var medications = require('./Data.jsx');
 
+var Nav = require('react-bootstrap').Nav;
+var NavItem = require('react-bootstrap').NavItem;
+
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 
@@ -15,20 +18,17 @@ String.prototype.capitalizeFirstletter = function() {
 
 var Processing = React.createClass({
 
-  getDefaultProps: function () {
+  getDefaultProps: function() {
     return {
       medications: medications
     };
   },
 
   getInitialState: function() {
-    return {
-      // measures: {},
-      // metrics: {},
-      // grades: {},
-      data: {}
-      // side_effects: {}
-    };
+  	return {
+  		data: {},
+  		selectedTag: null
+  	};
   },
 
   componentDidMount: function() {
@@ -47,7 +47,8 @@ var Processing = React.createClass({
       },
       side_effects: {
         celecoxib: 'od6'
-      }
+      },
+      tagDescriptions: 'o2pd8py'
     };
 
     // Visit this with a browser to get the worksheet unique IDs
@@ -74,10 +75,10 @@ var Processing = React.createClass({
     var urlGrades = base + sheets.grades + end;
     $.getJSON(urlGrades, processGrades);
 
-    // Get GRADE levels
-    var processGrades = this.processGrades;
-    var urlGrades = base + sheets.grades + end;
-    $.getJSON(urlGrades, processGrades);
+    // Get tag descriptions
+    var processTagDescriptions = this.processTagDescriptions;
+    var urlTagDescriptions = base + sheets.tagDescriptions + end;
+    $.getJSON(urlTagDescriptions, processTagDescriptions);
 
     // Get data
     // Loop through the data source spreadsheets, projecting each one into a more useful format.
@@ -85,6 +86,27 @@ var Processing = React.createClass({
     Object.keys(sheets.data).forEach(function (source) {
       var urlData = base + sheets.data[source] + end;
       $.getJSON(urlData, processData);
+    });
+  },
+
+  processTagDescriptions: function(data) {
+    var tagDescriptions = {};
+
+    $.each(data.feed.entry, function (index, value) {
+      if (index == 0) {
+        return;
+      }
+      var key = value.gsx$name.$t;
+      var entry = {};
+          entry['name'] = key;
+          entry['description'] = value.gsx$description.$t;
+          entry['name_friendly'] = value.gsx$namefriendly.$t;
+          entry['name_short'] = value.gsx$nameshort.$t;
+      tagDescriptions[key] = entry;
+    });
+
+    this.setState({
+      tagDescriptions: tagDescriptions
     });
   },
 
@@ -164,6 +186,7 @@ var Processing = React.createClass({
           entry['name']                 = key;
           entry['name_short']           = value.gsx$nameshort.$t;
           entry['name_long']            = value.gsx$namelong.$t;
+          entry['name_friendly']        = value.gsx$namefriendly.$t;
           entry['description']          = value.gsx$description.$t;
           entry['tags']                 = value.gsx$tags.$t && value.gsx$tags.$t.split(',');
           entry['kind']                 = value.gsx$kind.$t;
@@ -227,48 +250,73 @@ var Processing = React.createClass({
     });
   },
 
-  renderDataByTag: function(data, tags, grades, measures) {
+  renderFollowUpTime: function(low, high, interval) {
+  	(low && !high) && (high = low);
+  	(!low && high) && (low = high);
 
-    // Reproject data by tag
-    var getDataByTag = function(tags, data) {
-      var dataByTag = JSON.parse(JSON.stringify(tags));
+  	var intervalString = low > 1 ? interval + 's' : interval;
 
-      // Loop
-      // Each tag (pain, function, etc.)
-      Object.keys(tags).map(function (tag) {
-        // Each source
-        Object.keys(data).map(function (source) {
-          // Each entry in the source data
-          data[source].map(function (entry) {
-            // Entry has a measure that is associated with one of the tags?
-            // e.g. tags['pain']['patient_pain']
-            if (tags[tag][entry.measure]) {
-              // Create a place for data about each measure
-              dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-              !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+  	if (low == high) {
+  		return (
+  			<div>
+  				<strong>{low} {intervalString}</strong><br />
+  				Researchers looked at this {low} {intervalString} after people started treatment.
+  			</div>
+  		);
+  	}
+  	return (
+  		<div>
+  			<strong>{low}-{high} {intervalString}</strong><br />
+				Researchers looked at this {low}-{high} {intervalString} after people started treatment.
+			</div>
+  	);
+  },
 
-              dataByTag[tag][entry.measure]['data'].push(entry);
-            }
-          });
+  getDataByTag: function(tags, data) {
+  	var dataByTag = JSON.parse(JSON.stringify(tags));
+
+    // Loop
+    // Each tag (pain, function, etc.)
+    Object.keys(tags).map(function (tag) {
+      // Each source
+      Object.keys(data).map(function (source) {
+        // Each entry in the source data
+        data[source].map(function (entry) {
+          // Entry has a measure that is associated with one of the tags?
+          // e.g. tags['pain']['patient_pain']
+          if (tags[tag][entry.measure]) {
+            // Create a place for data about each measure
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+
+            dataByTag[tag][entry.measure]['data'].push(entry);
+          }
         });
       });
-      return dataByTag;
-    }
+    });
+    return dataByTag;
+  },
 
-    var dataByTag = getDataByTag(tags, data);
+  renderDataByTag: function(data, tags, grades, measures, selectedTag) {
+		var dataByTag = this.getDataByTag(tags, data);
+		var tagDescriptions = this.state.tagDescriptions;
 
+		var renderFollowUpTime = this.renderFollowUpTime;
 
     /*
         Comparison == key.
         <li> is match on measure, intervention, comparison
+
+        TODO: reproject data into comparison-intervention groups
     */
 
-    // TODO reproject data into comparison-intervention groups
-
-    return Object.keys(dataByTag).map(function (tag) {
-      return (
+    var renderData = function(tag) {
+    	return (
         <section key={tag} className='data'>
-          <h2><strong>{tag.capitalizeFirstletter()}</strong></h2>
+          <h2>
+          	<strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
+          	{tagDescriptions[tag] && <div><small>{tagDescriptions[tag].description}</small></div>}
+          </h2>
           <div>
             {Object.keys(dataByTag[tag]).map(function (measure, i) {
               var entries = dataByTag[tag][measure].data;
@@ -287,27 +335,20 @@ var Processing = React.createClass({
                     reprojected[key]['intervention']        = entry.intervention.join(' + ');
                     reprojected[key]['comparison']          = entry.comparison.join(' + ');
 
-                    // TODO follow-up display calculator function / component
-                    reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
+                    reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
 
                     // TODO metric display calculator functions / components
                     reprojected[key]['assumed_risk_metric'] = entry.metric;
-                    reprojected[key]['assumed_risk']        = (
+                    reprojected[key]['assumed_risk']				= entry.value;
+                    reprojected[key]['assumed_risk_markup'] = (
                       <span>
-                        {entry.which}<br />
+                        {entry.comparison}<br />
                         <strong>{entry.value}</strong>
                         <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                       </span>
                     );
                     reprojected[key]['n']                   = entry.n_total;
-                    // TODO quality calculator function / component
-                    reprojected[key]['quality']             = (
-                      <span>
-                        <strong>{entry.grade}</strong><br />
-                        <small>{entry.grade != 'undefined' && grades[entry.grade].name_friendly}</small>
-                        <GradeQuality grade={entry.grade} gradeMap={grades} />
-                      </span>
-                    );
+                    reprojected[key]['quality']             = (<GradeQuality grade={entry.grade} gradeMap={grades} />);
                   }
 
                   // TODO generalize!
@@ -319,25 +360,27 @@ var Processing = React.createClass({
                       // Non-comparison rows fill out remaining detail
                       (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         <span>
-                          <strong>{entry.value}</strong><br />
-                          ({entry.value_ci_low} to {entry.value_ci_high})
-                          <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
+                        	{entry.intervention}<br />
+                          <strong>{entry.value}</strong> ({entry.value_ci_low} to {entry.value_ci_high})
+                          <AbsoluteFrequency frequency={entry.value} baseline={reprojected[key].assumed_risk} metric={entry.metric} breakpoint={20} />
                         </span>
                       ));
                       (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
                         <span>
-                          <strong>{entry.value}</strong><br />
-                          ({entry.value_ci_low} to {entry.value_ci_high})
+                        	{entry.intervention}<br />
+                          <strong>{entry.value}</strong> ({entry.value_ci_low} to {entry.value_ci_high})
                         </span>
                       ));
                       (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
                         <span>
+                        	{entry.intervention}<br />
                           <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
                           ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
                         </span>
                       ));
                       (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
                         <span>
+                        	{entry.intervention}<br />
                           <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
                           ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
                         </span>
@@ -350,16 +393,15 @@ var Processing = React.createClass({
                       reprojected[key]['intervention']        = entry.intervention.join(' + ');
                       reprojected[key]['comparison']          = entry.comparison.join(' + ');
 
-                      // TODO follow-up display calculator function / component
-                      reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
+                      reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
 
                       // NO ASSUMED RISK BECAUSE NO COMPARISON
 
                       // TODO metric display calculator functions / components
                       reprojected[key]['assumed_risk_metric'] = entry.metric;
-                      reprojected[key]['corresponding_risk']        = (
+                      reprojected[key]['corresponding_risk']  = (
                         <span>
-                          {entry.which}<br />
+                          {entry.intervention}<br />
                           <strong>{entry.value}</strong>
                           <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                         </span>
@@ -368,17 +410,11 @@ var Processing = React.createClass({
 
                       reprojected[key]['n']                   = entry.n_total;
                       // TODO quality calculator function / component
-                      reprojected[key]['quality']             = (
-                        <span>
-                          <strong>{entry.grade}</strong><br />
-                          <small>{grades[entry.grade].name_friendly}</small>
-                          <GradeQuality grade={entry.grade} gradeMap={grades} />
-                        </span>
-                      );
+                      reprojected[key]['quality']             = (<GradeQuality grade={entry.grade} gradeMap={grades} />);
                       // Non-comparison rows fill out remaining detail
                       (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         <span>
-                          {entry.which}<br />
+                          {entry.intervention}<br />
                           <strong>{entry.value}</strong>
                           ({entry.value_ci_low} to {entry.value_ci_high})
                           <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
@@ -392,12 +428,14 @@ var Processing = React.createClass({
                       // ));
                       (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
                         <span>
+                        	{entry.intervention}<br />
                           <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
                           ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
                         </span>
                       ));
                       (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
                         <span>
+                        	{entry.intervention}<br />
                           <strong>{Math.round(entry.value * 100) + '%'}</strong><br />
                           ({Math.round(entry.value_ci_low * 100) + '%'} to {Math.round(entry.value_ci_high * 100) + '%'})
                         </span>
@@ -407,59 +445,179 @@ var Processing = React.createClass({
                 });
 
                 return (
-                  <ul key={measure}>
-                    <li>
-                      <h3>
-                        <strong>{measures[measure].name_short}</strong><br />
-                        {measures[measure].name_long}
-                      </h3>
-                    </li>
-                    <li>
-                      <h3>Intervention</h3>
-                      <h3>Comparison</h3>
-                      <h3>Follow-up</h3>
-                      <h3>
-                        Assumed risk<br />
-                        (95% CI)<br />
-                        <strong>Comparison</strong>
-                      </h3>
-                      <h3>
-                        Corresponding risk<br />
-                        (95% CI)<br />
-                        <strong>Intervention</strong>
-                      </h3>
-                      <h3>Relative effect (95% CI)</h3>
-                      <h3>Absolute treatment benefit (95% CI)</h3>
-                      <h3>Relative percent change (95% CI)</h3>
-                      <h3>Quality of the evidence</h3>
-                    </li>
-                    {Object.keys(reprojected).map(function (data, i) {
-                      var entry = reprojected[data];
-                      return (
-                        <li key={i}>
-                          <h4>{entry.intervention}</h4>
-                          <h4>{entry.comparison}</h4>
-                          <h4>{entry.follow_up}</h4>
-                          <h4>
-                            {entry.assumed_risk}<br />
-                            <small>{entry.assumed_risk_metric}</small>
-                          </h4>
-                          <h4>{entry.corresponding_risk}</h4>
-                          <h4>{entry.relative_effect}</h4>
-                          <h4>{entry.absolute_benefit}</h4>
-                          <h4>{entry.relative_change}</h4>
-                          <h4>{entry.quality}</h4>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                	<div>
+                		<h3>
+                      <strong>{measures[measure].name_short}</strong>  {measures[measure].name_friendly}<br />
+                      {measures[measure].description}
+                    </h3>
+	                  <ul key={measure}>
+	                    
+	                    <li>
+	                      <h3 className='text'>Intervention</h3>
+	                      <h3 className='text'>Comparison</h3>
+	                      <h3 className='text'>Follow-up</h3>
+	                      <h3>
+	                        Assumed risk<br />
+	                        <small>The expected number. (Usually for people in the control, placebo (sugar pill), or comparison group.)</small>
+	                      </h3>
+	                      <h3>
+	                        Corresponding risk<br />
+	                        (95% CI)<br />
+	                        <small>The number found by researchers when looking at the <em>intervention</em>. (Usually shows how effective the intervention was.)</small>
+	                      </h3>
+	                      <h3 className='text'>Relative effect (95% CI)</h3>
+	                      <h3 className='text'>Absolute treatment benefit (95% CI)</h3>
+	                      <h3 className='text'>Relative percent change (95% CI)</h3>
+	                      <h3>Quality of the evidence (GRADE)</h3>
+	                    </li>
+	                    {Object.keys(reprojected).map(function (data, i) {
+	                      var entry = reprojected[data];
+	                      return (
+	                        <li key={i}>
+	                          <h4>{entry.intervention}</h4>
+	                          <h4>{entry.comparison}</h4>
+	                          <h4>{entry.follow_up}</h4>
+	                          <h4>{entry.assumed_risk_markup}</h4>
+	                          <h4>{entry.corresponding_risk}</h4>
+	                          <h4>{entry.relative_effect}</h4>
+	                          <h4>{entry.absolute_benefit}</h4>
+	                          <h4>{entry.relative_change}</h4>
+	                          <h4>{entry.quality}</h4>
+	                        </li>
+	                      );
+	                    })}
+	                  </ul>
+                	</div>
                 );
               }
             })}
           </div>
         </section>
       );
-    });
+		};
+
+    // Render a single tag's data
+    if (selectedTag) {
+    	return renderData(selectedTag);
+    }
+
+    // Render all data
+    // else {
+    // 	return Object.keys(dataByTag).map(function (tag) {
+    //  		renderData(tag);
+    // 	});
+    // }
+  },
+
+  renderGrades: function(grades) {
+  	return (
+  		<section className='grades'>
+        <h2>GRADE working group levels of evidence</h2>
+        <ul>
+          {Object.keys(grades).map(function (key, i) {
+            var item = grades[key];
+            return (
+              <li key={i}>
+                <h3>{item.grade} <strong>{item.name_friendly}</strong></h3>
+                <div>
+                  <p>{item.description} {item.source && <a href={item.source}>Source</a>}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+  	);
+  },
+
+  renderMeasures: function(measures) {
+  	return (
+  		<section className='measures'>
+        <h2>Measures</h2>
+        <ul>
+          {Object.keys(measures).map(function (key, i) {
+            var item = measures[key];
+            return (
+              <li key={i}>
+                <h3>
+                  <strong>{item.name_short}</strong><br />
+                  {item.name_long}
+                </h3>
+                <p>
+                  {item.description && item.description}
+                  {item.source && <span> - <a href={item.source}>Source</a></span>}
+                </p>
+                <div>
+                  <ul>
+                    {item.tags &&
+                      <li>
+                        <small>tags</small>
+                        {item.tags.join(',')}
+                      </li>
+                    }
+                    {item.notes &&
+                      <li>
+                        <small>notes</small>
+                        {item.notes}
+                      </li>
+                    }
+                    {item.kind &&
+                      <li>
+                        <small>kind</small>
+                        {item.kind}
+                      </li>
+                    }
+                    {item.assessor &&
+                      <li>
+                        <small>assessor</small>
+                        {item.assessor}
+                      </li>
+                    }
+                    {item.variable &&
+                      <li>
+                        <small>variable</small>
+                        {item.variable}
+                      </li>
+                    }
+                    {item.included_measures &&
+                      <li>
+                        <small>included_measures</small>
+                        {item.included_measures.join(', ')}
+                      </li>
+                    }
+                    {item.related_measures &&
+                      <li>
+                        <small>related_measures</small>
+                        {item.related_measures.join(', ')}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+  	);
+  },
+
+	handleTagSelect: function(key) {
+		this.setState({
+			selectedTag: key
+		});
+	},
+
+  renderTagBar: function(tags) {
+  	var selectedTag = this.state.selectedTag;
+  	var tagDescriptions = this.state.tagDescriptions;
+
+  	return (
+	  	<Nav bsStyle="pills" activeKey={tags[selectedTag]} onSelect={this.handleTagSelect}>
+	  		{Object.keys(tags).map(function (tag, i) {
+	  			return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>);
+	  		})}
+	    </Nav>
+	  );
   },
 
   render: function() {
@@ -474,6 +632,7 @@ var Processing = React.createClass({
     var measures = this.state.measures;
     var tags = this.state.tags;
     var data = this.state.data;
+    var selectedTag = this.state.selectedTag;
 
     if (grades && measures && tags && data != {}) {
       return (
@@ -488,91 +647,11 @@ var Processing = React.createClass({
             <p>The summaries below are connected to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a> where I am encoding medical evidence. Updates made in those spreadsheets are instantly applied here.</p>
           </section>
 
-          {this.renderDataByTag(data, tags, grades, measures)}
+          {this.renderTagBar(tags)}
+          {this.renderDataByTag(data, tags, grades, measures, selectedTag)}
 
-          <section className='grades'>
-            <h2>GRADE working group levels of evidence</h2>
-            <ul>
-              {Object.keys(grades).map(function (key, i) {
-                var item = grades[key];
-                return (
-                  <li key={i}>
-                    <h3>{item.grade} <strong>{item.name_friendly}</strong></h3>
-                    <div>
-                      <p>{item.description} {item.source && <a href={item.source}>Source</a>}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          <section className='measures'>
-            <h2>Measures</h2>
-            <ul>
-              {Object.keys(measures).map(function (key, i) {
-                var item = measures[key];
-                return (
-                  <li key={i}>
-                    <h3>
-                      <strong>{item.name_short}</strong><br />
-                      {item.name_long}
-                    </h3>
-                    <p>
-                      {item.description && item.description}
-                      {item.source && <span> - <a href={item.source}>Source</a></span>}
-                    </p>
-                    <div>
-                      <ul>
-                        {item.tags &&
-                          <li>
-                            <small>tags</small>
-                            {item.tags.join(',')}
-                          </li>
-                        }
-                        {item.notes &&
-                          <li>
-                            <small>notes</small>
-                            {item.notes}
-                          </li>
-                        }
-                        {item.kind &&
-                          <li>
-                            <small>kind</small>
-                            {item.kind}
-                          </li>
-                        }
-                        {item.assessor &&
-                          <li>
-                            <small>assessor</small>
-                            {item.assessor}
-                          </li>
-                        }
-                        {item.variable &&
-                          <li>
-                            <small>variable</small>
-                            {item.variable}
-                          </li>
-                        }
-                        {item.included_measures &&
-                          <li>
-                            <small>included_measures</small>
-                            {item.included_measures.join(', ')}
-                          </li>
-                        }
-                        {item.related_measures &&
-                          <li>
-                            <small>related_measures</small>
-                            {item.related_measures.join(', ')}
-                          </li>
-                        }
-                      </ul>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+          {this.renderGrades(grades)}
+          {this.renderMeasures(measures)}
         </div>
       );
     }

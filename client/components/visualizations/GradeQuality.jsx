@@ -25,7 +25,6 @@ var GradeQuality = React.createClass({
     var getIcons = function(grade) {
       var icons = [];
       var gradeNumber = Math.floor(parseInt(grade));
-      console.log(gradeNumber);
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
@@ -41,31 +40,25 @@ var GradeQuality = React.createClass({
       return icons;
     };
 
-    var getTooltipContent = function(grade) {
-      // var tooltipContent;
-      // if (grade == 'X' || !grade) {
-      //   var tooltipContent = (
-      //     <span>
-      //       <strong>Not sure.</strong> This information hasn’t been quality rated according to GRADE.
-      //     </span>
-      //   );
-      // }
-      // else {
-      //   var tooltipContent = (
-      //     <span>
-      //       <strong>{grade} {grades[grade].name_friendly}.</strong> {grades[grade].description}
-      //     </span>
-      //   );
-      // }
-      // return tooltipContent;
-      return 'foo';
+    var getTooltip = function(grade) {
+      var tooltip;
+      if (grade == 'X' || !grade) {
+        var tooltip = (
+          <Tooltip>
+            <strong>Not rated.</strong> This information hasn’t been quality rated according to GRADE.
+          </Tooltip>
+        );
+      }
+      else {
+        var tooltip = (
+          <Tooltip>
+            <strong>{grades[grade].name_friendly}.</strong><br />
+            {grades[grade].description_friendly}
+          </Tooltip>
+        );
+      }
+      return tooltip;
     };
-
-    var tooltip = (
-      <Tooltip>
-        {getTooltipContent(grade)}
-      </Tooltip>
-    );
 
     if (!grade) {
       return (
@@ -74,8 +67,8 @@ var GradeQuality = React.createClass({
     }
     return (
       <div className={visualizationClasses}>
-        <OverlayTrigger delayHide={150} placement='left' overlay={tooltip}>
-          {getIcons(grade)}
+        <OverlayTrigger delayHide={150} placement='left' overlay={getTooltip(grade)}>
+          <span>{getIcons(grade)}</span>
         </OverlayTrigger>
       </div>
     );

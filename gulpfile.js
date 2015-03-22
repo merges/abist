@@ -34,7 +34,7 @@ gulp.task('browserify', function () {
 });
 
 gulp.task('less', function() {
-  gulp.src('client/less/*.less')
+  gulp.src('client/less/app.less')
     .pipe(less().on('error', util.log))
     .pipe(gulp.dest('client/css'))
     .pipe(livereload());

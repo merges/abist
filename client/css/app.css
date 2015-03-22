@@ -5883,16 +5883,16 @@ button.close {
 .processing > section > ul > li > div > ul:after,
 .processing .header:before,
 .processing .header:after,
+.ptda:before,
+.ptda:after,
+.ptda > section:before,
+.ptda > section:after,
 .experiment:before,
 .experiment:after,
 .experiment > section:before,
 .experiment > section:after,
 .experiment > nav:before,
 .experiment > nav:after,
-.ptda:before,
-.ptda:after,
-.ptda > section:before,
-.ptda > section:after,
 .adverse-events:before,
 .adverse-events:after,
 .adverse-events > section:before,
@@ -5920,11 +5920,11 @@ button.close {
 .processing > section > ul > li:after,
 .processing > section > ul > li > div > ul:after,
 .processing .header:after,
+.ptda:after,
+.ptda > section:after,
 .experiment:after,
 .experiment > section:after,
 .experiment > nav:after,
-.ptda:after,
-.ptda > section:after,
 .adverse-events:after,
 .adverse-events > section:after {
   clear: both;
@@ -11018,6 +11018,14 @@ html:hover [class^="ss-"] {
 .shadow-l-right {
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
 }
+@-webkit-keyframes hue {
+  from {
+    -webkit-filter: hue-rotate(0deg);
+  }
+  to {
+    -webkit-filter: hue-rotate(-360deg);
+  }
+}
 .animation-hue-text {
   color: #f35626;
   background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
@@ -11030,73 +11038,31 @@ html:hover [class^="ss-"] {
   background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
   -webkit-animation: hue 1440s infinite linear;
 }
-html {
-  -webkit-font-smoothing: antialiased;
+.visualization {
+  color: #dddddd;
 }
-html a {
-  color: #3d5adc;
+.visualization .highlight {
+  color: #999999;
+}
+.visualization.absolute {
+  cursor: pointer;
+  margin: 1em 0;
+  font-size: 6.5pt;
+}
+.visualization.absolute:hover .higher {
+  color: black !important;
+}
+.visualization.absolute:hover .lower {
+  color: inherit !important;
+}
+.visualization.absolute .ss-icon {
+  transition: color .12s;
+}
+.visualization.grade-quality {
   cursor: pointer;
 }
-html a:hover {
-  color: #3d5adc;
-}
-.site-wide-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 2em;
-  line-height: 2em;
-  padding: 0 15px;
-  color: white;
-  background: #666666;
-  text-align: right;
-}
-.site-wide-nav > a,
-.site-wide-nav > span {
-  color: white;
-  font-size: 1.3em;
-  font-weight: 300;
-  display: inline;
-  margin-right: .3em;
-}
-.site-wide-nav a:hover {
-  text-decoration: none;
-  color: inherit;
-  text-shadow: 0 0 7px rgba(255, 255, 255, 0.5);
-}
-.site-wide-nav .fa {
-  margin-bottom: -0.1em;
-}
-@-webkit-keyframes hue {
-  from {
-    -webkit-filter: hue-rotate(0deg);
-  }
-  to {
-    -webkit-filter: hue-rotate(-360deg);
-  }
-}
-.header {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 1em 0 .9em 0;
-  background: white;
-  z-index: 11;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
-.header h1 {
-  font-size: 1.7em;
-  font-weight: 300;
-  margin: 0;
-  padding-left: .5em;
-  color: #f35626;
-  background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -webkit-animation: hue 1440s infinite linear;
+.visualization.grade-quality .ss-help {
+  font-size: 1.2em;
 }
 .processing {
   padding-bottom: 11em;
@@ -11104,22 +11070,6 @@ html a:hover {
   margin-left: auto;
   padding-left: 15px;
   padding-right: 15px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
-@media (min-width: 768px) {
-  .processing {
-    width: 750px;
-  }
-}
-@media (min-width: 992px) {
-  .processing {
-    width: 970px;
-  }
-}
-@media (min-width: 1200px) {
-  .processing {
-    width: 1170px;
-  }
 }
 .processing > .navbar-header,
 .processing > .navbar-collapse {
@@ -11152,13 +11102,13 @@ html a:hover {
   margin-right: -15px;
   color: #666666;
   border-top: 1px solid #dddddd;
-  padding-top: 5em;
 }
 .processing > section > h2 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
+  padding-top: 2em;
   color: #bbbbbb;
 }
 @media (min-width: 768px) {
@@ -11327,32 +11277,49 @@ html a:hover {
   font-weight: 400;
 }
 .processing > section.data > h2 {
-  font-size: 1.2em;
-}
-.processing > section.data > div > ul {
-  width: 100%;
-  display: table;
-  table-layout: fixed;
-}
-.processing > section.data > div > ul > li {
-  display: table-row;
-}
-.processing > section.data > div > ul > li > h3,
-.processing > section.data > div > ul > li > h4 {
-  padding: .75em .5em;
-  display: table-cell;
-  font-size: 10pt !important;
-}
-.processing > section.data > div > ul > li > h3 {
+  margin: 0;
   background: #f4f4f4;
+  line-height: 1.2;
 }
-.processing > section.data > div > ul > li > h3 + h3 {
-  border-left: 1px solid white;
+.processing > section.data > div > div {
+  padding-bottom: 5em;
 }
-.processing > section.data > div > ul > li:first-of-type > h3 {
+.processing > section.data > div > div > h3 {
+  width: 100%;
   color: #333;
   display: block;
   background: #D3EBFF;
+  padding: .25em 15px;
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: normal;
+  line-height: 1.2;
+}
+.processing > section.data > div > div > ul {
+  width: 100%;
+  display: table;
+  margin: 0;
+  padding: 0;
+}
+.processing > section.data > div > div > ul > li {
+  display: table-row;
+}
+.processing > section.data > div > div > ul > li > h3,
+.processing > section.data > div > div > ul > li > h4 {
+  padding: .75em .5em;
+  display: table-cell;
+  font-size: 11pt !important;
+  line-height: 1.2;
+}
+.processing > section.data > div > div > ul > li > h3 > small,
+.processing > section.data > div > div > ul > li > h4 > small {
+  line-height: .8;
+}
+.processing > section.data > div > div > ul > li > h3 {
+  background: #f4f4f4;
+}
+.processing > section.data > div > div > ul > li > h3 + h3 {
+  border-left: 1px solid white;
 }
 .processing .header {
   position: relative;
@@ -11371,178 +11338,6 @@ html a:hover {
     float: left;
     width: 100%;
   }
-}
-.experiment {
-  margin-right: auto;
-  margin-left: auto;
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-bottom: 11em;
-}
-@media (min-width: 768px) {
-  .experiment {
-    width: 750px;
-  }
-}
-@media (min-width: 992px) {
-  .experiment {
-    width: 970px;
-  }
-}
-@media (min-width: 1200px) {
-  .experiment {
-    width: 1170px;
-  }
-}
-.experiment > .navbar-header,
-.experiment > .navbar-collapse {
-  margin-right: -15px;
-  margin-left: -15px;
-}
-@media (min-width: 768px) {
-  .experiment > .navbar-header,
-  .experiment > .navbar-collapse {
-    margin-right: 0;
-    margin-left: 0;
-  }
-}
-.experiment .skeleton {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .experiment .skeleton {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-@media (min-width: 768px) {
-  .experiment .skeleton {
-    margin-left: 16.66666667%;
-  }
-}
-.experiment > section,
-.experiment > nav {
-  margin-left: -15px;
-  margin-right: -15px;
-}
-.experiment > section > section,
-.experiment > nav > section,
-.experiment > section > h1,
-.experiment > nav > h1,
-.experiment > section > h2,
-.experiment > nav > h2 {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .experiment > section > section,
-  .experiment > nav > section,
-  .experiment > section > h1,
-  .experiment > nav > h1,
-  .experiment > section > h2,
-  .experiment > nav > h2 {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-@media (min-width: 768px) {
-  .experiment > section > section,
-  .experiment > nav > section,
-  .experiment > section > h1,
-  .experiment > nav > h1,
-  .experiment > section > h2,
-  .experiment > nav > h2 {
-    margin-left: 16.66666667%;
-  }
-}
-.experiment > nav > h2 {
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: .5em;
-  padding-bottom: 2.5em;
-  font-size: 1.3em;
-  border-top: 3px solid #eeeeee;
-}
-.experiment > nav > h2:hover {
-  background: #fafafa;
-}
-.experiment > nav > h2 > p {
-  color: #888888;
-  margin: .5em 0 0 0;
-  font-weight: 300;
-  font-size: .8em;
-}
-.experiment h1 {
-  margin: 0 0 4em 0;
-  font-size: 2em;
-  color: #999999;
-  font-weight: 200;
-  border-top: 1em solid #e8e8e8;
-}
-.experiment h1 > p {
-  margin-top: 1.5em;
-  font-weight: normal;
-  color: #888888;
-  font-size: .5em;
-}
-.experiment p {
-  margin: 0;
-  line-height: 1.3;
-}
-.experiment p.emphasize {
-  font-size: 1.3em;
-  color: #444444;
-}
-.experiment p.pull-quote {
-  margin-top: 3em;
-  margin-bottom: 1em;
-  color: #fe6939;
-  font-weight: bolder;
-  font-size: 1.5em;
-  line-height: 1.1;
-}
-.experiment p + p,
-.experiment p + ul,
-.experiment p + ol {
-  margin-top: .85em;
-}
-.experiment .description {
-  background: #fafafa;
-  padding-top: 1em;
-  padding-bottom: 1em;
-  padding-right: 15%;
-  margin-bottom: 2em;
-  color: #666666;
-}
-.experiment img {
-  border-top: 1px solid #dddddd;
-  border-bottom: 1px solid #dddddd;
-  display: block;
-  margin: 1.5em inherit 3em inherit;
-}
-.visualization.absolute {
-  font-size: 6.5pt;
-  color: #dddddd;
-}
-.visualization.absolute .ss-icon.highlight {
-  color: #999999;
-}
-.visualization.grade-quality {
-  cursor: pointer;
-}
-.visualization.grade-quality .ss-help {
-  font-size: 1.2em;
-}
-.visualization.better .highlight {
-  color: #639B69 !important;
-}
-.visualization.worse .highlight {
-  color: #AA8176 !important;
 }
 .ptda {
   margin-right: auto;
@@ -12102,6 +11897,219 @@ html a:hover {
 .ptda.mobile .card-container .cards .ptda-card > table td {
   word-wrap: break-word;
   height: 100px;
+}
+html {
+  -webkit-font-smoothing: antialiased;
+}
+html a {
+  color: #3d5adc;
+  cursor: pointer;
+}
+html a:hover {
+  color: #3d5adc;
+}
+.site-wide-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 2em;
+  line-height: 2em;
+  padding: 0 15px;
+  color: white;
+  background: #666666;
+  text-align: right;
+}
+.site-wide-nav > a,
+.site-wide-nav > span {
+  color: white;
+  font-size: 1.3em;
+  font-weight: 300;
+  display: inline;
+  margin-right: .3em;
+}
+.site-wide-nav a:hover {
+  text-decoration: none;
+  color: inherit;
+  text-shadow: 0 0 7px rgba(255, 255, 255, 0.5);
+}
+.site-wide-nav .fa {
+  margin-bottom: -0.1em;
+}
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1em 0 .9em 0;
+  background: white;
+  z-index: 11;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+.header h1 {
+  font-size: 1.7em;
+  font-weight: 300;
+  margin: 0;
+  padding-left: .5em;
+  color: #f35626;
+  background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 1440s infinite linear;
+}
+.experiment {
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 11em;
+}
+@media (min-width: 768px) {
+  .experiment {
+    width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  .experiment {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .experiment {
+    width: 1170px;
+  }
+}
+.experiment > .navbar-header,
+.experiment > .navbar-collapse {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+@media (min-width: 768px) {
+  .experiment > .navbar-header,
+  .experiment > .navbar-collapse {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+.experiment .skeleton {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .experiment .skeleton {
+    float: left;
+    width: 66.66666667%;
+  }
+}
+@media (min-width: 768px) {
+  .experiment .skeleton {
+    margin-left: 16.66666667%;
+  }
+}
+.experiment > section,
+.experiment > nav {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+.experiment > section > section,
+.experiment > nav > section,
+.experiment > section > h1,
+.experiment > nav > h1,
+.experiment > section > h2,
+.experiment > nav > h2 {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (min-width: 768px) {
+  .experiment > section > section,
+  .experiment > nav > section,
+  .experiment > section > h1,
+  .experiment > nav > h1,
+  .experiment > section > h2,
+  .experiment > nav > h2 {
+    float: left;
+    width: 66.66666667%;
+  }
+}
+@media (min-width: 768px) {
+  .experiment > section > section,
+  .experiment > nav > section,
+  .experiment > section > h1,
+  .experiment > nav > h1,
+  .experiment > section > h2,
+  .experiment > nav > h2 {
+    margin-left: 16.66666667%;
+  }
+}
+.experiment > nav > h2 {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: .5em;
+  padding-bottom: 2.5em;
+  font-size: 1.3em;
+  border-top: 3px solid #eeeeee;
+}
+.experiment > nav > h2:hover {
+  background: #fafafa;
+}
+.experiment > nav > h2 > p {
+  color: #888888;
+  margin: .5em 0 0 0;
+  font-weight: 300;
+  font-size: .8em;
+}
+.experiment h1 {
+  margin: 0 0 4em 0;
+  font-size: 2em;
+  color: #999999;
+  font-weight: 200;
+  border-top: 1em solid #e8e8e8;
+}
+.experiment h1 > p {
+  margin-top: 1.5em;
+  font-weight: normal;
+  color: #888888;
+  font-size: .5em;
+}
+.experiment p {
+  margin: 0;
+  line-height: 1.3;
+}
+.experiment p.emphasize {
+  font-size: 1.3em;
+  color: #444444;
+}
+.experiment p.pull-quote {
+  margin-top: 3em;
+  margin-bottom: 1em;
+  color: #fe6939;
+  font-weight: bolder;
+  font-size: 1.5em;
+  line-height: 1.1;
+}
+.experiment p + p,
+.experiment p + ul,
+.experiment p + ol {
+  margin-top: .85em;
+}
+.experiment .description {
+  background: #fafafa;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-right: 15%;
+  margin-bottom: 2em;
+  color: #666666;
+}
+.experiment img {
+  border-top: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  display: block;
+  margin: 1.5em inherit 3em inherit;
 }
 .adverse-events {
   margin-right: auto;
