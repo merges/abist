@@ -72,12 +72,15 @@ var Experiment = React.createClass({
             <a href='/processing'>Data live from a Google Spreadsheet</a>
           </h2>
           <h2>
+            <a href='/visualization-tests'>Visualization tests</a>
+          </h2>
+          <h2>
             <a href='/ptda'>RA treatment decision aid demo</a>
             <p>This is an interactive, tailorable digital derivation of a <a href='//www.ncbi.nlm.nih.gov/pubmed/25649726'>low-literacy decision aid about RA medications</a> designed by one of my supervisors, Dr. Jennifer Barton, and her colleagues at UCSF and elsewhere. I developed it in the first few weeks of my thesis work, as a testbed for technology choices and to explore ideas that will be used in my eventual RA prototype.</p>
           </h2>
           <h2>
             <a href='/adverse'>RA DMARD adverse events prototype</a>
-            <p>This is a prototype to explore querying an FDA database for reported adverse events where at least one of 12 commonly used disease-modifying antirheumatic drugs was being used to treat RA.</p> 
+            <p>This is a prototype to explore querying an FDA database for reported adverse events where at least one of 12 commonly used disease-modifying antirheumatic drugs was being used to treat RA.</p>
           </h2>
         </nav>
       </div>

@@ -1,12 +1,15 @@
 //Core variables and mixins
+
 @import "./bower_components/bootstrap/less/variables.less";
 @import "./bower_components/bootstrap/less/mixins.less";
 
 // Reset
+
 @import "./bower_components/bootstrap/less/normalize.less";
 @import "./bower_components/bootstrap/less/print.less";
 
 // Core CSS
+
 @import "./bower_components/bootstrap/less/scaffolding.less";
 @import "./bower_components/bootstrap/less/type.less";
 @import "./bower_components/bootstrap/less/code.less";
@@ -16,6 +19,7 @@
 @import "./bower_components/bootstrap/less/buttons.less";
 
 // Components
+
 @import "./bower_components/bootstrap/less/component-animations.less";
 @import "./bower_components/bootstrap/less/dropdowns.less";
 @import "./bower_components/bootstrap/less/button-groups.less";
@@ -39,17 +43,24 @@
 @import "./bower_components/bootstrap/less/glyphicons.less";
 
 // Components w/ JavaScript
+
 @import "./bower_components/bootstrap/less/modals.less";
 @import "./bower_components/bootstrap/less/tooltip.less";
 @import "./bower_components/bootstrap/less/popovers.less";
 @import "./bower_components/bootstrap/less/carousel.less";
 
 // Utility classes
+
 @import "./bower_components/bootstrap/less/utilities.less";
 @import "./bower_components/bootstrap/less/responsive-utilities.less";
 
 // Animate.css
-@import "animate.min.less";
+
+@import (less) "animate.min.less";
+
+// Fonts
+
+@import (less) "../fonts/ss-pika.css";
 
 // Colors
 
@@ -195,10 +206,13 @@ html {
 	// }
 }
 
+
+
 // Processing data experiment
 
 .processing {
-	.container;
+	padding-bottom: 11em;
+  .container;
 	.shadow-l;
 
 	h2 {
@@ -344,7 +358,7 @@ html {
 
 				> li {
 					display: table-row;
-					
+
 					> h3,
 					> h4 {
 						padding: .75em .5em;
@@ -473,6 +487,42 @@ html {
     margin: 1.5em inherit 3em inherit;
   }
 }
+
+
+
+// Visualizations
+
+.visualization {
+  &.absolute {
+    font-size: 6.5pt;
+    color: @color-grey-xxl;
+
+    .ss-icon {
+      &.highlight {
+        color: @color-grey-l;
+      }
+    }
+  }
+  &.grade-quality {
+    cursor: pointer;
+
+    .ss-help {
+      font-size: 1.2em;
+    }
+  }
+
+  &.better {
+    .highlight {
+      color: #639B69 !important;
+    }
+  }
+  &.worse {
+    .highlight {
+      color: #AA8176 !important;
+    }
+  }
+}
+
 
 // PtDA demo
 

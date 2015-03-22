@@ -4,6 +4,9 @@ var React = require('react/addons');
 
 var medications = require('./Data.jsx');
 
+var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
+var GradeQuality = require('./visualizations/GradeQuality.jsx');
+
 // Processing / data processing tests
 
 String.prototype.capitalizeFirstletter = function() {
@@ -106,7 +109,7 @@ var Processing = React.createClass({
           entry['duration_interval']    = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
           entry['intervention']         = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
           entry['comparison']           = value.gsx$comparison ? value.gsx$comparison.$t.split(',') : null;
-          entry['intervention_dosage']  = value.gsx$interventiondosage ? value.gsx$interventiondosage.$t : null; 
+          entry['intervention_dosage']  = value.gsx$interventiondosage ? value.gsx$interventiondosage.$t : null;
           entry['dosage_form']          = value.gsx$dosageform ? value.gsx$dosageform.$t.split(',') : null;
           entry['dosage_frequency']     = value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null;
           entry['dosage_interval']      = value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null;
@@ -225,11 +228,11 @@ var Processing = React.createClass({
   },
 
   renderDataByTag: function(data, tags, grades, measures) {
-    
+
     // Reproject data by tag
     var getDataByTag = function(tags, data) {
       var dataByTag = JSON.parse(JSON.stringify(tags));
-      
+
       // Loop
       // Each tag (pain, function, etc.)
       Object.keys(tags).map(function (tag) {
@@ -251,18 +254,16 @@ var Processing = React.createClass({
       });
       return dataByTag;
     }
-    
+
     var dataByTag = getDataByTag(tags, data);
 
 
-    /*  
+    /*
         Comparison == key.
         <li> is match on measure, intervention, comparison
     */
 
     // TODO reproject data into comparison-intervention groups
-
-    console.log(dataByTag);
 
     return Object.keys(dataByTag).map(function (tag) {
       return (
@@ -288,12 +289,14 @@ var Processing = React.createClass({
 
                     // TODO follow-up display calculator function / component
                     reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
-                    
+
                     // TODO metric display calculator functions / components
                     reprojected[key]['assumed_risk_metric'] = entry.metric;
                     reprojected[key]['assumed_risk']        = (
                       <span>
+                        {entry.which}<br />
                         <strong>{entry.value}</strong>
+                        <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                       </span>
                     );
                     reprojected[key]['n']                   = entry.n_total;
@@ -302,6 +305,7 @@ var Processing = React.createClass({
                       <span>
                         <strong>{entry.grade}</strong><br />
                         <small>{entry.grade != 'undefined' && grades[entry.grade].name_friendly}</small>
+                        <GradeQuality grade={entry.grade} gradeMap={grades} />
                       </span>
                     );
                   }
@@ -317,6 +321,7 @@ var Processing = React.createClass({
                         <span>
                           <strong>{entry.value}</strong><br />
                           ({entry.value_ci_low} to {entry.value_ci_high})
+                          <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                         </span>
                       ));
                       (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
@@ -347,14 +352,16 @@ var Processing = React.createClass({
 
                       // TODO follow-up display calculator function / component
                       reprojected[key]['follow_up']           = entry.duration_low + '-' + entry.duration_high + ' ' + entry.duration_interval + 's';
-                      
+
                       // NO ASSUMED RISK BECAUSE NO COMPARISON
 
                       // TODO metric display calculator functions / components
                       reprojected[key]['assumed_risk_metric'] = entry.metric;
                       reprojected[key]['corresponding_risk']        = (
                         <span>
+                          {entry.which}<br />
                           <strong>{entry.value}</strong>
+                          <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                         </span>
                       );
 
@@ -365,13 +372,16 @@ var Processing = React.createClass({
                         <span>
                           <strong>{entry.grade}</strong><br />
                           <small>{grades[entry.grade].name_friendly}</small>
+                          <GradeQuality grade={entry.grade} gradeMap={grades} />
                         </span>
                       );
                       // Non-comparison rows fill out remaining detail
                       (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         <span>
-                          <strong>{entry.value}</strong><br />
+                          {entry.which}<br />
+                          <strong>{entry.value}</strong>
                           ({entry.value_ci_low} to {entry.value_ci_high})
+                          <AbsoluteFrequency frequency={entry.value} metric={entry.metric} breakpoint={20} />
                         </span>
                       ));
                       // (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
@@ -464,7 +474,7 @@ var Processing = React.createClass({
     var measures = this.state.measures;
     var tags = this.state.tags;
     var data = this.state.data;
-    
+
     if (grades && measures && tags && data != {}) {
       return (
         <div className={classes}>
