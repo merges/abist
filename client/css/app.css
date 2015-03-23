@@ -5875,6 +5875,8 @@ button.close {
 .modal-footer:after,
 .processing:before,
 .processing:after,
+.processing nav.tag-navigation:before,
+.processing nav.tag-navigation:after,
 .processing > section:before,
 .processing > section:after,
 .processing > section > ul > li:before,
@@ -5916,6 +5918,7 @@ button.close {
 .panel-body:after,
 .modal-footer:after,
 .processing:after,
+.processing nav.tag-navigation:after,
 .processing > section:after,
 .processing > section > ul > li:after,
 .processing > section > ul > li > div > ul:after,
@@ -11018,6 +11021,9 @@ html:hover [class^="ss-"] {
 .shadow-l-right {
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
 }
+.shadow-h-right {
+  box-shadow: 3px 0 9px rgba(0, 0, 0, 0.3);
+}
 @-webkit-keyframes hue {
   from {
     -webkit-filter: hue-rotate(0deg);
@@ -11049,20 +11055,48 @@ html:hover [class^="ss-"] {
   margin: 1em 0;
   font-size: 6.5pt;
 }
+.visualization.absolute:hover {
+  color: #e8e8e8;
+}
+.visualization.absolute:hover .highlight {
+  color: #bbbbbb;
+}
 .visualization.absolute:hover .higher {
   color: black !important;
 }
 .visualization.absolute:hover .lower {
-  color: inherit !important;
+  color: white !important;
+  text-shadow: 0 0 4px #000000;
 }
 .visualization.absolute .ss-icon {
-  transition: color .12s ease;
+  transition: color 0.12s ease, text-shadow 0.12s ease;
 }
 .visualization.grade-quality {
+  font-size: 1.3em;
   cursor: pointer;
+  white-space: nowrap;
 }
 .visualization.grade-quality .ss-help {
   font-size: 1.2em;
+}
+.source {
+  font-size: .75em;
+  font-weight: bolder;
+  color: white;
+  background: #3d5adc;
+  padding: 0 .5em .17em .5em;
+  opacity: .4;
+  transition: opacity .2s ease;
+  border-radius: 16px;
+  margin-top: .5em;
+  display: inline-block;
+  overflow-x: hidden;
+  line-height: 1;
+}
+.source:hover {
+  text-decoration: none;
+  color: white;
+  opacity: 1;
 }
 .processing {
   padding-bottom: 11em;
@@ -11097,6 +11131,49 @@ html:hover [class^="ss-"] {
 .processing p {
   line-height: 1.3;
 }
+.processing nav.tag-navigation {
+  margin-left: -15px;
+  margin-right: -15px;
+  background: #444444;
+}
+.processing nav.tag-navigation > ul {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: .5em;
+  padding-bottom: .5em;
+}
+@media (min-width: 768px) {
+  .processing nav.tag-navigation > ul {
+    float: left;
+    width: 100%;
+  }
+}
+.processing nav.tag-navigation > ul > li > a {
+  font-weight: bold;
+  color: #8DC1FF !important;
+  transition: color 0.15s ease, background 0.15s ease, text-shadow 0.15s ease;
+}
+.processing nav.tag-navigation > ul > li > a:hover {
+  background: #222222;
+}
+.processing nav.tag-navigation > ul > li.active > a {
+  color: white !important;
+  background: inherit;
+  text-shadow: 0 0 9px rgba(255, 255, 255, 0.5);
+}
+@media (max-width: 767px) {
+  .processing nav.tag-navigation > ul > li {
+    float: none;
+    display: block;
+    margin: 0;
+  }
+  .processing nav.tag-navigation > ul > li > a {
+    display: block;
+    padding: .1em 15px;
+  }
+}
 .processing > section {
   margin-left: -15px;
   margin-right: -15px;
@@ -11104,18 +11181,8 @@ html:hover [class^="ss-"] {
   border-top: 1px solid #dddddd;
 }
 .processing > section > h2 {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-top: 2em;
+  padding: 1.5em 15px .5em 15px;
   color: #bbbbbb;
-}
-@media (min-width: 768px) {
-  .processing > section > h2 {
-    float: left;
-    width: 100%;
-  }
 }
 .processing > section > p {
   position: relative;
@@ -11123,10 +11190,10 @@ html:hover [class^="ss-"] {
   padding-left: 15px;
   padding-right: 15px;
 }
-@media (min-width: 768px) {
+@media (min-width: 1200px) {
   .processing > section > p {
     float: left;
-    width: 75%;
+    width: 33.33333333%;
   }
 }
 .processing > section > ul {
@@ -11276,37 +11343,60 @@ html:hover [class^="ss-"] {
 .processing > section.measures p {
   font-weight: 400;
 }
+.processing > section.data {
+  color: #444444;
+}
 .processing > section.data > h2 {
   margin: 0;
-  background: #f4f4f4;
   line-height: 1.2;
+  color: #dddddd;
+  background: #444444;
+}
+.processing > section.data > h2 > p {
+  color: #e8e8e8;
+  font-size: .65em;
+  line-height: 1.1;
 }
 .processing > section.data > div > div {
-  padding-bottom: 5em;
+  padding-bottom: 8em;
 }
 .processing > section.data > div > div > h3 {
   width: 100%;
-  color: #333;
+  color: white;
   display: block;
-  background: #D3EBFF;
-  padding: .25em 15px;
+  background: #3d5adc;
+  padding: 1.5em 15px .5em 15px;
   margin: 0;
   font-size: 1.2em;
   font-weight: normal;
-  line-height: 1.2;
+  line-height: 1.1;
+}
+.processing > section.data > div > div > h3 > strong {
+  font-weight: bolder;
+}
+.processing > section.data > div > div > h3 > p {
+  font-size: .8em;
+  min-width: 400px;
+  max-width: 66%;
+  margin: .15em 0 0 0;
+  line-height: 1.25;
 }
 .processing > section.data > div > div > ul {
   width: 100%;
   display: table;
+  border-collapse: collapse;
   margin: 0;
   padding: 0;
 }
 .processing > section.data > div > div > ul > li {
   display: table-row;
 }
+.processing > section.data > div > div > ul > li + li {
+  border-top: 1px solid #eeeeee;
+}
 .processing > section.data > div > div > ul > li > h3,
 .processing > section.data > div > div > ul > li > h4 {
-  padding: .75em .5em;
+  padding: .75em 15px;
   display: table-cell;
   font-size: 11pt !important;
   line-height: 1.2;
@@ -11321,23 +11411,56 @@ html:hover [class^="ss-"] {
 .processing > section.data > div > div > ul > li > h3 + h3 {
   border-left: 1px solid white;
 }
+.processing > section.data > div > div > ul > li > h4 {
+  padding-bottom: 3em;
+}
+.processing > section.data > div > div > ul > li > h4 .light {
+  color: #888888;
+}
+.processing > section.data > div > div > ul > li > h4 .intervention {
+  cursor: pointer;
+}
+.processing > section.data > div > div > ul > li > h4 .intervention .name {
+  background: #eeeeee;
+}
+.processing > section.data > div > div > ul > li > h4 .dosage {
+  color: #888888;
+}
 .processing .header {
   position: relative;
   box-shadow: none;
   margin-left: -15px;
   margin-right: -15px;
 }
-.processing .header h1 {
+.processing .header > h1 {
   position: relative;
+  float: left;
+  width: 66.66666667%;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
+.processing .header > a {
+  position: relative;
+  float: left;
+  width: 33.33333333%;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  text-align: right;
+}
 @media (min-width: 768px) {
-  .processing .header h1 {
-    float: left;
-    width: 100%;
+  .processing .header > a {
+    display: none;
   }
+}
+.processing .preference-controls {
+  margin-top: 0;
+  padding-top: 0;
+  box-shadow: 3px 0 9px rgba(0, 0, 0, 0.3);
+}
+.processing .preference-controls > h2 {
+  box-shadow: 3px 0 9px rgba(0, 0, 0, 0.3);
 }
 .ptda {
   margin-right: auto;
@@ -11373,121 +11496,6 @@ html:hover [class^="ss-"] {
   color: white;
   font-size: 1.4em;
   font-weight: 500;
-}
-.ptda .preference-controls {
-  cursor: pointer;
-  user-select: none;
-  position: fixed;
-  left: -240px;
-  width: 300px;
-  height: 100%;
-  padding-top: 8em;
-  text-align: center;
-  background: white;
-  z-index: 6;
-  transition: 0.25s ease-out;
-  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-  -webkit-animation-name: bounceInLeft;
-  animation-name: bounceInLeft;
-}
-.ptda .preference-controls.open {
-  left: 0;
-  transform: translateX(0);
-}
-.ptda .preference-controls.closed {
-  left: -300px;
-  transform: translateX(0);
-}
-.ptda .preference-controls h2 {
-  position: relative;
-  margin: 0 -30px 1px 0;
-  padding: 8px 5px 10px 15px;
-  border-radius: 0 30px 30px 0;
-  font-size: 1.4em;
-  font-weight: 200;
-  text-align: left;
-  background: #fe6939;
-  color: white;
-  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
-}
-.ptda .preference-controls h2 > strong {
-  font-size: 3em;
-  position: absolute;
-  right: 10px;
-  top: -43%;
-}
-.ptda .preference-controls > section {
-  line-height: 1.2;
-  padding: 5px 15px 15px 15px;
-  color: #666666;
-  font-weight: bold;
-  text-align: left;
-  background: #f4f4f4;
-}
-.ptda .preference-controls > section > .description {
-  color: #999999;
-  font-weight: lighter;
-  display: block;
-}
-.ptda .preference-controls > .preference,
-.ptda .preference-controls > section > .option {
-  color: #3d5adc;
-}
-@media (min-width: 1199px) {
-  .ptda .preference-controls > .preference:hover,
-  .ptda .preference-controls > section > .option:hover {
-    color: #fe6939;
-    background: #fafafa;
-  }
-  .ptda .preference-controls > .preference:hover > .description,
-  .ptda .preference-controls > section > .option:hover > .description {
-    color: #fe6939;
-  }
-}
-.ptda .preference-controls > .preference:active,
-.ptda .preference-controls > section > .option:active {
-  background: #eeeeee;
-}
-.ptda .preference-controls > .preference.active,
-.ptda .preference-controls > section > .option.active {
-  color: white;
-  box-shadow: none;
-  background: #fe6939;
-}
-.ptda .preference-controls > .preference.active > .description,
-.ptda .preference-controls > section > .option.active > .description {
-  color: rgba(255, 255, 255, 0.7);
-}
-.ptda .preference-controls > .preference.active:active,
-.ptda .preference-controls > section > .option.active:active {
-  background: #e05c32;
-}
-.ptda .preference-controls > section > .option {
-  margin-left: -15px;
-  margin-right: -15px;
-  padding: .2em 15px;
-  font-weight: normal;
-}
-.ptda .preference-controls > section > .option:first-of-type {
-  margin-top: 5px;
-}
-.ptda .preference-controls > section > .option.active {
-  font-weight: bolder;
-}
-@media (max-width: 1199px) {
-  .ptda .preference-controls > section > .option {
-    padding: .6em 15px;
-  }
-}
-.ptda .preference-controls > section + section {
-  border-top: 1px solid white;
-}
-.ptda .preference-controls .option + .option {
-  border-top: 1px solid #eeeeee;
 }
 .ptda .card-container {
   position: relative;
@@ -12110,6 +12118,121 @@ html a:hover {
   border-bottom: 1px solid #dddddd;
   display: block;
   margin: 1.5em inherit 3em inherit;
+}
+.preference-controls {
+  cursor: pointer;
+  user-select: none;
+  position: fixed;
+  left: -240px;
+  width: 300px;
+  height: 100%;
+  padding-top: 8em;
+  text-align: center;
+  background: white;
+  z-index: 6;
+  transition: 0.25s ease-out;
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation-name: bounceInLeft;
+  animation-name: bounceInLeft;
+}
+.preference-controls.open {
+  left: 0;
+  transform: translateX(0);
+}
+.preference-controls.closed {
+  left: -300px;
+  transform: translateX(0);
+}
+.preference-controls h2 {
+  position: relative;
+  margin: 0 -30px 1px 0;
+  padding: 8px 5px 10px 15px;
+  border-radius: 0 30px 30px 0;
+  font-size: 1.4em;
+  font-weight: 200;
+  text-align: left;
+  background: #fe6939;
+  color: white;
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
+}
+.preference-controls h2 > strong {
+  font-size: 3em;
+  position: absolute;
+  right: 10px;
+  top: -43%;
+}
+.preference-controls > section {
+  line-height: 1.2;
+  padding: 5px 15px 15px 15px;
+  color: #666666;
+  font-weight: bold;
+  text-align: left;
+  background: #f4f4f4;
+}
+.preference-controls > section > .description {
+  color: #999999;
+  font-weight: lighter;
+  display: block;
+}
+.preference-controls > .preference,
+.preference-controls > section > .option {
+  color: #3d5adc;
+}
+@media (min-width: 1199px) {
+  .preference-controls > .preference:hover,
+  .preference-controls > section > .option:hover {
+    color: #fe6939;
+    background: #fafafa;
+  }
+  .preference-controls > .preference:hover > .description,
+  .preference-controls > section > .option:hover > .description {
+    color: #fe6939;
+  }
+}
+.preference-controls > .preference:active,
+.preference-controls > section > .option:active {
+  background: #eeeeee;
+}
+.preference-controls > .preference.active,
+.preference-controls > section > .option.active {
+  color: white;
+  box-shadow: none;
+  background: #fe6939;
+}
+.preference-controls > .preference.active > .description,
+.preference-controls > section > .option.active > .description {
+  color: rgba(255, 255, 255, 0.7);
+}
+.preference-controls > .preference.active:active,
+.preference-controls > section > .option.active:active {
+  background: #e05c32;
+}
+.preference-controls > section > .option {
+  margin-left: -15px;
+  margin-right: -15px;
+  padding: .2em 15px;
+  font-weight: normal;
+}
+.preference-controls > section > .option:first-of-type {
+  margin-top: 5px;
+}
+.preference-controls > section > .option.active {
+  font-weight: bolder;
+}
+@media (max-width: 1199px) {
+  .preference-controls > section > .option {
+    padding: .6em 15px;
+  }
+}
+.preference-controls > section + section {
+  border-top: 1px solid white;
+}
+.preference-controls .option + .option {
+  border-top: 1px solid #eeeeee;
 }
 .adverse-events {
   margin-right: auto;

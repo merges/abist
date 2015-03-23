@@ -8,6 +8,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // GRADE level of evidence visualization
 
 var GradeQuality = React.createClass({
+  
   propTypes: {
     grade: React.PropTypes.string,
     gradeMap: React.PropTypes.object
@@ -35,7 +36,7 @@ var GradeQuality = React.createClass({
         }
       }
       else {
-        icons.push(<i className='ss-icon ss-help highlight'></i>);
+        icons.push(<i key={i} className='ss-icon ss-help highlight'></i>);
       }
       return icons;
     };
@@ -43,14 +44,14 @@ var GradeQuality = React.createClass({
     var getTooltip = function(grade) {
       var tooltip;
       if (grade == 'X' || !grade) {
-        var tooltip = (
+        tooltip = (
           <Tooltip>
             <strong>Not rated.</strong> This information hasn’t been quality rated according to GRADE.
           </Tooltip>
         );
       }
       else {
-        var tooltip = (
+        tooltip = (
           <Tooltip>
             <strong>{grades[grade].name_friendly}.</strong><br />
             {grades[grade].description_friendly}

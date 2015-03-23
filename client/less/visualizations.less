@@ -13,22 +13,52 @@
     font-size: 6.5pt;
 
     &:hover {
+      color: @color-grey-xxxl;
+
+      .highlight {
+        color: @color-grey-xl;
+      }
       .higher {
         color: black !important;
       }
       .lower {
-        color: inherit !important;
+        color: white !important;
+        text-shadow: 0 0 4px rgb(0,0,0,.7);
       }
     }
     .ss-icon {
-      transition: color .12s ease;
+      transition: color .12s ease,
+                  text-shadow .12s ease;
     }
   }
   &.grade-quality {
+    font-size: 1.3em;
     cursor: pointer;
+    white-space: nowrap;
 
     .ss-help {
       font-size: 1.2em;
     }
+  }
+}
+
+.source {
+  font-size: .75em;
+  font-weight: bolder;
+  color: white;
+  background: @color-blue;
+  padding: 0 .5em .17em .5em;
+  opacity: .4;
+  transition: opacity .2s ease;
+  border-radius: 16px;
+  margin-top: .5em;
+  display: inline-block;
+  overflow-x: hidden;
+  line-height: 1;
+
+  &:hover {
+    text-decoration: none;
+    color: white;
+    opacity: 1;
   }
 }

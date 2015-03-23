@@ -5,6 +5,7 @@ var React = require('react/addons');
 // Absolute risk frequency icon array
 
 var AbsoluteFrequency = React.createClass({
+ 
   propTypes: {
     baseline: React.PropTypes.number,
     breakpoint: React.PropTypes.number,
@@ -54,6 +55,7 @@ var AbsoluteFrequency = React.createClass({
       // for easier comparison, especially in small spaces.
       if (this.props.denominator == 100) {
         frequency = Math.floor(frequency * 0.1);
+        baseline = Math.floor(baseline * 0.1);
         !this.props.breakpoint && (breakpoint = 20);
       }
     }
