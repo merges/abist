@@ -54,11 +54,27 @@
   margin-top: .5em;
   display: inline-block;
   overflow-x: hidden;
+  white-space: nowrap;
   line-height: 1;
 
   &:hover {
     text-decoration: none;
     color: white;
     opacity: 1;
+  }
+}
+
+.population {
+  cursor: pointer;
+
+  .name {
+    background: @color-grey-xxxxl;
+  }
+  .title {
+    font-weight: lighter;
+  }
+  .ss-icon + strong,
+  .ss-icon + span {
+    margin-left: .5em;
   }
 }

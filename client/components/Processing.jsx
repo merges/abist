@@ -10,6 +10,7 @@ var NavItem = require('react-bootstrap').NavItem;
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
+var Population = require('./visualizations/Population.jsx');
 var Source = require('./visualizations/Source.jsx');
 
 // Processing / data processing tests
@@ -153,7 +154,8 @@ var Processing = React.createClass({
         biologics: 'oij9tdp',
         hydroxycholoroquine: 'oozzuoc',
         etanercept: 'oogh8lu',
-        methotrexate: 'oa4uchu'
+        methotrexate: 'oa4uchu',
+        finraco: 'oclozwl'
       },
       side_effects: {
         celecoxib: 'od6'
@@ -231,14 +233,16 @@ var Processing = React.createClass({
           entry['which']                = value.gsx$which ? value.gsx$which.$t : null;
           entry['measure']              = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['metric']               = value.gsx$metric ? value.gsx$metric.$t : null;
-          entry['value']                = value.gsx$value ? parseFloat(value.gsx$value.$t) : null;
-          entry['value_ci_low']         = value.gsx$valuecilow ? parseFloat(value.gsx$valuecilow.$t) : null;
-          entry['value_ci_high']        = value.gsx$valuecihigh ? parseFloat(value.gsx$valuecihigh.$t) : null;
+          entry['value']                = value.gsx$value ? !isNaN(parseFloat(value.gsx$value.$t)) && parseFloat(value.gsx$value.$t) : null;
+          entry['value_ci_low']         = value.gsx$valuecilow ? !isNaN(parseFloat(value.gsx$valuecilow.$t)) && parseFloat(value.gsx$valuecilow.$t) : null;
+          entry['value_ci_high']        = value.gsx$valuecihigh ? !isNaN(parseFloat(value.gsx$valuecihigh.$t)) && parseFloat(value.gsx$valuecihigh.$t) : null;
           entry['grade']                = value.gsx$grade ? value.gsx$grade.$t : null;
-          entry['n_total']              = value.gsx$ntotal ? parseFloat(value.gsx$ntotal.$t) : null;
+          entry['n_total']              = value.gsx$ntotal ? !isNaN(parseFloat(value.gsx$ntotal.$t)) && parseFloat(value.gsx$ntotal.$t) : null;
           entry['duration_low']         = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
           entry['duration_high']        = value.gsx$durationhigh ? value.gsx$durationhigh.$t : null;
           entry['duration_interval']    = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
+          
+          entry['population']           = value.gsx$population ? value.gsx$population.$t : null;
           entry['intervention']         = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
           entry['comparison']           = value.gsx$comparison ? value.gsx$comparison.$t.split(',') : null;
           
@@ -439,8 +443,11 @@ var Processing = React.createClass({
                   // Comparison row is key, sets up rest…
                   var key;
 
+                  //
+                  // Generalize this godforsaken code
+                  //
                   if (entry.which == 'comparison') {
-                    key = entry.measure + entry.comparison + entry.intervention;
+                    key = entry.measure + entry.comparison + entry.intervention + entry.population;
                     reprojected[key] = {};
                     reprojected[key]['intervention']        = entry.intervention.join(' + ');
                     reprojected[key]['comparison']          = entry.comparison.join(' + ');
@@ -478,8 +485,10 @@ var Processing = React.createClass({
                   }
 
                   // TODO generalize!
-                  else if (entry.which == 'intervention') {
-                    key = entry.measure + entry.comparison + entry.intervention;
+                  // seriously, generalize — yuck
+                  //
+                  else if (entry.which == 'intervention' || entry.which == 'population') {
+                    key = entry.measure + entry.comparison + entry.intervention + entry.population;
 
                     // Already set up an object with comparison
                     if (reprojected[key]) {
@@ -539,32 +548,20 @@ var Processing = React.createClass({
 
                     // This is an entry with no corresponding 'comparison'
                     else {
-                    	reprojected[key] = {};
+                      reprojected[key] = {};
+                      reprojected[key]['population']          = entry.population;
                       reprojected[key]['intervention']        = entry.intervention.join(' + ');
                       reprojected[key]['comparison']          = entry.comparison.join(' + ');
                       reprojected[key]['follow_up']           = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
 
                       // NO ASSUMED RISK BECAUSE NO COMPARISON
 
-                      // TODO metric display calculator functions / components
-                      reprojected[key]['assumed_risk_metric'] = entry.metric;
-                      (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
-                        <span>
-                        	{entry.intervention.join(' + ')}<br />
-                          <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
-                          <strong>{entry.value && entry.value}</strong> {entry.metric == 'ar_100' && <span classNam='light'>of 100 people</span>} {entry.metric == 'ar_1000' && <span className='light'>of 1000 people</span>}
-	                        <AbsoluteFrequency frequency={entry.value} baseline={reprojected[key].assumed_risk} metric={entry.metric} denominator={100} breakpoint={20} />
-	                        {entry.value_ci_low && entry.value_ci_high &&
-	                        	<span>({entry.value_ci_low} to {entry.value_ci_high})</span>
-	                        }
-                        </span>
-                      ));
-
-
                       reprojected[key]['n']                   = entry.n_total;
                       // TODO quality calculator function / component
                       reprojected[key]['quality']             = entry.grade;
                       // Non-comparison rows fill out remaining detail
+                      
+                      // Absolute risk
                       (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -577,6 +574,19 @@ var Processing = React.createClass({
                         </span>
                       ));
 
+                      // Percentage
+                      (entry.metric == 'percentage') && (reprojected[key]['corresponding_risk']  = (
+                        <span>
+                          <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
+                          <strong>{entry.value && entry.value * 100}</strong> <span classNam='light'>of 100 people</span>}
+                          <AbsoluteFrequency frequency={entry.value} denominator={100} breakpoint={20} />
+                          {entry.value_ci_low && entry.value_ci_high &&
+                            <span>({entry.value_ci_low} to {entry.value_ci_high})</span>
+                          }
+                        </span>
+                      ));
+
+                      // Mean score / mean score difference
                       (entry.metric == 'mean_score' || entry.metric == 'mean_score_difference') && (reprojected[key]['corresponding_risk']  = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -588,6 +598,7 @@ var Processing = React.createClass({
                         </span>
                       ));
 
+                      // Relative risk
                       (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
                         <span>
                           <strong>{entry.value && entry.value}</strong><br />
@@ -596,6 +607,8 @@ var Processing = React.createClass({
                           }
                         </span>
                       ));
+
+                      // Absolute difference
                       (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -605,6 +618,8 @@ var Processing = React.createClass({
                           }
                         </span>
                       ));
+
+                      // Relative difference
                       (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -620,6 +635,8 @@ var Processing = React.createClass({
                     }
                   }
                 });
+
+                console.log(reprojected);
 
                 return (
                 	<div>
@@ -649,10 +666,14 @@ var Processing = React.createClass({
 	                    </li>
 	                    {Object.keys(reprojected).map(function (data, i) {
 	                      var entry = reprojected[data];
+                        console.log(entry);
 	                      return (
 	                        <li key={i}>
 	                          <h4>
-	                          	<Intervention intervention={entry.intervention} dosage={entry.dosage} />
+	                          	{entry.population ?
+                                <Population population={entry.population} /> :
+                                <Intervention intervention={entry.intervention} dosage={entry.dosage} />
+                              }
 	                          	<Source source={entry.source} kind={entry.kind} />
 	                          </h4>
 	                          <h4>{entry.comparison}</h4>

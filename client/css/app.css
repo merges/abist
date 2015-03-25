@@ -11091,12 +11091,26 @@ html:hover [class^="ss-"] {
   margin-top: .5em;
   display: inline-block;
   overflow-x: hidden;
+  white-space: nowrap;
   line-height: 1;
 }
 .source:hover {
   text-decoration: none;
   color: white;
   opacity: 1;
+}
+.population {
+  cursor: pointer;
+}
+.population .name {
+  background: #eeeeee;
+}
+.population .title {
+  font-weight: lighter;
+}
+.population .ss-icon + strong,
+.population .ss-icon + span {
+  margin-left: .5em;
 }
 .processing {
   padding-bottom: 11em;
@@ -11422,6 +11436,14 @@ html:hover [class^="ss-"] {
 }
 .processing > section.data > div > div > ul > li > h4 .intervention .name {
   background: #eeeeee;
+}
+.processing > section.data > div > div > ul > li > h4 .intervention .title {
+  font-weight: lighter;
+  font-size: .75em;
+}
+.processing > section.data > div > div > ul > li > h4 .intervention .ss-icon + strong,
+.processing > section.data > div > div > ul > li > h4 .intervention .ss-icon + span {
+  margin-left: .5em;
 }
 .processing > section.data > div > div > ul > li > h4 .dosage {
   color: #888888;
