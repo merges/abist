@@ -8,6 +8,7 @@ var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
+var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
@@ -449,6 +450,7 @@ var Processing = React.createClass({
                   if (entry.which == 'comparison') {
                     key = entry.measure + entry.comparison + entry.intervention + entry.population;
                     reprojected[key] = {};
+                    reprojected[key]['which']               = entry.which;
                     reprojected[key]['intervention']        = entry.intervention.join(' + ');
                     reprojected[key]['comparison']          = entry.comparison.join(' + ');
 
@@ -466,13 +468,28 @@ var Processing = React.createClass({
                         <AbsoluteFrequency frequency={entry.value} metric={entry.metric} denominator={100} breakpoint={20} />
                       </span>
                     ));
-                    (entry.metric == 'mean_score' || entry.metric == 'mean_score_difference') && (reprojected[key]['assumed_risk_markup'] = (
+
+                    // Comparison mean score
+                    (entry.metric == 'mean_score') && (reprojected[key]['assumed_risk_markup'] = (
                       <span>
                       	{entry.intervention.join(' + ')}<br />
                         <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
                         <strong>{entry.value && entry.value}</strong><br />
                         {entry.value_ci_low && entry.value_ci_high &&
                         	<span>({entry.value_ci_low} to {entry.value_ci_high})</span>
+                        }
+                      </span>
+                    ));
+
+                    // Comparison mean difference
+                    (entry.metric == 'mean_score_difference') && (reprojected[key]['assumed_risk_markup'] = (
+                      <span>
+                        {entry.intervention.join(' + ')}<br />
+                        <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
+                        {entry.value && <Difference value={entry.value} metric={entry.metric} />}
+                        <strong>{entry.value && entry.value}</strong><br />
+                        {entry.value_ci_low && entry.value_ci_high &&
+                          <span>({entry.value_ci_low} to {entry.value_ci_high})</span>
                         }
                       </span>
                     ));
@@ -492,6 +509,7 @@ var Processing = React.createClass({
 
                     // Already set up an object with comparison
                     if (reprojected[key]) {
+
                       // Non-comparison rows fill out remaining detail
                       (entry.metric == 'ar_100' || entry.metric == 'ar_1000') && (reprojected[key]['corresponding_risk']  = (
                         <span>
@@ -504,9 +522,11 @@ var Processing = React.createClass({
 	                        }
                         </span>
                       ));
-                      (entry.metric == 'mean_score' || entry.metric == 'mean_score_difference') && (reprojected[key]['corresponding_risk']  = (
+
+                      // Mean score
+                      (entry.metric == 'mean_score' || entry.metric == 'count') && (reprojected[key]['corresponding_risk']  = (
                         <span>
-                        	{entry.intervention.join(' + ')}<br />
+                          {entry.intervention.join(' + ')}<br />
                           <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
                           <strong>{entry.value && entry.value}</strong><br />
 	                        {entry.value_ci_low && entry.value_ci_high &&
@@ -514,6 +534,20 @@ var Processing = React.createClass({
 	                        }
                         </span>
                       ));
+
+                      // Mean score difference
+                      (entry.metric == 'mean_score_difference') && (reprojected[key]['corresponding_risk']  = (
+                        <span>
+                          {entry.intervention.join(' + ')}<br />
+                          <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
+                          {entry.value && <Difference value={entry.value} metric={entry.metric} />}
+                          {entry.value_ci_low && entry.value_ci_high &&
+                            <span>({entry.value_ci_low} to {entry.value_ci_high})</span>
+                          }
+                        </span>
+                      ));
+
+                      // RR relative risk
                       (entry.metric == 'rr' || entry.metric == 'or') && (reprojected[key]['relative_effect'] = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -523,6 +557,8 @@ var Processing = React.createClass({
                         	}
                         </span>
                       ));
+
+                      // AR absolute risk difference / absolute difference / precent change
                       (entry.metric == 'abs_difference') && (reprojected[key]['absolute_benefit'] = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -532,6 +568,8 @@ var Processing = React.createClass({
                           }
                         </span>
                       ));
+
+                      // Relative change / relative difference
                       (entry.metric == 'rel_difference') && (reprojected[key]['relative_change'] = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
@@ -541,6 +579,7 @@ var Processing = React.createClass({
                           }
                         </span>
                       ));
+                      reprojected[key]['which']               = entry.which;
                       reprojected[key]['dosage']							= entry.dosage;
                       reprojected[key]['source']							= entry.source;
                       reprojected[key]['kind']                = entry.kind;
@@ -549,6 +588,7 @@ var Processing = React.createClass({
                     // This is an entry with no corresponding 'comparison'
                     else {
                       reprojected[key] = {};
+                      reprojected[key]['which']               = entry.which;
                       reprojected[key]['population']          = entry.population;
                       reprojected[key]['intervention']        = entry.intervention.join(' + ');
                       reprojected[key]['comparison']          = entry.comparison.join(' + ');
@@ -586,8 +626,8 @@ var Processing = React.createClass({
                         </span>
                       ));
 
-                      // Mean score / mean score difference
-                      (entry.metric == 'mean_score' || entry.metric == 'mean_score_difference') && (reprojected[key]['corresponding_risk']  = (
+                      // Mean score or count
+                      (entry.metric == 'mean_score' || entry.metric == 'count') && (reprojected[key]['corresponding_risk']  = (
                         <span>
                         	{entry.intervention.join(' + ')}<br />
                           <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
@@ -595,6 +635,18 @@ var Processing = React.createClass({
 	                        {entry.value_ci_low && entry.value_ci_high &&
 	                        	<span>({entry.value_ci_low} to {entry.value_ci_high})</span>
 	                        }
+                        </span>
+                      ));
+
+                      // Mean score difference
+                      (entry.metric == 'mean_score_difference') && (reprojected[key]['corresponding_risk']  = (
+                        <span>
+                          {entry.intervention.join(' + ')}<br />
+                          <span className='light'>Outcome: {measures[measure].name_friendly}</span><br />
+                          {entry.value && <Difference value={entry.value} metric={entry.metric} />}
+                          {entry.value_ci_low && entry.value_ci_high &&
+                            <span>({entry.value_ci_low} to {entry.value_ci_high})</span>
+                          }
                         </span>
                       ));
 
@@ -636,8 +688,6 @@ var Processing = React.createClass({
                   }
                 });
 
-                console.log(reprojected);
-
                 return (
                 	<div>
                 		<h3>
@@ -664,14 +714,21 @@ var Processing = React.createClass({
 	                      <h3 className='text'>Relative percent change (95% CI)</h3>
 	                      <h3>Quality of the evidence (GRADE)</h3>
 	                    </li>
-	                    {Object.keys(reprojected).map(function (data, i) {
-	                      var entry = reprojected[data];
-                        console.log(entry);
-	                      return (
-	                        <li key={i}>
+	                    
+                      {Object.keys(reprojected).map(function (data, i) {
+                        var entry = reprojected[data];
+                    
+                        var cx = React.addons.classSet;
+                        var entryClasses = cx({
+                          'entry': true,
+                          'population': entry.which == 'population'
+                        });
+	                      
+                        return (
+	                        <li key={i} className={entryClasses}>
 	                          <h4>
-	                          	{entry.population ?
-                                <Population population={entry.population} /> :
+	                          	{entry.which == 'population' ?
+                                <Population population={entry.population} dosage={entry.dosage} /> :
                                 <Intervention intervention={entry.intervention} dosage={entry.dosage} />
                               }
 	                          	<Source source={entry.source} kind={entry.kind} />

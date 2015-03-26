@@ -10,13 +10,15 @@ var Tooltip = require('react-bootstrap').Tooltip;
 var Population = React.createClass({
   
   propTypes: {
-    population: React.PropTypes.string.isRequired
+    population: React.PropTypes.string.isRequired,
+    dosage: React.PropTypes.string
   },
 
-  getTooltip: function(text) {
+  getTooltip: function(population, dosage) {
     return (
       <Tooltip>
-        <strong>{text}</strong>
+        <strong>{population}</strong><br />
+        {dosage}
       </Tooltip>
     );
   },
@@ -28,10 +30,11 @@ var Population = React.createClass({
     });
 
     var population = this.props.population;
+    var dosage = this.props.dosage;
 
     return (
       <div className={visualizationClasses}>
-        <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(population)}>
+        <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(population, dosage)}>
           <span className='name'>
             <span className='ss-icon ss-usergroup'></span>
             <strong>{population}</strong>

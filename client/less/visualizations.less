@@ -1,7 +1,7 @@
 // Visualizations
 
 .visualization {
-  color: @color-grey-xxl;
+  
   
   .highlight {
     color: @color-grey-l;
@@ -11,6 +11,7 @@
     cursor: pointer;
     margin: 1em 0;
     font-size: 6.5pt;
+    color: @color-grey-xxl;
 
     &:hover {
       color: @color-grey-xxxl;
@@ -32,12 +33,18 @@
     }
   }
   &.grade-quality {
+    color: @color-grey-xxxl;
     font-size: 1.3em;
     cursor: pointer;
     white-space: nowrap;
 
     .ss-help {
       font-size: 1.2em;
+    }
+  }
+  &.difference {
+    .ss-icon {
+      vertical-align: middle;
     }
   }
 }

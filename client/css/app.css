@@ -11044,9 +11044,6 @@ html:hover [class^="ss-"] {
   background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
   -webkit-animation: hue 1440s infinite linear;
 }
-.visualization {
-  color: #dddddd;
-}
 .visualization .highlight {
   color: #999999;
 }
@@ -11054,6 +11051,7 @@ html:hover [class^="ss-"] {
   cursor: pointer;
   margin: 1em 0;
   font-size: 6.5pt;
+  color: #dddddd;
 }
 .visualization.absolute:hover {
   color: #e8e8e8;
@@ -11072,12 +11070,16 @@ html:hover [class^="ss-"] {
   transition: color 0.12s ease, text-shadow 0.12s ease;
 }
 .visualization.grade-quality {
+  color: #e8e8e8;
   font-size: 1.3em;
   cursor: pointer;
   white-space: nowrap;
 }
 .visualization.grade-quality .ss-help {
   font-size: 1.2em;
+}
+.visualization.difference .ss-icon {
+  vertical-align: middle;
 }
 .source {
   font-size: .75em;
