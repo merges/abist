@@ -461,7 +461,7 @@ var Processing = React.createClass({
   	);
   },
 
-  renderValue: function(results, metric) {
+  renderValue: function(results, metric, comparisonResults) {
   	var grades = this.state.grades;
     var measures = this.state.measures;
     var metrics = this.state.metrics;
@@ -476,7 +476,7 @@ var Processing = React.createClass({
     var renderAppropriateVisualization = function(results, metric, measure) {
     	if (metrics[metric]) {
 	  		if (metrics[metric].presentation == 'frequency') {
-	  			return renderAbsoluteRisk(results, metric, measure);
+	  			return renderAbsoluteRisk(results, metric, measure, comparisonResults);
 	  		}
 	  		if (metrics[metric].presentation == 'percentage') {
 	    		return renderPercentage(results, metric, measure);
@@ -536,12 +536,14 @@ var Processing = React.createClass({
   	);
   },
 
-  renderAbsoluteRisk: function(results, metric, measure, baseline) {
+  renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
   	var measures = this.state.measures;
   	
   	var measure = results[metric].measure;
   	var data = results[metric].value;
 		
+  	var baseline = comparisonResults ? comparisonResults[metric].value.value : null;
+
 		return (
   		<div>
         {results.parts && <span>{results.parts.join(' + ')}<br /></span>}
@@ -951,10 +953,10 @@ var Processing = React.createClass({
 	        	{this.renderValue(entry.comparison)}
 	        </h4>
 	        <h4>
-	        	{this.renderValue(entry.intervention, 'ar_100')}
-	        	{this.renderValue(entry.intervention, 'ar_1000')}
-	        	{this.renderValue(entry.intervention, 'mean_score')}
-	        	{this.renderValue(entry.intervention, 'mean_score_difference')}
+	        	{this.renderValue(entry.intervention, 'ar_100', entry.comparison)}
+	        	{this.renderValue(entry.intervention, 'ar_1000', entry.comparison)}
+	        	{this.renderValue(entry.intervention, 'mean_score', entry.comparison)}
+	        	{this.renderValue(entry.intervention, 'mean_score_difference', entry.comparison)}
 	        </h4>
 	        <h4>
 	        	{this.renderValue(entry.intervention, 'rr')}
