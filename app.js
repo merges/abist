@@ -18,7 +18,7 @@ var env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var port = Number(process.env.PORT || 5000);
 
 var consoleLog = function(message) {
-  env != 'production' && console.log('abist ››› ' + message);
+  env != 'production' && console.warn('abist ››› ' + message);
 };
 
 var app = module.exports.app = exports.app = express();

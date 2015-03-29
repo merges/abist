@@ -26,7 +26,6 @@ gulp.task('browserify', function () {
     .on('error', function (err) {
       var error = util.colors.red(err);
       util.log(error);
-      // uutil.beep();
       this.emit('end');
     })
     .pipe(rename('bundle.js'))
@@ -51,25 +50,8 @@ gulp.task('watch', function() {
   gulp.watch('client/less/*.less', ['less']);
   gulp.watch('client/components/**/*.jsx', ['browserify']);
   gulp.watch('client/components/**/*.jsx', function() {
-    // server.stop();
-    // console.log('abist >>> restarting server');
-    // server.run({
-    //   file: 'app.js'
-    // });
     server.run;
   });
 });
 
 gulp.task('default', ['browserify', 'less', 'server', 'watch']);
-
-
-// // Compile YAMLs to JSON
-
-// gulp.task('compile-yaml', function() {
-//   gulp.src('data/*.yaml')
-//     .pipe(yaml({
-//       safe: true,
-//       space: 2
-//     }))
-//     .pipe(gulp.dest('client/data/'))
-// });

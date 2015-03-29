@@ -231,7 +231,16 @@
 				padding: 0;
 
 				> li {
+					background: white;
 					display: table-row;
+					opacity: .6;
+					transition: opacity .3s ease,
+											box-shadow .3s ease;
+
+					&:hover {
+						opacity: 1;
+						box-shadow: 0 0 8px rgba(0,0,0,.4);
+					}
 
 					+ li {
 						border-top: 1px solid @color-grey-xxxxl;
@@ -258,7 +267,7 @@
 						border-left: 1px solid white;
 					}
 					> h4 {
-						padding-bottom: 3em;
+						padding-bottom: 5em;
 
 						.light {
 							color: @color-grey-m;

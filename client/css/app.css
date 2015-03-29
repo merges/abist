@@ -11405,7 +11405,14 @@ html:hover [class^="ss-"] {
   padding: 0;
 }
 .processing > section.data > div > div > ul > li {
+  background: white;
   display: table-row;
+  opacity: .6;
+  transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+.processing > section.data > div > div > ul > li:hover {
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
 }
 .processing > section.data > div > div > ul > li + li {
   border-top: 1px solid #eeeeee;
@@ -11428,7 +11435,7 @@ html:hover [class^="ss-"] {
   border-left: 1px solid white;
 }
 .processing > section.data > div > div > ul > li > h4 {
-  padding-bottom: 3em;
+  padding-bottom: 5em;
 }
 .processing > section.data > div > div > ul > li > h4 .light {
   color: #888888;
