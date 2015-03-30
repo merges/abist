@@ -9,8 +9,6 @@ var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var VisualizationTests = React.createClass({
 
   render: function() {
-    var medications = this.props.medications;
-
     var cx = React.addons.classSet;
     var classes = cx({
       'processing': true
