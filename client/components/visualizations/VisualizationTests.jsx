@@ -3,6 +3,7 @@
 var React = require('react/addons');
 
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
+var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 
 // Visualization tests
 
@@ -20,6 +21,22 @@ var VisualizationTests = React.createClass({
           <h1>Visualization tests</h1>
         </div>
 
+        <div className='container'>
+          <section>
+            <h2>Relative risk comparison</h2>
+            <RelativeRiskComparison />
+          </section>
+
+          {/*this.renderAbsoluteFrequency()*/}
+
+        </div>
+      </div>
+    );
+  },
+
+  renderAbsoluteFrequency: function() {
+    return (
+      <div>
         <section>
           <h2>Absolute risk frequency, out of 1000</h2>
           <h3>242/1000</h3>
@@ -71,7 +88,6 @@ var VisualizationTests = React.createClass({
           <h3>17/75</h3>
           <AbsoluteFrequency frequency={17} denominator={75} />
         </section>
-
       </div>
     );
   }

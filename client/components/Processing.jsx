@@ -12,6 +12,7 @@ var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
+var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
 var Source = require('./visualizations/Source.jsx');
 
 // Processing / data processing tests
@@ -1019,18 +1020,61 @@ var Processing = React.createClass({
   	var getEntriesForMeasure = this.getEntriesForMeasure;
   	var renderEntry = this.renderEntry;
 
+
+  	var renderRelativeRiskComparison = function(entries, measure) {
+	  	var sources = {};
+  		
+  		Object.keys(entries).map(function (key) {
+  			var entry = entries[key];
+
+	      if (entry.which == 'comparison') {
+	      	if (!sources[entry.comparison.parts]) {
+	      		sources[entry.comparison.parts] = {};
+	      		sources[entry.comparison.parts]['items'] = [];
+	      	}
+	      	sources[entry.comparison.parts]['baseline'] = entry.comparison;
+	      	
+	      	// Check to see that we have relative risk
+	      	if (entry.intervention.rr) {
+	      		sources[entry.comparison.parts].items.push(entry.intervention);
+	      	}
+	      }
+	    });
+
+	    return Object.keys(sources).map(function (comparison) {
+	    	if (sources[comparison].items.length > 1) {
+	    		return (
+	    			<ul className='visualization-rr'>
+	    				<li>
+	    					<h3><strong>relative risk</strong> › {measureMap[measure].name_friendly}</h3>
+	    				</li>
+	    				<li>
+			    			<RelativeRiskComparison
+			    				baseline={sources[comparison].baseline}
+			    				items={sources[comparison].items}
+			    				measure={measure} />
+			    		</li>
+			    	</ul>
+	    		);
+	    	}
+	    })
+		};
+
   	return Object.keys(measures).map(function (measure) {
   		var measureData = measures[measure].data;
   		
   		if (measureData) {
   			var entries = getEntriesForMeasure(measureData);
 
-	  		return (
+  			return (
 	  			<div key={measure}>
 		    		<h3>
 		          <strong>{measureMap[measure].name_short}</strong> {measureMap[measure].name_friendly && <span>| {measureMap[measure].name_friendly}</span>}
 		          {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
 		        </h3>
+
+		     		{(measure == 'acr_20' || measure == 'acr_50' || measure == 'discontinued_ae') && renderRelativeRiskComparison(entries, measure)}
+		        
 		        <ul>       
 		          <li>
 		            <h3 className='text'>Intervention / Population</h3>

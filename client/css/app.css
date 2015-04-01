@@ -11081,6 +11081,69 @@ html:hover [class^="ss-"] {
 .visualization.difference .ss-icon {
   vertical-align: middle;
 }
+.visualization.relative-risk-comparison {
+  width: 100%;
+  height: 15em;
+  position: relative;
+  border: 1px solid #f4f4f4;
+  background: white;
+}
+.visualization.relative-risk-comparison ul {
+  width: 80%;
+  padding-left: 10%;
+  padding-right: 10%;
+  padding-bottom: 0;
+  list-style-type: none;
+  border-bottom: 1px solid #666666;
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+}
+.visualization.relative-risk-comparison .item {
+  position: absolute;
+  bottom: 0;
+}
+.visualization.relative-risk-comparison .item .pill {
+  cursor: pointer;
+  display: block;
+  border-radius: 16px;
+  font-weight: bolder;
+  color: #888888;
+  padding-left: .75em;
+  padding-right: .75em;
+  background: #e8e8e8;
+  transform: rotate(-45deg);
+  transform-origin: left 50%;
+  position: relative;
+  left: -0.5em;
+  bottom: -0.75em;
+  transition: color .3s ease,
+                    background .3s ease;
+}
+.visualization.relative-risk-comparison .item .pill + .pill {
+  bottom: -1.75em;
+}
+.visualization.relative-risk-comparison .item .pill:hover {
+  color: #222222;
+  background: #bbbbbb;
+}
+.visualization.relative-risk-comparison .item .legend {
+  position: absolute;
+  bottom: .1em;
+  left: .1em;
+  right: 0;
+  margin: 0 auto;
+  font-weight: bolder;
+  font-size: 1em;
+}
+.visualization.relative-risk-comparison .item .line {
+  background: #e8e8e8;
+  width: 1px;
+  height: 7em;
+}
+.visualization.relative-risk-comparison .note {
+  color: #F48325;
+}
 .source {
   font-size: .75em;
   font-weight: bolder;
@@ -11456,6 +11519,16 @@ html:hover [class^="ss-"] {
 }
 .processing > section.data > div > div > ul > li > h4 .dosage {
   color: #888888;
+}
+.processing > section.data > div > div > ul.visualization-rr {
+  background: #e8e8e8;
+  margin-bottom: 5em;
+  border-bottom: 1px solid #bbbbbb;
+}
+.processing > section.data > div > div > ul.visualization-rr > li {
+  background: #f4f4f4;
+  display: block;
+  padding: 2em !important;
 }
 .processing .header {
   position: relative;
