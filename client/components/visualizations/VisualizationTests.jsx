@@ -4,6 +4,7 @@ var React = require('react/addons');
 
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
+var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
 
 // Visualization tests
 
@@ -22,10 +23,18 @@ var VisualizationTests = React.createClass({
         </div>
 
         <div className='container'>
+
           <section>
-            <h2>Relative risk comparison</h2>
-            <RelativeRiskComparison />
+            <h2>Absolute risk, relative to baseline</h2>
+            <RiskRelativeToBaseline />
           </section>
+
+          {/*
+            <section>
+              <h2>Relative risk comparison</h2>
+              <RelativeRiskComparison />
+            </section>
+          */}
 
           {/*this.renderAbsoluteFrequency()*/}
 

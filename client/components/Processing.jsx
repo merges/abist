@@ -13,6 +13,7 @@ var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
 var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
+var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
 var Source = require('./visualizations/Source.jsx');
 
 // Processing / data processing tests
@@ -36,13 +37,13 @@ var mockTags 			= {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://ww
 
 var Processing = React.createClass({
 
-	// componentDidUpdate: function() {
-	// 	React.findDOMNode(this.refs['data']).innerHTML = JSON.stringify(this.tempData, undefined, 0);
-	// 	React.findDOMNode(this.refs['grades']).innerHTML = JSON.stringify(this.tempGrades, undefined, 0);
-	// 	React.findDOMNode(this.refs['metrics']).innerHTML = JSON.stringify(this.tempMetrics, undefined, 0);
-	// 	React.findDOMNode(this.refs['measures']).innerHTML = JSON.stringify(this.tempMeasures, undefined, 0);
-	// 	React.findDOMNode(this.refs['tags']).innerHTML = JSON.stringify(this.tempTags, undefined, 0);
-	// },
+	componentDidUpdate: function() {
+		// React.findDOMNode(this.refs['data']).innerHTML = JSON.stringify(this.tempData, undefined, 0);
+		// React.findDOMNode(this.refs['grades']).innerHTML = JSON.stringify(this.tempGrades, undefined, 0);
+		// React.findDOMNode(this.refs['metrics']).innerHTML = JSON.stringify(this.tempMetrics, undefined, 0);
+		// React.findDOMNode(this.refs['measures']).innerHTML = JSON.stringify(this.tempMeasures, undefined, 0);
+		// React.findDOMNode(this.refs['tags']).innerHTML = JSON.stringify(this.tempTags, undefined, 0);
+	},
 
   getDefaultProps: function () {
     return {
@@ -382,7 +383,7 @@ var Processing = React.createClass({
       tags: tagMap
     });
 
-    // this.tempMeasures = data;
+    this.tempMeasures = measures;
   },
 
   processMetrics: function(data) {
@@ -1020,7 +1021,6 @@ var Processing = React.createClass({
   	var getEntriesForMeasure = this.getEntriesForMeasure;
   	var renderEntry = this.renderEntry;
 
-
   	var renderRelativeRiskComparison = function(entries, measure) {
 	  	var sources = {};
   		
@@ -1060,6 +1060,46 @@ var Processing = React.createClass({
 	    })
 		};
 
+		var renderRiskRelativeToBaselineComparison = function(entries, measure) {
+	  	var sources = {};
+  		
+  		Object.keys(entries).map(function (key) {
+  			var entry = entries[key];
+
+	      if (entry.which == 'comparison') {
+	      	if (!sources[entry.comparison.parts]) {
+	      		sources[entry.comparison.parts] = {};
+	      		sources[entry.comparison.parts]['items'] = [];
+	      	}
+	      	sources[entry.comparison.parts]['comparison'] = entry.comparison;
+	      	
+	      	// Check to see that we have relative risk
+	      	if (entry.intervention.rr) {
+	      		sources[entry.comparison.parts].items.push(entry.intervention);
+	      	}
+	      }
+	    });
+
+	    return Object.keys(sources).map(function (comparison) {
+	    	if (sources[comparison].items.length > 1) {
+	    		return (
+	    			<ul className='visualization-rr'>
+	    				<li>
+	    					<h3><strong>relative risk</strong> › {measureMap[measure].name_friendly}</h3>
+	    				</li>
+	    				<li>
+			    			<RiskRelativeToBaseline
+			    				comparison={sources[comparison].comparison}
+			    				items={sources[comparison].items}
+			    				measure={measure}
+			    				measures={measureMap} />
+			    		</li>
+			    	</ul>
+	    		);
+	    	}
+	    })
+		};
+
   	return Object.keys(measures).map(function (measure) {
   		var measureData = measures[measure].data;
   		
@@ -1073,7 +1113,7 @@ var Processing = React.createClass({
 		          {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
 		        </h3>
 
-		     		{(measure == 'acr_20' || measure == 'acr_50' || measure == 'discontinued_ae') && renderRelativeRiskComparison(entries, measure)}
+		     		{(measure == 'acr_20' || measure == 'acr_50' || measure == 'discontinued_ae') && renderRiskRelativeToBaselineComparison(entries, measure)}
 		        
 		        <ul>       
 		          <li>
@@ -1545,6 +1585,8 @@ var Processing = React.createClass({
             <p>My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth.</p>
             <p>The summaries below are connected to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a> where I am encoding findings (data) from various sources. Updates to the spreadsheet are instantly visible here.</p>
           </section>
+
+          
 
           {this.renderTagBar(tags)}
           {selectedTag && this.renderDataByTag(data, tags, selectedTag)}

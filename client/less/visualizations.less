@@ -47,21 +47,27 @@
       vertical-align: middle;
     }
   }
-  &.relative-risk-comparison {
+  &.relative-risk-comparison,
+  &.risk-relative-to-baseline {
     width: 100%;
-    height: 15em;
+    height: 24em;
     position: relative;
     border: 1px solid @color-grey-xxxxxl;
     background: white;
 
+    .chart-holder {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+    }
+
     ul {
+      height: 12em;
       width: 80%;
-      padding-left: 10%;
-      padding-right: 10%;
       padding-bottom: 0;
       list-style-type: none;
       border-bottom: 1px solid @color-grey-d;
-      position: absolute;
+      position: relative;
       bottom: 0;
       left: 10%;
     }
@@ -70,13 +76,13 @@
       bottom: 0;
       
       .pill {
+        font-size: .9em;
         cursor: pointer;
         display: block;
         border-radius: 16px;
         font-weight: bolder;
         color: @color-grey-m;
-        padding-left: .75em;
-        padding-right: .75em;
+        padding: 0 .75em .1em .75em;
         background: @color-grey-xxxl;
         transform: rotate(-45deg);
         transform-origin: left 50%;
@@ -87,10 +93,14 @@
                     background .3s ease;
 
         + .pill {
-          bottom: -1.75em;
+          margin-top: 1em;
         }
 
         &:hover {
+          color: @color-grey-xxl;
+          background: @color-grey-d;
+        }
+        &.active {
           color: @color-grey-xxd;
           background: @color-grey-xl;
         }
@@ -112,6 +122,60 @@
     }
     .note {
       color: #F48325;
+    }
+    .axis-labels {
+      width: 100%;
+      padding-left: 10%;
+      padding-right: 10%;
+
+      .axis-label {
+        float: left;
+        width: 25%;
+
+        &.right {
+          position: relative;
+          margin-left: 50%;
+          text-align: right;
+        }
+      }
+    }
+    .icon-array {
+      display: table;
+      table-layout: fixed;
+      width: 100%;
+      
+      > .ss-icon {
+        position: relative;
+        cursor: pointer;
+        display: table-cell;
+        text-align: right;
+        color: @color-grey-xxl;
+        font-size: .75em;
+
+        > .number {
+          position: absolute;
+          top: -1em;
+          border-radius: 50%;
+          width: 1.5em;
+          height: 1.5em;
+          line-height: 1.5em;
+          text-align: center;
+          background: white;
+          display: none;
+          opacity: 0;
+          transition: opacity .3s ease;
+        }
+
+        &.active {
+          color: @color-grey-m;
+        }
+        &:hover {
+          > .number {
+            opacity: 1;
+            display: block;
+          }
+        }
+      }
     }
   }
 }
