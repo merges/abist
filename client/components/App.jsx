@@ -5,7 +5,16 @@ var Router = require('react-router');
 var RouteHandler = Router.RouteHandler;
 var Link = Router.Link;
 
+// var EvidenceData = require('./EvidenceData.jsx')
+
 var App = React.createClass({
+
+	// getDefaultProps: function() {
+	// 	return {
+	// 		data: EvidenceData.getAndProcessData()
+	// 	}
+	// },
+
 	render: function() {
 		return (
     	<div>
@@ -20,6 +29,7 @@ var App = React.createClass({
 	    </div>
     );
   }
+
 });
 
 module.exports = App;

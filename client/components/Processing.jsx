@@ -383,7 +383,7 @@ var Processing = React.createClass({
       tags: tagMap
     });
 
-    this.tempMeasures = measures;
+    // this.tempMeasures = measures;
   },
 
   processMetrics: function(data) {
@@ -1545,7 +1545,7 @@ var Processing = React.createClass({
   },
 
   render: function() {
-    var cx = React.addons.classSet;
+  	var cx = React.addons.classSet;
 
     // Data-related
     var grades = this.state.grades;
