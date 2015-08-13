@@ -1,4 +1,5 @@
 @charset "UTF-8";
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic);
 /*! normalize.css v3.0.1 | MIT License | git.io/normalize */
 html {
   font-family: sans-serif;
@@ -11222,7 +11223,7 @@ html:hover [class^="ss-"] {
   font-size: .75em;
   font-weight: bolder;
   color: white;
-  background: #3d5adc;
+  background: #6699ff;
   padding: 0 .5em .17em .5em;
   opacity: .4;
   transition: opacity .2s ease;
@@ -11324,9 +11325,15 @@ html:hover [class^="ss-"] {
   display: table;
   table-layout: fixed;
   width: 100%;
+  height: 100%;
 }
 .outcome-timeline > section > div.moment-data > section > div {
   display: table-cell;
+  height: 100%;
+  padding: 0 .5em;
+}
+.outcome-timeline > section > div.moment-data > section > div + div {
+  border-left: 1px solid #f4f4f4;
 }
 .outcome-timeline > section:last-of-type .moment .line:after {
   content: '';
@@ -11337,11 +11344,11 @@ html:hover [class^="ss-"] {
   background: #999999;
 }
 .processing {
-  padding-bottom: 11em;
   margin-right: auto;
   margin-left: auto;
   padding-left: 15px;
   padding-right: 15px;
+  padding: 0 2em 12em 2em;
 }
 .processing > .navbar-header,
 .processing > .navbar-collapse {
@@ -11357,7 +11364,7 @@ html:hover [class^="ss-"] {
 }
 .processing h2 {
   font-weight: 300;
-  font-size: 2.3em;
+  font-size: 2em;
   margin: 0 0 1em 0;
 }
 .processing h3 {
@@ -11372,15 +11379,15 @@ html:hover [class^="ss-"] {
 .processing nav.tag-navigation {
   margin-left: -15px;
   margin-right: -15px;
-  background: #444444;
 }
 .processing nav.tag-navigation > ul {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
-  padding-top: .5em;
-  padding-bottom: .5em;
+  border-top: 1px solid #eeeeee;
+  padding-top: 3em;
+  padding-bottom: 3em;
 }
 @media (min-width: 768px) {
   .processing nav.tag-navigation > ul {
@@ -11389,17 +11396,23 @@ html:hover [class^="ss-"] {
   }
 }
 .processing nav.tag-navigation > ul > li > a {
-  font-weight: bold;
-  color: #8DC1FF !important;
-  transition: color 0.15s ease, background 0.15s ease, text-shadow 0.15s ease;
+  border-radius: 2px;
+  border: 1px solid #e8e8e8;
+  font-weight: normal;
+  color: #999999;
+  transition: color .1s ease,
+											border .1s ease,
+											background .1s ease;
 }
 .processing nav.tag-navigation > ul > li > a:hover {
-  background: #222222;
+  border-color: #6699ff;
+  color: #6699ff;
+  background: none;
 }
 .processing nav.tag-navigation > ul > li.active > a {
-  color: white !important;
-  background: inherit;
-  text-shadow: 0 0 9px rgba(255, 255, 255, 0.5);
+  color: #444444;
+  border-color: #444444;
+  background: none;
 }
 @media (max-width: 767px) {
   .processing nav.tag-navigation > ul > li {
@@ -11415,8 +11428,6 @@ html:hover [class^="ss-"] {
 .processing > section {
   margin-left: -15px;
   margin-right: -15px;
-  color: #666666;
-  border-top: 1px solid #dddddd;
 }
 .processing > section > h2 {
   padding: 1.5em 15px .5em 15px;
@@ -11524,7 +11535,7 @@ html:hover [class^="ss-"] {
 }
 .processing > section > ul > li:hover {
   color: white !important;
-  background: #3d5adc !important;
+  background: #6699ff !important;
 }
 .processing > section > ul > li:hover a {
   color: white;
@@ -11602,7 +11613,7 @@ html:hover [class^="ss-"] {
   width: 100%;
   color: white;
   display: block;
-  background: #3d5adc;
+  background: #6699ff;
   padding: 1.5em 15px .5em 15px;
   margin: 0;
   font-size: 1.2em;
@@ -12173,11 +12184,14 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 html a {
-  color: #3d5adc;
+  color: #6699ff;
   cursor: pointer;
 }
 html a:hover {
-  color: #3d5adc;
+  color: #6699ff;
+}
+body {
+  font-family: "Open Sans";
 }
 .site-wide-nav {
   position: fixed;
@@ -12443,7 +12457,7 @@ html a:hover {
 }
 .preference-controls > .preference,
 .preference-controls > section > .option {
-  color: #3d5adc;
+  color: #6699ff;
 }
 @media (min-width: 1199px) {
   .preference-controls > .preference:hover,

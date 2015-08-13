@@ -1,12 +1,12 @@
 // Processing data experiment
 
 .processing {
-	padding-bottom: 11em;
-  .container-fluid;
+	.container-fluid;
+	padding: 0 2em 12em 2em;  
 
 	h2 {
 		font-weight: 300;
-		font-size: 2.3em;
+		font-size: 2em;
 		margin: 0 0 1em 0;
 	}
 	h3 {
@@ -22,30 +22,34 @@
 
 	nav.tag-navigation {
 		.make-row();
-		background: @color-grey-xd;
 
 		> ul {
 			.make-sm-column(12);
-			padding-top: .5em;
-			padding-bottom: .5em;
+			border-top: 1px solid @color-grey-xxxxl;
+			padding-top: 3em;
+			padding-bottom: 3em;
 
 			> li {
 				> a {
-					font-weight: bold;
-					color: #8DC1FF !important;
-					transition: color .15s ease,
-											background .15s ease,
-											text-shadow .15s ease;
+					border-radius: 2px;
+					border: 1px solid @color-grey-xxxl;
+					font-weight: normal;
+					color: @color-grey-l;
+					transition: color .1s ease,
+											border .1s ease,
+											background .1s ease;
 					
 					&:hover {
-						background: @color-grey-xxd;
+						border-color: @color-blue;
+						color: @color-blue;
+						background: none;
 					}
 				}
 				&.active {
 					> a {
-						color: white !important;
-						background: inherit;
-						text-shadow: 0 0 9px rgba(255,255,255,.5);
+						color: @color-grey-xd;
+						border-color: @color-grey-xd;
+						background: none;
 					}
 				}
 			}
@@ -67,8 +71,6 @@
 
 	> section {
 		.make-row();
-		color: @color-grey-d;
-		border-top: 1px solid @color-grey-xxl;
 		
 		> h2 {
 			padding: 1.5em 15px .5em 15px;

@@ -1128,6 +1128,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     return {
       data: {},
       selectedTag: null,
+      selectedMeasure: null,
 
       // Medication filtering-related
       disabledMedications: {},
@@ -2117,16 +2118,16 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       })
     };
 
-    return Object.keys(measures).map(function (measure) {
-      var measureData = measures[measure].data;
-      
-      if (measureData) {
-        var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
-        // var entries = getEntriesForMeasure(measureData);
+    var measure = this.state.selectedMeasure ? this.state.selectedMeasure : Object.keys(measures)[0];
+    var measureData = measures[measure].data;
 
-        console.log(measure);
+    if (measureData) {
+      var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
+      // var entries = getEntriesForMeasure(measureData);
 
-        return (
+      return (
+      	React.createElement("div", null, 
+      		this.renderMeasureBar(measures), 
 	        React.createElement("div", {key: measure}, 
 	        	React.createElement("section", {className: "outcome-timeline"}, 
 			      	React.createElement("section", null, 
@@ -2195,10 +2196,15 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 					      );
 							})
 						)
-	        )
-        );
-      }
-    });
+		      )
+		    )
+		  );
+	  }
+	  return (
+    	React.createElement("div", null, 
+    		this.renderMeasureBar(measures)
+    	)
+    );
   },
 
   renderDataByTag: function(data, tags, tag) {
@@ -2312,7 +2318,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   handleTagSelect: function(key) {
     this.setState({
-      selectedTag: key
+      selectedTag: key,
+      selectedMeasure: null
     });
   },
 
@@ -2329,6 +2336,25 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         )
       );
     }
+  },
+
+  handleMeasureSelect: function(key) {
+    this.setState({
+      selectedMeasure: key
+    });
+  },
+
+  renderMeasureBar: function(measures) {
+    var selectedMeasure = this.state.selectedMeasure;
+    var measureDescriptions = this.state.measures;
+
+    return (
+      React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
+        Object.keys(measures).map(function (measure, i) {
+          return (React.createElement(NavItem, {key: i, eventKey: measure}, measureDescriptions[measure] ? measureDescriptions[measure].name_short : measure));
+        })
+      )
+    );
   },
 
   togglePreferenceControls: function () {
@@ -2666,12 +2692,13 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           /*this.renderPreferenceControls(preferences)*/
 
           React.createElement("section", null, 
-            React.createElement("h2", null, "Live connection to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet")), 
-            React.createElement("p", null, "My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth."), 
-            React.createElement("p", null, "The summaries below are connected to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"), " where I am encoding findings (data) from various sources. Updates to the spreadsheet are instantly visible here.")
+            React.createElement("h2", null, "Live connection to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"))
           ), 
 
-          this.renderTagBar(tags), 
+          React.createElement("section", null, 
+          	this.renderTagBar(tags)
+          ), 
+
           selectedTag && this.renderTimelineByTag(data, tags, selectedTag)
 
         )

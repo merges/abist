@@ -138,6 +138,7 @@ var OutcomeTimeline = React.createClass({
     return {
       data: {},
       selectedTag: null,
+      selectedMeasure: null,
 
       // Medication filtering-related
       disabledMedications: {},
@@ -1127,16 +1128,16 @@ var OutcomeTimeline = React.createClass({
       })
     };
 
-    return Object.keys(measures).map(function (measure) {
-      var measureData = measures[measure].data;
-      
-      if (measureData) {
-        var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
-        // var entries = getEntriesForMeasure(measureData);
+    var measure = this.state.selectedMeasure ? this.state.selectedMeasure : Object.keys(measures)[0];
+    var measureData = measures[measure].data;
 
-        console.log(measure);
+    if (measureData) {
+      var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
+      // var entries = getEntriesForMeasure(measureData);
 
-        return (
+      return (
+      	<div>
+      		{this.renderMeasureBar(measures)}
 	        <div key={measure}>
 	        	<section className='outcome-timeline'>
 			      	<section>
@@ -1205,10 +1206,15 @@ var OutcomeTimeline = React.createClass({
 					      );
 							})}
 						</section>
-	        </div>
-        );
-      }
-    });
+		      </div>
+		    </div>
+		  );
+	  }
+	  return (
+    	<div>
+    		{this.renderMeasureBar(measures)}
+    	</div>
+    );
   },
 
   renderDataByTag: function(data, tags, tag) {
@@ -1322,7 +1328,8 @@ var OutcomeTimeline = React.createClass({
 
   handleTagSelect: function(key) {
     this.setState({
-      selectedTag: key
+      selectedTag: key,
+      selectedMeasure: null
     });
   },
 
@@ -1339,6 +1346,25 @@ var OutcomeTimeline = React.createClass({
         </Nav>
       );
     }
+  },
+
+  handleMeasureSelect: function(key) {
+    this.setState({
+      selectedMeasure: key
+    });
+  },
+
+  renderMeasureBar: function(measures) {
+    var selectedMeasure = this.state.selectedMeasure;
+    var measureDescriptions = this.state.measures;
+
+    return (
+      <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
+        {Object.keys(measures).map(function (measure, i) {
+          return (<NavItem key={i} eventKey={measure}>{measureDescriptions[measure] ? measureDescriptions[measure].name_short : measure}</NavItem>);
+        })}
+      </Nav>
+    );
   },
 
   togglePreferenceControls: function () {
@@ -1677,11 +1703,12 @@ var OutcomeTimeline = React.createClass({
 
           <section>
             <h2>Live connection to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a></h2>
-            <p>My prototype will demonstrate use of a shareable, editable, and open (transparently accessible) spreadsheet as the ‘home’ of its data, instead of a closed, difficult to access and update database. That includes evidence extracted from the literature, descriptions of measures and metrics, harmonization tables, and so forth.</p>
-            <p>The summaries below are connected to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a> where I am encoding findings (data) from various sources. Updates to the spreadsheet are instantly visible here.</p>
           </section>
 
-          {this.renderTagBar(tags)}
+          <section>
+          	{this.renderTagBar(tags)}
+          </section>
+
           {selectedTag && this.renderTimelineByTag(data, tags, selectedTag)}
 
         </div>
