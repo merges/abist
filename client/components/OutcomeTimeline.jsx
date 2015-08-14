@@ -7,6 +7,8 @@ var medications = require('./Data.jsx');
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
+var Sticky = require('react-sticky');
+
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
 var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
@@ -157,6 +159,66 @@ var OutcomeTimeline = React.createClass({
       },
       selectedMedication: null
     }
+  },
+
+  componentWillUnmount: function() {
+    if (!iod.userAgent.isMobile()) {
+      $(window).unbind('scroll', this.handleScrollEvent);
+      $(window).unbind('resize', this.handleResizeEvent);
+    }
+  },
+
+  handleScrollEvent: function() {
+    $('.sticky-element').each(function() {
+      var el            = $(this),
+          offset        = el.offset(),
+          scrollTop     = $(window).scrollTop(), // .iodine-bar['height']
+          floated 			= $('.sticky-eleent-float', this);
+
+      if ((scrollTop > offset.top) && (scrollTop < offset.top + el.height())) {
+        floated.css({
+          'visibility': 'visible',
+          'top': 0
+        });
+      }
+      else {
+        floated.css({
+          'visibility': 'hidden'
+        });
+      }
+    });
+  },
+
+  handleResizeEvent: function() {
+    this.setupStickyHeader();
+    this.handleScrollEvent();
+  },
+
+  setupStickyHeader: function() {
+    var clonedElement;
+    var originalElement;
+    $('.sticky-element').each(function() {
+      clonedElement = $('.sticky-element.sticky-element-float.cloned-element', this);
+      originalElement = $('.sticky-element.sticky-element-fixed', this);
+      clonedElement
+        .css('width', originalElement.width());
+      originalElement.children().css('width', function(i, val) {
+        return $(clonedElement).children().eq(i).css('width', val);
+      });
+      originalElement.children().css('width', function(i, val) {
+        return $(clonedElement).children().eq(i).css('max-width', val);
+      });
+    });
+  },
+
+  setupStickyHeaderEventListeners: function() {
+    $(window)
+      .scroll(this.handleScrollEvent)
+      .trigger('scroll');
+
+    $(window)
+      .resize(this.handleResizeEvent)
+      .trigger('resize');
   },
 
   componentDidMount: function() {
@@ -1326,6 +1388,27 @@ var OutcomeTimeline = React.createClass({
     );
   },
 
+  handleMedicationSelect: function(key) {
+    this.setState({
+      selectedMedication: key
+    });
+  },
+
+  renderMedicationBar: function(medications) {
+  	var selectedMedication = this.state.selectedMedication;
+   
+    if (medications) {
+      return (
+        <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMedication && selectedMedication} onSelect={this.handleMedicationSelect}>
+          {Object.keys(medications).map(function (medication, i) {
+          	var medication = medications[medication];
+            return (<NavItem key={i} eventKey={medication.name}>{medication.name_common}</NavItem>);
+          })}
+        </Nav>
+      );
+    }
+  },
+
   handleTagSelect: function(key) {
     this.setState({
       selectedTag: key,
@@ -1699,6 +1782,7 @@ var OutcomeTimeline = React.createClass({
             </a>*/}
           </div>
 
+          {this.renderMedicationBar(medications)}
           {/*this.renderPreferenceControls(preferences)*/}
 
           <section>
