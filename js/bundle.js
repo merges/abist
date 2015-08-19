@@ -1302,7 +1302,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       var entry = {};
           // Key
           entry['which']                          = value.gsx$which ? value.gsx$which.$t : null;
-          
+
           // Population / intervention / comparison
           entry['population']                     = value.gsx$population ? value.gsx$population.$t.split(',') : null;
           entry['intervention']                   = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
@@ -1314,8 +1314,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['measure_detail']                 = value.gsx$measuredetail ? value.gsx$measuredetail.$t : null;
           entry['metric']                         = value.gsx$metric ? value.gsx$metric.$t : null;
-          entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null;     
-          
+          entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null;
+
           // Value
           entry['value']                          = {};
           entry['value']['value']                   = value.gsx$value && getNumber(value.gsx$value.$t);
@@ -1324,13 +1324,13 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           entry['value']['value_sd']                = value.gsx$valuesd && getNumber(value.gsx$valuesd.$t);
           entry['value']['value_iqr_low']           = value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t);
           entry['value']['value_iqr_high']          = value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t);
-          
+
           // Duration
           entry['duration']                       = {};
           entry['duration']['low']                  = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
           entry['duration']['high']                 = value.gsx$durationhigh ? value.gsx$durationhigh.$t : null;
-          entry['duration']['interval']             = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;      
-          
+          entry['duration']['interval']             = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
+
           // Dosage
           entry['dosage']                         = {};
           entry['dosage']['dosage']                 = value.gsx$dosage ? value.gsx$dosage.$t : null;
@@ -1338,7 +1338,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           entry['dosage']['dosage_frequency']       = value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null;
           entry['dosage']['dosage_multiple']        = value.gsx$dosagemultiple ? value.gsx$dosagemultiple.$t : null;
           entry['dosage']['dosage_interval']        = value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null;
-          
+
           // Evidence source and notes
           entry['source']                         = value.gsx$source ? value.gsx$source.$t : null;
           entry['notes']                          = value.gsx$notes ? value.gsx$notes.$t : null;
@@ -1509,6 +1509,11 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   },
 
   renderValue: function(results, metric, comparisonResults) {
+    // results = the data/finding, passed as part of an entry as population / intervention / comparison
+    // metric (optional) = the preferred metric to render. often helpful if a specific metric is required. otherwise there's logic to render all of them.
+    // comparisonResults = a pair dataset used for relative comparisons, i.e. the "comparison" to an intervention
+    // preferredKind = what kind of value to show — a difference/comparison…
+
     var grades = this.state.grades;
     var measures = this.state.measures;
     var metrics = this.state.metrics;
@@ -1543,9 +1548,16 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       }
     }
     else {
+      // Iterate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
+        // If we know how to render this kind of metric
         if (metrics[metric]) {
-          return renderAppropriateVisualization(results, metric, results[metric].measure);
+          // For now, only render absolute-kind of metrics
+          if (!comparisonResults) {
+            if (metrics[metric].kind == 'absolute') {
+              return renderAppropriateVisualization(results, metric, results[metric].measure);
+            }
+          }
         }
       });
     }
@@ -1585,20 +1597,16 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
     var measures = this.state.measures;
-    
+
     var measure = results[metric].measure;
     var data = results[metric].value;
-    
+
     var baseline = comparisonResults ? comparisonResults[metric].value.value : null;
 
     return (
       React.createElement("div", null, 
-        results.parts && React.createElement("span", null, results.parts.join(' + '), React.createElement("br", null)), 
         React.createElement("strong", null, data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value)), " ", React.createElement("span", {className: "light"}, "of 100 people"), 
-        React.createElement(AbsoluteFrequency, {frequency: data.value, metric: metric, denominator: 100, breakpoint: 10, baseline: baseline}), 
-        data.value_ci_low && data.value_ci_high &&
-          React.createElement("span", null, "(", data.value_ci_low, " to ", data.value_ci_high, ")")
-        
+        React.createElement(AbsoluteFrequency, {frequency: data.value, metric: metric, denominator: 100, breakpoint: 10, baseline: baseline})
       )
     );
   },
@@ -1606,10 +1614,10 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   renderDifference: function(results, metric, measure) {
     var measures = this.state.measures;
     var metrics = this.state.metrics;
-    
+
     var measure = results[metric].measure;
     var data = results[metric].value;
-    
+
     return (
       React.createElement("div", null, 
         results.parts && React.createElement("span", null, results.parts.join(' + '), React.createElement("br", null)), 
@@ -1653,7 +1661,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         PROCESSING DIFFERENT KINDS OF 'FINDINGS', PIVOTED AROUND A MEASURE.
 
         Here data are reprojected around a measure—for example, ACR 50 (50% improvement
-        in RA symptoms). We iterate over the rows that show 'acr_50' as the 'measure', and 
+        in RA symptoms). We iterate over the rows that show 'acr_50' as the 'measure', and
         reorganize the data into a sensible chunk.
 
         Each measure here is used to describe an outcome, a data point from research:
@@ -1747,7 +1755,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           - measure: 'acr_50'
           - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
           - value: '8'
-          
+
           ROW 1
           - intervention: 'methotrexate'
           - comparison: 'placebo'
@@ -1784,7 +1792,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           - measure: 'acr_50'
           - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
           - value: '8'
-          
+
           ROW 1
           - which: 'intervention'
           - intervention: 'methotrexate'
@@ -1808,7 +1816,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           - measure: 'acr_50'
           - metric: 'rr'
           - value: '3.0'
-        
+
         Now we know that row 0 refers to the comparison (placebo) and all the other rows refer to
         the intervention (methotrexate). We can use this to group all those rows together—they all refer
         to a finding: How methotrexate compares to placebo in terms of the ACR 50 outcome.
@@ -1821,7 +1829,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
         In general, there are a few standard cases we'll encounter and need to deal with in order
         to gather and reproject data around a measure. They are:
-          
+
           1. intervention only
           2. comparison + intervention
           3. population
@@ -1852,7 +1860,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         All the metrics that are used to describe that specific outcome are grouped under that key.
 
         2. COMPARISON + INTERVENTION
-        
+
         In comparison cases, it's likely we have more rows and multiple metrics describing the measure
         (outcome) of interest. In a single data source we might even have many interventions compared
         to placebo. For example, in the Cochrane review of systematic reviews of biologic DMARDs for
@@ -1866,7 +1874,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           key = measure + comparison + intervention + dosage + source (+ measure_detail)
 
         TODO: describe how the "study details" are recorded/divided
-        
+
         3. POPULATION
 
         TODO: describe this case
@@ -1880,7 +1888,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         TODO: Better description of this.
 
         For example:
-        
+
         'acr_50' = {
           'placebo-methotrexate (oral, parenteral) (5 mg-25 mg / week)-52 52 week-http://www.ncbi.nlm.nih.gov/pubmed/24916606': {},
           'dmard only-etanercept (subcutaneous) (25 mg 2x / week)-6 24 month-http://www.ncbi.nlm.nih.gov/pubmed/23728649': {}
@@ -1899,12 +1907,12 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var reprojected = {};
 
     entries.forEach(function (entry, i) {
-      
+
       // Construct a key based on the properties of this entry.
       //
       var key = entry.measure
               + entry.comparison
-              + entry.intervention 
+              + entry.intervention
               + entry.population
               + entry.duration_low + entry.duration_high + entry.duration_interval
               + entry.source;
@@ -1914,7 +1922,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       //
       // - We already encountered a row for the 'comparison'
       // - We already saw an entry for this measure, reported with a different metric
-      // 
+      //
       // It's a new object.
       //
       if (!reprojected[key]) {
@@ -1946,7 +1954,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       if (entry.which == 'comparison' || entry.which == 'population') {
         reprojected[key]['which'] = entry.which;
       }
-      
+
       // Details of the comparison, intervention, or population
       //
       if (!reprojected[key][entry.which]) {
@@ -1956,8 +1964,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       reprojected[key][entry.which]['parts']                = entry[entry.which];       // Array    // = entry.comparison.join(' + ');
       reprojected[key][entry.which]['dosage']               = entry.dosage;
       reprojected[key][entry.which]['notes']                = entry.notes;
-      
-      
+
+
       // Metrics and values
       //
       if (!reprojected[key][entry.which][entry.metric]) {
@@ -1969,95 +1977,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     });
 
     return reprojected;
-  },
-
-  renderEntry: function(entry, uniqueKey) {
-    var grades = this.state.grades;
-    var measures = this.state.measures;
-    var metrics = this.state.metrics;
-    var tags = this.state.tags;
-    var selectedTag = this.state.selectedTag;
-
-    var cx = React.addons.classSet;
-    var entryClasses = cx({
-      'entry': true,
-      'population': entry.which == 'population'
-    });
-
-    if (entry.which == 'comparison') {
-      return (
-        React.createElement("li", {key: uniqueKey, className: entryClasses}, 
-          React.createElement("h4", null, 
-            React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
-            React.createElement(Source, {source: entry.source, kind: entry.kind})
-          ), 
-          React.createElement("h4", null, 
-            React.createElement(Intervention, {intervention: entry.comparison.parts.join(' + '), dosage: entry.comparison.dosage})
-          ), 
-          React.createElement("h4", null, this.renderFollowUpTime(entry.duration, measures[entry.measure].name_short)), 
-          React.createElement("h4", null, 
-            this.renderValue(entry.comparison)
-          ), 
-          React.createElement("h4", null, 
-            this.renderValue(entry.intervention, 'ar_100', entry.comparison), 
-            this.renderValue(entry.intervention, 'ar_1000', entry.comparison), 
-            this.renderValue(entry.intervention, 'mean_score', entry.comparison), 
-            this.renderValue(entry.intervention, 'mean_score_difference', entry.comparison)
-          ), 
-          React.createElement("h4", null, 
-            this.renderValue(entry.intervention, 'rr'), 
-            this.renderValue(entry.intervention, 'or')
-          ), 
-          React.createElement("h4", null, this.renderValue(entry.intervention, 'abs_difference')), 
-          React.createElement("h4", null, this.renderValue(entry.intervention, 'rel_difference')), 
-          React.createElement("h4", null, React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades}))
-        )
-      );
-    }
-    if (entry.which == 'population') {
-      return (
-        React.createElement("li", {key: uniqueKey, className: entryClasses}, 
-          React.createElement("h4", null, 
-            React.createElement(Population, {population: entry.population.parts.join(' + '), dosage: entry.dosage}), 
-            React.createElement(Source, {source: entry.source, kind: entry.kind})
-          ), 
-          React.createElement("h4", null), 
-          React.createElement("h4", null, this.renderFollowUpTime(entry.duration, measures[entry.measure].name_short)), 
-          React.createElement("h4", null), 
-          React.createElement("h4", null, 
-            this.renderValue(entry.population)
-          ), 
-          React.createElement("h4", null, 
-            this.renderValue(entry.population, 'rr'), 
-            this.renderValue(entry.population, 'or')
-          ), 
-          React.createElement("h4", null, this.renderValue(entry.population, 'abs_difference')), 
-          React.createElement("h4", null, this.renderValue(entry.population, 'rel_difference')), 
-          React.createElement("h4", null, React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades}))
-        )
-      );
-    }
-    return (
-      React.createElement("li", {key: uniqueKey, className: entryClasses}, 
-        React.createElement("h4", null, 
-          React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
-          React.createElement(Source, {source: entry.source, kind: entry.kind})
-        ), 
-        React.createElement("h4", null), 
-        React.createElement("h4", null, this.renderFollowUpTime(entry.duration, measures[entry.measure].name_short)), 
-        React.createElement("h4", null), 
-        React.createElement("h4", null, 
-          this.renderValue(entry.intervention)
-        ), 
-        React.createElement("h4", null, 
-          this.renderValue(entry.intervention, 'rr'), 
-          this.renderValue(entry.intervention, 'or')
-        ), 
-        React.createElement("h4", null, this.renderValue(entry.intervention, 'abs_difference')), 
-        React.createElement("h4", null, this.renderValue(entry.intervention, 'rel_difference')), 
-        React.createElement("h4", null, React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades}))
-      )
-    );
   },
 
   getDurationAsWeeks: function(duration) {
@@ -2079,7 +1998,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   	Object.keys(entries).forEach(function (entry) {
   		var currentEntry = entries[entry];
-  		
+
   		if (currentEntry.duration.low) {
   			var numberOfWeeks = getDurationAsWeeks(currentEntry.duration);
 
@@ -2095,6 +2014,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   renderTimelineByMeasure: function(measures) {
     var measureMap = this.state.measures;
+    var grades = this.state.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
     var getEntriesForMeasure = this.getEntriesForMeasure;
     var groupEntriesByDuration = this.groupEntriesByDuration;
@@ -2103,7 +2023,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
     var renderRelativeRiskComparison = function(entries, measure) {
       var sources = {};
-      
+
       Object.keys(entries).map(function (key) {
         var entry = entries[key];
 
@@ -2113,7 +2033,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
             sources[entry.comparison.parts]['items'] = [];
           }
           sources[entry.comparison.parts]['baseline'] = entry.comparison;
-          
+
           // Check to see that we have relative risk
           if (entry.intervention.rr) {
             sources[entry.comparison.parts].items.push(entry.intervention);
@@ -2142,7 +2062,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
     var renderRiskRelativeToBaselineComparison = function(entries, measure) {
       var sources = {};
-      
+
       Object.keys(entries).map(function (key) {
         var entry = entries[key];
 
@@ -2152,7 +2072,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
             sources[entry.comparison.parts]['items'] = [];
           }
           sources[entry.comparison.parts]['comparison'] = entry.comparison;
-          
+
           // Check to see that we have relative risk
           if (entry.intervention.rr) {
             sources[entry.comparison.parts].items.push(entry.intervention);
@@ -2206,11 +2126,13 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 			      			React.createElement("section", null, 
 				      			Object.keys(durations).map(function (numberOfWeeks) {
 					        		var entries = durations[numberOfWeeks];
-					        	
+
 						        	return entries.map(function (entry, i) {
 						      			if (entry.intervention) {
 							      			return (
-								         		React.createElement("div", {key: i}, entry.intervention.parts)
+								         		React.createElement("div", {key: i}, 
+                              React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage})
+                            )
 								         	);
 								        }
 							       	});
@@ -2218,7 +2140,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 									)
 				      	)
 				      ), 
-				      Object.keys(durations).map(function (timepoint) {
+
+              Object.keys(durations).map(function (timepoint) {
 				      	return (
 				      		React.createElement("section", {key: measure + timepoint}, 
 					      		React.createElement("div", {className: "moment"}, 
@@ -2229,7 +2152,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 					        			), 
 					        			React.createElement("div", {className: "description"}, 
 					        				React.createElement("strong", null, measureMap[measure].name_short), " ", measureMap[measure].name_friendly, 
-						             measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
+						              measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
 					        			)
 					        		)
 					      		), 
@@ -2238,12 +2161,16 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 						      			Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
 
+                          console.log(entries);
+
 							        		return entries.map(function (entry, i) {
 								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
 									      			return (
 										         		React.createElement("div", {key: i}, 
-										         			entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100'), 
-										         			React.createElement(Source, {source: entry.source, kind: entry.kind})
+										         			/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
+                                  renderValue(entry.intervention), 
+										         			React.createElement(Source, {source: entry.source, kind: entry.kind}), 
+                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
 										         		)
 										         	);
 										        }
@@ -2286,98 +2213,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     );
   },
 
-  renderGrades: function(grades) {
-    return (
-      React.createElement("section", {className: "grades"}, 
-        React.createElement("h2", null, "GRADE working group levels of evidence"), 
-        React.createElement("ul", null, 
-          Object.keys(grades).map(function (key, i) {
-            var item = grades[key];
-            return (
-              React.createElement("li", {key: i}, 
-                React.createElement("h3", null, item.grade, " ", React.createElement("strong", null, item.name_friendly)), 
-                React.createElement("div", null, 
-                  React.createElement("p", null, item.description, " ", item.source && React.createElement("a", {href: item.source}, "Source"))
-                )
-              )
-            );
-          })
-        )
-      )
-    );
-  },
-
-  renderMeasures: function(measures) {
-    return (
-      React.createElement("section", {className: "measures"}, 
-        React.createElement("h2", null, "Measures"), 
-        React.createElement("ul", null, 
-          Object.keys(measures).map(function (key, i) {
-            var item = measures[key];
-            return (
-              React.createElement("li", {key: i}, 
-                React.createElement("h3", null, 
-                  React.createElement("strong", null, item.name_short), React.createElement("br", null), 
-                  item.name_long
-                ), 
-                React.createElement("p", null, 
-                  item.description && item.description, 
-                  item.source && React.createElement("span", null, " - ", React.createElement("a", {href: item.source}, "Source"))
-                ), 
-                React.createElement("div", null, 
-                  React.createElement("ul", null, 
-                    item.tags &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "tags"), 
-                        item.tags.join(',')
-                      ), 
-                    
-                    item.notes &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "notes"), 
-                        item.notes
-                      ), 
-                    
-                    item.kind &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "kind"), 
-                        item.kind
-                      ), 
-                    
-                    item.assessor &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "assessor"), 
-                        item.assessor
-                      ), 
-                    
-                    item.variable &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "variable"), 
-                        item.variable
-                      ), 
-                    
-                    item.included_measures &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "included_measures"), 
-                        item.included_measures.join(', ')
-                      ), 
-                    
-                    item.related_measures &&
-                      React.createElement("li", null, 
-                        React.createElement("small", null, "related_measures"), 
-                        item.related_measures.join(', ')
-                      )
-                    
-                  )
-                )
-              )
-            );
-          })
-        )
-      )
-    );
-  },
-
   handleMedicationSelect: function(key) {
     this.setState({
       selectedMedication: key
@@ -2386,7 +2221,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   renderMedicationBar: function(medications) {
   	var selectedMedication = this.state.selectedMedication;
-   
+
     if (medications) {
       return (
         React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMedication && selectedMedication, onSelect: this.handleMedicationSelect}, 
@@ -2564,7 +2399,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       //
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference]) {
-          
+
           // a. Simple boolean preference
           if (typeof preferencesSelected[preference] === 'boolean') {
 
@@ -2592,7 +2427,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
             // each option in order to get disabled.
             var selectedOptions = {};
             var medicationMatchingOptions = {};
-            
+
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
@@ -2650,7 +2485,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                   }
                 }
               }
-            }            
+            }
 
             // Check if the drug should be disabled based on one of the options matching.
             if (Object.keys(selectedOptions).length > 0) {
@@ -6344,7 +6179,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // GRADE level of evidence visualization
 
 var GradeQuality = React.createClass({displayName: "GradeQuality",
-  
+
   propTypes: {
     grade: React.PropTypes.string,
     gradeMap: React.PropTypes.object
@@ -6365,7 +6200,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
-            'ss-icon ss-stop': true,
+            'ss-icon ss-star': true,
             'highlight': i <= gradeNumber
           });
           icons.push(React.createElement("i", {key: i, className: iconClasses}));
@@ -6397,11 +6232,6 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       return tooltip;
     };
 
-    if (!grade) {
-      return (
-        React.createElement("div", null, "Unknown")
-      );
-    }
     return (
       React.createElement("div", {className: visualizationClasses}, 
         React.createElement(OverlayTrigger, {delayHide: 150, placement: "left", overlay: getTooltip(grade)}, 

@@ -8,7 +8,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // GRADE level of evidence visualization
 
 var GradeQuality = React.createClass({
-  
+
   propTypes: {
     grade: React.PropTypes.string,
     gradeMap: React.PropTypes.object
@@ -29,7 +29,7 @@ var GradeQuality = React.createClass({
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
-            'ss-icon ss-stop': true,
+            'ss-icon ss-star': true,
             'highlight': i <= gradeNumber
           });
           icons.push(<i key={i} className={iconClasses}></i>);
@@ -61,11 +61,6 @@ var GradeQuality = React.createClass({
       return tooltip;
     };
 
-    if (!grade) {
-      return (
-        <div>Unknown</div>
-      );
-    }
     return (
       <div className={visualizationClasses}>
         <OverlayTrigger delayHide={150} placement='left' overlay={getTooltip(grade)}>
