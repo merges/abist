@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 
 var React = require('react/addons');
+var _ = require('underscore');
 
 var medications = require('./Data.jsx');
 
@@ -38,72 +39,13 @@ var mockMetrics   = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://
 var mockTags      = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Tags"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"9"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"measure name / code"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable)"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"}],"gsx$name":{"$t":"measure name / code"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"pain"},"content":{"type":"text","$t":"nameshort: Pain, namefriendly: Pain, description: Pain, including tenderness in joints and self-reported pain."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"}],"gsx$name":{"$t":"pain"},"gsx$nameshort":{"$t":"Pain"},"gsx$namefriendly":{"$t":"Pain"},"gsx$description":{"$t":"Pain, including tenderness in joints and self-reported pain."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"function"},"content":{"type":"text","$t":"nameshort: Physical function, namefriendly: Physical function, description: Ability to do daily activities, a combination of how you feel and how well your joints are working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"}],"gsx$name":{"$t":"function"},"gsx$nameshort":{"$t":"Physical function"},"gsx$namefriendly":{"$t":"Physical function"},"gsx$description":{"$t":"Ability to do daily activities, a combination of how you feel and how well your joints are working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"improvement"},"content":{"type":"text","$t":"nameshort: Overall improvement, namefriendly: Overall improvement, description: Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"}],"gsx$name":{"$t":"improvement"},"gsx$nameshort":{"$t":"Overall improvement"},"gsx$namefriendly":{"$t":"Overall improvement"},"gsx$description":{"$t":"Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"satisfaction"},"content":{"type":"text","$t":"nameshort: Satisfaction, namefriendly: Satisfaction, description: Satisfaction with how well a treatment is working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"}],"gsx$name":{"$t":"satisfaction"},"gsx$nameshort":{"$t":"Satisfaction"},"gsx$namefriendly":{"$t":"Satisfaction"},"gsx$description":{"$t":"Satisfaction with how well a treatment is working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"swelling"},"content":{"type":"text","$t":"nameshort: Swelling, namefriendly: Swollen joints"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"}],"gsx$name":{"$t":"swelling"},"gsx$nameshort":{"$t":"Swelling"},"gsx$namefriendly":{"$t":"Swollen joints"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"biomarker"},"content":{"type":"text","$t":"nameshort: Lab results, namefriendly: Lab results"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"}],"gsx$name":{"$t":"biomarker"},"gsx$nameshort":{"$t":"Lab results"},"gsx$namefriendly":{"$t":"Lab results"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"adverse event"},"content":{"type":"text","$t":"nameshort: Side effects, namefriendly: Side effects, description: Side effects, adverse events (undesirable outcomes), etc."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"}],"gsx$name":{"$t":"adverse event"},"gsx$nameshort":{"$t":"Side effects"},"gsx$namefriendly":{"$t":"Side effects"},"gsx$description":{"$t":"Side effects, adverse events (undesirable outcomes), etc."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"well being"},"content":{"type":"text","$t":"nameshort: Well being, namefriendly: Well being, description: ?"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"}],"gsx$name":{"$t":"well being"},"gsx$nameshort":{"$t":"Well being"},"gsx$namefriendly":{"$t":"Well being"},"gsx$description":{"$t":"?"}}]}};
 
 var OutcomeTimeline = React.createClass({
+	propTypes: {
+		disabledMedications: React.PropTypes.object
+	},
 
   getDefaultProps: function () {
     return {
-      medications: medications,
-      preferences: {
-        'alcohol': {
-          'key': 'key',
-          'name': 'Alcohol-friendly',
-          'type': 'boolean',
-          'description': 'If you drink alcohol'
-        },
-        // 'cost': {
-        //   'key': 'cost',
-        //   'name': 'Cost',
-        //   'type': 'number',
-        //   'description': 'average cost per month'
-        // },
-        // 'class': {
-        //   'key': 'class',
-        //   'name': 'Drug class',
-        //   'type': 'list',
-        //   'description': 'Drug classes'
-        // },
-        'forms': {
-          'key': 'forms',
-          'name': 'Dosage form',
-          'type': 'list',
-          'description': 'preferred way of taking your medicine'
-        },
-        'generic_available': {
-          'key': 'generic_available',
-          'name': 'Generic available',
-          'type': 'boolean',
-          'description': 'A cheaper, generic version is available'
-        },
-        'liver_disease': {
-          'key': 'liver_disease',
-          'name': 'Liver disease',
-          'type': 'boolean',
-          'description': 'if you have liver disease'
-        },
-        'pregnancy': {
-          'key': 'pregnancy',
-          'name': 'Pregnancy',
-          'type': 'boolean',
-          'description': 'if you’re pregnant or considering it'
-        },
-        'tb': {
-          'key': 'tb',
-          'name': 'Tuberculosis',
-          'type': 'boolean',
-          'description': 'if you have or might be exposed to tuberculosis'
-        }
-      },
-      risks: {
-        "tb": "if you have or might be exposed to tuberculosis",
-        "pregnancy": "if you’re pregnant or considering it",
-        "liver_disease": "if you have liver disease",
-        "alcohol": "if you drink alcohol"
-      },
-      risksFriendly: {
-        "tb": "Tuberculosis",
-        "pregnancy": "Pregnancy",
-        "liver_disease": "Liver disease",
-        "alcohol": "Alcohol"
-      }
+      medications: medications
     };
   },
 
@@ -140,24 +82,7 @@ var OutcomeTimeline = React.createClass({
     return {
       data: {},
       selectedTag: null,
-      selectedMeasure: null,
-
-      // Medication filtering-related
-      disabledMedications: {},
-      medicationMap: medicationMap,
-      menuOpen: null,
-      preferences: this.props.preferences,
-      preferencesSelected: {
-        alcohol: false,
-        class: getClasses(this.props.medications),
-        cost: null,
-        forms: getDosageForms(this.props.medications),
-        generic_available: false,
-        liver_disease: false,
-        pregnancy: false,
-        tb: false
-      },
-      selectedMedication: null
+      selectedMeasure: null
     }
   },
 
@@ -455,6 +380,7 @@ var OutcomeTimeline = React.createClass({
           entry['name_friendly']        = value.gsx$namefriendly.$t;
           entry['description']          = value.gsx$description.$t;
           entry['presentation']         = value.gsx$presentation.$t;
+          entry['kind']         				= value.gsx$kind.$t;
           entry['source']               = value.gsx$source.$t;
           entry['notes']                = value.gsx$notes.$t;
       metrics[key] = entry;
@@ -564,8 +490,8 @@ var OutcomeTimeline = React.createClass({
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
           if (!comparisonResults) {
-            if (metrics[metric].kind == 'absolute') {
-              return renderAppropriateVisualization(results, metric, results[metric].measure);
+          	if (metrics[metric].kind == 'absolute') {
+            	return renderAppropriateVisualization(results, metric, results[metric].measure);
             }
           }
         }
@@ -1022,10 +948,27 @@ var OutcomeTimeline = React.createClass({
   	return entriesByDuration;
   },
 
+  filterEntriesByMedication: function(entries) {
+  	var disabledMedications = this.props.disabledMedications;
+
+  	console.log('WILL BE FILTERED')
+  	
+
+  	// TODO use underscore to
+  	// filter entries to only those with intervention.parts containing a NON-disabled medication
+  	
+  	_.mapObject(entries, function(val, key) {
+  		console.log('VALUE', val.intervention.parts);
+  	});
+
+  	return entries;
+  },
+
   renderTimelineByMeasure: function(measures) {
     var measureMap = this.state.measures;
     var grades = this.state.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
+    var filterEntriesByMedication = this.filterEntriesByMedication;
     var getEntriesForMeasure = this.getEntriesForMeasure;
     var groupEntriesByDuration = this.groupEntriesByDuration;
     var renderEntry = this.renderEntry;
@@ -1114,7 +1057,7 @@ var OutcomeTimeline = React.createClass({
     var measureData = measures[measure].data;
 
     if (measureData) {
-      var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
+      var durations = groupEntriesByDuration(filterEntriesByMedication(getEntriesForMeasure(measureData)));
       // var entries = getEntriesForMeasure(measureData);
 
       return (
@@ -1170,8 +1113,6 @@ var OutcomeTimeline = React.createClass({
 								      <section>
 						      			{Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
-
-                          console.log(entries);
 
 							        		return entries.map(function (entry, i) {
 								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
@@ -1285,275 +1226,6 @@ var OutcomeTimeline = React.createClass({
     );
   },
 
-  togglePreferenceControls: function () {
-    var isOpen = this.state.menuOpen;
-    isOpen = !isOpen;
-    this.setState({
-      menuOpen: isOpen
-    })
-  },
-
-  renderPreferenceControls: function (preferences) {
-    var filterPreference = this.filterPreference;
-    var togglePreferenceControls = this.togglePreferenceControls;
-
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
-
-    var cx = React.addons.classSet;
-    var preferenceControlClasses = cx({
-      'preference-controls': true,
-      'open': this.state.menuOpen == true,
-      'closed': this.state.menuOpen == false
-    });
-
-    return (
-      <div className={preferenceControlClasses}>
-        <h2 onClick={togglePreferenceControls}>
-          Filter your options
-          <strong>{this.state.menuOpen? '‹' : '›'}</strong>
-        </h2>
-
-        {Object.keys(preferences).map(function(key) {
-          var preference = preferences[key];
-
-          // Boolean preferences become a push button
-          if (preference.type == 'boolean') {
-            var preferenceClasses = cx({
-              'preference': true,
-              'active': preferencesSelected[key]
-            });
-            return (
-              <section className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
-              </section>
-            );
-          }
-          // List preferences become a list
-          else if (preference.type == 'list') {
-            // Get the possible options for this preference from this.state.preferencesSelected.
-            // There is a function in getInitialState() that iterates through the provided medications,
-            // collecting the "options" they provide for vis à vis this preference.
-            var options = Object.keys(preferencesSelected[key]);
-
-            return (
-              <section key={key}>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
-
-                {options.map(function(option, i) {
-                  var optionClasses = cx({
-                    'option': true,
-                    'active': !preferencesSelected[key][option]
-                  });
-                  return (
-                    <div
-                      className={optionClasses}
-                      key={option}
-                      onClick={filterPreference.bind(null, key, option)}>
-                        <strong>› </strong>{option}
-                    </div>
-                  );
-                })}
-              </section>
-            );
-          }
-          else {
-            return (
-              <section>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
-              </section>
-            );
-          }
-        })}
-      </div>
-    );
-  },
-
-  filterPreference: function (preferenceKey, optionKey, event) {
-    if (this.state.menuOpen) {
-      event.stopPropagation();
-    }
-
-    var disabledMedications = {};
-    var medications = this.props.medications;
-    var preferencesSelected = this.state.preferencesSelected;
-
-    // Toggle the preference. If there's an 'option' provided, the preference is a list type,
-    // for example dosage form. So we use the 'preference' to access the dosage forms object,
-    // and use the preference to set true/false on the appropriate dosage form.
-    //
-    // forms: {
-    //   tablet: true,
-    //   injection: true
-    // }
-    //
-
-    // TOGGLE PREFERENCES
-    if (optionKey) {
-      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
-    }
-    else {
-      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
-    }
-
-    // Check each medication against the selected preferences and options,
-    // disabling any that doesn't satisfy.
-    //
-    medications.forEach(function(medication, i) {
-      var medicationMatchingPreferences = {};
-
-      // 1. Examine all the preferences for a match.
-      //
-      for (var preference in preferencesSelected) {
-        if (preferencesSelected[preference]) {
-
-          // a. Simple boolean preference
-          if (typeof preferencesSelected[preference] === 'boolean') {
-
-            // Look for a matching key in the medication object
-            // Boolean? e.g. 'generic_available' -- inverse match
-            if (medication[preference] == false) {
-              medicationMatchingPreferences[preference] = true;
-              // disabledMedications[medication.name] = true;
-            }
-            // Not a key in medication object, so check ptda.risks
-            else {
-              for (var risk in medication.ptda.risks) {
-                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
-                  medicationMatchingPreferences[preference] = true;
-                  // disabledMedications[medication.name] = true;
-                }
-              }
-            }
-          }
-
-          // b. List preference
-          else if (typeof preferencesSelected[preference] === 'object') {
-
-            // The user chose one or more options (to avoid), so the medication must match
-            // each option in order to get disabled.
-            var selectedOptions = {};
-            var medicationMatchingOptions = {};
-
-            // Check each option for a match
-            for (var option in preferencesSelected[preference]) {
-
-              // Option is selected
-              if (preferencesSelected[preference][option]) {
-                selectedOptions[option] = true;
-
-                // Look for a matching key in the medication object
-                if (medication[preference]) {
-
-                  // Is it an array or an object?
-                  if (typeof medication[preference] === 'object') {
-
-                    // Array
-                    if (Array.isArray(medication[preference])) {
-                      var list = medication[preference];
-
-                      // Check for our option in the list
-                      for (var item in list) {
-                        // Straight up list item?
-                        if (typeof list[item] === 'string') {
-                          if (list[item].toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
-                          }
-                          else {
-                            medicationMatchingOptions[list[item].toLowerCase()] = true;
-                          }
-                        }
-                        // Object? Look for a 'name' that we'll check against
-                        else if (list[item].hasOwnProperty('name')) {
-                          if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
-                          }
-                          else {
-                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
-                          }
-                        }
-                      }
-                    }
-                    // Object
-                    else {
-                      for (var item in Object.keys(medication[preference])) {
-                        if (list[item].toLowerCase() == option.toLowerCase()) {
-                          medicationMatchingOptions[option] = true;
-                        }
-                        else {
-                          medicationMatchingOptions[list[item].toLowerCase()] = true;
-                        }
-                      }
-                      // // Check for our option in the object
-                      // if (medication[preference][optionKey]) {
-                      //   medicationMatchingOptions[option] = true;
-                      // }
-                    }
-                  }
-                }
-              }
-            }
-
-            // Check if the drug should be disabled based on one of the options matching.
-            if (Object.keys(selectedOptions).length > 0) {
-              // Disabled options present in the drug? Disable it.
-              for (var selected in selectedOptions) {
-                for (var option in medicationMatchingOptions) {
-                  if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    medicationMatchingPreferences[preference] = true;
-                  }
-                }
-              }
-              // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
-              for (var option in medicationMatchingOptions) {
-                if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  medicationMatchingPreferences[preference] = false;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 2. Check if the drug should be disabled.
-      //
-      if (Object.keys(preferencesSelected).length > 0) {
-        var disableMedication = false;
-
-        // Disabled options present in the drug? Disable it.
-        for (var selected in preferencesSelected) {
-          for (var preference in medicationMatchingPreferences) {
-            if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
-              disableMedication = true;
-            }
-          }
-        }
-        // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
-        for (var preference in medicationMatchingPreferences) {
-          if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
-            disableMedication = false;
-          }
-        }
-
-        // Add the medication to disabledMedications.
-        if (disableMedication) {
-          disabledMedications[medication.name] = true;
-        }
-        else {
-          disabledMedications[medication.name] = false;
-        }
-      }
-    });
-
-    this.setState({
-      disabledMedications: disabledMedications,
-      preferencesSelected: preferencesSelected
-    });
-  },
-
   renderTimelineByTag: function(data, tags, tag) {
     var dataByTag = this.getDataByTag(tags, data);
     var tagDescriptions = this.state.tagDescriptions;
@@ -1599,7 +1271,7 @@ var OutcomeTimeline = React.createClass({
     var preferences = this.props.preferences;
     var risks = this.props.risks;
     var risksFriendly = this.props.risksFriendly;
-    var disabledMedications = this.state.disabledMedications;
+    var disabledMedications = this.props.disabledMedications;
     var selectedMedication = this.state.selectedMedication;
     var medicationMap = this.state.medicationMap;
 
@@ -1610,16 +1282,6 @@ var OutcomeTimeline = React.createClass({
     if (grades && measures && tags && data != {}) {
       return (
         <div className={classes}>
-          <div className='header'>
-            <h1>Outcome timeline</h1>
-            {/*<a className="mobile-toggle" onClick={this.togglePreferenceControls}>
-              {!this.state.menuOpen ? 'Filter your options' : 'Close filter'}
-            </a>*/}
-          </div>
-
-          {this.renderMedicationBar(medications)}
-          {/*this.renderPreferenceControls(preferences)*/}
-
           <section>
             <h2>Live connection to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a></h2>
           </section>
