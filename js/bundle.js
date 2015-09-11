@@ -36,7 +36,7 @@ var App = React.createClass({displayName: "App",
 
 module.exports = App;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/App.jsx","/client/components")
-},{"_process":31,"buffer":27,"react-router":117,"react/addons":133}],2:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react-router":118,"react/addons":134}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var medications = [
   {
@@ -885,7 +885,7 @@ var medications = [
 
 module.exports = medications;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/Data.jsx","/client/components")
-},{"_process":31,"buffer":27}],3:[function(require,module,exports){
+},{"_process":32,"buffer":28}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -986,48 +986,35 @@ var Experiment = React.createClass({displayName: "Experiment",
 
 module.exports = Experiment;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/Experiment.jsx","/client/components")
-},{"_process":31,"buffer":27,"react/addons":133}],4:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],4:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
+var _ = require('underscore');
 
 var medications = require('./Data.jsx');
 
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
-var Sticky = require('react-sticky');
+var OutcomeTimeline = require('./OutcomeTimeline.jsx');
 
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
-var Difference = require('./visualizations/Difference.jsx');
-var GradeQuality = require('./visualizations/GradeQuality.jsx');
-var Intervention = require('./visualizations/Intervention.jsx');
-var Population = require('./visualizations/Population.jsx');
-var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
-var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
-var Source = require('./visualizations/Source.jsx');
-
-// Outcome timeline test
+var PtdaConsiderations = require('./ptda/PtdaConsiderations');
+var PtdaCost = require('./ptda/PtdaCost');
+var PtdaFrequency = require('./ptda/PtdaFrequency');
+var PtdaMedicationSquare = require('./ptda/PtdaMedicationSquare');
+var PtdaMini = require('./ptda/PtdaMini');
+var PtdaOnset = require('./ptda/PtdaOnset');
+var PtdaSideEffects = require('./ptda/PtdaSideEffects');
 
 String.prototype.capitalizeFirstletter = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-var getNumber = function(value) {
-  if (!isNaN(parseFloat(value))) {
-    return parseFloat(value);
-  }
-  return null;
-};
+// Navigator experiment
 
-var mockData      = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"FIN-RACo"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"41"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"key"},"content":{"type":"text","$t":"measure: i.e. outcome, metric: i.e. statistic, valuecilow: 95% ci low, valuecihigh: 95% ci high, valuesd: standard deviation, valueiqrlow: interquartile range, valueiqrhigh: interquartile range, grade: GRADE quality, ntotal: number of participants, durationlow: low end of duration or follow-up, durationhigh: high end of duration or follow-up, population: population / characteristic, intervention: intervention(s)\ncomma-separated, comparison: comparison(s),\ncomma-separated, dosageform: comma-separated, dosageinterval: once | prn | hour | day | week | month | year, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cokwr"}],"gsx$which":{"$t":"key"},"gsx$measure":{"$t":"i.e. outcome"},"gsx$metric":{"$t":"i.e. statistic"},"gsx$value":{"$t":""},"gsx$valuecilow":{"$t":"95% ci low"},"gsx$valuecihigh":{"$t":"95% ci high"},"gsx$valuesd":{"$t":"standard deviation"},"gsx$valueiqrlow":{"$t":"interquartile range"},"gsx$valueiqrhigh":{"$t":"interquartile range"},"gsx$grade":{"$t":"GRADE quality"},"gsx$ntotal":{"$t":"number of participants"},"gsx$durationlow":{"$t":"low end of duration or follow-up"},"gsx$durationhigh":{"$t":"high end of duration or follow-up"},"gsx$durationinterval":{"$t":""},"gsx$population":{"$t":"population / characteristic"},"gsx$intervention":{"$t":"intervention(s)\ncomma-separated"},"gsx$comparison":{"$t":"comparison(s),\ncomma-separated"},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":"comma-separated"},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":"once | prn | hour | day | week | month | year"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"},"gsx$kind":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: remission, metric: percentage, value: 0.26, ntotal: 78, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cpzh4"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"remission"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.26"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: remission, metric: percentage, value: 0.11, ntotal: 81, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cre1l"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"remission"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.11"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_50, metric: percentage, value: 0.42, ntotal: 78, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/chk2m"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_50"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.42"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_50, metric: percentage, value: 0.41, ntotal: 81, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ciyn3"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_50"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.41"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: arc_20, metric: percentage, value: 0.12, ntotal: 78, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ckd7g"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"arc_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.12"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_20, metric: percentage, value: 0.25, ntotal: 81, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/clrrx"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.25"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: sub_acr_20, metric: percentage, value: 0.21, ntotal: 78, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cyevm"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"sub_acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.21"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: sub_acr_20, metric: percentage, value: 0.23, ntotal: 81, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cztg3"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"sub_acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.23"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 4, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d180g"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 16, valuesd: 14, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d2mkx"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"16"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"14"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 31, valuesd: 19, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cssly"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"31"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"19"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 47, valuesd: 43, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cu76f"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"47"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"43"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cvlqs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 1, valuesd: 4, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cvlqs"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"1"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"4"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cx0b9"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 11, valuesd: 8, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cx0b9"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"11"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"8"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d9ney"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 28, valuesd: 14, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d9ney"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"28"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"14"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/db1zf"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 38, valuesd: 19, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/db1zf"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"38"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"19"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dcgjs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 3, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dcgjs"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"3"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ddv49"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 15, valuesd: 15, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ddv49"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"15"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d415a"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 27, valuesd: 17, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d415a"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"27"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"17"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d5fpr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 40, valuesd: 23, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d5fpr"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"40"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"23"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d6ua4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.0, valuesd: 0.2, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d6ua4"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d88ul"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.2, valuesd: 0.3, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d88ul"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.2"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.3"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dkvya"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.4, valuesd: 0.4, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dkvya"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.4"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dmair"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.6, valuesd: 0.5, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dmair"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.6"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dnp34"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 0, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dnp34"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dp3nl"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 4, valuesd: 2, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dp3nl"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/df9om"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 10, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/df9om"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"10"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dgo93"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 15, valuesd: 7, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dgo93"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"7"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/di2tg"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 0, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/di2tg"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/djhdx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 2, valuesd: 2, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/djhdx"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"2"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dw4je"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 5, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dw4je"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"5"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dxj3v"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 8, valuesd: 7, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dxj3v"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"8"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"7"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dyxo8"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0, ntotal: 29, durationlow: 5, durationinterval: year, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dyxo8"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e0c8p"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.23, ntotal: 66, durationlow: 5, durationinterval: year, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e0c8p"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.23"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dqi9q"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.21, ntotal: 29, durationlow: 5, durationinterval: year, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dqi9q"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.21"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/drwu7"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.54, ntotal: 35, durationlow: 5, durationinterval: year, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/drwu7"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.54"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dtbek"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 0, valueiqrlow: 0, valueiqrhigh: 3, ntotal: 29, durationlow: 5, durationinterval: year, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dtbek"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"3"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dupz1"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 4, valueiqrlow: 0, valueiqrhigh: 131, ntotal: 66, durationlow: 5, durationinterval: year, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dupz1"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"131"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e7d2q"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 15, valueiqrlow: 0, valueiqrhigh: 170, ntotal: 29, durationlow: 5, durationinterval: year, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e7d2q"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"170"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e8rn7"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 337, valueiqrlow: 27, valueiqrhigh: 365, ntotal: 35, durationlow: 5, durationinterval: year, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e8rn7"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"337"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"27"},"gsx$valueiqrhigh":{"$t":"365"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}}]}};
-var mockGrades    = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"GRADE"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"6"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"level of evidence"},"content":{"type":"text","$t":"namefriendly: human-friendly name, descriptionfriendly: human-friendly description, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cokwr"}],"gsx$grade":{"$t":"level of evidence"},"gsx$namefriendly":{"$t":"human-friendly name"},"gsx$description":{"$t":""},"gsx$descriptionfriendly":{"$t":"human-friendly description"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"4"},"content":{"type":"text","$t":"namefriendly: High quality, description: Further research is very unlikely to change our confidence in the estimate of effect., descriptionfriendly: Doctors and researchers are confident in the results. They don't think that more research would change the results, and think that the studies done so far have been reliable and well-done., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cpzh4"}],"gsx$grade":{"$t":"4"},"gsx$namefriendly":{"$t":"High quality"},"gsx$description":{"$t":"Further research is very unlikely to change our confidence in the estimate of effect."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers are confident in the results. They don't think that more research would change the results, and think that the studies done so far have been reliable and well-done."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"3"},"content":{"type":"text","$t":"namefriendly: Moderate quality, description: Further research is likely to have an important impact on our confidence in the estimate of effect and may change the estimate., descriptionfriendly: Doctors and researchers aren't completely confident in the results. They think that more research might change their minds, and might even produce different results. They think that the studies done so far have been OK, but that there isn't enough data to make them completely confident., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cre1l"}],"gsx$grade":{"$t":"3"},"gsx$namefriendly":{"$t":"Moderate quality"},"gsx$description":{"$t":"Further research is likely to have an important impact on our confidence in the estimate of effect and may change the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers aren't completely confident in the results. They think that more research might change their minds, and might even produce different results. They think that the studies done so far have been OK, but that there isn't enough data to make them completely confident."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"2"},"content":{"type":"text","$t":"namefriendly: Low quality, description: Further research is very likely to have an important impact on our confidence in the estimate of effect and is likely to change the estimate., descriptionfriendly: Doctors and researchers aren't confident in the results. They think that more research would likely change their minds, and probably produce different results. The change could be positive, or negative. They think that the studies done so far weren't well-done enough to make them confident in the results., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/chk2m"}],"gsx$grade":{"$t":"2"},"gsx$namefriendly":{"$t":"Low quality"},"gsx$description":{"$t":"Further research is very likely to have an important impact on our confidence in the estimate of effect and is likely to change the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers aren't confident in the results. They think that more research would likely change their minds, and probably produce different results. The change could be positive, or negative. They think that the studies done so far weren't well-done enough to make them confident in the results."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"1"},"content":{"type":"text","$t":"namefriendly: Very low quality, description: We are very uncertain about the estimate., descriptionfriendly: Doctors and researchers don't have confidence in the results. They think the studies done so far have flaws that make the results unreliable, and that more research is needed on this topic., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ciyn3"}],"gsx$grade":{"$t":"1"},"gsx$namefriendly":{"$t":"Very low quality"},"gsx$description":{"$t":"We are very uncertain about the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers don't have confidence in the results. They think the studies done so far have flaws that make the results unreliable, and that more research is needed on this topic."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"X"},"content":{"type":"text","$t":"namefriendly: Unknown quality, description: The evidence has not been quality-rated., descriptionfriendly: Doctors and researchers haven't quality-rated this information according to the GRADE guidelines."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ckd7g"}],"gsx$grade":{"$t":"X"},"gsx$namefriendly":{"$t":"Unknown quality"},"gsx$description":{"$t":"The evidence has not been quality-rated."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers haven't quality-rated this information according to the GRADE guidelines."},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
-var mockMeasures  = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Measures"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"23"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"measure name / code"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable), namelong: measure name (longer), tags: comma-separated, kind: examination, assay, questionnaire, scale, instrument NOS,count, max: max value, if applicable, relatedmeasures: comma-separated, includedmeasures: comma-separated, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cokwr"}],"gsx$name":{"$t":"measure name / code"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$namelong":{"$t":"measure name (longer)"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"comma-separated"},"gsx$kind":{"$t":"examination, assay, questionnaire, scale, instrument NOS,count"},"gsx$variable":{"$t":""},"gsx$max":{"$t":"max value, if applicable"},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":"comma-separated"},"gsx$includedmeasures":{"$t":"comma-separated"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"tjc"},"content":{"type":"text","$t":"nameshort: TJC, namefriendly: tender joint count, namelong: ACR tender joint count, description: \"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\", tags: pain,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cpzh4"}],"gsx$name":{"$t":"tjc"},"gsx$nameshort":{"$t":"TJC"},"gsx$namefriendly":{"$t":"tender joint count"},"gsx$namelong":{"$t":"ACR tender joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\""},"gsx$tags":{"$t":"pain,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sjc"},"content":{"type":"text","$t":"nameshort: SJC, namefriendly: swollen joint count, namelong: ACR swollen joint count, description: \"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\", tags: swelling,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cre1l"}],"gsx$name":{"$t":"sjc"},"gsx$nameshort":{"$t":"SJC"},"gsx$namefriendly":{"$t":"swollen joint count"},"gsx$namelong":{"$t":"ACR swollen joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\""},"gsx$tags":{"$t":"swelling,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_tjc"},"content":{"type":"text","$t":"nameshort: TJC, namefriendly: tender joint count, namelong: ACR tender joint count, description: \"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\", tags: pain,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/chk2m"}],"gsx$name":{"$t":"acr_tjc"},"gsx$nameshort":{"$t":"TJC"},"gsx$namefriendly":{"$t":"tender joint count"},"gsx$namelong":{"$t":"ACR tender joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\""},"gsx$tags":{"$t":"pain,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_sjc"},"content":{"type":"text","$t":"nameshort: SJC, namefriendly: swollen joint count, namelong: ACR swollen joint count, description: \"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\", tags: swelling,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ciyn3"}],"gsx$name":{"$t":"acr_sjc"},"gsx$nameshort":{"$t":"SJC"},"gsx$namefriendly":{"$t":"swollen joint count"},"gsx$namelong":{"$t":"ACR swollen joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\""},"gsx$tags":{"$t":"swelling,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_pain"},"content":{"type":"text","$t":"nameshort: pain, namefriendly: patient's assessment of pain, namelong: Patient's assessment of pain, description: \"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\", tags: pain, kind: scale, variable: continuous, assessor: patient, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ckd7g"}],"gsx$name":{"$t":"patient_pain"},"gsx$nameshort":{"$t":"pain"},"gsx$namefriendly":{"$t":"patient's assessment of pain"},"gsx$namelong":{"$t":"Patient's assessment of pain"},"gsx$description":{"$t":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\""},"gsx$tags":{"$t":"pain"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_global_das"},"content":{"type":"text","$t":"nameshort: patient global assessment, namefriendly: patient's global assessment of disease activity, namelong: Patient's global assessment of disease activity, description: \"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\", tags: well being, kind: scale, variable: continuous, assessor: patient, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/clrrx"}],"gsx$name":{"$t":"patient_global_das"},"gsx$nameshort":{"$t":"patient global assessment"},"gsx$namefriendly":{"$t":"patient's global assessment of disease activity"},"gsx$namelong":{"$t":"Patient's global assessment of disease activity"},"gsx$description":{"$t":"\"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"physician_global_das"},"content":{"type":"text","$t":"nameshort: physician global assessment, namefriendly: physician's global assessent of disease activity, namelong: Physician's global assessent of disease activity, description: \"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\", tags: well being, kind: scale, variable: continuous, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cyevm"}],"gsx$name":{"$t":"physician_global_das"},"gsx$nameshort":{"$t":"physician global assessment"},"gsx$namefriendly":{"$t":"physician's global assessent of disease activity"},"gsx$namelong":{"$t":"Physician's global assessent of disease activity"},"gsx$description":{"$t":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_physical_function"},"content":{"type":"text","$t":"nameshort: physical function, namefriendly: patient's assessment of physical function, namelong: Patient's assessment of physical function, description: \"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR., tags: function, kind: composite, assessor: patient, includedmeasures: aims,haq,qwb,iwb,mhiq,mactar, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cztg3"}],"gsx$name":{"$t":"patient_physical_function"},"gsx$nameshort":{"$t":"physical function"},"gsx$namefriendly":{"$t":"patient's assessment of physical function"},"gsx$namelong":{"$t":"Patient's assessment of physical function"},"gsx$description":{"$t":"\"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR."},"gsx$tags":{"$t":"function"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"aims,haq,qwb,iwb,mhiq,mactar"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"apr"},"content":{"type":"text","$t":"nameshort: acute-phase reactant, namefriendly: acute-phase reactant value, namelong: Laboratory test, an acute-phase reactant value, description: \"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\", tags: biomarker, kind: assay, assessor: laboratory, includedmeasures: esr,crp"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d180g"}],"gsx$name":{"$t":"apr"},"gsx$nameshort":{"$t":"acute-phase reactant"},"gsx$namefriendly":{"$t":"acute-phase reactant value"},"gsx$namelong":{"$t":"Laboratory test, an acute-phase reactant value"},"gsx$description":{"$t":"\"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\""},"gsx$tags":{"$t":"biomarker"},"gsx$kind":{"$t":"assay"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"laboratory"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"esr,crp"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"esr"},"content":{"type":"text","$t":"nameshort: sed rate, namefriendly: erythrocyte sedimentation rate, namelong: Laboratory test, erythrocyte sedimentation rate, description: A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer, tags: biomarker, kind: assay, assessor: laboratory"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d2mkx"}],"gsx$name":{"$t":"esr"},"gsx$nameshort":{"$t":"sed rate"},"gsx$namefriendly":{"$t":"erythrocyte sedimentation rate"},"gsx$namelong":{"$t":"Laboratory test, erythrocyte sedimentation rate"},"gsx$description":{"$t":"A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer"},"gsx$tags":{"$t":"biomarker"},"gsx$kind":{"$t":"assay"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"laboratory"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_20"},"content":{"type":"text","$t":"nameshort: ACR 20, namefriendly: 20% improvement, namelong: 20% improvement in RA symptoms, description: At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cssly"}],"gsx$name":{"$t":"acr_20"},"gsx$nameshort":{"$t":"ACR 20"},"gsx$namefriendly":{"$t":"20% improvement"},"gsx$namelong":{"$t":"20% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_50"},"content":{"type":"text","$t":"nameshort: ACR 50, namefriendly: 50% improvement, namelong: 50% improvement in RA symptoms, description: At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cu76f"}],"gsx$name":{"$t":"acr_50"},"gsx$nameshort":{"$t":"ACR 50"},"gsx$namefriendly":{"$t":"50% improvement"},"gsx$namelong":{"$t":"50% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cvlqs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_70"},"content":{"type":"text","$t":"nameshort: ACR 70, namefriendly: 70% improvement, namelong: 70% improvement in RA symptoms, description: At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cvlqs"}],"gsx$name":{"$t":"acr_70"},"gsx$nameshort":{"$t":"ACR 70"},"gsx$namefriendly":{"$t":"70% improvement"},"gsx$namelong":{"$t":"70% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cx0b9"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"discontinued_ae"},"content":{"type":"text","$t":"nameshort: withdrawal, namefriendly: discontinued due to an adverse event, namelong: withdrawal from a trial due to an adverse event or side effect, description: A participant left a study because of a side effect or \"adverse\" event, tags: adverse event,well being, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cx0b9"}],"gsx$name":{"$t":"discontinued_ae"},"gsx$nameshort":{"$t":"withdrawal"},"gsx$namefriendly":{"$t":"discontinued due to an adverse event"},"gsx$namelong":{"$t":"withdrawal from a trial due to an adverse event or side effect"},"gsx$description":{"$t":"A participant left a study because of a side effect or \"adverse\" event"},"gsx$tags":{"$t":"adverse event,well being"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d9ney"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"discontinued_efficacy"},"content":{"type":"text","$t":"nameshort: withdrawal, namefriendly: discontinued due to lack of efficacy, namelong: withdrawal from a trial due to lack of treatment efficacy, description: A participant left a study because they felt the medication wasn't working well, tags: satisfaction, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d9ney"}],"gsx$name":{"$t":"discontinued_efficacy"},"gsx$nameshort":{"$t":"withdrawal"},"gsx$namefriendly":{"$t":"discontinued due to lack of efficacy"},"gsx$namelong":{"$t":"withdrawal from a trial due to lack of treatment efficacy"},"gsx$description":{"$t":"A participant left a study because they felt the medication wasn't working well"},"gsx$tags":{"$t":"satisfaction"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/db1zf"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"serious_ae"},"content":{"type":"text","$t":"nameshort: adverse event, namefriendly: serious adverse event, tags: adverse event, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/db1zf"}],"gsx$name":{"$t":"serious_ae"},"gsx$nameshort":{"$t":"adverse event"},"gsx$namefriendly":{"$t":"serious adverse event"},"gsx$namelong":{"$t":""},"gsx$description":{"$t":""},"gsx$tags":{"$t":"adverse event"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/dcgjs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"haq"},"content":{"type":"text","$t":"nameshort: HAQ, namefriendly: Health Assessment Questionnaire, namelong: score on the Health Assessment Questionnaire, tags: well being, kind: questionnaire, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/dcgjs"}],"gsx$name":{"$t":"haq"},"gsx$nameshort":{"$t":"HAQ"},"gsx$namefriendly":{"$t":"Health Assessment Questionnaire"},"gsx$namelong":{"$t":"score on the Health Assessment Questionnaire"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ddv49"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sf36_physical_20"},"content":{"type":"text","$t":"nameshort: SF-36, namefriendly: SF-36 physical 20% improvement, namelong: 20% improvement on the SF-36 health questionnaire physical component, tags: function,improvement, kind: questionnaire, variable: dichotomous, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ddv49"}],"gsx$name":{"$t":"sf36_physical_20"},"gsx$nameshort":{"$t":"SF-36"},"gsx$namefriendly":{"$t":"SF-36 physical 20% improvement"},"gsx$namelong":{"$t":"20% improvement on the SF-36 health questionnaire physical component"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"function,improvement"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d415a"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sf36_mental_20"},"content":{"type":"text","$t":"nameshort: SF-36, namefriendly: SF-36 mental 20% improvement, namelong: 20% improvement on the SF-36 health questionnaire mental component, tags: well being,improvement, kind: questionnaire, variable: dichotomous, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d415a"}],"gsx$name":{"$t":"sf36_mental_20"},"gsx$nameshort":{"$t":"SF-36"},"gsx$namefriendly":{"$t":"SF-36 mental 20% improvement"},"gsx$namelong":{"$t":"20% improvement on the SF-36 health questionnaire mental component"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"well being,improvement"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d5fpr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"remission"},"content":{"type":"text","$t":"nameshort: remission, namefriendly: remission, namelong: disease remission, tags: remission,improvement, kind: event, variable: dichotomous"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d5fpr"}],"gsx$name":{"$t":"remission"},"gsx$nameshort":{"$t":"remission"},"gsx$namefriendly":{"$t":"remission"},"gsx$namelong":{"$t":"disease remission"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"remission,improvement"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d6ua4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"permanent_work_disability"},"content":{"type":"text","$t":"nameshort: permanent work disability, namefriendly: permanent work disability, namelong: RA-related permanent work disability, tags: work,function, kind: event, variable: dichotomous"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d6ua4"}],"gsx$name":{"$t":"permanent_work_disability"},"gsx$nameshort":{"$t":"permanent work disability"},"gsx$namefriendly":{"$t":"permanent work disability"},"gsx$namelong":{"$t":"RA-related permanent work disability"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"work,function"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d88ul"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"median_work_disability_days"},"content":{"type":"text","$t":"nameshort: days off work, namefriendly: days off work due to RA, namelong: days off work due to RA (median), tags: work,function, kind: count, variable: interval"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d88ul"}],"gsx$name":{"$t":"median_work_disability_days"},"gsx$nameshort":{"$t":"days off work"},"gsx$namefriendly":{"$t":"days off work due to RA"},"gsx$namelong":{"$t":"days off work due to RA (median)"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"work,function"},"gsx$kind":{"$t":"count"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
-var mockMetrics   = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Metrics"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"13"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"metric"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable), notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cokwr"}],"gsx$name":{"$t":"metric"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"ar_100"},"content":{"type":"text","$t":"nameshort: absolute risk, namefriendly: absolute risk (out of 100), presentation: frequency"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cpzh4"}],"gsx$name":{"$t":"ar_100"},"gsx$nameshort":{"$t":"absolute risk"},"gsx$namefriendly":{"$t":"absolute risk (out of 100)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"frequency"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"ar_1000"},"content":{"type":"text","$t":"nameshort: absolute risk, namefriendly: absolute risk (out of 1000), presentation: frequency"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cre1l"}],"gsx$name":{"$t":"ar_1000"},"gsx$nameshort":{"$t":"absolute risk"},"gsx$namefriendly":{"$t":"absolute risk (out of 1000)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"frequency"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"rr"},"content":{"type":"text","$t":"nameshort: relative risk, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/chk2m"}],"gsx$name":{"$t":"rr"},"gsx$nameshort":{"$t":"relative risk"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"or"},"content":{"type":"text","$t":"nameshort: odds ratio, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ciyn3"}],"gsx$name":{"$t":"or"},"gsx$nameshort":{"$t":"odds ratio"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"abs_difference"},"content":{"type":"text","$t":"nameshort: absolute difference, namefriendly: absolute treatment benefit, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ckd7g"}],"gsx$name":{"$t":"abs_difference"},"gsx$nameshort":{"$t":"absolute difference"},"gsx$namefriendly":{"$t":"absolute treatment benefit"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"rel_difference"},"content":{"type":"text","$t":"nameshort: relative difference, namefriendly: relative percent change, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/clrrx"}],"gsx$name":{"$t":"rel_difference"},"gsx$nameshort":{"$t":"relative difference"},"gsx$namefriendly":{"$t":"relative percent change"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score"},"content":{"type":"text","$t":"nameshort: mean score, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cyevm"}],"gsx$name":{"$t":"mean_score"},"gsx$nameshort":{"$t":"mean score"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_difference"},"content":{"type":"text","$t":"nameshort: mean difference in score, description: \"The mean difference is the average difference between the intervention group and the control group across studies.\", presentation: value, source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cztg3"}],"gsx$name":{"$t":"mean_score_difference"},"gsx$nameshort":{"$t":"mean difference in score"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":"\"The mean difference is the average difference between the intervention group and the control group across studies.\""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"percentage"},"content":{"type":"text","$t":"nameshort: percentage, namefriendly: percentage of people, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d180g"}],"gsx$name":{"$t":"percentage"},"gsx$nameshort":{"$t":"percentage"},"gsx$namefriendly":{"$t":"percentage of people"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_10"},"content":{"type":"text","$t":"nameshort: mean score (out of 10), presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d2mkx"}],"gsx$name":{"$t":"mean_score_10"},"gsx$nameshort":{"$t":"mean score (out of 10)"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_100"},"content":{"type":"text","$t":"nameshort: mean score (out of 100), presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cssly"}],"gsx$name":{"$t":"mean_score_100"},"gsx$nameshort":{"$t":"mean score (out of 100)"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"count"},"content":{"type":"text","$t":"nameshort: count, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cu76f"}],"gsx$name":{"$t":"count"},"gsx$nameshort":{"$t":"count"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
-var mockTags      = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Tags"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"9"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"measure name / code"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable)"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"}],"gsx$name":{"$t":"measure name / code"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"pain"},"content":{"type":"text","$t":"nameshort: Pain, namefriendly: Pain, description: Pain, including tenderness in joints and self-reported pain."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"}],"gsx$name":{"$t":"pain"},"gsx$nameshort":{"$t":"Pain"},"gsx$namefriendly":{"$t":"Pain"},"gsx$description":{"$t":"Pain, including tenderness in joints and self-reported pain."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"function"},"content":{"type":"text","$t":"nameshort: Physical function, namefriendly: Physical function, description: Ability to do daily activities, a combination of how you feel and how well your joints are working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"}],"gsx$name":{"$t":"function"},"gsx$nameshort":{"$t":"Physical function"},"gsx$namefriendly":{"$t":"Physical function"},"gsx$description":{"$t":"Ability to do daily activities, a combination of how you feel and how well your joints are working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"improvement"},"content":{"type":"text","$t":"nameshort: Overall improvement, namefriendly: Overall improvement, description: Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"}],"gsx$name":{"$t":"improvement"},"gsx$nameshort":{"$t":"Overall improvement"},"gsx$namefriendly":{"$t":"Overall improvement"},"gsx$description":{"$t":"Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"satisfaction"},"content":{"type":"text","$t":"nameshort: Satisfaction, namefriendly: Satisfaction, description: Satisfaction with how well a treatment is working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"}],"gsx$name":{"$t":"satisfaction"},"gsx$nameshort":{"$t":"Satisfaction"},"gsx$namefriendly":{"$t":"Satisfaction"},"gsx$description":{"$t":"Satisfaction with how well a treatment is working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"swelling"},"content":{"type":"text","$t":"nameshort: Swelling, namefriendly: Swollen joints"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"}],"gsx$name":{"$t":"swelling"},"gsx$nameshort":{"$t":"Swelling"},"gsx$namefriendly":{"$t":"Swollen joints"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"biomarker"},"content":{"type":"text","$t":"nameshort: Lab results, namefriendly: Lab results"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"}],"gsx$name":{"$t":"biomarker"},"gsx$nameshort":{"$t":"Lab results"},"gsx$namefriendly":{"$t":"Lab results"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"adverse event"},"content":{"type":"text","$t":"nameshort: Side effects, namefriendly: Side effects, description: Side effects, adverse events (undesirable outcomes), etc."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"}],"gsx$name":{"$t":"adverse event"},"gsx$nameshort":{"$t":"Side effects"},"gsx$namefriendly":{"$t":"Side effects"},"gsx$description":{"$t":"Side effects, adverse events (undesirable outcomes), etc."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"well being"},"content":{"type":"text","$t":"nameshort: Well being, namefriendly: Well being, description: ?"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"}],"gsx$name":{"$t":"well being"},"gsx$nameshort":{"$t":"Well being"},"gsx$namefriendly":{"$t":"Well being"},"gsx$description":{"$t":"?"}}]}};
-
-var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
+var Navigator = React.createClass({displayName: "Navigator",
 
   getDefaultProps: function () {
     return {
@@ -1098,6 +1085,465 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   },
 
   getInitialState: function () {
+    var getDosageForms = function(medications) {
+      var dosageForms = {};
+      medications.map(function(medication) {
+        if (medication.forms) {
+          medication.forms.forEach(function(form) {
+            dosageForms[form.name] = false;
+          });
+        }
+      });
+      return dosageForms;
+    };
+
+    var getClasses = function(medications) {
+      var classes = {};
+      medications.map(function(medication) {
+        if (medication.class) {
+          medication.class.forEach(function(name) {
+            classes[name] = false;
+          });
+        }
+      });
+      return classes;
+    };
+
+    return {
+      // Medication filtering-related
+      disabledMedications: {},
+      menuOpen: null,
+      preferences: this.props.preferences,
+      preferencesSelected: {
+        alcohol: false,
+        class: getClasses(this.props.medications),
+        cost: null,
+        forms: getDosageForms(this.props.medications),
+        generic_available: false,
+        liver_disease: false,
+        pregnancy: false,
+        tb: false
+      },
+      selectedMedication: null
+    }
+  },
+
+  togglePreferenceControls: function () {
+    var isOpen = this.state.menuOpen;
+    isOpen = !isOpen;
+    this.setState({
+      menuOpen: isOpen
+    })
+  },
+
+  renderPreferenceControls: function(preferences) {
+    var filterPreference = this.filterPreference;
+    var togglePreferenceControls = this.togglePreferenceControls;
+
+    var preferences = this.props.preferences;
+    var preferencesSelected = this.state.preferencesSelected;
+
+    var cx = React.addons.classSet;
+    var preferenceControlClasses = cx({
+      // 'preference-controls': true,
+      // 'open': this.state.menuOpen == true,
+      // 'closed': this.state.menuOpen == false
+      'preferences': true
+    });
+
+    return (
+      React.createElement("div", {className: preferenceControlClasses}, 
+        React.createElement("h2", {onClick: togglePreferenceControls}, 
+          "Filter your options", 
+          React.createElement("strong", null, this.state.menuOpen? '‹' : '›')
+        ), 
+
+        Object.keys(preferences).map(function(key) {
+          var preference = preferences[key];
+
+          // Boolean preferences become a push button
+          if (preference.type == 'boolean') {
+            var preferenceClasses = cx({
+              'preference': true,
+              'active': preferencesSelected[key]
+            });
+            return (
+              React.createElement("section", {className: preferenceClasses, key: key, onClick: filterPreference.bind(null, key, false)}, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description)
+              )
+            );
+          }
+          // List preferences become a list
+          else if (preference.type == 'list') {
+            // Get the possible options for this preference from this.state.preferencesSelected.
+            // There is a function in getInitialState() that iterates through the provided medications,
+            // collecting the "options" they provide for vis à vis this preference.
+            var options = Object.keys(preferencesSelected[key]);
+
+            return (
+              React.createElement("section", {key: key}, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description), 
+
+                options.map(function(option, i) {
+                  var optionClasses = cx({
+                    'option': true,
+                    'active': !preferencesSelected[key][option]
+                  });
+                  return (
+                    React.createElement("div", {
+                      className: optionClasses, 
+                      key: option, 
+                      onClick: filterPreference.bind(null, key, option)}, 
+                        React.createElement("strong", null, "› "), option
+                    )
+                  );
+                })
+              )
+            );
+          }
+          else {
+            return (
+              React.createElement("section", null, 
+                preference.name, 
+                React.createElement("span", {className: "description"}, preference.description)
+              )
+            );
+          }
+        })
+      )
+    );
+  },
+
+  filterPreference: function (preferenceKey, optionKey, event) {
+    if (this.state.menuOpen) {
+      event.stopPropagation();
+    }
+
+    var disabledMedications = {};
+    var medications = this.props.medications;
+    var preferencesSelected = this.state.preferencesSelected;
+
+    // Toggle the preference. If there's an 'option' provided, the preference is a list type,
+    // for example dosage form. So we use the 'preference' to access the dosage forms object,
+    // and use the preference to set true/false on the appropriate dosage form.
+    //
+    // forms: {
+    //   tablet: true,
+    //   injection: true
+    // }
+    //
+
+    // TOGGLE PREFERENCES
+    if (optionKey) {
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+    }
+    else {
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+    }
+
+    // Check each medication against the selected preferences and options,
+    // disabling any that doesn't satisfy.
+    //
+    medications.forEach(function(medication, i) {
+      var medicationMatchingPreferences = {};
+
+      // 1. Examine all the preferences for a match.
+      //
+      for (var preference in preferencesSelected) {
+        if (preferencesSelected[preference]) {
+
+          // a. Simple boolean preference
+          if (typeof preferencesSelected[preference] === 'boolean') {
+
+            // Look for a matching key in the medication object
+            // Boolean? e.g. 'generic_available' -- inverse match
+            if (medication[preference] == false) {
+              medicationMatchingPreferences[preference] = true;
+              // disabledMedications[medication.name] = true;
+            }
+            // Not a key in medication object, so check ptda.risks
+            else {
+              for (var risk in medication.ptda.risks) {
+                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
+                  medicationMatchingPreferences[preference] = true;
+                  // disabledMedications[medication.name] = true;
+                }
+              }
+            }
+          }
+
+          // b. List preference
+          else if (typeof preferencesSelected[preference] === 'object') {
+
+            // The user chose one or more options (to avoid), so the medication must match
+            // each option in order to get disabled.
+            var selectedOptions = {};
+            var medicationMatchingOptions = {};
+
+            // Check each option for a match
+            for (var option in preferencesSelected[preference]) {
+
+              // Option is selected
+              if (preferencesSelected[preference][option]) {
+                selectedOptions[option] = true;
+
+                // Look for a matching key in the medication object
+                if (medication[preference]) {
+
+                  // Is it an array or an object?
+                  if (typeof medication[preference] === 'object') {
+
+                    // Array
+                    if (Array.isArray(medication[preference])) {
+                      var list = medication[preference];
+
+                      // Check for our option in the list
+                      for (var item in list) {
+                        // Straight up list item?
+                        if (typeof list[item] === 'string') {
+                          if (list[item].toLowerCase() == option.toLowerCase()) {
+                            medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].toLowerCase()] = true;
+                          }
+                        }
+                        // Object? Look for a 'name' that we'll check against
+                        else if (list[item].hasOwnProperty('name')) {
+                          if (list[item].name.toLowerCase() == option.toLowerCase()) {
+                            medicationMatchingOptions[option] = true;
+                          }
+                          else {
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
+                          }
+                        }
+                      }
+                    }
+                    // Object
+                    else {
+                      for (var item in Object.keys(medication[preference])) {
+                        if (list[item].toLowerCase() == option.toLowerCase()) {
+                          medicationMatchingOptions[option] = true;
+                        }
+                        else {
+                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                        }
+                      }
+                      // // Check for our option in the object
+                      // if (medication[preference][optionKey]) {
+                      //   medicationMatchingOptions[option] = true;
+                      // }
+                    }
+                  }
+                }
+              }
+            }
+
+            // Check if the drug should be disabled based on one of the options matching.
+            if (Object.keys(selectedOptions).length > 0) {
+              // Disabled options present in the drug? Disable it.
+              for (var selected in selectedOptions) {
+                for (var option in medicationMatchingOptions) {
+                  if (medicationMatchingOptions[option] && selectedOptions[option]) {
+                    medicationMatchingPreferences[preference] = true;
+                  }
+                }
+              }
+              // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
+              for (var option in medicationMatchingOptions) {
+                if (medicationMatchingOptions[option] && !selectedOptions[option]) {
+                  medicationMatchingPreferences[preference] = false;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Check if the drug should be disabled.
+      //
+      if (Object.keys(preferencesSelected).length > 0) {
+        var disableMedication = false;
+
+        // Disabled options present in the drug? Disable it.
+        for (var selected in preferencesSelected) {
+          for (var preference in medicationMatchingPreferences) {
+            if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
+              disableMedication = true;
+            }
+          }
+        }
+        // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
+        for (var preference in medicationMatchingPreferences) {
+          if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
+            disableMedication = false;
+          }
+        }
+
+        // Add the medication to disabledMedications.
+        if (disableMedication) {
+          disabledMedications[medication.name] = true;
+        }
+        else {
+          disabledMedications[medication.name] = false;
+        }
+      }
+    });
+
+    this.setState({
+      disabledMedications: disabledMedications,
+      preferencesSelected: preferencesSelected
+    });
+  },
+
+  renderTimelineByTag: function(data, tags, tag) {
+    var dataByTag = this.getDataByTag(tags, data);
+    var tagDescriptions = this.state.tagDescriptions;
+
+    if (2 > 3) {
+	    return (
+	      React.createElement("section", {key: tag, className: "data"}, 
+	        React.createElement("h2", null, 
+	          React.createElement("strong", null, tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag), 
+	          tagDescriptions[tag] && React.createElement("p", null, tagDescriptions[tag].description)
+	        ), 
+	        React.createElement("div", null, 
+	          this.renderTimelineByMeasure(dataByTag[tag])
+	        )
+	      )
+	    );
+	  }
+
+		return (
+			React.createElement("div", null, 
+				React.createElement("h2", null, 
+          React.createElement("strong", null, tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag), 
+          tagDescriptions[tag] && React.createElement("p", null, tagDescriptions[tag].description)
+        ), 
+				this.renderTimelineByMeasure(dataByTag[tag])
+	    )
+		);
+  },
+
+  handleMedicationSelect: function(key) {
+    this.setState({
+      selectedMedication: key
+    });
+  },
+
+  renderMedicationBar: function(medications) {
+  	var selectedMedication = this.state.selectedMedication;
+  	var disabledMedications = this.state.disabledMedications;
+
+    if (medications) {
+      return (
+        React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMedication && selectedMedication}, 
+          Object.keys(medications).map(function (medication, i) {
+          	var medication = medications[medication];
+            return (React.createElement(NavItem, {key: i, eventKey: medication.name, disabled: disabledMedications[medication.name] == true}, medication.name_common));
+          })
+        )
+      );
+    }
+  },
+
+  render: function() {
+    var cx = React.addons.classSet;
+    
+    var medications = this.props.medications;
+    var preferences = this.props.preferences;
+    var risks = this.props.risks;
+    var risksFriendly = this.props.risksFriendly;
+
+    var disabledMedications = this.state.disabledMedications;
+    var selectedMedication = this.state.selectedMedication;
+    
+    var cardContainerClasses = cx({
+      'card-container': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
+    var navigatorClasses = cx({
+      'navigator': true,
+      'mobile': this.state.mobile,
+      'no-scroll': this.state.mobile && this.state.menuOpen
+    });
+
+    return (
+      React.createElement("div", null, 
+        React.createElement("div", {className: navigatorClasses}, 
+        	React.createElement("section", {className: "drug-picker"}, 
+        		this.renderPreferenceControls(preferences)
+        	), 
+          React.createElement("section", {className: "outcome-timeline"}, 
+          	this.renderMedicationBar(medications), 
+          	React.createElement(OutcomeTimeline, {disabledMedications: disabledMedications})
+         	)
+        )
+      )
+    );
+  }
+
+});
+
+module.exports = Navigator;
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/Navigator.jsx","/client/components")
+},{"./Data.jsx":2,"./OutcomeTimeline.jsx":5,"./ptda/PtdaConsiderations":9,"./ptda/PtdaCost":10,"./ptda/PtdaFrequency":11,"./ptda/PtdaMedicationSquare":12,"./ptda/PtdaMini":13,"./ptda/PtdaOnset":14,"./ptda/PtdaSideEffects":15,"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134,"underscore":307}],5:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/** @jsx React.DOM */
+
+var React = require('react/addons');
+var _ = require('underscore');
+
+var medications = require('./Data.jsx');
+
+var Nav = require('react-bootstrap').Nav;
+var NavItem = require('react-bootstrap').NavItem;
+
+var Sticky = require('react-sticky');
+
+var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
+var Difference = require('./visualizations/Difference.jsx');
+var GradeQuality = require('./visualizations/GradeQuality.jsx');
+var Intervention = require('./visualizations/Intervention.jsx');
+var Population = require('./visualizations/Population.jsx');
+var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
+var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
+var Source = require('./visualizations/Source.jsx');
+
+// Outcome timeline test
+
+String.prototype.capitalizeFirstletter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+var getNumber = function(value) {
+  if (!isNaN(parseFloat(value))) {
+    return parseFloat(value);
+  }
+  return null;
+};
+
+var mockData      = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"FIN-RACo"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"41"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"key"},"content":{"type":"text","$t":"measure: i.e. outcome, metric: i.e. statistic, valuecilow: 95% ci low, valuecihigh: 95% ci high, valuesd: standard deviation, valueiqrlow: interquartile range, valueiqrhigh: interquartile range, grade: GRADE quality, ntotal: number of participants, durationlow: low end of duration or follow-up, durationhigh: high end of duration or follow-up, population: population / characteristic, intervention: intervention(s)\ncomma-separated, comparison: comparison(s),\ncomma-separated, dosageform: comma-separated, dosageinterval: once | prn | hour | day | week | month | year, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cokwr"}],"gsx$which":{"$t":"key"},"gsx$measure":{"$t":"i.e. outcome"},"gsx$metric":{"$t":"i.e. statistic"},"gsx$value":{"$t":""},"gsx$valuecilow":{"$t":"95% ci low"},"gsx$valuecihigh":{"$t":"95% ci high"},"gsx$valuesd":{"$t":"standard deviation"},"gsx$valueiqrlow":{"$t":"interquartile range"},"gsx$valueiqrhigh":{"$t":"interquartile range"},"gsx$grade":{"$t":"GRADE quality"},"gsx$ntotal":{"$t":"number of participants"},"gsx$durationlow":{"$t":"low end of duration or follow-up"},"gsx$durationhigh":{"$t":"high end of duration or follow-up"},"gsx$durationinterval":{"$t":""},"gsx$population":{"$t":"population / characteristic"},"gsx$intervention":{"$t":"intervention(s)\ncomma-separated"},"gsx$comparison":{"$t":"comparison(s),\ncomma-separated"},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":"comma-separated"},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":"once | prn | hour | day | week | month | year"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"},"gsx$kind":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: remission, metric: percentage, value: 0.26, ntotal: 78, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cpzh4"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"remission"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.26"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: remission, metric: percentage, value: 0.11, ntotal: 81, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cre1l"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"remission"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.11"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_50, metric: percentage, value: 0.42, ntotal: 78, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/chk2m"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_50"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.42"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_50, metric: percentage, value: 0.41, ntotal: 81, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ciyn3"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_50"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.41"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: arc_20, metric: percentage, value: 0.12, ntotal: 78, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ckd7g"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"arc_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.12"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: acr_20, metric: percentage, value: 0.25, ntotal: 81, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/clrrx"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.25"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: sub_acr_20, metric: percentage, value: 0.21, ntotal: 78, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, intervention: methotrexate,sulfasalazine,hydroxychloroquine,prednisolone, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cyevm"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"sub_acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.21"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"78"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"methotrexate,sulfasalazine,hydroxychloroquine,prednisolone"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"intervention"},"content":{"type":"text","$t":"measure: sub_acr_20, metric: percentage, value: 0.23, ntotal: 81, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, intervention: sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cztg3"}],"gsx$which":{"$t":"intervention"},"gsx$measure":{"$t":"sub_acr_20"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.23"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"81"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":"sulfasalazine,prednisolone (optional),switch to methotrexate if inadequate response on sulfasalazine"},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":""},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 4, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d180g"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 16, valuesd: 14, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d2mkx"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"16"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"14"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 31, valuesd: 19, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cssly"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"31"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"19"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: patient_global_das, metric: mean_score_100, value: 47, valuesd: 43, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cu76f"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"patient_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"47"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"43"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cvlqs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 1, valuesd: 4, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cvlqs"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"1"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"4"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cx0b9"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 11, valuesd: 8, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/cx0b9"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"11"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"8"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d9ney"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 28, valuesd: 14, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d9ney"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"28"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"14"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/db1zf"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: physician_global_das, metric: mean_score_100, value: 38, valuesd: 19, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/db1zf"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"physician_global_das"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"38"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"19"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dcgjs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 3, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dcgjs"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"3"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ddv49"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 15, valuesd: 15, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/ddv49"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"15"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d415a"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 27, valuesd: 17, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d415a"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"27"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"17"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d5fpr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: pain, metric: mean_score_100, value: 40, valuesd: 23, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d5fpr"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"pain"},"gsx$metric":{"$t":"mean_score_100"},"gsx$value":{"$t":"40"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"23"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d6ua4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.0, valuesd: 0.2, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d6ua4"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d88ul"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.2, valuesd: 0.3, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/d88ul"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.2"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.3"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dkvya"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.4, valuesd: 0.4, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dkvya"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.4"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dmair"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: haq, metric: mean_score, value: 0.6, valuesd: 0.5, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dmair"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"haq"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0.6"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"0.5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dnp34"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 0, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dnp34"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dp3nl"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 4, valuesd: 2, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dp3nl"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/df9om"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 10, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/df9om"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"10"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dgo93"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: tjc, metric: mean_score, value: 15, valuesd: 7, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dgo93"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"tjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"7"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/di2tg"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 0, ntotal: 29, durationlow: 6, durationinterval: month, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/di2tg"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/djhdx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 2, valuesd: 2, ntotal: 66, durationlow: 6, durationinterval: month, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/djhdx"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"2"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"2"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dw4je"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 5, valuesd: 5, ntotal: 29, durationlow: 6, durationinterval: month, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dw4je"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"5"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"5"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dxj3v"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: sjc, metric: mean_score, value: 8, valuesd: 7, ntotal: 35, durationlow: 6, durationinterval: month, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dxj3v"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"sjc"},"gsx$metric":{"$t":"mean_score"},"gsx$value":{"$t":"8"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":"7"},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"6"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"month"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dyxo8"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0, ntotal: 29, durationlow: 5, durationinterval: year, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dyxo8"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e0c8p"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.23, ntotal: 66, durationlow: 5, durationinterval: year, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e0c8p"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.23"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dqi9q"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.21, ntotal: 29, durationlow: 5, durationinterval: year, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dqi9q"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.21"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/drwu7"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: permanent_work_disability, metric: percentage, value: 0.54, ntotal: 35, durationlow: 5, durationinterval: year, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/drwu7"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"permanent_work_disability"},"gsx$metric":{"$t":"percentage"},"gsx$value":{"$t":"0.54"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":""},"gsx$valueiqrhigh":{"$t":""},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dtbek"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 0, valueiqrlow: 0, valueiqrhigh: 3, ntotal: 29, durationlow: 5, durationinterval: year, population: Remission after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dtbek"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"0"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"3"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Remission after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dupz1"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 4, valueiqrlow: 0, valueiqrhigh: 131, ntotal: 66, durationlow: 5, durationinterval: year, population: ACR 50 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/dupz1"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"4"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"131"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"66"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 50 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e7d2q"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 15, valueiqrlow: 0, valueiqrhigh: 170, ntotal: 29, durationlow: 5, durationinterval: year, population: ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e7d2q"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"15"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"0"},"gsx$valueiqrhigh":{"$t":"170"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"29"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e8rn7"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"population"},"content":{"type":"text","$t":"measure: median_work_disability_days, metric: count, value: 337, valueiqrlow: 27, valueiqrhigh: 365, ntotal: 35, durationlow: 5, durationinterval: year, population: Less than ACR 20 after 6 months of treatment, dosage: 6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine, source: http://www.ncbi.nlm.nih.gov/pubmed/15641055, kind: randomized trial"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oclozwl/public/values/e8rn7"}],"gsx$which":{"$t":"population"},"gsx$measure":{"$t":"median_work_disability_days"},"gsx$metric":{"$t":"count"},"gsx$value":{"$t":"337"},"gsx$valuecilow":{"$t":""},"gsx$valuecihigh":{"$t":""},"gsx$valuesd":{"$t":""},"gsx$valueiqrlow":{"$t":"27"},"gsx$valueiqrhigh":{"$t":"365"},"gsx$grade":{"$t":""},"gsx$ntotal":{"$t":"35"},"gsx$durationlow":{"$t":"5"},"gsx$durationhigh":{"$t":""},"gsx$durationinterval":{"$t":"year"},"gsx$population":{"$t":"Less than ACR 20 after 6 months of treatment"},"gsx$intervention":{"$t":""},"gsx$comparison":{"$t":""},"gsx$dosage":{"$t":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine"},"gsx$dosageform":{"$t":""},"gsx$dosagefrequency":{"$t":""},"gsx$dosagemultiple":{"$t":""},"gsx$dosageinterval":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/15641055"},"gsx$notes":{"$t":""},"gsx$kind":{"$t":"randomized trial"}}]}};
+var mockGrades    = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"GRADE"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"6"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"level of evidence"},"content":{"type":"text","$t":"namefriendly: human-friendly name, descriptionfriendly: human-friendly description, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cokwr"}],"gsx$grade":{"$t":"level of evidence"},"gsx$namefriendly":{"$t":"human-friendly name"},"gsx$description":{"$t":""},"gsx$descriptionfriendly":{"$t":"human-friendly description"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"4"},"content":{"type":"text","$t":"namefriendly: High quality, description: Further research is very unlikely to change our confidence in the estimate of effect., descriptionfriendly: Doctors and researchers are confident in the results. They don't think that more research would change the results, and think that the studies done so far have been reliable and well-done., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cpzh4"}],"gsx$grade":{"$t":"4"},"gsx$namefriendly":{"$t":"High quality"},"gsx$description":{"$t":"Further research is very unlikely to change our confidence in the estimate of effect."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers are confident in the results. They don't think that more research would change the results, and think that the studies done so far have been reliable and well-done."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"3"},"content":{"type":"text","$t":"namefriendly: Moderate quality, description: Further research is likely to have an important impact on our confidence in the estimate of effect and may change the estimate., descriptionfriendly: Doctors and researchers aren't completely confident in the results. They think that more research might change their minds, and might even produce different results. They think that the studies done so far have been OK, but that there isn't enough data to make them completely confident., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/cre1l"}],"gsx$grade":{"$t":"3"},"gsx$namefriendly":{"$t":"Moderate quality"},"gsx$description":{"$t":"Further research is likely to have an important impact on our confidence in the estimate of effect and may change the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers aren't completely confident in the results. They think that more research might change their minds, and might even produce different results. They think that the studies done so far have been OK, but that there isn't enough data to make them completely confident."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"2"},"content":{"type":"text","$t":"namefriendly: Low quality, description: Further research is very likely to have an important impact on our confidence in the estimate of effect and is likely to change the estimate., descriptionfriendly: Doctors and researchers aren't confident in the results. They think that more research would likely change their minds, and probably produce different results. The change could be positive, or negative. They think that the studies done so far weren't well-done enough to make them confident in the results., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/chk2m"}],"gsx$grade":{"$t":"2"},"gsx$namefriendly":{"$t":"Low quality"},"gsx$description":{"$t":"Further research is very likely to have an important impact on our confidence in the estimate of effect and is likely to change the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers aren't confident in the results. They think that more research would likely change their minds, and probably produce different results. The change could be positive, or negative. They think that the studies done so far weren't well-done enough to make them confident in the results."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"1"},"content":{"type":"text","$t":"namefriendly: Very low quality, description: We are very uncertain about the estimate., descriptionfriendly: Doctors and researchers don't have confidence in the results. They think the studies done so far have flaws that make the results unreliable, and that more research is needed on this topic., source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ciyn3"}],"gsx$grade":{"$t":"1"},"gsx$namefriendly":{"$t":"Very low quality"},"gsx$description":{"$t":"We are very uncertain about the estimate."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers don't have confidence in the results. They think the studies done so far have flaws that make the results unreliable, and that more research is needed on this topic."},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"X"},"content":{"type":"text","$t":"namefriendly: Unknown quality, description: The evidence has not been quality-rated., descriptionfriendly: Doctors and researchers haven't quality-rated this information according to the GRADE guidelines."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/oo3g5h2/public/values/ckd7g"}],"gsx$grade":{"$t":"X"},"gsx$namefriendly":{"$t":"Unknown quality"},"gsx$description":{"$t":"The evidence has not been quality-rated."},"gsx$descriptionfriendly":{"$t":"Doctors and researchers haven't quality-rated this information according to the GRADE guidelines."},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
+var mockMeasures  = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Measures"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"23"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"measure name / code"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable), namelong: measure name (longer), tags: comma-separated, kind: examination, assay, questionnaire, scale, instrument NOS,count, max: max value, if applicable, relatedmeasures: comma-separated, includedmeasures: comma-separated, notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cokwr"}],"gsx$name":{"$t":"measure name / code"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$namelong":{"$t":"measure name (longer)"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"comma-separated"},"gsx$kind":{"$t":"examination, assay, questionnaire, scale, instrument NOS,count"},"gsx$variable":{"$t":""},"gsx$max":{"$t":"max value, if applicable"},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":"comma-separated"},"gsx$includedmeasures":{"$t":"comma-separated"},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"tjc"},"content":{"type":"text","$t":"nameshort: TJC, namefriendly: tender joint count, namelong: ACR tender joint count, description: \"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\", tags: pain,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cpzh4"}],"gsx$name":{"$t":"tjc"},"gsx$nameshort":{"$t":"TJC"},"gsx$namefriendly":{"$t":"tender joint count"},"gsx$namelong":{"$t":"ACR tender joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\""},"gsx$tags":{"$t":"pain,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sjc"},"content":{"type":"text","$t":"nameshort: SJC, namefriendly: swollen joint count, namelong: ACR swollen joint count, description: \"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\", tags: swelling,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cre1l"}],"gsx$name":{"$t":"sjc"},"gsx$nameshort":{"$t":"SJC"},"gsx$namefriendly":{"$t":"swollen joint count"},"gsx$namelong":{"$t":"ACR swollen joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\""},"gsx$tags":{"$t":"swelling,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_tjc"},"content":{"type":"text","$t":"nameshort: TJC, namefriendly: tender joint count, namelong: ACR tender joint count, description: \"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\", tags: pain,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/chk2m"}],"gsx$name":{"$t":"acr_tjc"},"gsx$nameshort":{"$t":"TJC"},"gsx$namefriendly":{"$t":"tender joint count"},"gsx$namelong":{"$t":"ACR tender joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\""},"gsx$tags":{"$t":"pain,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_sjc"},"content":{"type":"text","$t":"nameshort: SJC, namefriendly: swollen joint count, namelong: ACR swollen joint count, description: \"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\", tags: swelling,function, kind: examination, variable: interval, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ciyn3"}],"gsx$name":{"$t":"acr_sjc"},"gsx$nameshort":{"$t":"SJC"},"gsx$namefriendly":{"$t":"swollen joint count"},"gsx$namelong":{"$t":"ACR swollen joint count"},"gsx$description":{"$t":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\""},"gsx$tags":{"$t":"swelling,function"},"gsx$kind":{"$t":"examination"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_pain"},"content":{"type":"text","$t":"nameshort: pain, namefriendly: patient's assessment of pain, namelong: Patient's assessment of pain, description: \"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\", tags: pain, kind: scale, variable: continuous, assessor: patient, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ckd7g"}],"gsx$name":{"$t":"patient_pain"},"gsx$nameshort":{"$t":"pain"},"gsx$namefriendly":{"$t":"patient's assessment of pain"},"gsx$namelong":{"$t":"Patient's assessment of pain"},"gsx$description":{"$t":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\""},"gsx$tags":{"$t":"pain"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_global_das"},"content":{"type":"text","$t":"nameshort: patient global assessment, namefriendly: patient's global assessment of disease activity, namelong: Patient's global assessment of disease activity, description: \"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\", tags: well being, kind: scale, variable: continuous, assessor: patient, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/clrrx"}],"gsx$name":{"$t":"patient_global_das"},"gsx$nameshort":{"$t":"patient global assessment"},"gsx$namefriendly":{"$t":"patient's global assessment of disease activity"},"gsx$namelong":{"$t":"Patient's global assessment of disease activity"},"gsx$description":{"$t":"\"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"physician_global_das"},"content":{"type":"text","$t":"nameshort: physician global assessment, namefriendly: physician's global assessent of disease activity, namelong: Physician's global assessent of disease activity, description: \"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\", tags: well being, kind: scale, variable: continuous, assessor: clinician, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cyevm"}],"gsx$name":{"$t":"physician_global_das"},"gsx$nameshort":{"$t":"physician global assessment"},"gsx$namefriendly":{"$t":"physician's global assessent of disease activity"},"gsx$namelong":{"$t":"Physician's global assessent of disease activity"},"gsx$description":{"$t":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"scale"},"gsx$variable":{"$t":"continuous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"patient_physical_function"},"content":{"type":"text","$t":"nameshort: physical function, namefriendly: patient's assessment of physical function, namelong: Patient's assessment of physical function, description: \"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR., tags: function, kind: composite, assessor: patient, includedmeasures: aims,haq,qwb,iwb,mhiq,mactar, source: http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cztg3"}],"gsx$name":{"$t":"patient_physical_function"},"gsx$nameshort":{"$t":"physical function"},"gsx$namefriendly":{"$t":"patient's assessment of physical function"},"gsx$namelong":{"$t":"Patient's assessment of physical function"},"gsx$description":{"$t":"\"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR."},"gsx$tags":{"$t":"function"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"aims,haq,qwb,iwb,mhiq,mactar"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/7779114"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"apr"},"content":{"type":"text","$t":"nameshort: acute-phase reactant, namefriendly: acute-phase reactant value, namelong: Laboratory test, an acute-phase reactant value, description: \"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\", tags: biomarker, kind: assay, assessor: laboratory, includedmeasures: esr,crp"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d180g"}],"gsx$name":{"$t":"apr"},"gsx$nameshort":{"$t":"acute-phase reactant"},"gsx$namefriendly":{"$t":"acute-phase reactant value"},"gsx$namelong":{"$t":"Laboratory test, an acute-phase reactant value"},"gsx$description":{"$t":"\"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\""},"gsx$tags":{"$t":"biomarker"},"gsx$kind":{"$t":"assay"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"laboratory"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"esr,crp"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"esr"},"content":{"type":"text","$t":"nameshort: sed rate, namefriendly: erythrocyte sedimentation rate, namelong: Laboratory test, erythrocyte sedimentation rate, description: A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer, tags: biomarker, kind: assay, assessor: laboratory"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d2mkx"}],"gsx$name":{"$t":"esr"},"gsx$nameshort":{"$t":"sed rate"},"gsx$namefriendly":{"$t":"erythrocyte sedimentation rate"},"gsx$namelong":{"$t":"Laboratory test, erythrocyte sedimentation rate"},"gsx$description":{"$t":"A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer"},"gsx$tags":{"$t":"biomarker"},"gsx$kind":{"$t":"assay"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"laboratory"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_20"},"content":{"type":"text","$t":"nameshort: ACR 20, namefriendly: 20% improvement, namelong: 20% improvement in RA symptoms, description: At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cssly"}],"gsx$name":{"$t":"acr_20"},"gsx$nameshort":{"$t":"ACR 20"},"gsx$namefriendly":{"$t":"20% improvement"},"gsx$namelong":{"$t":"20% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_50"},"content":{"type":"text","$t":"nameshort: ACR 50, namefriendly: 50% improvement, namelong: 50% improvement in RA symptoms, description: At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cu76f"}],"gsx$name":{"$t":"acr_50"},"gsx$nameshort":{"$t":"ACR 50"},"gsx$namefriendly":{"$t":"50% improvement"},"gsx$namelong":{"$t":"50% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cvlqs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"acr_70"},"content":{"type":"text","$t":"nameshort: ACR 70, namefriendly: 70% improvement, namelong: 70% improvement in RA symptoms, description: At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain., tags: improvement, kind: composite, variable: dichotomous, includedmeasures: acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr, source: http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cvlqs"}],"gsx$name":{"$t":"acr_70"},"gsx$nameshort":{"$t":"ACR 70"},"gsx$namefriendly":{"$t":"70% improvement"},"gsx$namelong":{"$t":"70% improvement in RA symptoms"},"gsx$description":{"$t":"At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain."},"gsx$tags":{"$t":"improvement"},"gsx$kind":{"$t":"composite"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":"acr_tjc,acr_sjc,patient_pain,patient_global_das,physician_global_das,patient_physical_function,apr"},"gsx$source":{"$t":"http://www.ncbi.nlm.nih.gov/pubmed/16273794"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cx0b9"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"discontinued_ae"},"content":{"type":"text","$t":"nameshort: withdrawal, namefriendly: discontinued due to an adverse event, namelong: withdrawal from a trial due to an adverse event or side effect, description: A participant left a study because of a side effect or \"adverse\" event, tags: adverse event,well being, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/cx0b9"}],"gsx$name":{"$t":"discontinued_ae"},"gsx$nameshort":{"$t":"withdrawal"},"gsx$namefriendly":{"$t":"discontinued due to an adverse event"},"gsx$namelong":{"$t":"withdrawal from a trial due to an adverse event or side effect"},"gsx$description":{"$t":"A participant left a study because of a side effect or \"adverse\" event"},"gsx$tags":{"$t":"adverse event,well being"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d9ney"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"discontinued_efficacy"},"content":{"type":"text","$t":"nameshort: withdrawal, namefriendly: discontinued due to lack of efficacy, namelong: withdrawal from a trial due to lack of treatment efficacy, description: A participant left a study because they felt the medication wasn't working well, tags: satisfaction, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d9ney"}],"gsx$name":{"$t":"discontinued_efficacy"},"gsx$nameshort":{"$t":"withdrawal"},"gsx$namefriendly":{"$t":"discontinued due to lack of efficacy"},"gsx$namelong":{"$t":"withdrawal from a trial due to lack of treatment efficacy"},"gsx$description":{"$t":"A participant left a study because they felt the medication wasn't working well"},"gsx$tags":{"$t":"satisfaction"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/db1zf"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"serious_ae"},"content":{"type":"text","$t":"nameshort: adverse event, namefriendly: serious adverse event, tags: adverse event, kind: event, variable: dichotomous, assessor: clinician"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/db1zf"}],"gsx$name":{"$t":"serious_ae"},"gsx$nameshort":{"$t":"adverse event"},"gsx$namefriendly":{"$t":"serious adverse event"},"gsx$namelong":{"$t":""},"gsx$description":{"$t":""},"gsx$tags":{"$t":"adverse event"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"clinician"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/dcgjs"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"haq"},"content":{"type":"text","$t":"nameshort: HAQ, namefriendly: Health Assessment Questionnaire, namelong: score on the Health Assessment Questionnaire, tags: well being, kind: questionnaire, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/dcgjs"}],"gsx$name":{"$t":"haq"},"gsx$nameshort":{"$t":"HAQ"},"gsx$namefriendly":{"$t":"Health Assessment Questionnaire"},"gsx$namelong":{"$t":"score on the Health Assessment Questionnaire"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"well being"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":""},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ddv49"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sf36_physical_20"},"content":{"type":"text","$t":"nameshort: SF-36, namefriendly: SF-36 physical 20% improvement, namelong: 20% improvement on the SF-36 health questionnaire physical component, tags: function,improvement, kind: questionnaire, variable: dichotomous, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/ddv49"}],"gsx$name":{"$t":"sf36_physical_20"},"gsx$nameshort":{"$t":"SF-36"},"gsx$namefriendly":{"$t":"SF-36 physical 20% improvement"},"gsx$namelong":{"$t":"20% improvement on the SF-36 health questionnaire physical component"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"function,improvement"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d415a"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"sf36_mental_20"},"content":{"type":"text","$t":"nameshort: SF-36, namefriendly: SF-36 mental 20% improvement, namelong: 20% improvement on the SF-36 health questionnaire mental component, tags: well being,improvement, kind: questionnaire, variable: dichotomous, assessor: patient"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d415a"}],"gsx$name":{"$t":"sf36_mental_20"},"gsx$nameshort":{"$t":"SF-36"},"gsx$namefriendly":{"$t":"SF-36 mental 20% improvement"},"gsx$namelong":{"$t":"20% improvement on the SF-36 health questionnaire mental component"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"well being,improvement"},"gsx$kind":{"$t":"questionnaire"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":"patient"},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d5fpr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"remission"},"content":{"type":"text","$t":"nameshort: remission, namefriendly: remission, namelong: disease remission, tags: remission,improvement, kind: event, variable: dichotomous"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d5fpr"}],"gsx$name":{"$t":"remission"},"gsx$nameshort":{"$t":"remission"},"gsx$namefriendly":{"$t":"remission"},"gsx$namelong":{"$t":"disease remission"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"remission,improvement"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d6ua4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"permanent_work_disability"},"content":{"type":"text","$t":"nameshort: permanent work disability, namefriendly: permanent work disability, namelong: RA-related permanent work disability, tags: work,function, kind: event, variable: dichotomous"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d6ua4"}],"gsx$name":{"$t":"permanent_work_disability"},"gsx$nameshort":{"$t":"permanent work disability"},"gsx$namefriendly":{"$t":"permanent work disability"},"gsx$namelong":{"$t":"RA-related permanent work disability"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"work,function"},"gsx$kind":{"$t":"event"},"gsx$variable":{"$t":"dichotomous"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d88ul"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"median_work_disability_days"},"content":{"type":"text","$t":"nameshort: days off work, namefriendly: days off work due to RA, namelong: days off work due to RA (median), tags: work,function, kind: count, variable: interval"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o5079mk/public/values/d88ul"}],"gsx$name":{"$t":"median_work_disability_days"},"gsx$nameshort":{"$t":"days off work"},"gsx$namefriendly":{"$t":"days off work due to RA"},"gsx$namelong":{"$t":"days off work due to RA (median)"},"gsx$description":{"$t":""},"gsx$tags":{"$t":"work,function"},"gsx$kind":{"$t":"count"},"gsx$variable":{"$t":"interval"},"gsx$max":{"$t":""},"gsx$assessor":{"$t":""},"gsx$relatedmeasures":{"$t":""},"gsx$includedmeasures":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
+var mockMetrics   = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Metrics"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"13"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"metric"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable), notes: notes"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cokwr"}],"gsx$name":{"$t":"metric"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":""},"gsx$source":{"$t":""},"gsx$notes":{"$t":"notes"}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"ar_100"},"content":{"type":"text","$t":"nameshort: absolute risk, namefriendly: absolute risk (out of 100), presentation: frequency"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cpzh4"}],"gsx$name":{"$t":"ar_100"},"gsx$nameshort":{"$t":"absolute risk"},"gsx$namefriendly":{"$t":"absolute risk (out of 100)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"frequency"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"ar_1000"},"content":{"type":"text","$t":"nameshort: absolute risk, namefriendly: absolute risk (out of 1000), presentation: frequency"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cre1l"}],"gsx$name":{"$t":"ar_1000"},"gsx$nameshort":{"$t":"absolute risk"},"gsx$namefriendly":{"$t":"absolute risk (out of 1000)"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"frequency"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"rr"},"content":{"type":"text","$t":"nameshort: relative risk, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/chk2m"}],"gsx$name":{"$t":"rr"},"gsx$nameshort":{"$t":"relative risk"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"or"},"content":{"type":"text","$t":"nameshort: odds ratio, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ciyn3"}],"gsx$name":{"$t":"or"},"gsx$nameshort":{"$t":"odds ratio"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"abs_difference"},"content":{"type":"text","$t":"nameshort: absolute difference, namefriendly: absolute treatment benefit, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/ckd7g"}],"gsx$name":{"$t":"abs_difference"},"gsx$nameshort":{"$t":"absolute difference"},"gsx$namefriendly":{"$t":"absolute treatment benefit"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"rel_difference"},"content":{"type":"text","$t":"nameshort: relative difference, namefriendly: relative percent change, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/clrrx"}],"gsx$name":{"$t":"rel_difference"},"gsx$nameshort":{"$t":"relative difference"},"gsx$namefriendly":{"$t":"relative percent change"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score"},"content":{"type":"text","$t":"nameshort: mean score, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cyevm"}],"gsx$name":{"$t":"mean_score"},"gsx$nameshort":{"$t":"mean score"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_difference"},"content":{"type":"text","$t":"nameshort: mean difference in score, description: \"The mean difference is the average difference between the intervention group and the control group across studies.\", presentation: value, source: http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cztg3"}],"gsx$name":{"$t":"mean_score_difference"},"gsx$nameshort":{"$t":"mean difference in score"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":"\"The mean difference is the average difference between the intervention group and the control group across studies.\""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d180g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"percentage"},"content":{"type":"text","$t":"nameshort: percentage, namefriendly: percentage of people, presentation: percentage"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d180g"}],"gsx$name":{"$t":"percentage"},"gsx$nameshort":{"$t":"percentage"},"gsx$namefriendly":{"$t":"percentage of people"},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"percentage"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d2mkx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_10"},"content":{"type":"text","$t":"nameshort: mean score (out of 10), presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/d2mkx"}],"gsx$name":{"$t":"mean_score_10"},"gsx$nameshort":{"$t":"mean score (out of 10)"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cssly"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"mean_score_100"},"content":{"type":"text","$t":"nameshort: mean score (out of 100), presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cssly"}],"gsx$name":{"$t":"mean_score_100"},"gsx$nameshort":{"$t":"mean score (out of 100)"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cu76f"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"count"},"content":{"type":"text","$t":"nameshort: count, presentation: value"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/ojmf289/public/values/cu76f"}],"gsx$name":{"$t":"count"},"gsx$nameshort":{"$t":"count"},"gsx$namefriendly":{"$t":""},"gsx$description":{"$t":""},"gsx$presentation":{"$t":"value"},"gsx$source":{"$t":""},"gsx$notes":{"$t":""}}]}};
+var mockTags      = {"version":"1.0","encoding":"UTF-8","feed":{"xmlns":"http://www.w3.org/2005/Atom","xmlns$openSearch":"http://a9.com/-/spec/opensearchrss/1.0/","xmlns$gsx":"http://schemas.google.com/spreadsheets/2006/extended","id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"Tags"},"link":[{"rel":"alternate","type":"application/atom+xml","href":"https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/pubhtml"},{"rel":"http://schemas.google.com/g/2005#feed","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"http://schemas.google.com/g/2005#post","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values"},{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values?alt=json"}],"author":[{"name":{"$t":"adamibaker"},"email":{"$t":"adamibaker@gmail.com"}}],"openSearch$totalResults":{"$t":"9"},"openSearch$startIndex":{"$t":"1"},"entry":[{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"measure name / code"},"content":{"type":"text","$t":"namefriendly: measure name (human-readable)"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cokwr"}],"gsx$name":{"$t":"measure name / code"},"gsx$nameshort":{"$t":""},"gsx$namefriendly":{"$t":"measure name (human-readable)"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"pain"},"content":{"type":"text","$t":"nameshort: Pain, namefriendly: Pain, description: Pain, including tenderness in joints and self-reported pain."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cpzh4"}],"gsx$name":{"$t":"pain"},"gsx$nameshort":{"$t":"Pain"},"gsx$namefriendly":{"$t":"Pain"},"gsx$description":{"$t":"Pain, including tenderness in joints and self-reported pain."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"function"},"content":{"type":"text","$t":"nameshort: Physical function, namefriendly: Physical function, description: Ability to do daily activities, a combination of how you feel and how well your joints are working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cre1l"}],"gsx$name":{"$t":"function"},"gsx$nameshort":{"$t":"Physical function"},"gsx$namefriendly":{"$t":"Physical function"},"gsx$description":{"$t":"Ability to do daily activities, a combination of how you feel and how well your joints are working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"improvement"},"content":{"type":"text","$t":"nameshort: Overall improvement, namefriendly: Overall improvement, description: Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/chk2m"}],"gsx$name":{"$t":"improvement"},"gsx$nameshort":{"$t":"Overall improvement"},"gsx$namefriendly":{"$t":"Overall improvement"},"gsx$description":{"$t":"Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"satisfaction"},"content":{"type":"text","$t":"nameshort: Satisfaction, namefriendly: Satisfaction, description: Satisfaction with how well a treatment is working."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ciyn3"}],"gsx$name":{"$t":"satisfaction"},"gsx$nameshort":{"$t":"Satisfaction"},"gsx$namefriendly":{"$t":"Satisfaction"},"gsx$description":{"$t":"Satisfaction with how well a treatment is working."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"swelling"},"content":{"type":"text","$t":"nameshort: Swelling, namefriendly: Swollen joints"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/ckd7g"}],"gsx$name":{"$t":"swelling"},"gsx$nameshort":{"$t":"Swelling"},"gsx$namefriendly":{"$t":"Swollen joints"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"biomarker"},"content":{"type":"text","$t":"nameshort: Lab results, namefriendly: Lab results"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/clrrx"}],"gsx$name":{"$t":"biomarker"},"gsx$nameshort":{"$t":"Lab results"},"gsx$namefriendly":{"$t":"Lab results"},"gsx$description":{"$t":""}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"adverse event"},"content":{"type":"text","$t":"nameshort: Side effects, namefriendly: Side effects, description: Side effects, adverse events (undesirable outcomes), etc."},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cyevm"}],"gsx$name":{"$t":"adverse event"},"gsx$nameshort":{"$t":"Side effects"},"gsx$namefriendly":{"$t":"Side effects"},"gsx$description":{"$t":"Side effects, adverse events (undesirable outcomes), etc."}},{"id":{"$t":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"},"updated":{"$t":"2015-03-28T18:50:20.622Z"},"category":[{"scheme":"http://schemas.google.com/spreadsheets/2006","term":"http://schemas.google.com/spreadsheets/2006#list"}],"title":{"type":"text","$t":"well being"},"content":{"type":"text","$t":"nameshort: Well being, namefriendly: Well being, description: ?"},"link":[{"rel":"self","type":"application/atom+xml","href":"https://spreadsheets.google.com/feeds/list/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/o2pd8py/public/values/cztg3"}],"gsx$name":{"$t":"well being"},"gsx$nameshort":{"$t":"Well being"},"gsx$namefriendly":{"$t":"Well being"},"gsx$description":{"$t":"?"}}]}};
+
+var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
+	propTypes: {
+		disabledMedications: React.PropTypes.object
+	},
+
+  getDefaultProps: function () {
+    return {
+      medications: medications
+    };
+  },
+
+  getInitialState: function () {
     var medicationMap = {};
     this.props.medications.forEach(function(medication, index) {
       medicationMap[medication.name] = index;
@@ -1130,24 +1576,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     return {
       data: {},
       selectedTag: null,
-      selectedMeasure: null,
-
-      // Medication filtering-related
-      disabledMedications: {},
-      medicationMap: medicationMap,
-      menuOpen: null,
-      preferences: this.props.preferences,
-      preferencesSelected: {
-        alcohol: false,
-        class: getClasses(this.props.medications),
-        cost: null,
-        forms: getDosageForms(this.props.medications),
-        generic_available: false,
-        liver_disease: false,
-        pregnancy: false,
-        tb: false
-      },
-      selectedMedication: null
+      selectedMeasure: null
     }
   },
 
@@ -1445,6 +1874,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           entry['name_friendly']        = value.gsx$namefriendly.$t;
           entry['description']          = value.gsx$description.$t;
           entry['presentation']         = value.gsx$presentation.$t;
+          entry['kind']         				= value.gsx$kind.$t;
           entry['source']               = value.gsx$source.$t;
           entry['notes']                = value.gsx$notes.$t;
       metrics[key] = entry;
@@ -1554,8 +1984,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
           if (!comparisonResults) {
-            if (metrics[metric].kind == 'absolute') {
-              return renderAppropriateVisualization(results, metric, results[metric].measure);
+          	if (metrics[metric].kind == 'absolute') {
+            	return renderAppropriateVisualization(results, metric, results[metric].measure);
             }
           }
         }
@@ -2012,10 +2442,27 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   	return entriesByDuration;
   },
 
+  filterEntriesByMedication: function(entries) {
+  	var disabledMedications = this.props.disabledMedications;
+
+  	console.log('WILL BE FILTERED')
+  	
+
+  	// TODO use underscore to
+  	// filter entries to only those with intervention.parts containing a NON-disabled medication
+  	
+  	_.mapObject(entries, function(val, key) {
+  		console.log('VALUE', val.intervention.parts);
+  	});
+
+  	return entries;
+  },
+
   renderTimelineByMeasure: function(measures) {
     var measureMap = this.state.measures;
     var grades = this.state.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
+    var filterEntriesByMedication = this.filterEntriesByMedication;
     var getEntriesForMeasure = this.getEntriesForMeasure;
     var groupEntriesByDuration = this.groupEntriesByDuration;
     var renderEntry = this.renderEntry;
@@ -2104,7 +2551,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var measureData = measures[measure].data;
 
     if (measureData) {
-      var durations = groupEntriesByDuration(getEntriesForMeasure(measureData));
+      var durations = groupEntriesByDuration(filterEntriesByMedication(getEntriesForMeasure(measureData)));
       // var entries = getEntriesForMeasure(measureData);
 
       return (
@@ -2160,8 +2607,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 								      React.createElement("section", null, 
 						      			Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
-
-                          console.log(entries);
 
 							        		return entries.map(function (entry, i) {
 								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
@@ -2275,275 +2720,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     );
   },
 
-  togglePreferenceControls: function () {
-    var isOpen = this.state.menuOpen;
-    isOpen = !isOpen;
-    this.setState({
-      menuOpen: isOpen
-    })
-  },
-
-  renderPreferenceControls: function (preferences) {
-    var filterPreference = this.filterPreference;
-    var togglePreferenceControls = this.togglePreferenceControls;
-
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
-
-    var cx = React.addons.classSet;
-    var preferenceControlClasses = cx({
-      'preference-controls': true,
-      'open': this.state.menuOpen == true,
-      'closed': this.state.menuOpen == false
-    });
-
-    return (
-      React.createElement("div", {className: preferenceControlClasses}, 
-        React.createElement("h2", {onClick: togglePreferenceControls}, 
-          "Filter your options", 
-          React.createElement("strong", null, this.state.menuOpen? '‹' : '›')
-        ), 
-
-        Object.keys(preferences).map(function(key) {
-          var preference = preferences[key];
-
-          // Boolean preferences become a push button
-          if (preference.type == 'boolean') {
-            var preferenceClasses = cx({
-              'preference': true,
-              'active': preferencesSelected[key]
-            });
-            return (
-              React.createElement("section", {className: preferenceClasses, key: key, onClick: filterPreference.bind(null, key, false)}, 
-                preference.name, 
-                React.createElement("span", {className: "description"}, preference.description)
-              )
-            );
-          }
-          // List preferences become a list
-          else if (preference.type == 'list') {
-            // Get the possible options for this preference from this.state.preferencesSelected.
-            // There is a function in getInitialState() that iterates through the provided medications,
-            // collecting the "options" they provide for vis à vis this preference.
-            var options = Object.keys(preferencesSelected[key]);
-
-            return (
-              React.createElement("section", {key: key}, 
-                preference.name, 
-                React.createElement("span", {className: "description"}, preference.description), 
-
-                options.map(function(option, i) {
-                  var optionClasses = cx({
-                    'option': true,
-                    'active': !preferencesSelected[key][option]
-                  });
-                  return (
-                    React.createElement("div", {
-                      className: optionClasses, 
-                      key: option, 
-                      onClick: filterPreference.bind(null, key, option)}, 
-                        React.createElement("strong", null, "› "), option
-                    )
-                  );
-                })
-              )
-            );
-          }
-          else {
-            return (
-              React.createElement("section", null, 
-                preference.name, 
-                React.createElement("span", {className: "description"}, preference.description)
-              )
-            );
-          }
-        })
-      )
-    );
-  },
-
-  filterPreference: function (preferenceKey, optionKey, event) {
-    if (this.state.menuOpen) {
-      event.stopPropagation();
-    }
-
-    var disabledMedications = {};
-    var medications = this.props.medications;
-    var preferencesSelected = this.state.preferencesSelected;
-
-    // Toggle the preference. If there's an 'option' provided, the preference is a list type,
-    // for example dosage form. So we use the 'preference' to access the dosage forms object,
-    // and use the preference to set true/false on the appropriate dosage form.
-    //
-    // forms: {
-    //   tablet: true,
-    //   injection: true
-    // }
-    //
-
-    // TOGGLE PREFERENCES
-    if (optionKey) {
-      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
-    }
-    else {
-      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
-    }
-
-    // Check each medication against the selected preferences and options,
-    // disabling any that doesn't satisfy.
-    //
-    medications.forEach(function(medication, i) {
-      var medicationMatchingPreferences = {};
-
-      // 1. Examine all the preferences for a match.
-      //
-      for (var preference in preferencesSelected) {
-        if (preferencesSelected[preference]) {
-
-          // a. Simple boolean preference
-          if (typeof preferencesSelected[preference] === 'boolean') {
-
-            // Look for a matching key in the medication object
-            // Boolean? e.g. 'generic_available' -- inverse match
-            if (medication[preference] == false) {
-              medicationMatchingPreferences[preference] = true;
-              // disabledMedications[medication.name] = true;
-            }
-            // Not a key in medication object, so check ptda.risks
-            else {
-              for (var risk in medication.ptda.risks) {
-                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
-                  medicationMatchingPreferences[preference] = true;
-                  // disabledMedications[medication.name] = true;
-                }
-              }
-            }
-          }
-
-          // b. List preference
-          else if (typeof preferencesSelected[preference] === 'object') {
-
-            // The user chose one or more options (to avoid), so the medication must match
-            // each option in order to get disabled.
-            var selectedOptions = {};
-            var medicationMatchingOptions = {};
-
-            // Check each option for a match
-            for (var option in preferencesSelected[preference]) {
-
-              // Option is selected
-              if (preferencesSelected[preference][option]) {
-                selectedOptions[option] = true;
-
-                // Look for a matching key in the medication object
-                if (medication[preference]) {
-
-                  // Is it an array or an object?
-                  if (typeof medication[preference] === 'object') {
-
-                    // Array
-                    if (Array.isArray(medication[preference])) {
-                      var list = medication[preference];
-
-                      // Check for our option in the list
-                      for (var item in list) {
-                        // Straight up list item?
-                        if (typeof list[item] === 'string') {
-                          if (list[item].toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
-                          }
-                          else {
-                            medicationMatchingOptions[list[item].toLowerCase()] = true;
-                          }
-                        }
-                        // Object? Look for a 'name' that we'll check against
-                        else if (list[item].hasOwnProperty('name')) {
-                          if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
-                          }
-                          else {
-                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
-                          }
-                        }
-                      }
-                    }
-                    // Object
-                    else {
-                      for (var item in Object.keys(medication[preference])) {
-                        if (list[item].toLowerCase() == option.toLowerCase()) {
-                          medicationMatchingOptions[option] = true;
-                        }
-                        else {
-                          medicationMatchingOptions[list[item].toLowerCase()] = true;
-                        }
-                      }
-                      // // Check for our option in the object
-                      // if (medication[preference][optionKey]) {
-                      //   medicationMatchingOptions[option] = true;
-                      // }
-                    }
-                  }
-                }
-              }
-            }
-
-            // Check if the drug should be disabled based on one of the options matching.
-            if (Object.keys(selectedOptions).length > 0) {
-              // Disabled options present in the drug? Disable it.
-              for (var selected in selectedOptions) {
-                for (var option in medicationMatchingOptions) {
-                  if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    medicationMatchingPreferences[preference] = true;
-                  }
-                }
-              }
-              // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
-              for (var option in medicationMatchingOptions) {
-                if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  medicationMatchingPreferences[preference] = false;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 2. Check if the drug should be disabled.
-      //
-      if (Object.keys(preferencesSelected).length > 0) {
-        var disableMedication = false;
-
-        // Disabled options present in the drug? Disable it.
-        for (var selected in preferencesSelected) {
-          for (var preference in medicationMatchingPreferences) {
-            if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
-              disableMedication = true;
-            }
-          }
-        }
-        // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
-        for (var preference in medicationMatchingPreferences) {
-          if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
-            disableMedication = false;
-          }
-        }
-
-        // Add the medication to disabledMedications.
-        if (disableMedication) {
-          disabledMedications[medication.name] = true;
-        }
-        else {
-          disabledMedications[medication.name] = false;
-        }
-      }
-    });
-
-    this.setState({
-      disabledMedications: disabledMedications,
-      preferencesSelected: preferencesSelected
-    });
-  },
-
   renderTimelineByTag: function(data, tags, tag) {
     var dataByTag = this.getDataByTag(tags, data);
     var tagDescriptions = this.state.tagDescriptions;
@@ -2589,7 +2765,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var preferences = this.props.preferences;
     var risks = this.props.risks;
     var risksFriendly = this.props.risksFriendly;
-    var disabledMedications = this.state.disabledMedications;
+    var disabledMedications = this.props.disabledMedications;
     var selectedMedication = this.state.selectedMedication;
     var medicationMap = this.state.medicationMap;
 
@@ -2600,16 +2776,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     if (grades && measures && tags && data != {}) {
       return (
         React.createElement("div", {className: classes}, 
-          React.createElement("div", {className: "header"}, 
-            React.createElement("h1", null, "Outcome timeline")
-            /*<a className="mobile-toggle" onClick={this.togglePreferenceControls}>
-              {!this.state.menuOpen ? 'Filter your options' : 'Close filter'}
-            </a>*/
-          ), 
-
-          this.renderMedicationBar(medications), 
-          /*this.renderPreferenceControls(preferences)*/
-
           React.createElement("section", null, 
             React.createElement("h2", null, "Live connection to ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "data in a Google Spreadsheet"))
           ), 
@@ -2629,7 +2795,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
 module.exports = OutcomeTimeline;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/OutcomeTimeline.jsx","/client/components")
-},{"./Data.jsx":2,"./visualizations/AbsoluteFrequency.jsx":15,"./visualizations/Difference.jsx":16,"./visualizations/GradeQuality.jsx":17,"./visualizations/Intervention.jsx":18,"./visualizations/Population.jsx":19,"./visualizations/RelativeRiskComparison.jsx":20,"./visualizations/RiskRelativeToBaseline.jsx":21,"./visualizations/Source.jsx":22,"_process":31,"buffer":27,"react-bootstrap":82,"react-sticky":132,"react/addons":133}],5:[function(require,module,exports){
+},{"./Data.jsx":2,"./visualizations/AbsoluteFrequency.jsx":16,"./visualizations/Difference.jsx":17,"./visualizations/GradeQuality.jsx":18,"./visualizations/Intervention.jsx":19,"./visualizations/Population.jsx":20,"./visualizations/RelativeRiskComparison.jsx":21,"./visualizations/RiskRelativeToBaseline.jsx":22,"./visualizations/Source.jsx":23,"_process":32,"buffer":28,"react-bootstrap":83,"react-sticky":133,"react/addons":134,"underscore":307}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -4250,7 +4416,7 @@ var Processing = React.createClass({displayName: "Processing",
 
 module.exports = Processing;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/Processing.jsx","/client/components")
-},{"./Data.jsx":2,"./visualizations/AbsoluteFrequency.jsx":15,"./visualizations/Difference.jsx":16,"./visualizations/GradeQuality.jsx":17,"./visualizations/Intervention.jsx":18,"./visualizations/Population.jsx":19,"./visualizations/RelativeRiskComparison.jsx":20,"./visualizations/RiskRelativeToBaseline.jsx":21,"./visualizations/Source.jsx":22,"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],6:[function(require,module,exports){
+},{"./Data.jsx":2,"./visualizations/AbsoluteFrequency.jsx":16,"./visualizations/Difference.jsx":17,"./visualizations/GradeQuality.jsx":18,"./visualizations/Intervention.jsx":19,"./visualizations/Population.jsx":20,"./visualizations/RelativeRiskComparison.jsx":21,"./visualizations/RiskRelativeToBaseline.jsx":22,"./visualizations/Source.jsx":23,"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -4551,7 +4717,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
 
 module.exports = AdverseEvents;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/adverse/AdverseEvents.jsx","/client/components/adverse")
-},{"../Data.jsx":2,"_process":31,"buffer":27,"react/addons":133}],7:[function(require,module,exports){
+},{"../Data.jsx":2,"_process":32,"buffer":28,"react/addons":134}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5295,7 +5461,7 @@ var Ptda = React.createClass({displayName: "Ptda",
 
 module.exports = Ptda;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/Ptda.jsx","/client/components/ptda")
-},{"../Data.jsx":2,"./PtdaConsiderations":8,"./PtdaCost":9,"./PtdaFrequency":10,"./PtdaMedicationSquare":11,"./PtdaMini":12,"./PtdaOnset":13,"./PtdaSideEffects":14,"_process":31,"buffer":27,"ismobilejs":32,"react-bootstrap":82,"react/addons":133}],8:[function(require,module,exports){
+},{"../Data.jsx":2,"./PtdaConsiderations":9,"./PtdaCost":10,"./PtdaFrequency":11,"./PtdaMedicationSquare":12,"./PtdaMini":13,"./PtdaOnset":14,"./PtdaSideEffects":15,"_process":32,"buffer":28,"ismobilejs":33,"react-bootstrap":83,"react/addons":134}],9:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5409,7 +5575,7 @@ var PtdaConsiderations = React.createClass({displayName: "PtdaConsiderations",
 
 module.exports = PtdaConsiderations;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaConsiderations.jsx","/client/components/ptda")
-},{"./PtdaMedicationSquare":11,"_process":31,"buffer":27,"react/addons":133}],9:[function(require,module,exports){
+},{"./PtdaMedicationSquare":12,"_process":32,"buffer":28,"react/addons":134}],10:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5520,7 +5686,7 @@ var PtdaCost = React.createClass({displayName: "PtdaCost",
 
 module.exports = PtdaCost;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaCost.jsx","/client/components/ptda")
-},{"./PtdaMedicationSquare":11,"_process":31,"buffer":27,"react/addons":133}],10:[function(require,module,exports){
+},{"./PtdaMedicationSquare":12,"_process":32,"buffer":28,"react/addons":134}],11:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5627,7 +5793,7 @@ var PtdaFrequency = React.createClass({displayName: "PtdaFrequency",
 
 module.exports = PtdaFrequency;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaFrequency.jsx","/client/components/ptda")
-},{"./PtdaMedicationSquare":11,"_process":31,"buffer":27,"react/addons":133}],11:[function(require,module,exports){
+},{"./PtdaMedicationSquare":12,"_process":32,"buffer":28,"react/addons":134}],12:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5679,7 +5845,7 @@ var PtdaMedicationSquare = React.createClass({displayName: "PtdaMedicationSquare
 
 module.exports = PtdaMedicationSquare;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaMedicationSquare.jsx","/client/components/ptda")
-},{"_process":31,"buffer":27,"react/addons":133}],12:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],13:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5788,7 +5954,7 @@ var PtdaMini = React.createClass({displayName: "PtdaMini",
 
 module.exports = PtdaMini;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaMini.jsx","/client/components/ptda")
-},{"_process":31,"buffer":27,"react/addons":133}],13:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],14:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5894,7 +6060,7 @@ var PtdaOnset = React.createClass({displayName: "PtdaOnset",
 
 module.exports = PtdaOnset;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaOnset.jsx","/client/components/ptda")
-},{"./PtdaMedicationSquare":11,"_process":31,"buffer":27,"react/addons":133}],14:[function(require,module,exports){
+},{"./PtdaMedicationSquare":12,"_process":32,"buffer":28,"react/addons":134}],15:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6002,7 +6168,7 @@ var PtdaSideEffects = React.createClass({displayName: "PtdaSideEffects",
 
 module.exports = PtdaSideEffects;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/ptda/PtdaSideEffects.jsx","/client/components/ptda")
-},{"./PtdaMedicationSquare":11,"_process":31,"buffer":27,"react/addons":133}],15:[function(require,module,exports){
+},{"./PtdaMedicationSquare":12,"_process":32,"buffer":28,"react/addons":134}],16:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6113,7 +6279,7 @@ var AbsoluteFrequency = React.createClass({displayName: "AbsoluteFrequency",
 
 module.exports = AbsoluteFrequency;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/AbsoluteFrequency.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react/addons":133}],16:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],17:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6167,7 +6333,7 @@ var Difference = React.createClass({displayName: "Difference",
 
 module.exports = Difference;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/Difference.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react/addons":133}],17:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],18:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6244,7 +6410,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
 
 module.exports = GradeQuality;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/GradeQuality.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],18:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],19:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6370,7 +6536,7 @@ var Intervention = React.createClass({displayName: "Intervention",
 
 module.exports = Intervention;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/Intervention.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],19:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],20:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6422,7 +6588,7 @@ var Population = React.createClass({displayName: "Population",
 
 module.exports = Population;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/Population.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],20:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],21:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -6665,7 +6831,7 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
 
 module.exports = RelativeRiskComparison;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/RelativeRiskComparison.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],21:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],22:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -7080,7 +7246,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 
 module.exports = RiskRelativeToBaseline;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/RiskRelativeToBaseline.jsx","/client/components/visualizations")
-},{"./AbsoluteFrequency.jsx":15,"_process":31,"buffer":27,"react-bootstrap":82,"react/addons":133}],22:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":16,"_process":32,"buffer":28,"react-bootstrap":83,"react/addons":134}],23:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -7112,7 +7278,7 @@ var Source = React.createClass({displayName: "Source",
 
 module.exports = Source;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/Source.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react/addons":133}],23:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],24:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -7167,7 +7333,7 @@ var VisualizationSketches = React.createClass({displayName: "VisualizationSketch
 
 module.exports = VisualizationSketches;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/VisualizationSketches.jsx","/client/components/visualizations")
-},{"_process":31,"buffer":27,"react/addons":133}],24:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/addons":134}],25:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -7275,7 +7441,7 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 
 module.exports = VisualizationTests;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/visualizations/VisualizationTests.jsx","/client/components/visualizations")
-},{"./AbsoluteFrequency.jsx":15,"./RelativeRiskComparison.jsx":20,"./RiskRelativeToBaseline.jsx":21,"_process":31,"buffer":27,"react/addons":133}],25:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":16,"./RelativeRiskComparison.jsx":21,"./RiskRelativeToBaseline.jsx":22,"_process":32,"buffer":28,"react/addons":134}],26:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // client.js
 
@@ -7287,7 +7453,7 @@ Router.run(routes, Router.HistoryLocation, function (Handler) {
   React.render(React.createElement(Handler, null), document.getElementById('app'));
 });
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/js/client.js","/client/js")
-},{"../routes.jsx":26,"_process":31,"buffer":27,"react-router":117,"react/addons":133}],26:[function(require,module,exports){
+},{"../routes.jsx":27,"_process":32,"buffer":28,"react-router":118,"react/addons":134}],27:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // routes.jsx
 
@@ -7299,6 +7465,7 @@ var DefaultRoute = Router.DefaultRoute;
 var AdverseEvents = require('./components/adverse/AdverseEvents.jsx');
 var App = require('./components/App.jsx');
 var Experiment = require('./components/Experiment.jsx');
+var Navigator = require('./components/Navigator.jsx');
 var OutcomeTimeline = require('./components/OutcomeTimeline.jsx');
 var Processing = require('./components/Processing.jsx');
 var Ptda = require('./components/ptda/Ptda.jsx');
@@ -7309,6 +7476,7 @@ var routes = (
   React.createElement(Route, {name: "home", path: "/", handler: App}, 
     React.createElement(DefaultRoute, {name: "experiment", handler: Experiment}), 
     React.createElement(Route, {name: "adverse", path: "/adverse", handler: AdverseEvents}), 
+    React.createElement(Route, {name: "navigator", path: "/navigator", handler: Navigator}), 
     React.createElement(Route, {name: "outcometimeline", path: "/outcometimeline", handler: OutcomeTimeline}), 
     React.createElement(Route, {name: "processing", path: "/processing", handler: Processing}), 
     React.createElement(Route, {name: "ptda", path: "/ptda", handler: Ptda}), 
@@ -7319,7 +7487,7 @@ var routes = (
 
 module.exports = routes;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/routes.jsx","/client")
-},{"./components/App.jsx":1,"./components/Experiment.jsx":3,"./components/OutcomeTimeline.jsx":4,"./components/Processing.jsx":5,"./components/adverse/AdverseEvents.jsx":6,"./components/ptda/Ptda.jsx":7,"./components/visualizations/VisualizationSketches.jsx":23,"./components/visualizations/VisualizationTests.jsx":24,"_process":31,"buffer":27,"react-router":117,"react/addons":133}],27:[function(require,module,exports){
+},{"./components/App.jsx":1,"./components/Experiment.jsx":3,"./components/Navigator.jsx":4,"./components/OutcomeTimeline.jsx":5,"./components/Processing.jsx":6,"./components/adverse/AdverseEvents.jsx":7,"./components/ptda/Ptda.jsx":8,"./components/visualizations/VisualizationSketches.jsx":24,"./components/visualizations/VisualizationTests.jsx":25,"_process":32,"buffer":28,"react-router":118,"react/addons":134}],28:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*!
  * The buffer module from node.js, for the browser.
@@ -7387,41 +7555,36 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
  * By augmenting the instances, we can avoid modifying the `Uint8Array`
  * prototype.
  */
-function Buffer (subject, encoding, noZero) {
-  if (!(this instanceof Buffer))
-    return new Buffer(subject, encoding, noZero)
+function Buffer (subject, encoding) {
+  var self = this
+  if (!(self instanceof Buffer)) return new Buffer(subject, encoding)
 
   var type = typeof subject
-
-  // Find the length
   var length
-  if (type === 'number')
+
+  if (type === 'number') {
     length = +subject
-  else if (type === 'string') {
+  } else if (type === 'string') {
     length = Buffer.byteLength(subject, encoding)
-  } else if (type === 'object' && subject !== null) { // assume object is array-like
-    if (subject.type === 'Buffer' && isArray(subject.data))
-      subject = subject.data
+  } else if (type === 'object' && subject !== null) {
+    // assume object is array-like
+    if (subject.type === 'Buffer' && isArray(subject.data)) subject = subject.data
     length = +subject.length
   } else {
     throw new TypeError('must start with number, buffer, array or string')
   }
 
-  if (length > kMaxLength)
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-      'size: 0x' + kMaxLength.toString(16) + ' bytes')
+  if (length > kMaxLength) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum size: 0x' +
+      kMaxLength.toString(16) + ' bytes')
+  }
 
-  if (length < 0)
-    length = 0
-  else
-    length >>>= 0 // Coerce to uint32.
+  if (length < 0) length = 0
+  else length >>>= 0 // coerce to uint32
 
-  var self = this
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    /*eslint-disable consistent-this */
-    self = Buffer._augment(new Uint8Array(length))
-    /*eslint-enable consistent-this */
+    self = Buffer._augment(new Uint8Array(length)) // eslint-disable-line consistent-this
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
     self.length = length
@@ -7435,42 +7598,43 @@ function Buffer (subject, encoding, noZero) {
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
     if (Buffer.isBuffer(subject)) {
-      for (i = 0; i < length; i++)
+      for (i = 0; i < length; i++) {
         self[i] = subject.readUInt8(i)
+      }
     } else {
-      for (i = 0; i < length; i++)
+      for (i = 0; i < length; i++) {
         self[i] = ((subject[i] % 256) + 256) % 256
+      }
     }
   } else if (type === 'string') {
     self.write(subject, 0, encoding)
-  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
+  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT) {
     for (i = 0; i < length; i++) {
       self[i] = 0
     }
   }
 
-  if (length > 0 && length <= Buffer.poolSize)
-    self.parent = rootParent
+  if (length > 0 && length <= Buffer.poolSize) self.parent = rootParent
 
   return self
 }
 
-function SlowBuffer (subject, encoding, noZero) {
-  if (!(this instanceof SlowBuffer))
-    return new SlowBuffer(subject, encoding, noZero)
+function SlowBuffer (subject, encoding) {
+  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding)
 
-  var buf = new Buffer(subject, encoding, noZero)
+  var buf = new Buffer(subject, encoding)
   delete buf.parent
   return buf
 }
 
-Buffer.isBuffer = function (b) {
+Buffer.isBuffer = function isBuffer (b) {
   return !!(b != null && b._isBuffer)
 }
 
-Buffer.compare = function (a, b) {
-  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
+Buffer.compare = function compare (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
     throw new TypeError('Arguments must be Buffers')
+  }
 
   if (a === b) return 0
 
@@ -7486,7 +7650,7 @@ Buffer.compare = function (a, b) {
   return 0
 }
 
-Buffer.isEncoding = function (encoding) {
+Buffer.isEncoding = function isEncoding (encoding) {
   switch (String(encoding).toLowerCase()) {
     case 'hex':
     case 'utf8':
@@ -7505,8 +7669,8 @@ Buffer.isEncoding = function (encoding) {
   }
 }
 
-Buffer.concat = function (list, totalLength) {
-  if (!isArray(list)) throw new TypeError('Usage: Buffer.concat(list[, length])')
+Buffer.concat = function concat (list, totalLength) {
+  if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
 
   if (list.length === 0) {
     return new Buffer(0)
@@ -7532,7 +7696,7 @@ Buffer.concat = function (list, totalLength) {
   return buf
 }
 
-Buffer.byteLength = function (str, encoding) {
+Buffer.byteLength = function byteLength (str, encoding) {
   var ret
   str = str + ''
   switch (encoding || 'utf8') {
@@ -7568,7 +7732,7 @@ Buffer.prototype.length = undefined
 Buffer.prototype.parent = undefined
 
 // toString(encoding, start=0, end=buffer.length)
-Buffer.prototype.toString = function (encoding, start, end) {
+Buffer.prototype.toString = function toString (encoding, start, end) {
   var loweredCase = false
 
   start = start >>> 0
@@ -7604,45 +7768,84 @@ Buffer.prototype.toString = function (encoding, start, end) {
         return utf16leSlice(this, start, end)
 
       default:
-        if (loweredCase)
-          throw new TypeError('Unknown encoding: ' + encoding)
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
         encoding = (encoding + '').toLowerCase()
         loweredCase = true
     }
   }
 }
 
-Buffer.prototype.equals = function (b) {
+Buffer.prototype.equals = function equals (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
   if (this === b) return true
   return Buffer.compare(this, b) === 0
 }
 
-Buffer.prototype.inspect = function () {
+Buffer.prototype.inspect = function inspect () {
   var str = ''
   var max = exports.INSPECT_MAX_BYTES
   if (this.length > 0) {
     str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
-    if (this.length > max)
-      str += ' ... '
+    if (this.length > max) str += ' ... '
   }
   return '<Buffer ' + str + '>'
 }
 
-Buffer.prototype.compare = function (b) {
+Buffer.prototype.compare = function compare (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
   if (this === b) return 0
   return Buffer.compare(this, b)
 }
 
+Buffer.prototype.indexOf = function indexOf (val, byteOffset) {
+  if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff
+  else if (byteOffset < -0x80000000) byteOffset = -0x80000000
+  byteOffset >>= 0
+
+  if (this.length === 0) return -1
+  if (byteOffset >= this.length) return -1
+
+  // Negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = Math.max(this.length + byteOffset, 0)
+
+  if (typeof val === 'string') {
+    if (val.length === 0) return -1 // special case: looking for empty string always fails
+    return String.prototype.indexOf.call(this, val, byteOffset)
+  }
+  if (Buffer.isBuffer(val)) {
+    return arrayIndexOf(this, val, byteOffset)
+  }
+  if (typeof val === 'number') {
+    if (Buffer.TYPED_ARRAY_SUPPORT && Uint8Array.prototype.indexOf === 'function') {
+      return Uint8Array.prototype.indexOf.call(this, val, byteOffset)
+    }
+    return arrayIndexOf(this, [ val ], byteOffset)
+  }
+
+  function arrayIndexOf (arr, val, byteOffset) {
+    var foundIndex = -1
+    for (var i = 0; byteOffset + i < arr.length; i++) {
+      if (arr[byteOffset + i] === val[foundIndex === -1 ? 0 : i - foundIndex]) {
+        if (foundIndex === -1) foundIndex = i
+        if (i - foundIndex + 1 === val.length) return byteOffset + foundIndex
+      } else {
+        foundIndex = -1
+      }
+    }
+    return -1
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
 // `get` will be removed in Node 0.13+
-Buffer.prototype.get = function (offset) {
+Buffer.prototype.get = function get (offset) {
   console.log('.get() is deprecated. Access using array indexes instead.')
   return this.readUInt8(offset)
 }
 
 // `set` will be removed in Node 0.13+
-Buffer.prototype.set = function (v, offset) {
+Buffer.prototype.set = function set (v, offset) {
   console.log('.set() is deprecated. Access using array indexes instead.')
   return this.writeUInt8(v, offset)
 }
@@ -7667,9 +7870,9 @@ function hexWrite (buf, string, offset, length) {
     length = strLen / 2
   }
   for (var i = 0; i < length; i++) {
-    var byte = parseInt(string.substr(i * 2, 2), 16)
-    if (isNaN(byte)) throw new Error('Invalid hex string')
-    buf[offset + i] = byte
+    var parsed = parseInt(string.substr(i * 2, 2), 16)
+    if (isNaN(parsed)) throw new Error('Invalid hex string')
+    buf[offset + i] = parsed
   }
   return i
 }
@@ -7694,11 +7897,11 @@ function base64Write (buf, string, offset, length) {
 }
 
 function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length, 2)
+  var charsWritten = blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
   return charsWritten
 }
 
-Buffer.prototype.write = function (string, offset, length, encoding) {
+Buffer.prototype.write = function write (string, offset, length, encoding) {
   // Support both (string, offset, length, encoding)
   // and the legacy (string, encoding, offset, length)
   if (isFinite(offset)) {
@@ -7715,8 +7918,9 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
 
   offset = Number(offset) || 0
 
-  if (length < 0 || offset < 0 || offset > this.length)
+  if (length < 0 || offset < 0 || offset > this.length) {
     throw new RangeError('attempt to write outside buffer bounds')
+  }
 
   var remaining = this.length - offset
   if (!length) {
@@ -7759,7 +7963,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   return ret
 }
 
-Buffer.prototype.toJSON = function () {
+Buffer.prototype.toJSON = function toJSON () {
   return {
     type: 'Buffer',
     data: Array.prototype.slice.call(this._arr || this, 0)
@@ -7833,43 +8037,39 @@ function utf16leSlice (buf, start, end) {
   return res
 }
 
-Buffer.prototype.slice = function (start, end) {
+Buffer.prototype.slice = function slice (start, end) {
   var len = this.length
   start = ~~start
   end = end === undefined ? len : ~~end
 
   if (start < 0) {
     start += len
-    if (start < 0)
-      start = 0
+    if (start < 0) start = 0
   } else if (start > len) {
     start = len
   }
 
   if (end < 0) {
     end += len
-    if (end < 0)
-      end = 0
+    if (end < 0) end = 0
   } else if (end > len) {
     end = len
   }
 
-  if (end < start)
-    end = start
+  if (end < start) end = start
 
   var newBuf
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     newBuf = Buffer._augment(this.subarray(start, end))
   } else {
     var sliceLen = end - start
-    newBuf = new Buffer(sliceLen, undefined, true)
+    newBuf = new Buffer(sliceLen, undefined)
     for (var i = 0; i < sliceLen; i++) {
       newBuf[i] = this[i + start]
     }
   }
 
-  if (newBuf.length)
-    newBuf.parent = this.parent || this
+  if (newBuf.length) newBuf.parent = this.parent || this
 
   return newBuf
 }
@@ -7878,62 +8078,58 @@ Buffer.prototype.slice = function (start, end) {
  * Need to make sure that buffer isn't trying to write out of bounds.
  */
 function checkOffset (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0)
-    throw new RangeError('offset is not uint')
-  if (offset + ext > length)
-    throw new RangeError('Trying to access beyond buffer length')
+  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
 }
 
-Buffer.prototype.readUIntLE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
   var mul = 1
   var i = 0
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     val += this[offset + i] * mul
+  }
 
   return val
 }
 
-Buffer.prototype.readUIntBE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
+  if (!noAssert) {
     checkOffset(offset, byteLength, this.length)
+  }
 
   var val = this[offset + --byteLength]
   var mul = 1
-  while (byteLength > 0 && (mul *= 0x100))
+  while (byteLength > 0 && (mul *= 0x100)) {
     val += this[offset + --byteLength] * mul
+  }
 
   return val
 }
 
-Buffer.prototype.readUInt8 = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 1, this.length)
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
   return this[offset]
 }
 
-Buffer.prototype.readUInt16LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   return this[offset] | (this[offset + 1] << 8)
 }
 
-Buffer.prototype.readUInt16BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   return (this[offset] << 8) | this[offset + 1]
 }
 
-Buffer.prototype.readUInt32LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return ((this[offset]) |
       (this[offset + 1] << 8) |
@@ -7941,117 +8137,104 @@ Buffer.prototype.readUInt32LE = function (offset, noAssert) {
       (this[offset + 3] * 0x1000000)
 }
 
-Buffer.prototype.readUInt32BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] * 0x1000000) +
-      ((this[offset + 1] << 16) |
-      (this[offset + 2] << 8) |
-      this[offset + 3])
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
 }
 
-Buffer.prototype.readIntLE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
   var mul = 1
   var i = 0
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     val += this[offset + i] * mul
+  }
   mul *= 0x80
 
-  if (val >= mul)
-    val -= Math.pow(2, 8 * byteLength)
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
 
-Buffer.prototype.readIntBE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var i = byteLength
   var mul = 1
   var val = this[offset + --i]
-  while (i > 0 && (mul *= 0x100))
+  while (i > 0 && (mul *= 0x100)) {
     val += this[offset + --i] * mul
+  }
   mul *= 0x80
 
-  if (val >= mul)
-    val -= Math.pow(2, 8 * byteLength)
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
 
-Buffer.prototype.readInt8 = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 1, this.length)
-  if (!(this[offset] & 0x80))
-    return (this[offset])
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80)) return (this[offset])
   return ((0xff - this[offset] + 1) * -1)
 }
 
-Buffer.prototype.readInt16LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset] | (this[offset + 1] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
-Buffer.prototype.readInt16BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset + 1] | (this[offset] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
-Buffer.prototype.readInt32LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16) |
-      (this[offset + 3] << 24)
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
 }
 
-Buffer.prototype.readInt32BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] << 24) |
-      (this[offset + 1] << 16) |
-      (this[offset + 2] << 8) |
-      (this[offset + 3])
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
 }
 
-Buffer.prototype.readFloatLE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, true, 23, 4)
 }
 
-Buffer.prototype.readFloatBE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, false, 23, 4)
 }
 
-Buffer.prototype.readDoubleLE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 8, this.length)
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, true, 52, 8)
 }
 
-Buffer.prototype.readDoubleBE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 8, this.length)
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, false, 52, 8)
 }
 
@@ -8061,43 +8244,42 @@ function checkInt (buf, value, offset, ext, max, min) {
   if (offset + ext > buf.length) throw new RangeError('index out of range')
 }
 
-Buffer.prototype.writeUIntLE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var mul = 1
   var i = 0
   this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     this[offset + i] = (value / mul) >>> 0 & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeUIntBE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var i = byteLength - 1
   var mul = 1
   this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100))
+  while (--i >= 0 && (mul *= 0x100)) {
     this[offset + i] = (value / mul) >>> 0 & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 1, 0xff, 0)
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   this[offset] = value
   return offset + 1
@@ -8111,27 +8293,29 @@ function objectWriteUInt16 (buf, value, offset, littleEndian) {
   }
 }
 
-Buffer.prototype.writeUInt16LE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
-  } else objectWriteUInt16(this, value, offset, true)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
     this[offset + 1] = value
-  } else objectWriteUInt16(this, value, offset, false)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
   return offset + 2
 }
 
@@ -8142,139 +8326,144 @@ function objectWriteUInt32 (buf, value, offset, littleEndian) {
   }
 }
 
-Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset + 3] = (value >>> 24)
     this[offset + 2] = (value >>> 16)
     this[offset + 1] = (value >>> 8)
     this[offset] = value
-  } else objectWriteUInt32(this, value, offset, true)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
     this[offset + 3] = value
-  } else objectWriteUInt32(this, value, offset, false)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeIntLE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   if (!noAssert) {
-    checkInt(this,
-             value,
-             offset,
-             byteLength,
-             Math.pow(2, 8 * byteLength - 1) - 1,
-             -Math.pow(2, 8 * byteLength - 1))
+    checkInt(
+      this, value, offset, byteLength,
+      Math.pow(2, 8 * byteLength - 1) - 1,
+      -Math.pow(2, 8 * byteLength - 1)
+    )
   }
 
   var i = 0
   var mul = 1
   var sub = value < 0 ? 1 : 0
   this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeIntBE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   if (!noAssert) {
-    checkInt(this,
-             value,
-             offset,
-             byteLength,
-             Math.pow(2, 8 * byteLength - 1) - 1,
-             -Math.pow(2, 8 * byteLength - 1))
+    checkInt(
+      this, value, offset, byteLength,
+      Math.pow(2, 8 * byteLength - 1) - 1,
+      -Math.pow(2, 8 * byteLength - 1)
+    )
   }
 
   var i = byteLength - 1
   var mul = 1
   var sub = value < 0 ? 1 : 0
   this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100))
+  while (--i >= 0 && (mul *= 0x100)) {
     this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
   this[offset] = value
   return offset + 1
 }
 
-Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
-  } else objectWriteUInt16(this, value, offset, true)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
     this[offset + 1] = value
-  } else objectWriteUInt16(this, value, offset, false)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeInt32LE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
     this[offset + 2] = (value >>> 16)
     this[offset + 3] = (value >>> 24)
-  } else objectWriteUInt32(this, value, offset, true)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (value < 0) value = 0xffffffff + value + 1
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
     this[offset + 3] = value
-  } else objectWriteUInt32(this, value, offset, false)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
   return offset + 4
 }
 
@@ -8285,39 +8474,39 @@ function checkIEEE754 (buf, value, offset, ext, max, min) {
 }
 
 function writeFloat (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert)
+  if (!noAssert) {
     checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
   ieee754.write(buf, value, offset, littleEndian, 23, 4)
   return offset + 4
 }
 
-Buffer.prototype.writeFloatLE = function (value, offset, noAssert) {
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
   return writeFloat(this, value, offset, true, noAssert)
 }
 
-Buffer.prototype.writeFloatBE = function (value, offset, noAssert) {
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
   return writeFloat(this, value, offset, false, noAssert)
 }
 
 function writeDouble (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert)
+  if (!noAssert) {
     checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
   ieee754.write(buf, value, offset, littleEndian, 52, 8)
   return offset + 8
 }
 
-Buffer.prototype.writeDoubleLE = function (value, offset, noAssert) {
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
   return writeDouble(this, value, offset, true, noAssert)
 }
 
-Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
   return writeDouble(this, value, offset, false, noAssert)
 }
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function (target, target_start, start, end) {
-  var self = this // source
-
+Buffer.prototype.copy = function copy (target, target_start, start, end) {
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
   if (target_start >= target.length) target_start = target.length
@@ -8326,19 +8515,20 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 
   // Copy 0 bytes; we're done
   if (end === start) return 0
-  if (target.length === 0 || self.length === 0) return 0
+  if (target.length === 0 || this.length === 0) return 0
 
   // Fatal error conditions
-  if (target_start < 0)
+  if (target_start < 0) {
     throw new RangeError('targetStart out of bounds')
-  if (start < 0 || start >= self.length) throw new RangeError('sourceStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
-  if (end > this.length)
-    end = this.length
-  if (target.length - target_start < end - start)
+  if (end > this.length) end = this.length
+  if (target.length - target_start < end - start) {
     end = target.length - target_start + start
+  }
 
   var len = end - start
 
@@ -8354,7 +8544,7 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 }
 
 // fill(value, start=0, end=buffer.length)
-Buffer.prototype.fill = function (value, start, end) {
+Buffer.prototype.fill = function fill (value, start, end) {
   if (!value) value = 0
   if (!start) start = 0
   if (!end) end = this.length
@@ -8388,7 +8578,7 @@ Buffer.prototype.fill = function (value, start, end) {
  * Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
  * Added in Node 0.12. Only available in browsers that support ArrayBuffer.
  */
-Buffer.prototype.toArrayBuffer = function () {
+Buffer.prototype.toArrayBuffer = function toArrayBuffer () {
   if (typeof Uint8Array !== 'undefined') {
     if (Buffer.TYPED_ARRAY_SUPPORT) {
       return (new Buffer(this)).buffer
@@ -8412,12 +8602,11 @@ var BP = Buffer.prototype
 /**
  * Augment a Uint8Array *instance* (not the Uint8Array class!) with Buffer methods
  */
-Buffer._augment = function (arr) {
+Buffer._augment = function _augment (arr) {
   arr.constructor = Buffer
   arr._isBuffer = true
 
-  // save reference to original Uint8Array get/set methods before overwriting
-  arr._get = arr.get
+  // save reference to original Uint8Array set method before overwriting
   arr._set = arr.set
 
   // deprecated, will be removed in node 0.13+
@@ -8430,6 +8619,7 @@ Buffer._augment = function (arr) {
   arr.toJSON = BP.toJSON
   arr.equals = BP.equals
   arr.compare = BP.compare
+  arr.indexOf = BP.indexOf
   arr.copy = BP.copy
   arr.slice = BP.slice
   arr.readUIntLE = BP.readUIntLE
@@ -8615,11 +8805,9 @@ function base64ToBytes (str) {
   return base64.toByteArray(base64clean(str))
 }
 
-function blitBuffer (src, dst, offset, length, unitSize) {
-  if (unitSize) length -= length % unitSize
+function blitBuffer (src, dst, offset, length) {
   for (var i = 0; i < length; i++) {
-    if ((i + offset >= dst.length) || (i >= src.length))
-      break
+    if ((i + offset >= dst.length) || (i >= src.length)) break
     dst[i + offset] = src[i]
   }
   return i
@@ -8634,7 +8822,7 @@ function decodeUtf8Char (str) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/index.js","/node_modules/browserify/node_modules/buffer")
-},{"_process":31,"base64-js":28,"buffer":27,"ieee754":29,"is-array":30}],28:[function(require,module,exports){
+},{"_process":32,"base64-js":29,"buffer":28,"ieee754":30,"is-array":31}],29:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -8762,7 +8950,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib/b64.js","/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib")
-},{"_process":31,"buffer":27}],29:[function(require,module,exports){
+},{"_process":32,"buffer":28}],30:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
@@ -8850,7 +9038,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/node_modules/ieee754/index.js","/node_modules/browserify/node_modules/buffer/node_modules/ieee754")
-},{"_process":31,"buffer":27}],30:[function(require,module,exports){
+},{"_process":32,"buffer":28}],31:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 
 /**
@@ -8887,7 +9075,7 @@ module.exports = isArray || function (val) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/node_modules/is-array/index.js","/node_modules/browserify/node_modules/buffer/node_modules/is-array")
-},{"_process":31,"buffer":27}],31:[function(require,module,exports){
+},{"_process":32,"buffer":28}],32:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // shim for using process in browser
 
@@ -8977,7 +9165,7 @@ process.chdir = function (dir) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/process/browser.js","/node_modules/browserify/node_modules/process")
-},{"_process":31,"buffer":27}],32:[function(require,module,exports){
+},{"_process":32,"buffer":28}],33:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * isMobile.js v0.3.5
@@ -9092,7 +9280,7 @@ process.chdir = function (dir) {
 })(this);
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/ismobilejs/isMobile.js","/node_modules/ismobilejs")
-},{"_process":31,"buffer":27}],33:[function(require,module,exports){
+},{"_process":32,"buffer":28}],34:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var PanelGroup = require('./PanelGroup');
@@ -9109,7 +9297,7 @@ var Accordion = React.createClass({displayName: "Accordion",
 
 module.exports = Accordion;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Accordion.js","/node_modules/react-bootstrap")
-},{"./PanelGroup":70,"_process":31,"buffer":27,"react":305}],34:[function(require,module,exports){
+},{"./PanelGroup":71,"_process":32,"buffer":28,"react":306}],35:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9135,7 +9323,7 @@ var Affix = React.createClass({displayName: "Affix",
 
 module.exports = Affix;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Affix.js","/node_modules/react-bootstrap")
-},{"./AffixMixin":35,"./utils/domUtils":91,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],35:[function(require,module,exports){
+},{"./AffixMixin":36,"./utils/domUtils":92,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],36:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* global window, document */
 
@@ -9269,7 +9457,7 @@ var AffixMixin = {
 
 module.exports = AffixMixin;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/AffixMixin.js","/node_modules/react-bootstrap")
-},{"./utils/EventListener":84,"./utils/domUtils":91,"_process":31,"buffer":27,"react":305}],36:[function(require,module,exports){
+},{"./utils/EventListener":85,"./utils/domUtils":92,"_process":32,"buffer":28,"react":306}],37:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9331,7 +9519,7 @@ var Alert = React.createClass({displayName: "Alert",
 
 module.exports = Alert;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Alert.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],37:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],38:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9367,7 +9555,7 @@ var Badge = React.createClass({displayName: "Badge",
 module.exports = Badge;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Badge.js","/node_modules/react-bootstrap")
-},{"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],38:[function(require,module,exports){
+},{"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],39:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var constants = require('./constants');
@@ -9405,7 +9593,7 @@ var BootstrapMixin = {
 
 module.exports = BootstrapMixin;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/BootstrapMixin.js","/node_modules/react-bootstrap")
-},{"./constants":81,"_process":31,"buffer":27,"react":305}],39:[function(require,module,exports){
+},{"./constants":82,"_process":32,"buffer":28,"react":306}],40:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9496,7 +9684,7 @@ var Button = React.createClass({displayName: "Button",
 module.exports = Button;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Button.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],40:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],41:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9536,7 +9724,7 @@ var ButtonGroup = React.createClass({displayName: "ButtonGroup",
 
 module.exports = ButtonGroup;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ButtonGroup.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Button":39,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],41:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Button":40,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],42:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9569,7 +9757,7 @@ var ButtonToolbar = React.createClass({displayName: "ButtonToolbar",
 
 module.exports = ButtonToolbar;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ButtonToolbar.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Button":39,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],42:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Button":40,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],43:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9861,7 +10049,7 @@ var Carousel = React.createClass({displayName: "Carousel",
 
 module.exports = Carousel;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Carousel.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],43:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],44:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -9957,7 +10145,7 @@ var CarouselItem = React.createClass({displayName: "CarouselItem",
 
 module.exports = CarouselItem;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/CarouselItem.js","/node_modules/react-bootstrap")
-},{"./utils/TransitionEvents":86,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],44:[function(require,module,exports){
+},{"./utils/TransitionEvents":87,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],45:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10034,7 +10222,7 @@ var Col = React.createClass({displayName: "Col",
 
 module.exports = Col;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Col.js","/node_modules/react-bootstrap")
-},{"./constants":81,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],45:[function(require,module,exports){
+},{"./constants":82,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],46:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var TransitionEvents = require('./utils/TransitionEvents');
@@ -10158,7 +10346,7 @@ var CollapsableMixin = {
 module.exports = CollapsableMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/CollapsableMixin.js","/node_modules/react-bootstrap")
-},{"./utils/TransitionEvents":86,"_process":31,"buffer":27,"react":305}],46:[function(require,module,exports){
+},{"./utils/TransitionEvents":87,"_process":32,"buffer":28,"react":306}],47:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10284,7 +10472,7 @@ var DropdownButton = React.createClass({displayName: "DropdownButton",
 
 module.exports = DropdownButton;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/DropdownButton.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Button":39,"./ButtonGroup":40,"./DropdownMenu":47,"./DropdownStateMixin":48,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],47:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Button":40,"./ButtonGroup":41,"./DropdownMenu":48,"./DropdownStateMixin":49,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],48:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10333,7 +10521,7 @@ var DropdownMenu = React.createClass({displayName: "DropdownMenu",
 
 module.exports = DropdownMenu;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/DropdownMenu.js","/node_modules/react-bootstrap")
-},{"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],48:[function(require,module,exports){
+},{"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],49:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var EventListener = require('./utils/EventListener');
@@ -10416,7 +10604,7 @@ var DropdownStateMixin = {
 
 module.exports = DropdownStateMixin;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/DropdownStateMixin.js","/node_modules/react-bootstrap")
-},{"./utils/EventListener":84,"_process":31,"buffer":27,"react":305}],49:[function(require,module,exports){
+},{"./utils/EventListener":85,"_process":32,"buffer":28,"react":306}],50:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*global document */
 // TODO: listen for onTransitionEnd to remove el
@@ -10489,7 +10677,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/FadeMixin.js","/node_modules/react-bootstrap")
-},{"_process":31,"buffer":27}],50:[function(require,module,exports){
+},{"_process":32,"buffer":28}],51:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10525,7 +10713,7 @@ var Glyphicon = React.createClass({displayName: "Glyphicon",
 
 module.exports = Glyphicon;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Glyphicon.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./constants":81,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],51:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./constants":82,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],52:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10558,7 +10746,7 @@ var Grid = React.createClass({displayName: "Grid",
 
 module.exports = Grid;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Grid.js","/node_modules/react-bootstrap")
-},{"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],52:[function(require,module,exports){
+},{"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],53:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10797,7 +10985,7 @@ var Input = React.createClass({displayName: "Input",
 module.exports = Input;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Input.js","/node_modules/react-bootstrap")
-},{"./Button":39,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],53:[function(require,module,exports){
+},{"./Button":40,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],54:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // https://www.npmjs.org/package/react-interpolate-component
 'use strict';
@@ -10883,7 +11071,7 @@ var Interpolate = React.createClass({
 module.exports = Interpolate;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Interpolate.js","/node_modules/react-bootstrap")
-},{"./utils/Object.assign":85,"./utils/ValidComponentChildren":87,"_process":31,"buffer":27,"react":305}],54:[function(require,module,exports){
+},{"./utils/Object.assign":86,"./utils/ValidComponentChildren":88,"_process":32,"buffer":28,"react":306}],55:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10901,7 +11089,7 @@ var Jumbotron = React.createClass({displayName: "Jumbotron",
 
 module.exports = Jumbotron;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Jumbotron.js","/node_modules/react-bootstrap")
-},{"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],55:[function(require,module,exports){
+},{"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],56:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -10931,7 +11119,7 @@ var Label = React.createClass({displayName: "Label",
 
 module.exports = Label;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Label.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],56:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],57:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var classSet = require('./utils/classSet');
@@ -10965,7 +11153,7 @@ var ListGroup = React.createClass({displayName: "ListGroup",
 module.exports = ListGroup;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ListGroup.js","/node_modules/react-bootstrap")
-},{"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"_process":31,"buffer":27,"react":305}],57:[function(require,module,exports){
+},{"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"_process":32,"buffer":28,"react":306}],58:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -11064,7 +11252,7 @@ var ListGroupItem = React.createClass({displayName: "ListGroupItem",
 module.exports = ListGroupItem;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ListGroupItem.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],58:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],59:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -11126,7 +11314,7 @@ var MenuItem = React.createClass({displayName: "MenuItem",
 
 module.exports = MenuItem;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/MenuItem.js","/node_modules/react-bootstrap")
-},{"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],59:[function(require,module,exports){
+},{"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],60:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* global document:false */
 
@@ -11292,7 +11480,7 @@ var Modal = React.createClass({displayName: "Modal",
 module.exports = Modal;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Modal.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./FadeMixin":49,"./utils/EventListener":84,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],60:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./FadeMixin":50,"./utils/EventListener":85,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],61:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var OverlayMixin = require('./OverlayMixin');
@@ -11357,7 +11545,7 @@ var ModalTrigger = React.createClass({displayName: "ModalTrigger",
 
 module.exports = ModalTrigger;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ModalTrigger.js","/node_modules/react-bootstrap")
-},{"./OverlayMixin":64,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"_process":31,"buffer":27,"react":305}],61:[function(require,module,exports){
+},{"./OverlayMixin":65,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"_process":32,"buffer":28,"react":306}],62:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -11473,7 +11661,7 @@ var Nav = React.createClass({displayName: "Nav",
 module.exports = Nav;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Nav.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./CollapsableMixin":45,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/domUtils":91,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],62:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./CollapsableMixin":46,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/domUtils":92,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],63:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -11540,7 +11728,7 @@ var NavItem = React.createClass({displayName: "NavItem",
 
 module.exports = NavItem;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/NavItem.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],63:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],64:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -11683,7 +11871,7 @@ var Navbar = React.createClass({displayName: "Navbar",
 module.exports = Navbar;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Navbar.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Nav":61,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],64:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Nav":62,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],65:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var CustomPropTypes = require('./utils/CustomPropTypes');
@@ -11736,8 +11924,15 @@ module.exports = {
       this._mountOverlayTarget();
     }
 
+    var overlay = this.renderOverlay();
+
     // Save reference to help testing
-    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
+    if (overlay !== null) {
+      this._overlayInstance = React.render(overlay, this._overlayTarget);
+    } else {
+      // Unrender if the component is null for transitions to null
+      this._unrenderOverlay();
+    }
   },
 
   _unrenderOverlay: function () {
@@ -11750,7 +11945,11 @@ module.exports = {
       throw new Error('getOverlayDOMNode(): A component must be mounted to have a DOM node.');
     }
 
-    return this._overlayInstance.getDOMNode();
+    if (this._overlayInstance) {
+      return this._overlayInstance.getDOMNode();
+    }
+
+    return null;
   },
 
   getContainerDOMNode: function () {
@@ -11760,7 +11959,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/OverlayMixin.js","/node_modules/react-bootstrap")
-},{"./utils/CustomPropTypes":83,"_process":31,"buffer":27,"react":305}],65:[function(require,module,exports){
+},{"./utils/CustomPropTypes":84,"_process":32,"buffer":28,"react":306}],66:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var OverlayMixin = require('./OverlayMixin');
@@ -11990,7 +12189,7 @@ var OverlayTrigger = React.createClass({displayName: "OverlayTrigger",
 
 module.exports = OverlayTrigger;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/OverlayTrigger.js","/node_modules/react-bootstrap")
-},{"./OverlayMixin":64,"./utils/Object.assign":85,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/domUtils":91,"_process":31,"buffer":27,"react":305}],66:[function(require,module,exports){
+},{"./OverlayMixin":65,"./utils/Object.assign":86,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/domUtils":92,"_process":32,"buffer":28,"react":306}],67:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12008,7 +12207,7 @@ var PageHeader = React.createClass({displayName: "PageHeader",
 
 module.exports = PageHeader;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/PageHeader.js","/node_modules/react-bootstrap")
-},{"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],67:[function(require,module,exports){
+},{"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],68:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12068,7 +12267,7 @@ var PageItem = React.createClass({displayName: "PageItem",
 
 module.exports = PageItem;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/PageItem.js","/node_modules/react-bootstrap")
-},{"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],68:[function(require,module,exports){
+},{"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],69:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12107,7 +12306,7 @@ var Pager = React.createClass({displayName: "Pager",
 
 module.exports = Pager;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Pager.js","/node_modules/react-bootstrap")
-},{"./utils/ValidComponentChildren":87,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],69:[function(require,module,exports){
+},{"./utils/ValidComponentChildren":88,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],70:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12256,7 +12455,7 @@ var Panel = React.createClass({displayName: "Panel",
 
 module.exports = Panel;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Panel.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./CollapsableMixin":45,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],70:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./CollapsableMixin":46,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],71:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12345,7 +12544,7 @@ var PanelGroup = React.createClass({displayName: "PanelGroup",
 
 module.exports = PanelGroup;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/PanelGroup.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],71:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],72:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12406,7 +12605,7 @@ var Popover = React.createClass({displayName: "Popover",
 
 module.exports = Popover;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Popover.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],72:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],73:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12543,7 +12742,7 @@ var ProgressBar = React.createClass({displayName: "ProgressBar",
 module.exports = ProgressBar;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/ProgressBar.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Interpolate":53,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],73:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Interpolate":54,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],74:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12572,7 +12771,7 @@ var Row = React.createClass({displayName: "Row",
 
 module.exports = Row;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Row.js","/node_modules/react-bootstrap")
-},{"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],74:[function(require,module,exports){
+},{"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],75:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12681,7 +12880,7 @@ var SplitButton = React.createClass({displayName: "SplitButton",
 module.exports = SplitButton;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/SplitButton.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Button":39,"./ButtonGroup":40,"./DropdownMenu":47,"./DropdownStateMixin":48,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],75:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Button":40,"./ButtonGroup":41,"./DropdownMenu":48,"./DropdownStateMixin":49,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],76:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12815,7 +13014,7 @@ var SubNav = React.createClass({displayName: "SubNav",
 module.exports = SubNav;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/SubNav.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/ValidComponentChildren":87,"./utils/classSet":88,"./utils/cloneWithProps":89,"./utils/createChainedFunction":90,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],76:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/ValidComponentChildren":88,"./utils/classSet":89,"./utils/cloneWithProps":90,"./utils/createChainedFunction":91,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],77:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -12900,7 +13099,7 @@ var TabPane = React.createClass({displayName: "TabPane",
 
 module.exports = TabPane;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/TabPane.js","/node_modules/react-bootstrap")
-},{"./utils/TransitionEvents":86,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],77:[function(require,module,exports){
+},{"./utils/TransitionEvents":87,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],78:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var BootstrapMixin = require('./BootstrapMixin');
@@ -13042,7 +13241,7 @@ var TabbedArea = React.createClass({displayName: "TabbedArea",
 
 module.exports = TabbedArea;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/TabbedArea.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./Nav":61,"./NavItem":62,"./utils/ValidComponentChildren":87,"./utils/cloneWithProps":89,"_process":31,"buffer":27,"react":305}],78:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./Nav":62,"./NavItem":63,"./utils/ValidComponentChildren":88,"./utils/cloneWithProps":90,"_process":32,"buffer":28,"react":306}],79:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -13081,7 +13280,7 @@ var Table = React.createClass({displayName: "Table",
 
 module.exports = Table;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Table.js","/node_modules/react-bootstrap")
-},{"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],79:[function(require,module,exports){
+},{"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],80:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -13133,7 +13332,7 @@ var Tooltip = React.createClass({displayName: "Tooltip",
 
 module.exports = Tooltip;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Tooltip.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],80:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],81:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 var joinClasses = require('./utils/joinClasses');
@@ -13162,7 +13361,7 @@ var Well = React.createClass({displayName: "Well",
 
 module.exports = Well;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/Well.js","/node_modules/react-bootstrap")
-},{"./BootstrapMixin":38,"./utils/classSet":88,"./utils/joinClasses":92,"_process":31,"buffer":27,"react":305}],81:[function(require,module,exports){
+},{"./BootstrapMixin":39,"./utils/classSet":89,"./utils/joinClasses":93,"_process":32,"buffer":28,"react":306}],82:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = {
   CLASSES: {
@@ -13408,7 +13607,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/constants.js","/node_modules/react-bootstrap")
-},{"_process":31,"buffer":27}],82:[function(require,module,exports){
+},{"_process":32,"buffer":28}],83:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = {
   Accordion: require('./Accordion'),
@@ -13462,7 +13661,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/main.js","/node_modules/react-bootstrap")
-},{"./Accordion":33,"./Affix":34,"./AffixMixin":35,"./Alert":36,"./Badge":37,"./BootstrapMixin":38,"./Button":39,"./ButtonGroup":40,"./ButtonToolbar":41,"./Carousel":42,"./CarouselItem":43,"./Col":44,"./CollapsableMixin":45,"./DropdownButton":46,"./DropdownMenu":47,"./DropdownStateMixin":48,"./FadeMixin":49,"./Glyphicon":50,"./Grid":51,"./Input":52,"./Interpolate":53,"./Jumbotron":54,"./Label":55,"./ListGroup":56,"./ListGroupItem":57,"./MenuItem":58,"./Modal":59,"./ModalTrigger":60,"./Nav":61,"./NavItem":62,"./Navbar":63,"./OverlayMixin":64,"./OverlayTrigger":65,"./PageHeader":66,"./PageItem":67,"./Pager":68,"./Panel":69,"./PanelGroup":70,"./Popover":71,"./ProgressBar":72,"./Row":73,"./SplitButton":74,"./SubNav":75,"./TabPane":76,"./TabbedArea":77,"./Table":78,"./Tooltip":79,"./Well":80,"_process":31,"buffer":27}],83:[function(require,module,exports){
+},{"./Accordion":34,"./Affix":35,"./AffixMixin":36,"./Alert":37,"./Badge":38,"./BootstrapMixin":39,"./Button":40,"./ButtonGroup":41,"./ButtonToolbar":42,"./Carousel":43,"./CarouselItem":44,"./Col":45,"./CollapsableMixin":46,"./DropdownButton":47,"./DropdownMenu":48,"./DropdownStateMixin":49,"./FadeMixin":50,"./Glyphicon":51,"./Grid":52,"./Input":53,"./Interpolate":54,"./Jumbotron":55,"./Label":56,"./ListGroup":57,"./ListGroupItem":58,"./MenuItem":59,"./Modal":60,"./ModalTrigger":61,"./Nav":62,"./NavItem":63,"./Navbar":64,"./OverlayMixin":65,"./OverlayTrigger":66,"./PageHeader":67,"./PageItem":68,"./Pager":69,"./Panel":70,"./PanelGroup":71,"./Popover":72,"./ProgressBar":73,"./Row":74,"./SplitButton":75,"./SubNav":76,"./TabPane":77,"./TabbedArea":78,"./Table":79,"./Tooltip":80,"./Well":81,"_process":32,"buffer":28}],84:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 
@@ -13527,7 +13726,7 @@ function createMountableChecker() {
 
 module.exports = CustomPropTypes;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/CustomPropTypes.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27,"react":305}],84:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react":306}],85:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014 Facebook, Inc.
@@ -13585,7 +13784,7 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/EventListener.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],85:[function(require,module,exports){
+},{"_process":32,"buffer":28}],86:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014, Facebook, Inc.
@@ -13636,7 +13835,7 @@ function assign(target, sources) {
 module.exports = assign;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/Object.assign.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],86:[function(require,module,exports){
+},{"_process":32,"buffer":28}],87:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -13753,7 +13952,7 @@ var ReactTransitionEvents = {
 module.exports = ReactTransitionEvents;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/TransitionEvents.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],87:[function(require,module,exports){
+},{"_process":32,"buffer":28}],88:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 
@@ -13846,7 +14045,7 @@ module.exports = {
   hasValidComponent: hasValidComponent
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/ValidComponentChildren.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27,"react":305}],88:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react":306}],89:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -13888,7 +14087,7 @@ function cx(classNames) {
 
 module.exports = cx;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/classSet.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],89:[function(require,module,exports){
+},{"_process":32,"buffer":28}],90:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14034,7 +14233,7 @@ function cloneWithProps(child, props) {
 
 module.exports = cloneWithProps;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/cloneWithProps.js","/node_modules/react-bootstrap/utils")
-},{"./Object.assign":85,"./joinClasses":92,"_process":31,"buffer":27,"react":305}],90:[function(require,module,exports){
+},{"./Object.assign":86,"./joinClasses":93,"_process":32,"buffer":28,"react":306}],91:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Safe chained function
@@ -14062,7 +14261,7 @@ function createChainedFunction(one, two) {
 
 module.exports = createChainedFunction;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/createChainedFunction.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],91:[function(require,module,exports){
+},{"_process":32,"buffer":28}],92:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 
 /**
@@ -14174,7 +14373,7 @@ module.exports = {
   offsetParent: offsetParent
 };
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/domUtils.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],92:[function(require,module,exports){
+},{"_process":32,"buffer":28}],93:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -14218,24 +14417,24 @@ function joinClasses(className/*, ... */) {
 module.exports = joinClasses;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/joinClasses.js","/node_modules/react-bootstrap/utils")
-},{"_process":31,"buffer":27}],93:[function(require,module,exports){
+},{"_process":32,"buffer":28}],94:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Represents a cancellation caused by navigating away
  * before the previous transition has fully resolved.
  */
-"use strict";
-
 function Cancellation() {}
 
 module.exports = Cancellation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Cancellation.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27}],94:[function(require,module,exports){
+},{"_process":32,"buffer":28}],95:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
 
 var History = {
 
@@ -14250,7 +14449,7 @@ var History = {
    * Sends the browser back one entry in the history.
    */
   back: function back() {
-    invariant(canUseDOM, 'Cannot use History.back without a DOM');
+    invariant(canUseDOM, "Cannot use History.back without a DOM");
 
     // Do this first so that History.length will
     // be accurate in location change listeners.
@@ -14263,16 +14462,16 @@ var History = {
 
 module.exports = History;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/History.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27,"react/lib/ExecutionEnvironment":154,"react/lib/invariant":283}],95:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/lib/ExecutionEnvironment":155,"react/lib/invariant":284}],96:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 /* jshint -W084 */
-var PathUtils = require('./PathUtils');
+var PathUtils = require("./PathUtils");
 
 function deepSearch(route, pathname, query) {
   // Check the subtree first to find the most deeply-nested match.
@@ -14317,35 +14516,46 @@ var Match = (function () {
     this.routes = routes;
   }
 
-  _createClass(Match, null, [{
-    key: 'findMatch',
+  _createClass(Match, null, {
+    findMatch: {
 
-    /**
-     * Attempts to match depth-first a route in the given route's
-     * subtree against the given path and returns the match if it
-     * succeeds, null if no match can be made.
-     */
-    value: function findMatch(routes, path) {
-      var pathname = PathUtils.withoutQuery(path);
-      var query = PathUtils.extractQuery(path);
-      var match = null;
+      /**
+       * Attempts to match depth-first a route in the given route's
+       * subtree against the given path and returns the match if it
+       * succeeds, null if no match can be made.
+       */
 
-      for (var i = 0, len = routes.length; match == null && i < len; ++i) match = deepSearch(routes[i], pathname, query);
+      value: function findMatch(routes, path) {
+        var pathname = PathUtils.withoutQuery(path);
+        var query = PathUtils.extractQuery(path);
+        var match = null;
 
-      return match;
+        for (var i = 0, len = routes.length; match == null && i < len; ++i) match = deepSearch(routes[i], pathname, query);
+
+        return match;
+      }
     }
-  }]);
+  });
 
   return Match;
 })();
 
 module.exports = Match;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Match.js","/node_modules/react-router/lib")
-},{"./PathUtils":97,"_process":31,"buffer":27}],96:[function(require,module,exports){
+},{"./PathUtils":98,"_process":32,"buffer":28}],97:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var PropTypes = require('./PropTypes');
+var warning = require("react/lib/warning");
+var PropTypes = require("./PropTypes");
+
+function deprecatedMethod(routerMethodName, fn) {
+  return function () {
+    warning(false, "Router.Navigation is deprecated. Please use this.context.router." + routerMethodName + "() instead");
+
+    return fn.apply(this, arguments);
+  };
+}
 
 /**
  * A mixin for components that modify the URL.
@@ -14375,52 +14585,52 @@ var Navigation = {
    * Returns an absolute URL path created from the given route
    * name, URL parameters, and query values.
    */
-  makePath: function makePath(to, params, query) {
+  makePath: deprecatedMethod("makePath", function (to, params, query) {
     return this.context.router.makePath(to, params, query);
-  },
+  }),
 
   /**
    * Returns a string that may safely be used as the href of a
    * link to the route with the given name.
    */
-  makeHref: function makeHref(to, params, query) {
+  makeHref: deprecatedMethod("makeHref", function (to, params, query) {
     return this.context.router.makeHref(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the URL specified in the arguments by pushing
    * a new URL onto the history stack.
    */
-  transitionTo: function transitionTo(to, params, query) {
+  transitionTo: deprecatedMethod("transitionTo", function (to, params, query) {
     this.context.router.transitionTo(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the URL specified in the arguments by replacing
    * the current URL in the history stack.
    */
-  replaceWith: function replaceWith(to, params, query) {
+  replaceWith: deprecatedMethod("replaceWith", function (to, params, query) {
     this.context.router.replaceWith(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the previous URL.
    */
-  goBack: function goBack() {
+  goBack: deprecatedMethod("goBack", function () {
     return this.context.router.goBack();
-  }
+  })
 
 };
 
 module.exports = Navigation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Navigation.js","/node_modules/react-router/lib")
-},{"./PropTypes":98,"_process":31,"buffer":27}],97:[function(require,module,exports){
+},{"./PropTypes":99,"_process":32,"buffer":28,"react/lib/warning":305}],98:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var assign = require('object-assign');
-var qs = require('qs');
+var invariant = require("react/lib/invariant");
+var objectAssign = require("object-assign");
+var qs = require("qs");
 
 var paramCompileMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$]*)|[*.()\[\]\\+|{}^$]/g;
 var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?]?)|[*]/g;
@@ -14435,17 +14645,17 @@ function compilePattern(pattern) {
     var source = pattern.replace(paramCompileMatcher, function (match, paramName) {
       if (paramName) {
         paramNames.push(paramName);
-        return '([^/?#]+)';
-      } else if (match === '*') {
-        paramNames.push('splat');
-        return '(.*?)';
+        return "([^/?#]+)";
+      } else if (match === "*") {
+        paramNames.push("splat");
+        return "(.*?)";
       } else {
-        return '\\' + match;
+        return "\\" + match;
       }
     });
 
     _compiledPatterns[pattern] = {
-      matcher: new RegExp('^' + source + '$', 'i'),
+      matcher: new RegExp("^" + source + "$", "i"),
       paramNames: paramNames
     };
   }
@@ -14459,14 +14669,14 @@ var PathUtils = {
    * Returns true if the given path is absolute.
    */
   isAbsolute: function isAbsolute(path) {
-    return path.charAt(0) === '/';
+    return path.charAt(0) === "/";
   },
 
   /**
    * Joins two URL paths together.
    */
   join: function join(a, b) {
-    return a.replace(/\/*$/, '/') + b;
+    return a.replace(/\/*$/, "/") + b;
   },
 
   /**
@@ -14510,28 +14720,28 @@ var PathUtils = {
     var splatIndex = 0;
 
     return pattern.replace(paramInjectMatcher, function (match, paramName) {
-      paramName = paramName || 'splat';
+      paramName = paramName || "splat";
 
       // If param is optional don't check for existence
-      if (paramName.slice(-1) === '?') {
+      if (paramName.slice(-1) === "?") {
         paramName = paramName.slice(0, -1);
 
-        if (params[paramName] == null) return '';
+        if (params[paramName] == null) return "";
       } else {
-        invariant(params[paramName] != null, 'Missing "%s" parameter for path "%s"', paramName, pattern);
+        invariant(params[paramName] != null, "Missing \"%s\" parameter for path \"%s\"", paramName, pattern);
       }
 
       var segment;
-      if (paramName === 'splat' && Array.isArray(params[paramName])) {
+      if (paramName === "splat" && Array.isArray(params[paramName])) {
         segment = params[paramName][splatIndex++];
 
-        invariant(segment != null, 'Missing splat # %s for path "%s"', splatIndex, pattern);
+        invariant(segment != null, "Missing splat # %s for path \"%s\"", splatIndex, pattern);
       } else {
         segment = params[paramName];
       }
 
       return segment;
-    }).replace(paramInjectTrailingSlashMatcher, '/');
+    }).replace(paramInjectTrailingSlashMatcher, "/");
   },
 
   /**
@@ -14547,7 +14757,7 @@ var PathUtils = {
    * Returns a version of the given path without the query string.
    */
   withoutQuery: function withoutQuery(path) {
-    return path.replace(queryMatcher, '');
+    return path.replace(queryMatcher, "");
   },
 
   /**
@@ -14557,12 +14767,12 @@ var PathUtils = {
   withQuery: function withQuery(path, query) {
     var existingQuery = PathUtils.extractQuery(path);
 
-    if (existingQuery) query = query ? assign(existingQuery, query) : existingQuery;
+    if (existingQuery) query = query ? objectAssign(existingQuery, query) : existingQuery;
 
-    var queryString = qs.stringify(query, { arrayFormat: 'brackets' });
+    var queryString = qs.stringify(query, { arrayFormat: "brackets" });
 
     if (queryString) {
-      return PathUtils.withoutQuery(path) + '?' + queryString;
+      return PathUtils.withoutQuery(path) + "?" + queryString;
     }return PathUtils.withoutQuery(path);
   }
 
@@ -14570,13 +14780,13 @@ var PathUtils = {
 
 module.exports = PathUtils;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/PathUtils.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27,"object-assign":126,"qs":127,"react/lib/invariant":283}],98:[function(require,module,exports){
+},{"_process":32,"buffer":28,"object-assign":127,"qs":128,"react/lib/invariant":284}],99:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var assign = require('react/lib/Object.assign');
-var ReactPropTypes = require('react').PropTypes;
-var Route = require('./Route');
+var assign = require("react/lib/Object.assign");
+var ReactPropTypes = require("react").PropTypes;
+var Route = require("./Route");
 
 var PropTypes = assign({}, ReactPropTypes, {
 
@@ -14585,7 +14795,7 @@ var PropTypes = assign({}, ReactPropTypes, {
    */
   falsy: function falsy(props, propName, componentName) {
     if (props[propName]) {
-      return new Error('<' + componentName + '> should not have a "' + propName + '" prop');
+      return new Error("<" + componentName + "> may not have a \"" + propName + "\" prop");
     }
   },
 
@@ -14604,13 +14814,13 @@ var PropTypes = assign({}, ReactPropTypes, {
 
 module.exports = PropTypes;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/PropTypes.js","/node_modules/react-router/lib")
-},{"./Route":100,"_process":31,"buffer":27,"react":305,"react/lib/Object.assign":161}],99:[function(require,module,exports){
+},{"./Route":101,"_process":32,"buffer":28,"react":306,"react/lib/Object.assign":162}],100:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Encapsulates a redirect to the given route.
  */
-"use strict";
-
 function Redirect(to, params, query) {
   this.to = to;
   this.params = params;
@@ -14619,18 +14829,18 @@ function Redirect(to, params, query) {
 
 module.exports = Redirect;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Redirect.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27}],100:[function(require,module,exports){
+},{"_process":32,"buffer":28}],101:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var assign = require('react/lib/Object.assign');
-var invariant = require('react/lib/invariant');
-var warning = require('react/lib/warning');
-var PathUtils = require('./PathUtils');
+var assign = require("react/lib/Object.assign");
+var invariant = require("react/lib/invariant");
+var warning = require("react/lib/warning");
+var PathUtils = require("./PathUtils");
 
 var _currentRoute;
 
@@ -14649,186 +14859,193 @@ var Route = (function () {
     this.handler = handler;
   }
 
-  _createClass(Route, [{
-    key: 'appendChild',
+  _createClass(Route, {
+    appendChild: {
 
-    /**
-     * Appends the given route to this route's child routes.
-     */
-    value: function appendChild(route) {
-      invariant(route instanceof Route, 'route.appendChild must use a valid Route');
+      /**
+       * Appends the given route to this route's child routes.
+       */
 
-      if (!this.childRoutes) this.childRoutes = [];
+      value: function appendChild(route) {
+        invariant(route instanceof Route, "route.appendChild must use a valid Route");
 
-      this.childRoutes.push(route);
+        if (!this.childRoutes) this.childRoutes = [];
+
+        this.childRoutes.push(route);
+      }
+    },
+    toString: {
+      value: function toString() {
+        var string = "<Route";
+
+        if (this.name) string += " name=\"" + this.name + "\"";
+
+        string += " path=\"" + this.path + "\">";
+
+        return string;
+      }
     }
   }, {
-    key: 'toString',
-    value: function toString() {
-      var string = '<Route';
+    createRoute: {
 
-      if (this.name) string += ' name="' + this.name + '"';
+      /**
+       * Creates and returns a new route. Options may be a URL pathname string
+       * with placeholders for named params or an object with any of the following
+       * properties:
+       *
+       * - name                     The name of the route. This is used to lookup a
+       *                            route relative to its parent route and should be
+       *                            unique among all child routes of the same parent
+       * - path                     A URL pathname string with optional placeholders
+       *                            that specify the names of params to extract from
+       *                            the URL when the path matches. Defaults to `/${name}`
+       *                            when there is a name given, or the path of the parent
+       *                            route, or /
+       * - ignoreScrollBehavior     True to make this route (and all descendants) ignore
+       *                            the scroll behavior of the router
+       * - isDefault                True to make this route the default route among all
+       *                            its siblings
+       * - isNotFound               True to make this route the "not found" route among
+       *                            all its siblings
+       * - onEnter                  A transition hook that will be called when the
+       *                            router is going to enter this route
+       * - onLeave                  A transition hook that will be called when the
+       *                            router is going to leave this route
+       * - handler                  A React component that will be rendered when
+       *                            this route is active
+       * - parentRoute              The parent route to use for this route. This option
+       *                            is automatically supplied when creating routes inside
+       *                            the callback to another invocation of createRoute. You
+       *                            only ever need to use this when declaring routes
+       *                            independently of one another to manually piece together
+       *                            the route hierarchy
+       *
+       * The callback may be used to structure your route hierarchy. Any call to
+       * createRoute, createDefaultRoute, createNotFoundRoute, or createRedirect
+       * inside the callback automatically uses this route as its parent.
+       */
 
-      string += ' path="' + this.path + '">';
+      value: function createRoute(options, callback) {
+        options = options || {};
 
-      return string;
-    }
-  }], [{
-    key: 'createRoute',
+        if (typeof options === "string") options = { path: options };
 
-    /**
-     * Creates and returns a new route. Options may be a URL pathname string
-     * with placeholders for named params or an object with any of the following
-     * properties:
-     *
-     * - name                     The name of the route. This is used to lookup a
-     *                            route relative to its parent route and should be
-     *                            unique among all child routes of the same parent
-     * - path                     A URL pathname string with optional placeholders
-     *                            that specify the names of params to extract from
-     *                            the URL when the path matches. Defaults to `/${name}`
-     *                            when there is a name given, or the path of the parent
-     *                            route, or /
-     * - ignoreScrollBehavior     True to make this route (and all descendants) ignore
-     *                            the scroll behavior of the router
-     * - isDefault                True to make this route the default route among all
-     *                            its siblings
-     * - isNotFound               True to make this route the "not found" route among
-     *                            all its siblings
-     * - onEnter                  A transition hook that will be called when the
-     *                            router is going to enter this route
-     * - onLeave                  A transition hook that will be called when the
-     *                            router is going to leave this route
-     * - handler                  A React component that will be rendered when
-     *                            this route is active
-     * - parentRoute              The parent route to use for this route. This option
-     *                            is automatically supplied when creating routes inside
-     *                            the callback to another invocation of createRoute. You
-     *                            only ever need to use this when declaring routes
-     *                            independently of one another to manually piece together
-     *                            the route hierarchy
-     *
-     * The callback may be used to structure your route hierarchy. Any call to
-     * createRoute, createDefaultRoute, createNotFoundRoute, or createRedirect
-     * inside the callback automatically uses this route as its parent.
-     */
-    value: function createRoute(options, callback) {
-      options = options || {};
+        var parentRoute = _currentRoute;
 
-      if (typeof options === 'string') options = { path: options };
-
-      var parentRoute = _currentRoute;
-
-      if (parentRoute) {
-        warning(options.parentRoute == null || options.parentRoute === parentRoute, 'You should not use parentRoute with createRoute inside another route\'s child callback; it is ignored');
-      } else {
-        parentRoute = options.parentRoute;
-      }
-
-      var name = options.name;
-      var path = options.path || name;
-
-      if (path && !(options.isDefault || options.isNotFound)) {
-        if (PathUtils.isAbsolute(path)) {
-          if (parentRoute) {
-            invariant(path === parentRoute.path || parentRoute.paramNames.length === 0, 'You cannot nest path "%s" inside "%s"; the parent requires URL parameters', path, parentRoute.path);
-          }
-        } else if (parentRoute) {
-          // Relative paths extend their parent.
-          path = PathUtils.join(parentRoute.path, path);
+        if (parentRoute) {
+          warning(options.parentRoute == null || options.parentRoute === parentRoute, "You should not use parentRoute with createRoute inside another route's child callback; it is ignored");
         } else {
-          path = '/' + path;
-        }
-      } else {
-        path = parentRoute ? parentRoute.path : '/';
-      }
-
-      if (options.isNotFound && !/\*$/.test(path)) path += '*'; // Auto-append * to the path of not found routes.
-
-      var route = new Route(name, path, options.ignoreScrollBehavior, options.isDefault, options.isNotFound, options.onEnter, options.onLeave, options.handler);
-
-      if (parentRoute) {
-        if (route.isDefault) {
-          invariant(parentRoute.defaultRoute == null, '%s may not have more than one default route', parentRoute);
-
-          parentRoute.defaultRoute = route;
-        } else if (route.isNotFound) {
-          invariant(parentRoute.notFoundRoute == null, '%s may not have more than one not found route', parentRoute);
-
-          parentRoute.notFoundRoute = route;
+          parentRoute = options.parentRoute;
         }
 
-        parentRoute.appendChild(route);
-      }
+        var name = options.name;
+        var path = options.path || name;
 
-      // Any routes created in the callback
-      // use this route as their parent.
-      if (typeof callback === 'function') {
-        var currentRoute = _currentRoute;
-        _currentRoute = route;
-        callback.call(route, route);
-        _currentRoute = currentRoute;
-      }
-
-      return route;
-    }
-  }, {
-    key: 'createDefaultRoute',
-
-    /**
-     * Creates and returns a route that is rendered when its parent matches
-     * the current URL.
-     */
-    value: function createDefaultRoute(options) {
-      return Route.createRoute(assign({}, options, { isDefault: true }));
-    }
-  }, {
-    key: 'createNotFoundRoute',
-
-    /**
-     * Creates and returns a route that is rendered when its parent matches
-     * the current URL but none of its siblings do.
-     */
-    value: function createNotFoundRoute(options) {
-      return Route.createRoute(assign({}, options, { isNotFound: true }));
-    }
-  }, {
-    key: 'createRedirect',
-
-    /**
-     * Creates and returns a route that automatically redirects the transition
-     * to another route. In addition to the normal options to createRoute, this
-     * function accepts the following options:
-     *
-     * - from         An alias for the `path` option. Defaults to *
-     * - to           The path/route/route name to redirect to
-     * - params       The params to use in the redirect URL. Defaults
-     *                to using the current params
-     * - query        The query to use in the redirect URL. Defaults
-     *                to using the current query
-     */
-    value: function createRedirect(options) {
-      return Route.createRoute(assign({}, options, {
-        path: options.path || options.from || '*',
-        onEnter: function onEnter(transition, params, query) {
-          transition.redirect(options.to, options.params || params, options.query || query);
+        if (path && !(options.isDefault || options.isNotFound)) {
+          if (PathUtils.isAbsolute(path)) {
+            if (parentRoute) {
+              invariant(path === parentRoute.path || parentRoute.paramNames.length === 0, "You cannot nest path \"%s\" inside \"%s\"; the parent requires URL parameters", path, parentRoute.path);
+            }
+          } else if (parentRoute) {
+            // Relative paths extend their parent.
+            path = PathUtils.join(parentRoute.path, path);
+          } else {
+            path = "/" + path;
+          }
+        } else {
+          path = parentRoute ? parentRoute.path : "/";
         }
-      }));
+
+        if (options.isNotFound && !/\*$/.test(path)) path += "*"; // Auto-append * to the path of not found routes.
+
+        var route = new Route(name, path, options.ignoreScrollBehavior, options.isDefault, options.isNotFound, options.onEnter, options.onLeave, options.handler);
+
+        if (parentRoute) {
+          if (route.isDefault) {
+            invariant(parentRoute.defaultRoute == null, "%s may not have more than one default route", parentRoute);
+
+            parentRoute.defaultRoute = route;
+          } else if (route.isNotFound) {
+            invariant(parentRoute.notFoundRoute == null, "%s may not have more than one not found route", parentRoute);
+
+            parentRoute.notFoundRoute = route;
+          }
+
+          parentRoute.appendChild(route);
+        }
+
+        // Any routes created in the callback
+        // use this route as their parent.
+        if (typeof callback === "function") {
+          var currentRoute = _currentRoute;
+          _currentRoute = route;
+          callback.call(route, route);
+          _currentRoute = currentRoute;
+        }
+
+        return route;
+      }
+    },
+    createDefaultRoute: {
+
+      /**
+       * Creates and returns a route that is rendered when its parent matches
+       * the current URL.
+       */
+
+      value: function createDefaultRoute(options) {
+        return Route.createRoute(assign({}, options, { isDefault: true }));
+      }
+    },
+    createNotFoundRoute: {
+
+      /**
+       * Creates and returns a route that is rendered when its parent matches
+       * the current URL but none of its siblings do.
+       */
+
+      value: function createNotFoundRoute(options) {
+        return Route.createRoute(assign({}, options, { isNotFound: true }));
+      }
+    },
+    createRedirect: {
+
+      /**
+       * Creates and returns a route that automatically redirects the transition
+       * to another route. In addition to the normal options to createRoute, this
+       * function accepts the following options:
+       *
+       * - from         An alias for the `path` option. Defaults to *
+       * - to           The path/route/route name to redirect to
+       * - params       The params to use in the redirect URL. Defaults
+       *                to using the current params
+       * - query        The query to use in the redirect URL. Defaults
+       *                to using the current query
+       */
+
+      value: function createRedirect(options) {
+        return Route.createRoute(assign({}, options, {
+          path: options.path || options.from || "*",
+          onEnter: function onEnter(transition, params, query) {
+            transition.redirect(options.to, options.params || params, options.query || query);
+          }
+        }));
+      }
     }
-  }]);
+  });
 
   return Route;
 })();
 
 module.exports = Route;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Route.js","/node_modules/react-router/lib")
-},{"./PathUtils":97,"_process":31,"buffer":27,"react/lib/Object.assign":161,"react/lib/invariant":283,"react/lib/warning":304}],101:[function(require,module,exports){
+},{"./PathUtils":98,"_process":32,"buffer":28,"react/lib/Object.assign":162,"react/lib/invariant":284,"react/lib/warning":305}],102:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
-var getWindowScrollPosition = require('./getWindowScrollPosition');
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
+var getWindowScrollPosition = require("./getWindowScrollPosition");
 
 function shouldUpdateScroll(state, prevState) {
   if (!prevState) {
@@ -14877,7 +15094,7 @@ var ScrollHistory = {
   },
 
   componentWillMount: function componentWillMount() {
-    invariant(this.constructor.getScrollBehavior() == null || canUseDOM, 'Cannot use scroll behavior without a DOM');
+    invariant(this.constructor.getScrollBehavior() == null || canUseDOM, "Cannot use scroll behavior without a DOM");
   },
 
   componentDidMount: function componentDidMount() {
@@ -14900,11 +15117,20 @@ var ScrollHistory = {
 
 module.exports = ScrollHistory;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/ScrollHistory.js","/node_modules/react-router/lib")
-},{"./getWindowScrollPosition":116,"_process":31,"buffer":27,"react/lib/ExecutionEnvironment":154,"react/lib/invariant":283}],102:[function(require,module,exports){
+},{"./getWindowScrollPosition":117,"_process":32,"buffer":28,"react/lib/ExecutionEnvironment":155,"react/lib/invariant":284}],103:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var PropTypes = require('./PropTypes');
+var warning = require("react/lib/warning");
+var PropTypes = require("./PropTypes");
+
+function deprecatedMethod(routerMethodName, fn) {
+  return function () {
+    warning(false, "Router.State is deprecated. Please use this.context.router." + routerMethodName + "() instead");
+
+    return fn.apply(this, arguments);
+  };
+}
 
 /**
  * A mixin for components that need to know the path, routes, URL
@@ -14916,10 +15142,10 @@ var PropTypes = require('./PropTypes');
  *     mixins: [ Router.State ],
  *     render() {
  *       var className = this.props.className;
- *
+ *   
  *       if (this.isActive('about'))
  *         className += ' is-active';
- *
+ *   
  *       return React.DOM.a({ className: className }, this.props.children);
  *     }
  *   });
@@ -14933,58 +15159,58 @@ var State = {
   /**
    * Returns the current URL path.
    */
-  getPath: function getPath() {
+  getPath: deprecatedMethod("getCurrentPath", function () {
     return this.context.router.getCurrentPath();
-  },
+  }),
 
   /**
    * Returns the current URL path without the query string.
    */
-  getPathname: function getPathname() {
+  getPathname: deprecatedMethod("getCurrentPathname", function () {
     return this.context.router.getCurrentPathname();
-  },
+  }),
 
   /**
    * Returns an object of the URL params that are currently active.
    */
-  getParams: function getParams() {
+  getParams: deprecatedMethod("getCurrentParams", function () {
     return this.context.router.getCurrentParams();
-  },
+  }),
 
   /**
    * Returns an object of the query params that are currently active.
    */
-  getQuery: function getQuery() {
+  getQuery: deprecatedMethod("getCurrentQuery", function () {
     return this.context.router.getCurrentQuery();
-  },
+  }),
 
   /**
    * Returns an array of the routes that are currently active.
    */
-  getRoutes: function getRoutes() {
+  getRoutes: deprecatedMethod("getCurrentRoutes", function () {
     return this.context.router.getCurrentRoutes();
-  },
+  }),
 
   /**
    * A helper method to determine if a given route, params, and query
    * are active.
    */
-  isActive: function isActive(to, params, query) {
+  isActive: deprecatedMethod("isActive", function (to, params, query) {
     return this.context.router.isActive(to, params, query);
-  }
+  })
 
 };
 
 module.exports = State;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/State.js","/node_modules/react-router/lib")
-},{"./PropTypes":98,"_process":31,"buffer":27}],103:[function(require,module,exports){
+},{"./PropTypes":99,"_process":32,"buffer":28,"react/lib/warning":305}],104:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /* jshint -W058 */
 
-'use strict';
-
-var Cancellation = require('./Cancellation');
-var Redirect = require('./Redirect');
+var Cancellation = require("./Cancellation");
+var Redirect = require("./Redirect");
 
 /**
  * Encapsulates a transition to a given path.
@@ -15000,7 +15226,7 @@ function Transition(path, retry) {
 }
 
 Transition.prototype.abort = function (reason) {
-  if (this.abortReason == null) this.abortReason = reason || 'ABORT';
+  if (this.abortReason == null) this.abortReason = reason || "ABORT";
 };
 
 Transition.prototype.redirect = function (to, params, query) {
@@ -15055,39 +15281,39 @@ Transition.to = function (transition, routes, params, query, callback) {
 
 module.exports = Transition;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Transition.js","/node_modules/react-router/lib")
-},{"./Cancellation":93,"./Redirect":99,"_process":31,"buffer":27}],104:[function(require,module,exports){
+},{"./Cancellation":94,"./Redirect":100,"_process":32,"buffer":28}],105:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Actions that modify the URL.
  */
-'use strict';
-
 var LocationActions = {
 
   /**
    * Indicates a new location is being pushed to the history stack.
    */
-  PUSH: 'push',
+  PUSH: "push",
 
   /**
    * Indicates the current location should be replaced.
    */
-  REPLACE: 'replace',
+  REPLACE: "replace",
 
   /**
    * Indicates the most recent entry should be removed from the history stack.
    */
-  POP: 'pop'
+  POP: "pop"
 
 };
 
 module.exports = LocationActions;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/actions/LocationActions.js","/node_modules/react-router/lib/actions")
-},{"_process":31,"buffer":27}],105:[function(require,module,exports){
+},{"_process":32,"buffer":28}],106:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
+var LocationActions = require("../actions/LocationActions");
 
 /**
  * A scroll behavior that attempts to imitate the default behavior
@@ -15115,14 +15341,14 @@ var ImitateBrowserBehavior = {
 
 module.exports = ImitateBrowserBehavior;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/behaviors/ImitateBrowserBehavior.js","/node_modules/react-router/lib/behaviors")
-},{"../actions/LocationActions":104,"_process":31,"buffer":27}],106:[function(require,module,exports){
+},{"../actions/LocationActions":105,"_process":32,"buffer":28}],107:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * A scroll behavior that always scrolls to the top of the page
  * after a transition.
  */
-"use strict";
-
 var ScrollToTopBehavior = {
 
   updateScrollPosition: function updateScrollPosition() {
@@ -15133,15 +15359,15 @@ var ScrollToTopBehavior = {
 
 module.exports = ScrollToTopBehavior;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/behaviors/ScrollToTopBehavior.js","/node_modules/react-router/lib/behaviors")
-},{"_process":31,"buffer":27}],107:[function(require,module,exports){
+},{"_process":32,"buffer":28}],108:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 /**
  * This component is necessary to get around a context warning
@@ -15149,7 +15375,7 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== 'fun
  * between the "owner" and "parent" contexts.
  */
 
-var React = require('react');
+var React = require("react");
 
 var ContextWrapper = (function (_React$Component) {
   function ContextWrapper() {
@@ -15162,29 +15388,30 @@ var ContextWrapper = (function (_React$Component) {
 
   _inherits(ContextWrapper, _React$Component);
 
-  _createClass(ContextWrapper, [{
-    key: 'render',
-    value: function render() {
-      return this.props.children;
+  _createClass(ContextWrapper, {
+    render: {
+      value: function render() {
+        return this.props.children;
+      }
     }
-  }]);
+  });
 
   return ContextWrapper;
 })(React.Component);
 
 module.exports = ContextWrapper;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/ContextWrapper.js","/node_modules/react-router/lib/components")
-},{"_process":31,"buffer":27,"react":305}],108:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react":306}],109:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
+var Route = require("./Route");
 
 /**
  * A <DefaultRoute> component is a special kind of <Route> that
@@ -15224,19 +15451,19 @@ DefaultRoute.defaultProps = {
 
 module.exports = DefaultRoute;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/DefaultRoute.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"./Route":112,"./RouteHandler":113,"_process":31,"buffer":27}],109:[function(require,module,exports){
+},{"../PropTypes":99,"./Route":113,"./RouteHandler":114,"_process":32,"buffer":28}],110:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var assign = require('react/lib/Object.assign');
-var PropTypes = require('../PropTypes');
+var React = require("react");
+var assign = require("react/lib/Object.assign");
+var PropTypes = require("../PropTypes");
 
 function isLeftClickEvent(event) {
   return event.button === 0;
@@ -15276,64 +15503,67 @@ var Link = (function (_React$Component) {
 
   _inherits(Link, _React$Component);
 
-  _createClass(Link, [{
-    key: 'handleClick',
-    value: function handleClick(event) {
-      var allowTransition = true;
-      var clickResult;
+  _createClass(Link, {
+    handleClick: {
+      value: function handleClick(event) {
+        var allowTransition = true;
+        var clickResult;
 
-      if (this.props.onClick) clickResult = this.props.onClick(event);
+        if (this.props.onClick) clickResult = this.props.onClick(event);
 
-      if (isModifiedEvent(event) || !isLeftClickEvent(event)) {
-        return;
-      }if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
+        if (isModifiedEvent(event) || !isLeftClickEvent(event)) {
+          return;
+        }if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
 
-      event.preventDefault();
+        event.preventDefault();
 
-      if (allowTransition) this.context.router.transitionTo(this.props.to, this.props.params, this.props.query);
+        if (allowTransition) this.context.router.transitionTo(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    getHref: {
+
+      /**
+       * Returns the value of the "href" attribute to use on the DOM element.
+       */
+
+      value: function getHref() {
+        return this.context.router.makeHref(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    getClassName: {
+
+      /**
+       * Returns the value of the "class" attribute to use on the DOM element, which contains
+       * the value of the activeClassName property when this <Link> is active.
+       */
+
+      value: function getClassName() {
+        var className = this.props.className;
+
+        if (this.getActiveState()) className += " " + this.props.activeClassName;
+
+        return className;
+      }
+    },
+    getActiveState: {
+      value: function getActiveState() {
+        return this.context.router.isActive(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    render: {
+      value: function render() {
+        var props = assign({}, this.props, {
+          href: this.getHref(),
+          className: this.getClassName(),
+          onClick: this.handleClick.bind(this)
+        });
+
+        if (props.activeStyle && this.getActiveState()) props.style = props.activeStyle;
+
+        return React.DOM.a(props, this.props.children);
+      }
     }
-  }, {
-    key: 'getHref',
-
-    /**
-     * Returns the value of the "href" attribute to use on the DOM element.
-     */
-    value: function getHref() {
-      return this.context.router.makeHref(this.props.to, this.props.params, this.props.query);
-    }
-  }, {
-    key: 'getClassName',
-
-    /**
-     * Returns the value of the "class" attribute to use on the DOM element, which contains
-     * the value of the activeClassName property when this <Link> is active.
-     */
-    value: function getClassName() {
-      var className = this.props.className;
-
-      if (this.getActiveState()) className += ' ' + this.props.activeClassName;
-
-      return className;
-    }
-  }, {
-    key: 'getActiveState',
-    value: function getActiveState() {
-      return this.context.router.isActive(this.props.to, this.props.params, this.props.query);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var props = assign({}, this.props, {
-        href: this.getHref(),
-        className: this.getClassName(),
-        onClick: this.handleClick.bind(this)
-      });
-
-      if (props.activeStyle && this.getActiveState()) props.style = props.activeStyle;
-
-      return React.DOM.a(props, this.props.children);
-    }
-  }]);
+  });
 
   return Link;
 })(React.Component);
@@ -15356,23 +15586,23 @@ Link.propTypes = {
 };
 
 Link.defaultProps = {
-  activeClassName: 'active',
-  className: ''
+  activeClassName: "active",
+  className: ""
 };
 
 module.exports = Link;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Link.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"_process":31,"buffer":27,"react":305,"react/lib/Object.assign":161}],110:[function(require,module,exports){
+},{"../PropTypes":99,"_process":32,"buffer":28,"react":306,"react/lib/Object.assign":162}],111:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
+var Route = require("./Route");
 
 /**
  * A <NotFoundRoute> is a special kind of <Route> that
@@ -15413,16 +15643,16 @@ NotFoundRoute.defaultProps = {
 
 module.exports = NotFoundRoute;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/NotFoundRoute.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"./Route":112,"./RouteHandler":113,"_process":31,"buffer":27}],111:[function(require,module,exports){
+},{"../PropTypes":99,"./Route":113,"./RouteHandler":114,"_process":32,"buffer":28}],112:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var Route = require("./Route");
 
 /**
  * A <Redirect> component is a special kind of <Route> that always
@@ -15459,20 +15689,20 @@ Redirect.defaultProps = {};
 
 module.exports = Redirect;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Redirect.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"./Route":112,"_process":31,"buffer":27}],112:[function(require,module,exports){
+},{"../PropTypes":99,"./Route":113,"_process":32,"buffer":28}],113:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var invariant = require('react/lib/invariant');
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
+var React = require("react");
+var invariant = require("react/lib/invariant");
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
 
 /**
  * <Route> components specify components that are rendered to the page when the
@@ -15526,12 +15756,13 @@ var Route = (function (_React$Component) {
 
   _inherits(Route, _React$Component);
 
-  _createClass(Route, [{
-    key: 'render',
-    value: function render() {
-      invariant(false, '%s elements are for router configuration only and should not be rendered', this.constructor.name);
+  _createClass(Route, {
+    render: {
+      value: function render() {
+        invariant(false, "%s elements are for router configuration only and should not be rendered", this.constructor.name);
+      }
     }
-  }]);
+  });
 
   return Route;
 })(React.Component);
@@ -15553,22 +15784,22 @@ Route.defaultProps = {
 
 module.exports = Route;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Route.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"./RouteHandler":113,"_process":31,"buffer":27,"react":305,"react/lib/invariant":283}],113:[function(require,module,exports){
+},{"../PropTypes":99,"./RouteHandler":114,"_process":32,"buffer":28,"react":306,"react/lib/invariant":284}],114:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var ContextWrapper = require('./ContextWrapper');
-var assign = require('react/lib/Object.assign');
-var PropTypes = require('../PropTypes');
+var React = require("react");
+var ContextWrapper = require("./ContextWrapper");
+var assign = require("react/lib/Object.assign");
+var PropTypes = require("../PropTypes");
 
-var REF_NAME = '__routeHandler__';
+var REF_NAME = "__routeHandler__";
 
 /**
  * A <RouteHandler> component renders the active child route handler
@@ -15586,65 +15817,57 @@ var RouteHandler = (function (_React$Component) {
 
   _inherits(RouteHandler, _React$Component);
 
-  _createClass(RouteHandler, [{
-    key: 'getChildContext',
-    value: function getChildContext() {
-      return {
-        routeDepth: this.context.routeDepth + 1
-      };
+  _createClass(RouteHandler, {
+    getChildContext: {
+      value: function getChildContext() {
+        return {
+          routeDepth: this.context.routeDepth + 1
+        };
+      }
+    },
+    componentDidMount: {
+      value: function componentDidMount() {
+        this._updateRouteComponent(this.refs[REF_NAME]);
+      }
+    },
+    componentDidUpdate: {
+      value: function componentDidUpdate() {
+        this._updateRouteComponent(this.refs[REF_NAME]);
+      }
+    },
+    componentWillUnmount: {
+      value: function componentWillUnmount() {
+        this._updateRouteComponent(null);
+      }
+    },
+    _updateRouteComponent: {
+      value: function _updateRouteComponent(component) {
+        this.context.router.setRouteComponentAtDepth(this.getRouteDepth(), component);
+      }
+    },
+    getRouteDepth: {
+      value: function getRouteDepth() {
+        return this.context.routeDepth;
+      }
+    },
+    createChildRouteHandler: {
+      value: function createChildRouteHandler(props) {
+        var route = this.context.router.getRouteAtDepth(this.getRouteDepth());
+        return route ? React.createElement(route.handler, assign({}, props || this.props, { ref: REF_NAME })) : null;
+      }
+    },
+    render: {
+      value: function render() {
+        var handler = this.createChildRouteHandler();
+        // <script/> for things like <CSSTransitionGroup/> that don't like null
+        return handler ? React.createElement(
+          ContextWrapper,
+          null,
+          handler
+        ) : React.createElement("script", null);
+      }
     }
-  }, {
-    key: 'componentDidMount',
-    value: function componentDidMount() {
-      this._updateRouteComponent(this.refs[REF_NAME]);
-    }
-  }, {
-    key: 'componentDidUpdate',
-    value: function componentDidUpdate() {
-      this._updateRouteComponent(this.refs[REF_NAME]);
-    }
-  }, {
-    key: 'componentWillUnmount',
-    value: function componentWillUnmount() {
-      this._updateRouteComponent(null);
-    }
-  }, {
-    key: '_updateRouteComponent',
-    value: function _updateRouteComponent(component) {
-      this.context.router.setRouteComponentAtDepth(this.getRouteDepth(), component);
-    }
-  }, {
-    key: 'getRouteDepth',
-    value: function getRouteDepth() {
-      return this.context.routeDepth;
-    }
-  }, {
-    key: 'createChildRouteHandler',
-    value: function createChildRouteHandler(props) {
-      var route = this.context.router.getRouteAtDepth(this.getRouteDepth());
-
-      if (route == null) {
-        return null;
-      }var childProps = assign({}, props || this.props, {
-        ref: REF_NAME,
-        params: this.context.router.getCurrentParams(),
-        query: this.context.router.getCurrentQuery()
-      });
-
-      return React.createElement(route.handler, childProps);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var handler = this.createChildRouteHandler();
-      // <script/> for things like <CSSTransitionGroup/> that don't like null
-      return handler ? React.createElement(
-        ContextWrapper,
-        null,
-        handler
-      ) : React.createElement('script', null);
-    }
-  }]);
+  });
 
   return RouteHandler;
 })(React.Component);
@@ -15664,38 +15887,38 @@ RouteHandler.childContextTypes = {
 
 module.exports = RouteHandler;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/RouteHandler.js","/node_modules/react-router/lib/components")
-},{"../PropTypes":98,"./ContextWrapper":107,"_process":31,"buffer":27,"react":305,"react/lib/Object.assign":161}],114:[function(require,module,exports){
+},{"../PropTypes":99,"./ContextWrapper":108,"_process":32,"buffer":28,"react":306,"react/lib/Object.assign":162}],115:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/* jshint -W058 */
-'use strict';
+"use strict";
 
-var React = require('react');
-var warning = require('react/lib/warning');
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
-var LocationActions = require('./actions/LocationActions');
-var ImitateBrowserBehavior = require('./behaviors/ImitateBrowserBehavior');
-var HashLocation = require('./locations/HashLocation');
-var HistoryLocation = require('./locations/HistoryLocation');
-var RefreshLocation = require('./locations/RefreshLocation');
-var StaticLocation = require('./locations/StaticLocation');
-var ScrollHistory = require('./ScrollHistory');
-var createRoutesFromReactChildren = require('./createRoutesFromReactChildren');
-var isReactChildren = require('./isReactChildren');
-var Transition = require('./Transition');
-var PropTypes = require('./PropTypes');
-var Redirect = require('./Redirect');
-var History = require('./History');
-var Cancellation = require('./Cancellation');
-var Match = require('./Match');
-var Route = require('./Route');
-var supportsHistory = require('./supportsHistory');
-var PathUtils = require('./PathUtils');
+/* jshint -W058 */
+var React = require("react");
+var warning = require("react/lib/warning");
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
+var LocationActions = require("./actions/LocationActions");
+var ImitateBrowserBehavior = require("./behaviors/ImitateBrowserBehavior");
+var HashLocation = require("./locations/HashLocation");
+var HistoryLocation = require("./locations/HistoryLocation");
+var RefreshLocation = require("./locations/RefreshLocation");
+var StaticLocation = require("./locations/StaticLocation");
+var ScrollHistory = require("./ScrollHistory");
+var createRoutesFromReactChildren = require("./createRoutesFromReactChildren");
+var isReactChildren = require("./isReactChildren");
+var Transition = require("./Transition");
+var PropTypes = require("./PropTypes");
+var Redirect = require("./Redirect");
+var History = require("./History");
+var Cancellation = require("./Cancellation");
+var Match = require("./Match");
+var Route = require("./Route");
+var supportsHistory = require("./supportsHistory");
+var PathUtils = require("./PathUtils");
 
 /**
  * The default location for new routers.
  */
-var DEFAULT_LOCATION = canUseDOM ? HashLocation : '/';
+var DEFAULT_LOCATION = canUseDOM ? HashLocation : "/";
 
 /**
  * The default scroll behavior for new routers.
@@ -15733,7 +15956,7 @@ function addRoutesToNamedRoutes(routes, namedRoutes) {
     route = routes[i];
 
     if (route.name) {
-      invariant(namedRoutes[route.name] == null, 'You may not have more than one route named "%s"', route.name);
+      invariant(namedRoutes[route.name] == null, "You may not have more than one route named \"%s\"", route.name);
 
       namedRoutes[route.name] = route;
     }
@@ -15791,12 +16014,12 @@ function createRouter(options) {
   var pendingTransition = null;
   var dispatchHandler = null;
 
-  if (typeof location === 'string') location = new StaticLocation(location);
+  if (typeof location === "string") location = new StaticLocation(location);
 
   if (location instanceof StaticLocation) {
-    warning(!canUseDOM || process.env.NODE_ENV === 'test', 'You should not use a static location in a DOM environment because ' + 'the router will not be kept in sync with the current URL');
+    warning(!canUseDOM || process.env.NODE_ENV === "test", "You should not use a static location in a DOM environment because " + "the router will not be kept in sync with the current URL");
   } else {
-    invariant(canUseDOM || location.needsDOM === false, 'You cannot use %s without a DOM', location);
+    invariant(canUseDOM || location.needsDOM === false, "You cannot use %s without a DOM", location);
   }
 
   // Automatically fall back to full page refreshes in
@@ -15805,7 +16028,7 @@ function createRouter(options) {
 
   var Router = React.createClass({
 
-    displayName: 'Router',
+    displayName: "Router",
 
     statics: {
 
@@ -15864,7 +16087,7 @@ function createRouter(options) {
         } else {
           var route = to instanceof Route ? to : Router.namedRoutes[to];
 
-          invariant(route instanceof Route, 'Cannot find a route named "%s"', to);
+          invariant(route instanceof Route, "Cannot find a route named \"%s\"", to);
 
           path = route.path;
         }
@@ -15878,7 +16101,7 @@ function createRouter(options) {
        */
       makeHref: function makeHref(to, params, query) {
         var path = Router.makePath(to, params, query);
-        return location === HashLocation ? '#' + path : path;
+        return location === HashLocation ? "#" + path : path;
       },
 
       /**
@@ -15921,13 +16144,13 @@ function createRouter(options) {
           return true;
         }
 
-        warning(false, 'goBack() was ignored because there is no router history');
+        warning(false, "goBack() was ignored because there is no router history");
 
         return false;
       },
 
       handleAbort: options.onAbort || function (abortReason) {
-        if (location instanceof StaticLocation) throw new Error('Unhandled aborted transition! Reason: ' + abortReason);
+        if (location instanceof StaticLocation) throw new Error("Unhandled aborted transition! Reason: " + abortReason);
 
         if (abortReason instanceof Cancellation) {
           return;
@@ -15979,7 +16202,7 @@ function createRouter(options) {
 
         var match = Router.match(path);
 
-        warning(match != null, 'No route matches path "%s". Make sure you have <Route path="%s"> somewhere in your routes', path, path);
+        warning(match != null, "No route matches path \"%s\". Make sure you have <Route path=\"%s\"> somewhere in your routes", path, path);
 
         if (match == null) match = {};
 
@@ -16034,7 +16257,7 @@ function createRouter(options) {
        * Router.*Location objects (e.g. Router.HashLocation or Router.HistoryLocation).
        */
       run: function run(callback) {
-        invariant(!Router.isRunning, 'Router is already running');
+        invariant(!Router.isRunning, "Router is already running");
 
         dispatchHandler = function (error, transition, newState) {
           if (error) Router.handleError(error);
@@ -16181,21 +16404,21 @@ function createRouter(options) {
 
 module.exports = createRouter;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/createRouter.js","/node_modules/react-router/lib")
-},{"./Cancellation":93,"./History":94,"./Match":95,"./PathUtils":97,"./PropTypes":98,"./Redirect":99,"./Route":100,"./ScrollHistory":101,"./Transition":103,"./actions/LocationActions":104,"./behaviors/ImitateBrowserBehavior":105,"./createRoutesFromReactChildren":115,"./isReactChildren":118,"./locations/HashLocation":119,"./locations/HistoryLocation":120,"./locations/RefreshLocation":121,"./locations/StaticLocation":122,"./supportsHistory":125,"_process":31,"buffer":27,"react":305,"react/lib/ExecutionEnvironment":154,"react/lib/invariant":283,"react/lib/warning":304}],115:[function(require,module,exports){
+},{"./Cancellation":94,"./History":95,"./Match":96,"./PathUtils":98,"./PropTypes":99,"./Redirect":100,"./Route":101,"./ScrollHistory":102,"./Transition":104,"./actions/LocationActions":105,"./behaviors/ImitateBrowserBehavior":106,"./createRoutesFromReactChildren":116,"./isReactChildren":119,"./locations/HashLocation":120,"./locations/HistoryLocation":121,"./locations/RefreshLocation":122,"./locations/StaticLocation":123,"./supportsHistory":126,"_process":32,"buffer":28,"react":306,"react/lib/ExecutionEnvironment":155,"react/lib/invariant":284,"react/lib/warning":305}],116:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/* jshint -W084 */
-'use strict';
+"use strict";
 
-var React = require('react');
-var assign = require('react/lib/Object.assign');
-var warning = require('react/lib/warning');
-var DefaultRoute = require('./components/DefaultRoute');
-var NotFoundRoute = require('./components/NotFoundRoute');
-var Redirect = require('./components/Redirect');
-var Route = require('./Route');
+/* jshint -W084 */
+var React = require("react");
+var assign = require("react/lib/Object.assign");
+var warning = require("react/lib/warning");
+var DefaultRoute = require("./components/DefaultRoute");
+var NotFoundRoute = require("./components/NotFoundRoute");
+var Redirect = require("./components/Redirect");
+var Route = require("./Route");
 
 function checkPropTypes(componentName, propTypes, props) {
-  componentName = componentName || 'UnknownComponent';
+  componentName = componentName || "UnknownComponent";
 
   for (var propName in propTypes) {
     if (propTypes.hasOwnProperty(propName)) {
@@ -16265,18 +16488,18 @@ function createRoutesFromReactChildren(children) {
 
 module.exports = createRoutesFromReactChildren;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/createRoutesFromReactChildren.js","/node_modules/react-router/lib")
-},{"./Route":100,"./components/DefaultRoute":108,"./components/NotFoundRoute":110,"./components/Redirect":111,"_process":31,"buffer":27,"react":305,"react/lib/Object.assign":161,"react/lib/warning":304}],116:[function(require,module,exports){
+},{"./Route":101,"./components/DefaultRoute":109,"./components/NotFoundRoute":111,"./components/Redirect":112,"_process":32,"buffer":28,"react":306,"react/lib/Object.assign":162,"react/lib/warning":305}],117:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
 
 /**
  * Returns the current scroll position of the window as { x, y }.
  */
 function getWindowScrollPosition() {
-  invariant(canUseDOM, 'Cannot get current scroll position without a DOM');
+  invariant(canUseDOM, "Cannot get current scroll position without a DOM");
 
   return {
     x: window.pageXOffset || document.documentElement.scrollLeft,
@@ -16286,45 +16509,43 @@ function getWindowScrollPosition() {
 
 module.exports = getWindowScrollPosition;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/getWindowScrollPosition.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27,"react/lib/ExecutionEnvironment":154,"react/lib/invariant":283}],117:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/lib/ExecutionEnvironment":155,"react/lib/invariant":284}],118:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-exports.DefaultRoute = require('./components/DefaultRoute');
-exports.Link = require('./components/Link');
-exports.NotFoundRoute = require('./components/NotFoundRoute');
-exports.Redirect = require('./components/Redirect');
-exports.Route = require('./components/Route');
-exports.ActiveHandler = require('./components/RouteHandler');
-exports.RouteHandler = exports.ActiveHandler;
+exports.DefaultRoute = require("./components/DefaultRoute");
+exports.Link = require("./components/Link");
+exports.NotFoundRoute = require("./components/NotFoundRoute");
+exports.Redirect = require("./components/Redirect");
+exports.Route = require("./components/Route");
+exports.RouteHandler = require("./components/RouteHandler");
 
-exports.HashLocation = require('./locations/HashLocation');
-exports.HistoryLocation = require('./locations/HistoryLocation');
-exports.RefreshLocation = require('./locations/RefreshLocation');
-exports.StaticLocation = require('./locations/StaticLocation');
-exports.TestLocation = require('./locations/TestLocation');
+exports.HashLocation = require("./locations/HashLocation");
+exports.HistoryLocation = require("./locations/HistoryLocation");
+exports.RefreshLocation = require("./locations/RefreshLocation");
+exports.StaticLocation = require("./locations/StaticLocation");
+exports.TestLocation = require("./locations/TestLocation");
 
-exports.ImitateBrowserBehavior = require('./behaviors/ImitateBrowserBehavior');
-exports.ScrollToTopBehavior = require('./behaviors/ScrollToTopBehavior');
+exports.ImitateBrowserBehavior = require("./behaviors/ImitateBrowserBehavior");
+exports.ScrollToTopBehavior = require("./behaviors/ScrollToTopBehavior");
 
-exports.History = require('./History');
-exports.Navigation = require('./Navigation');
-exports.State = require('./State');
+exports.History = require("./History");
+exports.Navigation = require("./Navigation");
+exports.State = require("./State");
 
-exports.createRoute = require('./Route').createRoute;
-exports.createDefaultRoute = require('./Route').createDefaultRoute;
-exports.createNotFoundRoute = require('./Route').createNotFoundRoute;
-exports.createRedirect = require('./Route').createRedirect;
-exports.createRoutesFromReactChildren = require('./createRoutesFromReactChildren');
-
-exports.create = require('./createRouter');
-exports.run = require('./runRouter');
+exports.createRoute = require("./Route").createRoute;
+exports.createDefaultRoute = require("./Route").createDefaultRoute;
+exports.createNotFoundRoute = require("./Route").createNotFoundRoute;
+exports.createRedirect = require("./Route").createRedirect;
+exports.createRoutesFromReactChildren = require("./createRoutesFromReactChildren");
+exports.create = require("./createRouter");
+exports.run = require("./runRouter");
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/index.js","/node_modules/react-router/lib")
-},{"./History":94,"./Navigation":96,"./Route":100,"./State":102,"./behaviors/ImitateBrowserBehavior":105,"./behaviors/ScrollToTopBehavior":106,"./components/DefaultRoute":108,"./components/Link":109,"./components/NotFoundRoute":110,"./components/Redirect":111,"./components/Route":112,"./components/RouteHandler":113,"./createRouter":114,"./createRoutesFromReactChildren":115,"./locations/HashLocation":119,"./locations/HistoryLocation":120,"./locations/RefreshLocation":121,"./locations/StaticLocation":122,"./locations/TestLocation":123,"./runRouter":124,"_process":31,"buffer":27}],118:[function(require,module,exports){
+},{"./History":95,"./Navigation":97,"./Route":101,"./State":103,"./behaviors/ImitateBrowserBehavior":106,"./behaviors/ScrollToTopBehavior":107,"./components/DefaultRoute":109,"./components/Link":110,"./components/NotFoundRoute":111,"./components/Redirect":112,"./components/Route":113,"./components/RouteHandler":114,"./createRouter":115,"./createRoutesFromReactChildren":116,"./locations/HashLocation":120,"./locations/HistoryLocation":121,"./locations/RefreshLocation":122,"./locations/StaticLocation":123,"./locations/TestLocation":124,"./runRouter":125,"_process":32,"buffer":28}],119:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var React = require('react');
+var React = require("react");
 
 function isValidChild(object) {
   return object == null || React.isValidElement(object);
@@ -16336,12 +16557,12 @@ function isReactChildren(object) {
 
 module.exports = isReactChildren;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/isReactChildren.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27,"react":305}],119:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react":306}],120:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 var _listeners = [];
 var _isListening = false;
@@ -16363,9 +16584,9 @@ function notifyChange(type) {
 function ensureSlash() {
   var path = HashLocation.getCurrentPath();
 
-  if (path.charAt(0) === '/') {
+  if (path.charAt(0) === "/") {
     return true;
-  }HashLocation.replace('/' + path);
+  }HashLocation.replace("/" + path);
 
   return false;
 }
@@ -16395,9 +16616,9 @@ var HashLocation = {
 
     if (!_isListening) {
       if (window.addEventListener) {
-        window.addEventListener('hashchange', onHashChange, false);
+        window.addEventListener("hashchange", onHashChange, false);
       } else {
-        window.attachEvent('onhashchange', onHashChange);
+        window.attachEvent("onhashchange", onHashChange);
       }
 
       _isListening = true;
@@ -16411,9 +16632,9 @@ var HashLocation = {
 
     if (_listeners.length === 0) {
       if (window.removeEventListener) {
-        window.removeEventListener('hashchange', onHashChange, false);
+        window.removeEventListener("hashchange", onHashChange, false);
       } else {
-        window.removeEvent('onhashchange', onHashChange);
+        window.removeEvent("onhashchange", onHashChange);
       }
 
       _isListening = false;
@@ -16427,7 +16648,7 @@ var HashLocation = {
 
   replace: function replace(path) {
     _actionType = LocationActions.REPLACE;
-    window.location.replace(window.location.pathname + window.location.search + '#' + path);
+    window.location.replace(window.location.pathname + window.location.search + "#" + path);
   },
 
   pop: function pop() {
@@ -16439,23 +16660,23 @@ var HashLocation = {
     return decodeURI(
     // We can't use window.location.hash here because it's not
     // consistent across browsers - Firefox will pre-decode it!
-    window.location.href.split('#')[1] || '');
+    window.location.href.split("#")[1] || "");
   },
 
   toString: function toString() {
-    return '<HashLocation>';
+    return "<HashLocation>";
   }
 
 };
 
 module.exports = HashLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/HashLocation.js","/node_modules/react-router/lib/locations")
-},{"../History":94,"../actions/LocationActions":104,"_process":31,"buffer":27}],120:[function(require,module,exports){
+},{"../History":95,"../actions/LocationActions":105,"_process":32,"buffer":28}],121:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 var _listeners = [];
 var _isListening = false;
@@ -16489,9 +16710,9 @@ var HistoryLocation = {
 
     if (!_isListening) {
       if (window.addEventListener) {
-        window.addEventListener('popstate', onPopState, false);
+        window.addEventListener("popstate", onPopState, false);
       } else {
-        window.attachEvent('onpopstate', onPopState);
+        window.attachEvent("onpopstate", onPopState);
       }
 
       _isListening = true;
@@ -16505,9 +16726,9 @@ var HistoryLocation = {
 
     if (_listeners.length === 0) {
       if (window.addEventListener) {
-        window.removeEventListener('popstate', onPopState, false);
+        window.removeEventListener("popstate", onPopState, false);
       } else {
-        window.removeEvent('onpopstate', onPopState);
+        window.removeEvent("onpopstate", onPopState);
       }
 
       _isListening = false;
@@ -16515,13 +16736,13 @@ var HistoryLocation = {
   },
 
   push: function push(path) {
-    window.history.pushState({ path: path }, '', path);
+    window.history.pushState({ path: path }, "", path);
     History.length += 1;
     notifyChange(LocationActions.PUSH);
   },
 
   replace: function replace(path) {
-    window.history.replaceState({ path: path }, '', path);
+    window.history.replaceState({ path: path }, "", path);
     notifyChange(LocationActions.REPLACE);
   },
 
@@ -16532,19 +16753,19 @@ var HistoryLocation = {
   },
 
   toString: function toString() {
-    return '<HistoryLocation>';
+    return "<HistoryLocation>";
   }
 
 };
 
 module.exports = HistoryLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/HistoryLocation.js","/node_modules/react-router/lib/locations")
-},{"../History":94,"../actions/LocationActions":104,"_process":31,"buffer":27}],121:[function(require,module,exports){
+},{"../History":95,"../actions/LocationActions":105,"_process":32,"buffer":28}],122:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var HistoryLocation = require('./HistoryLocation');
-var History = require('../History');
+var HistoryLocation = require("./HistoryLocation");
+var History = require("../History");
 
 /**
  * A Location that uses full page refreshes. This is used as
@@ -16566,25 +16787,25 @@ var RefreshLocation = {
   getCurrentPath: HistoryLocation.getCurrentPath,
 
   toString: function toString() {
-    return '<RefreshLocation>';
+    return "<RefreshLocation>";
   }
 
 };
 
 module.exports = RefreshLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/RefreshLocation.js","/node_modules/react-router/lib/locations")
-},{"../History":94,"./HistoryLocation":120,"_process":31,"buffer":27}],122:[function(require,module,exports){
+},{"../History":95,"./HistoryLocation":121,"_process":32,"buffer":28}],123:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var invariant = require('react/lib/invariant');
+var invariant = require("react/lib/invariant");
 
 function throwCannotModify() {
-  invariant(false, 'You cannot modify a static location');
+  invariant(false, "You cannot modify a static location");
 }
 
 /**
@@ -16600,17 +16821,18 @@ var StaticLocation = (function () {
     this.path = path;
   }
 
-  _createClass(StaticLocation, [{
-    key: 'getCurrentPath',
-    value: function getCurrentPath() {
-      return this.path;
+  _createClass(StaticLocation, {
+    getCurrentPath: {
+      value: function getCurrentPath() {
+        return this.path;
+      }
+    },
+    toString: {
+      value: function toString() {
+        return "<StaticLocation path=\"" + this.path + "\">";
+      }
     }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return '<StaticLocation path="' + this.path + '">';
-    }
-  }]);
+  });
 
   return StaticLocation;
 })();
@@ -16625,17 +16847,17 @@ StaticLocation.prototype.pop = throwCannotModify;
 
 module.exports = StaticLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/StaticLocation.js","/node_modules/react-router/lib/locations")
-},{"_process":31,"buffer":27,"react/lib/invariant":283}],123:[function(require,module,exports){
+},{"_process":32,"buffer":28,"react/lib/invariant":284}],124:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var invariant = require('react/lib/invariant');
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var invariant = require("react/lib/invariant");
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 /**
  * A location that is convenient for testing and does not require a DOM.
@@ -16650,83 +16872,84 @@ var TestLocation = (function () {
     this._updateHistoryLength();
   }
 
-  _createClass(TestLocation, [{
-    key: 'needsDOM',
-    get: function () {
-      return false;
-    }
-  }, {
-    key: '_updateHistoryLength',
-    value: function _updateHistoryLength() {
-      History.length = this.history.length;
-    }
-  }, {
-    key: '_notifyChange',
-    value: function _notifyChange(type) {
-      var change = {
-        path: this.getCurrentPath(),
-        type: type
-      };
+  _createClass(TestLocation, {
+    needsDOM: {
+      get: function () {
+        return false;
+      }
+    },
+    _updateHistoryLength: {
+      value: function _updateHistoryLength() {
+        History.length = this.history.length;
+      }
+    },
+    _notifyChange: {
+      value: function _notifyChange(type) {
+        var change = {
+          path: this.getCurrentPath(),
+          type: type
+        };
 
-      for (var i = 0, len = this.listeners.length; i < len; ++i) this.listeners[i].call(this, change);
-    }
-  }, {
-    key: 'addChangeListener',
-    value: function addChangeListener(listener) {
-      this.listeners.push(listener);
-    }
-  }, {
-    key: 'removeChangeListener',
-    value: function removeChangeListener(listener) {
-      this.listeners = this.listeners.filter(function (l) {
-        return l !== listener;
-      });
-    }
-  }, {
-    key: 'push',
-    value: function push(path) {
-      this.history.push(path);
-      this._updateHistoryLength();
-      this._notifyChange(LocationActions.PUSH);
-    }
-  }, {
-    key: 'replace',
-    value: function replace(path) {
-      invariant(this.history.length, 'You cannot replace the current path with no history');
+        for (var i = 0, len = this.listeners.length; i < len; ++i) this.listeners[i].call(this, change);
+      }
+    },
+    addChangeListener: {
+      value: function addChangeListener(listener) {
+        this.listeners.push(listener);
+      }
+    },
+    removeChangeListener: {
+      value: function removeChangeListener(listener) {
+        this.listeners = this.listeners.filter(function (l) {
+          return l !== listener;
+        });
+      }
+    },
+    push: {
+      value: function push(path) {
+        this.history.push(path);
+        this._updateHistoryLength();
+        this._notifyChange(LocationActions.PUSH);
+      }
+    },
+    replace: {
+      value: function replace(path) {
+        invariant(this.history.length, "You cannot replace the current path with no history");
 
-      this.history[this.history.length - 1] = path;
+        this.history[this.history.length - 1] = path;
 
-      this._notifyChange(LocationActions.REPLACE);
+        this._notifyChange(LocationActions.REPLACE);
+      }
+    },
+    pop: {
+      value: function pop() {
+        this.history.pop();
+        this._updateHistoryLength();
+        this._notifyChange(LocationActions.POP);
+      }
+    },
+    getCurrentPath: {
+      value: function getCurrentPath() {
+        return this.history[this.history.length - 1];
+      }
+    },
+    toString: {
+      value: function toString() {
+        return "<TestLocation>";
+      }
     }
-  }, {
-    key: 'pop',
-    value: function pop() {
-      this.history.pop();
-      this._updateHistoryLength();
-      this._notifyChange(LocationActions.POP);
-    }
-  }, {
-    key: 'getCurrentPath',
-    value: function getCurrentPath() {
-      return this.history[this.history.length - 1];
-    }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return '<TestLocation>';
-    }
-  }]);
+  });
 
   return TestLocation;
 })();
 
 module.exports = TestLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/TestLocation.js","/node_modules/react-router/lib/locations")
-},{"../History":94,"../actions/LocationActions":104,"_process":31,"buffer":27,"react/lib/invariant":283}],124:[function(require,module,exports){
+},{"../History":95,"../actions/LocationActions":105,"_process":32,"buffer":28,"react/lib/invariant":284}],125:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var createRouter = require('./createRouter');
+var createRouter = require("./createRouter");
 
 /**
  * A high-level convenience method that creates, configures, and
@@ -16758,7 +16981,7 @@ var createRouter = require('./createRouter');
  *   });
  */
 function runRouter(routes, location, callback) {
-  if (typeof location === 'function') {
+  if (typeof location === "function") {
     callback = location;
     location = null;
   }
@@ -16775,9 +16998,9 @@ function runRouter(routes, location, callback) {
 
 module.exports = runRouter;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/runRouter.js","/node_modules/react-router/lib")
-},{"./createRouter":114,"_process":31,"buffer":27}],125:[function(require,module,exports){
+},{"./createRouter":115,"_process":32,"buffer":28}],126:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
 function supportsHistory() {
   /*! taken from modernizr
@@ -16786,15 +17009,15 @@ function supportsHistory() {
    * changed to avoid false negatives for Windows Phones: https://github.com/rackt/react-router/issues/586
    */
   var ua = navigator.userAgent;
-  if ((ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) && ua.indexOf('Mobile Safari') !== -1 && ua.indexOf('Chrome') === -1 && ua.indexOf('Windows Phone') === -1) {
+  if ((ua.indexOf("Android 2.") !== -1 || ua.indexOf("Android 4.0") !== -1) && ua.indexOf("Mobile Safari") !== -1 && ua.indexOf("Chrome") === -1 && ua.indexOf("Windows Phone") === -1) {
     return false;
   }
-  return window.history && 'pushState' in window.history;
+  return window.history && "pushState" in window.history;
 }
 
 module.exports = supportsHistory;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/supportsHistory.js","/node_modules/react-router/lib")
-},{"_process":31,"buffer":27}],126:[function(require,module,exports){
+},{"_process":32,"buffer":28}],127:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16824,12 +17047,12 @@ module.exports = Object.assign || function (target, source) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/object-assign/index.js","/node_modules/react-router/node_modules/object-assign")
-},{"_process":31,"buffer":27}],127:[function(require,module,exports){
+},{"_process":32,"buffer":28}],128:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/');
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/qs/index.js","/node_modules/react-router/node_modules/qs")
-},{"./lib/":128,"_process":31,"buffer":27}],128:[function(require,module,exports){
+},{"./lib/":129,"_process":32,"buffer":28}],129:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -16848,7 +17071,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/qs/lib/index.js","/node_modules/react-router/node_modules/qs/lib")
-},{"./parse":129,"./stringify":130,"_process":31,"buffer":27}],129:[function(require,module,exports){
+},{"./parse":130,"./stringify":131,"_process":32,"buffer":28}],130:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -17013,7 +17236,7 @@ module.exports = function (str, options) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/qs/lib/parse.js","/node_modules/react-router/node_modules/qs/lib")
-},{"./utils":131,"_process":31,"buffer":27}],130:[function(require,module,exports){
+},{"./utils":132,"_process":32,"buffer":28}],131:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -17114,7 +17337,7 @@ module.exports = function (obj, options) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/qs/lib/stringify.js","/node_modules/react-router/node_modules/qs/lib")
-},{"./utils":131,"_process":31,"buffer":27}],131:[function(require,module,exports){
+},{"./utils":132,"_process":32,"buffer":28}],132:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -17250,12 +17473,95 @@ exports.isBuffer = function (obj) {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/node_modules/qs/lib/utils.js","/node_modules/react-router/node_modules/qs/lib")
-},{"_process":31,"buffer":27}],132:[function(require,module,exports){
+},{"_process":32,"buffer":28}],133:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react');
 
 var Sticky = React.createClass({
-
+  /*
+   * Using statics to facilitate positional awareness
+   * between multiple Sticky instances residing in the
+   * DOM at the same time.
+   */
+  statics: {
+    /*
+     * Internal variables. Should not be used beyond
+     * the scope of other statics methods or testing.
+     */
+    __frame: null,
+    __instances: [],
+    /*
+     * Adds the supplied Sticky instance to the
+     * internal list of mounted Sticky instances,
+     * sorted by the .top() value for each instance.
+     *
+     * If the animation frame loop (or fallback)
+     * isn't running, start it now.
+     */
+    register: function(instance) {
+      Sticky.__instances.push(instance);
+      Sticky.__instances.sort(function(a, b) {
+        if (a.top() > b.top()) return 1;
+        if (b.top() > a.top()) return -1;
+        return 0;
+      });
+      if (Sticky.__frame === null) Sticky.resumeLoop();
+    },
+    /*
+     * Remove the supplied Sticky instance from the
+     * internal list of mounted Sticky instances.
+     *
+     * If the animation frame loop (or fallback)
+     * is no longer in use, stop it now.
+     */
+    unregister: function(instance) {
+      var index = Sticky.__instances.indexOf(instance);
+      if (index > -1) Sticky.__instances.splice(index, 1);
+      if (Sticky.__instances.length === 0) Sticky.cancelLoop();
+    },
+    /*
+     * Return every Sticky instance that is
+     * positioned above the supplied instance.
+     */
+    instancesAbove: function(instance) {
+      return Sticky.__instances.slice(0, Sticky.__instances.indexOf(instance));
+    },
+    /*
+     * Returns true if the browser environment can support
+     * requestAnimationFrame. Otherwise returns false;
+     */
+    isModernBrowser: function() {
+      return window && window.requestAnimationFrame && window.cancelAnimationFrame;
+    },
+    /*
+     * Creates the next frame in the animation loop.
+     */
+    resumeLoop: function() {
+      var nextFrame = Sticky.isModernBrowser() ? requestAnimationFrame : setTimeout;
+      Sticky.__frame = nextFrame(Sticky.onFrame, 1000 / 60);
+    },
+    /*
+     * Cancels the animation loop.
+     */
+    cancelLoop: function() {
+      var cancel = Sticky.isModernBrowser() ? cancelAnimationFrame : clearTimeout;
+      cancel(Sticky.__frame);
+      Sticky.__frame = null;
+    },
+    /*
+     * Loop iteration routine.
+     */
+    onFrame: function() {
+      for (var i = 0; i < Sticky.__instances.length; i++) {
+        var sticky = Sticky.__instances[i];
+        sticky.handleFrame();
+      }
+      Sticky.resumeLoop();
+    }
+  },
+  /*
+   * Default properties. Self-explanatory...
+   */
   getDefaultProps: function() {
     return {
       type: React.DOM.div,
@@ -17266,43 +17572,69 @@ var Sticky = React.createClass({
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0
+        right: 0,
+        zIndex: 1
       },
       topOffset: 0,
       onStickyStateChange: function () {}
     };
   },
-
+  /*
+   * Return the list of events this instance
+   * should react to.
+   */
   getInitialState: function() {
     return {
       events: ['scroll', 'resize', 'touchmove', 'touchend']
     };
   },
-
+  /*
+   * Return the distance of the scrollbar from the
+   * top of the window plus the total height of all
+   * stuck Sticky instances above this one.
+   */
+  pageOffset: function() {
+    var otherStickies = Sticky.instancesAbove(this);
+    var otherStickyOffsets = 0;
+    for (var i = 0; i < otherStickies.length; i++) {
+      var otherSticky = otherStickies[i];
+      if (otherSticky.state.isSticky) {
+        otherStickyOffsets += otherSticky.domNode.getBoundingClientRect().height;
+      }
+    }
+    return (window.pageYOffset || document.documentElement.scrollTop) + otherStickyOffsets;
+  },
+  /*
+   * Returns the y-coordinate of the top of this element.
+   */
   top: function() {
     return this.domNode.getBoundingClientRect().top;
   },
-
+  /*
+   * Returns true/false depending on if this should be sticky.
+   */
   shouldBeSticky: function() {
-    var position = this.domNode.style.position;
-    this.domNode.style.position = 'relative';
-    var shouldBeSticky = this.top() <= -this.props.topOffset;
-    this.domNode.style.position = position;
-    return shouldBeSticky;
+    return this.pageOffset() >= this.origin + this.props.topOffset;
   },
-
-  handleTick: function() {
+  /*
+   * Loop iteration for this instance.
+   *
+   * Should only fire any time there is an event
+   * that hasn't been handled. This serves as a
+   * throttle for continuous events (i.e. scroll).
+   */
+  handleFrame: function() {
     if (this.hasUnhandledEvent || this.hasTouchEvent) {
-      var isSticky = this.state.isSticky;
       var shouldBeSticky = this.shouldBeSticky();
-      if (isSticky !== shouldBeSticky) {
-        this.nextState(shouldBeSticky);
-      }
+      this.nextState(shouldBeSticky);
       this.hasUnhandledEvent = false;
     }
-    this.tick();
   },
-
+  /*
+   * Lightweight event listener for window events.
+   *
+   * See http://www.html5rocks.com/en/tutorials/speed/animations/
+   */
   handleEvent: function(event) {
     switch (event.type) {
       case 'touchmove':
@@ -17315,7 +17647,18 @@ var Sticky = React.createClass({
         this.hasUnhandledEvent = true;
     }
   },
-
+  /*
+   * Instance was mounted on the page.
+   *
+   * In order, this function should:
+   *  - Register events listeners with window.
+   *  - Cache the domNode using React.findDOMNode
+   *    or fallback to deprecated getDOMNode().
+   *  - Store the initial y-position (origin) of this
+   *    instance.
+   *  - Register this instance, subscribing to animation
+   *    loop.
+   */
   componentDidMount: function() {
     this.state.events.forEach(function(type) {
       if (window.addEventListener) {
@@ -17325,32 +17668,30 @@ var Sticky = React.createClass({
       }
     }, this);
     this.domNode = React.findDOMNode ? React.findDOMNode(this) : this.getDOMNode();
+    this.origin = this.top() + this.pageOffset();
     this.hasUnhandledEvent = true;
-    this.tick();
+    Sticky.register(this);
   },
-
+  /*
+   * Instance was removed from the page.
+   *
+   * Undo everything during mounting.
+   */
   componentWillUnmount: function() {
     this.state.events.forEach(function(type) {
-      window.removeEventListener(type, this.handleEvent);
+      if (window.removeEventListener) {
+        window.removeEventListener(type, this.handleEvent);
+      } else {
+        window.detachEvent('on' + type, this.handleEvent)
+      }
     }, this);
     this.domNode = null;
-    this.cancel();
+    Sticky.unregister(this);
   },
-
-  isModernBrowser: function() {
-    return window && window.requestAnimationFrame && window.cancelAnimationFrame;
-  },
-
-  cancel: function() {
-    var cancel = this.isModernBrowser() ? cancelAnimationFrame : clearTimeout;
-    cancel(this.currentTick);
-  },
-
-  tick: function () {
-    var next = this.isModernBrowser() ? requestAnimationFrame : setTimeout;
-    this.currentTick = next(this.handleTick, 1000 / 60);
-  },
-
+  /*
+   * If sticky, merge this.props.stickyStyle with this.props.style.
+   * If not, just return this.props.style.
+   */
   nextStyle: function(shouldBeSticky) {
     if (shouldBeSticky) {
       var copyStyles = function(dest, source) {
@@ -17364,22 +17705,38 @@ var Sticky = React.createClass({
       return this.props.style;
     }
   },
-
+  /*
+   * If sticky, merge this.props.stickyClass with this.props.className.
+   * If not, just return this.props.className.
+   */
   nextClassName: function(shouldBeSticky) {
-    return [this.props.className]
-      .concat(shouldBeSticky ? this.props.stickyClass : undefined)
-      .join(' ');
+    var className = this.props.className;
+    if (shouldBeSticky) {
+      className += ' ' + this.props.stickyClass;
+    }
+    return className;
   },
-
+  /*
+   * Transition to the next state.
+   *
+   * Updates the isSticky, style, and className state
+   * variables.
+   *
+   * If sticky state is different than the previous,
+   * fire the onStickyStateChange callback.
+   */
   nextState: function(shouldBeSticky) {
+    var hasChanged = this.state.isSticky !== shouldBeSticky;
     this.setState({
       isSticky: shouldBeSticky,
       style: this.nextStyle(shouldBeSticky),
       className: this.nextClassName(shouldBeSticky)
     });
-    this.props.onStickyStateChange(shouldBeSticky);
+    if (hasChanged) this.props.onStickyStateChange(shouldBeSticky);
   },
-
+  /*
+   * The special sauce.
+   */
   render: function() {
     return this.props.type({
       style: this.state.style,
@@ -17390,13 +17747,13 @@ var Sticky = React.createClass({
 
 module.exports = Sticky;
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-sticky/sticky.js","/node_modules/react-sticky")
-},{"_process":31,"buffer":27,"react":305}],133:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-sticky/lib/sticky.js","/node_modules/react-sticky/lib")
+},{"_process":32,"buffer":28,"react":306}],134:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/ReactWithAddons');
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/addons.js","/node_modules/react")
-},{"./lib/ReactWithAddons":233,"_process":31,"buffer":27}],134:[function(require,module,exports){
+},{"./lib/ReactWithAddons":234,"_process":32,"buffer":28}],135:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -17425,7 +17782,7 @@ var AutoFocusMixin = {
 module.exports = AutoFocusMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/AutoFocusMixin.js","/node_modules/react/lib")
-},{"./focusNode":267,"_process":31,"buffer":27}],135:[function(require,module,exports){
+},{"./focusNode":268,"_process":32,"buffer":28}],136:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015 Facebook, Inc.
@@ -17922,7 +18279,7 @@ var BeforeInputEventPlugin = {
 module.exports = BeforeInputEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/BeforeInputEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPropagators":153,"./ExecutionEnvironment":154,"./FallbackCompositionState":155,"./SyntheticCompositionEvent":239,"./SyntheticInputEvent":243,"./keyOf":290,"_process":31,"buffer":27}],136:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPropagators":154,"./ExecutionEnvironment":155,"./FallbackCompositionState":156,"./SyntheticCompositionEvent":240,"./SyntheticInputEvent":244,"./keyOf":291,"_process":32,"buffer":28}],137:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18034,7 +18391,7 @@ var CSSCore = {
 module.exports = CSSCore;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/CSSCore.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],137:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],138:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18058,9 +18415,7 @@ var isUnitlessNumber = {
   columnCount: true,
   flex: true,
   flexGrow: true,
-  flexPositive: true,
   flexShrink: true,
-  flexNegative: true,
   fontWeight: true,
   lineClamp: true,
   lineHeight: true,
@@ -18073,9 +18428,7 @@ var isUnitlessNumber = {
 
   // SVG-related properties
   fillOpacity: true,
-  strokeDashoffset: true,
-  strokeOpacity: true,
-  strokeWidth: true
+  strokeOpacity: true
 };
 
 /**
@@ -18161,7 +18514,7 @@ var CSSProperty = {
 module.exports = CSSProperty;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/CSSProperty.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],138:[function(require,module,exports){
+},{"_process":32,"buffer":28}],139:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18343,7 +18696,7 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/CSSPropertyOperations.js","/node_modules/react/lib")
-},{"./CSSProperty":137,"./ExecutionEnvironment":154,"./camelizeStyleName":254,"./dangerousStyleValue":261,"./hyphenateStyleName":281,"./memoizeStringOnly":292,"./warning":304,"_process":31,"buffer":27}],139:[function(require,module,exports){
+},{"./CSSProperty":138,"./ExecutionEnvironment":155,"./camelizeStyleName":255,"./dangerousStyleValue":262,"./hyphenateStyleName":282,"./memoizeStringOnly":293,"./warning":305,"_process":32,"buffer":28}],140:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18443,7 +18796,7 @@ PooledClass.addPoolingTo(CallbackQueue);
 module.exports = CallbackQueue;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/CallbackQueue.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./PooledClass":162,"./invariant":283,"_process":31,"buffer":27}],140:[function(require,module,exports){
+},{"./Object.assign":162,"./PooledClass":163,"./invariant":284,"_process":32,"buffer":28}],141:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18827,7 +19180,7 @@ var ChangeEventPlugin = {
 module.exports = ChangeEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ChangeEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPluginHub":150,"./EventPropagators":153,"./ExecutionEnvironment":154,"./ReactUpdates":232,"./SyntheticEvent":241,"./isEventSupported":284,"./isTextInputElement":286,"./keyOf":290,"_process":31,"buffer":27}],141:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPluginHub":151,"./EventPropagators":154,"./ExecutionEnvironment":155,"./ReactUpdates":233,"./SyntheticEvent":242,"./isEventSupported":285,"./isTextInputElement":287,"./keyOf":291,"_process":32,"buffer":28}],142:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18854,7 +19207,7 @@ var ClientReactRootIndex = {
 module.exports = ClientReactRootIndex;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ClientReactRootIndex.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],142:[function(require,module,exports){
+},{"_process":32,"buffer":28}],143:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -18992,7 +19345,7 @@ var DOMChildrenOperations = {
 module.exports = DOMChildrenOperations;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/DOMChildrenOperations.js","/node_modules/react/lib")
-},{"./Danger":145,"./ReactMultiChildUpdateTypes":211,"./invariant":283,"./setTextContent":298,"_process":31,"buffer":27}],143:[function(require,module,exports){
+},{"./Danger":146,"./ReactMultiChildUpdateTypes":212,"./invariant":284,"./setTextContent":299,"_process":32,"buffer":28}],144:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19291,7 +19644,7 @@ var DOMProperty = {
 module.exports = DOMProperty;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/DOMProperty.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],144:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],145:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19483,7 +19836,7 @@ var DOMPropertyOperations = {
 module.exports = DOMPropertyOperations;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/DOMPropertyOperations.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"./quoteAttributeValueForBrowser":296,"./warning":304,"_process":31,"buffer":27}],145:[function(require,module,exports){
+},{"./DOMProperty":144,"./quoteAttributeValueForBrowser":297,"./warning":305,"_process":32,"buffer":28}],146:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19670,7 +20023,7 @@ var Danger = {
 module.exports = Danger;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/Danger.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"./createNodesFromMarkup":259,"./emptyFunction":262,"./getMarkupWrap":275,"./invariant":283,"_process":31,"buffer":27}],146:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"./createNodesFromMarkup":260,"./emptyFunction":263,"./getMarkupWrap":276,"./invariant":284,"_process":32,"buffer":28}],147:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19711,7 +20064,7 @@ var DefaultEventPluginOrder = [
 module.exports = DefaultEventPluginOrder;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/DefaultEventPluginOrder.js","/node_modules/react/lib")
-},{"./keyOf":290,"_process":31,"buffer":27}],147:[function(require,module,exports){
+},{"./keyOf":291,"_process":32,"buffer":28}],148:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19853,7 +20206,7 @@ var EnterLeaveEventPlugin = {
 module.exports = EnterLeaveEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EnterLeaveEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPropagators":153,"./ReactMount":209,"./SyntheticMouseEvent":245,"./keyOf":290,"_process":31,"buffer":27}],148:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPropagators":154,"./ReactMount":210,"./SyntheticMouseEvent":246,"./keyOf":291,"_process":32,"buffer":28}],149:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -19927,7 +20280,7 @@ var EventConstants = {
 module.exports = EventConstants;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventConstants.js","/node_modules/react/lib")
-},{"./keyMirror":289,"_process":31,"buffer":27}],149:[function(require,module,exports){
+},{"./keyMirror":290,"_process":32,"buffer":28}],150:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20017,7 +20370,7 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventListener.js","/node_modules/react/lib")
-},{"./emptyFunction":262,"_process":31,"buffer":27}],150:[function(require,module,exports){
+},{"./emptyFunction":263,"_process":32,"buffer":28}],151:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20295,7 +20648,7 @@ var EventPluginHub = {
 module.exports = EventPluginHub;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventPluginHub.js","/node_modules/react/lib")
-},{"./EventPluginRegistry":151,"./EventPluginUtils":152,"./accumulateInto":251,"./forEachAccumulated":268,"./invariant":283,"_process":31,"buffer":27}],151:[function(require,module,exports){
+},{"./EventPluginRegistry":152,"./EventPluginUtils":153,"./accumulateInto":252,"./forEachAccumulated":269,"./invariant":284,"_process":32,"buffer":28}],152:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20575,7 +20928,7 @@ var EventPluginRegistry = {
 module.exports = EventPluginRegistry;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventPluginRegistry.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],152:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],153:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20796,7 +21149,7 @@ var EventPluginUtils = {
 module.exports = EventPluginUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventPluginUtils.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./invariant":283,"_process":31,"buffer":27}],153:[function(require,module,exports){
+},{"./EventConstants":149,"./invariant":284,"_process":32,"buffer":28}],154:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20938,7 +21291,7 @@ var EventPropagators = {
 module.exports = EventPropagators;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/EventPropagators.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPluginHub":150,"./accumulateInto":251,"./forEachAccumulated":268,"_process":31,"buffer":27}],154:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPluginHub":151,"./accumulateInto":252,"./forEachAccumulated":269,"_process":32,"buffer":28}],155:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -20984,7 +21337,7 @@ var ExecutionEnvironment = {
 module.exports = ExecutionEnvironment;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ExecutionEnvironment.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],155:[function(require,module,exports){
+},{"_process":32,"buffer":28}],156:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21077,7 +21430,7 @@ PooledClass.addPoolingTo(FallbackCompositionState);
 module.exports = FallbackCompositionState;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/FallbackCompositionState.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./PooledClass":162,"./getTextContentAccessor":278,"_process":31,"buffer":27}],156:[function(require,module,exports){
+},{"./Object.assign":162,"./PooledClass":163,"./getTextContentAccessor":279,"_process":32,"buffer":28}],157:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21178,7 +21531,6 @@ var HTMLDOMPropertyConfig = {
     headers: null,
     height: MUST_USE_ATTRIBUTE,
     hidden: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
-    high: null,
     href: null,
     hrefLang: null,
     htmlFor: null,
@@ -21189,7 +21541,6 @@ var HTMLDOMPropertyConfig = {
     lang: null,
     list: MUST_USE_ATTRIBUTE,
     loop: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
-    low: null,
     manifest: MUST_USE_ATTRIBUTE,
     marginHeight: null,
     marginWidth: null,
@@ -21204,7 +21555,6 @@ var HTMLDOMPropertyConfig = {
     name: null,
     noValidate: HAS_BOOLEAN_VALUE,
     open: HAS_BOOLEAN_VALUE,
-    optimum: null,
     pattern: null,
     placeholder: null,
     poster: null,
@@ -21218,7 +21568,6 @@ var HTMLDOMPropertyConfig = {
     rowSpan: null,
     sandbox: null,
     scope: null,
-    scoped: HAS_BOOLEAN_VALUE,
     scrolling: null,
     seamless: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
     selected: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
@@ -21260,9 +21609,7 @@ var HTMLDOMPropertyConfig = {
     itemID: MUST_USE_ATTRIBUTE,
     itemRef: MUST_USE_ATTRIBUTE,
     // property is supported for OpenGraph in meta tags.
-    property: null,
-    // IE-only attribute that controls focus behavior
-    unselectable: MUST_USE_ATTRIBUTE
+    property: null
   },
   DOMAttributeNames: {
     acceptCharset: 'accept-charset',
@@ -21290,7 +21637,7 @@ var HTMLDOMPropertyConfig = {
 module.exports = HTMLDOMPropertyConfig;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/HTMLDOMPropertyConfig.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"./ExecutionEnvironment":154,"_process":31,"buffer":27}],157:[function(require,module,exports){
+},{"./DOMProperty":144,"./ExecutionEnvironment":155,"_process":32,"buffer":28}],158:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21333,7 +21680,7 @@ var LinkedStateMixin = {
 module.exports = LinkedStateMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/LinkedStateMixin.js","/node_modules/react/lib")
-},{"./ReactLink":207,"./ReactStateSetters":226,"_process":31,"buffer":27}],158:[function(require,module,exports){
+},{"./ReactLink":208,"./ReactStateSetters":227,"_process":32,"buffer":28}],159:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21489,7 +21836,7 @@ var LinkedValueUtils = {
 module.exports = LinkedValueUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/LinkedValueUtils.js","/node_modules/react/lib")
-},{"./ReactPropTypes":218,"./invariant":283,"_process":31,"buffer":27}],159:[function(require,module,exports){
+},{"./ReactPropTypes":219,"./invariant":284,"_process":32,"buffer":28}],160:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -21546,7 +21893,7 @@ var LocalEventTrapMixin = {
 module.exports = LocalEventTrapMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/LocalEventTrapMixin.js","/node_modules/react/lib")
-},{"./ReactBrowserEventEmitter":165,"./accumulateInto":251,"./forEachAccumulated":268,"./invariant":283,"_process":31,"buffer":27}],160:[function(require,module,exports){
+},{"./ReactBrowserEventEmitter":166,"./accumulateInto":252,"./forEachAccumulated":269,"./invariant":284,"_process":32,"buffer":28}],161:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21606,7 +21953,7 @@ var MobileSafariClickEventPlugin = {
 module.exports = MobileSafariClickEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/MobileSafariClickEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./emptyFunction":262,"_process":31,"buffer":27}],161:[function(require,module,exports){
+},{"./EventConstants":149,"./emptyFunction":263,"_process":32,"buffer":28}],162:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -21657,7 +22004,7 @@ function assign(target, sources) {
 module.exports = assign;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/Object.assign.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],162:[function(require,module,exports){
+},{"_process":32,"buffer":28}],163:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21773,7 +22120,7 @@ var PooledClass = {
 module.exports = PooledClass;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/PooledClass.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],163:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],164:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21885,7 +22232,7 @@ if ("production" !== "development") {
       if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === 'undefined') {
         console.debug(
           'Download the React DevTools for a better development experience: ' +
-          'https://fb.me/react-devtools'
+          'http://fb.me/react-devtools'
         );
       }
     }
@@ -21912,7 +22259,7 @@ if ("production" !== "development") {
       if (!expectedFeatures[i]) {
         console.error(
           'One or more ES5 shim/shams expected by React are not available: ' +
-          'https://fb.me/react-warning-polyfills'
+          'http://fb.me/react-warning-polyfills'
         );
         break;
       }
@@ -21920,12 +22267,12 @@ if ("production" !== "development") {
   }
 }
 
-React.version = '0.13.3';
+React.version = '0.13.1';
 
 module.exports = React;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/React.js","/node_modules/react/lib")
-},{"./EventPluginUtils":152,"./ExecutionEnvironment":154,"./Object.assign":161,"./ReactChildren":169,"./ReactClass":170,"./ReactComponent":171,"./ReactContext":176,"./ReactCurrentOwner":177,"./ReactDOM":178,"./ReactDOMTextComponent":189,"./ReactDefaultInjection":192,"./ReactElement":195,"./ReactElementValidator":196,"./ReactInstanceHandles":204,"./ReactMount":209,"./ReactPerf":214,"./ReactPropTypes":218,"./ReactReconciler":221,"./ReactServerRendering":224,"./findDOMNode":265,"./onlyChild":293,"_process":31,"buffer":27}],164:[function(require,module,exports){
+},{"./EventPluginUtils":153,"./ExecutionEnvironment":155,"./Object.assign":162,"./ReactChildren":170,"./ReactClass":171,"./ReactComponent":172,"./ReactContext":177,"./ReactCurrentOwner":178,"./ReactDOM":179,"./ReactDOMTextComponent":190,"./ReactDefaultInjection":193,"./ReactElement":196,"./ReactElementValidator":197,"./ReactInstanceHandles":205,"./ReactMount":210,"./ReactPerf":215,"./ReactPropTypes":219,"./ReactReconciler":222,"./ReactServerRendering":225,"./findDOMNode":266,"./onlyChild":294,"_process":32,"buffer":28}],165:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -21958,7 +22305,7 @@ var ReactBrowserComponentMixin = {
 module.exports = ReactBrowserComponentMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactBrowserComponentMixin.js","/node_modules/react/lib")
-},{"./findDOMNode":265,"_process":31,"buffer":27}],165:[function(require,module,exports){
+},{"./findDOMNode":266,"_process":32,"buffer":28}],166:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22313,7 +22660,7 @@ var ReactBrowserEventEmitter = assign({}, ReactEventEmitterMixin, {
 module.exports = ReactBrowserEventEmitter;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactBrowserEventEmitter.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPluginHub":150,"./EventPluginRegistry":151,"./Object.assign":161,"./ReactEventEmitterMixin":199,"./ViewportMetrics":250,"./isEventSupported":284,"_process":31,"buffer":27}],166:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPluginHub":151,"./EventPluginRegistry":152,"./Object.assign":162,"./ReactEventEmitterMixin":200,"./ViewportMetrics":251,"./isEventSupported":285,"_process":32,"buffer":28}],167:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22385,7 +22732,7 @@ var ReactCSSTransitionGroup = React.createClass({
 module.exports = ReactCSSTransitionGroup;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactCSSTransitionGroup.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./React":163,"./ReactCSSTransitionGroupChild":167,"./ReactTransitionGroup":230,"_process":31,"buffer":27}],167:[function(require,module,exports){
+},{"./Object.assign":162,"./React":164,"./ReactCSSTransitionGroupChild":168,"./ReactTransitionGroup":231,"_process":32,"buffer":28}],168:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22533,7 +22880,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 module.exports = ReactCSSTransitionGroupChild;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactCSSTransitionGroupChild.js","/node_modules/react/lib")
-},{"./CSSCore":136,"./React":163,"./ReactTransitionEvents":229,"./onlyChild":293,"./warning":304,"_process":31,"buffer":27}],168:[function(require,module,exports){
+},{"./CSSCore":137,"./React":164,"./ReactTransitionEvents":230,"./onlyChild":294,"./warning":305,"_process":32,"buffer":28}],169:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -22662,7 +23009,7 @@ var ReactChildReconciler = {
 module.exports = ReactChildReconciler;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactChildReconciler.js","/node_modules/react/lib")
-},{"./ReactReconciler":221,"./flattenChildren":266,"./instantiateReactComponent":282,"./shouldUpdateReactComponent":300,"_process":31,"buffer":27}],169:[function(require,module,exports){
+},{"./ReactReconciler":222,"./flattenChildren":267,"./instantiateReactComponent":283,"./shouldUpdateReactComponent":301,"_process":32,"buffer":28}],170:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -22815,7 +23162,7 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactChildren.js","/node_modules/react/lib")
-},{"./PooledClass":162,"./ReactFragment":201,"./traverseAllChildren":302,"./warning":304,"_process":31,"buffer":27}],170:[function(require,module,exports){
+},{"./PooledClass":163,"./ReactFragment":202,"./traverseAllChildren":303,"./warning":305,"_process":32,"buffer":28}],171:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23653,7 +24000,7 @@ var ReactClass = {
         ("production" !== "development" ? warning(
           this instanceof Constructor,
           'Something is calling a React component directly. Use a factory or ' +
-          'JSX instead. See: https://fb.me/react-legacyfactory'
+          'JSX instead. See: http://fb.me/react-legacyfactory'
         ) : null);
       }
 
@@ -23761,7 +24108,7 @@ var ReactClass = {
 module.exports = ReactClass;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactClass.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactComponent":171,"./ReactCurrentOwner":177,"./ReactElement":195,"./ReactErrorUtils":198,"./ReactInstanceMap":205,"./ReactLifeCycle":206,"./ReactPropTypeLocationNames":216,"./ReactPropTypeLocations":217,"./ReactUpdateQueue":231,"./invariant":283,"./keyMirror":289,"./keyOf":290,"./warning":304,"_process":31,"buffer":27}],171:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactComponent":172,"./ReactCurrentOwner":178,"./ReactElement":196,"./ReactErrorUtils":199,"./ReactInstanceMap":206,"./ReactLifeCycle":207,"./ReactPropTypeLocationNames":217,"./ReactPropTypeLocations":218,"./ReactUpdateQueue":232,"./invariant":284,"./keyMirror":290,"./keyOf":291,"./warning":305,"_process":32,"buffer":28}],172:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23865,38 +24212,20 @@ ReactComponent.prototype.forceUpdate = function(callback) {
  */
 if ("production" !== "development") {
   var deprecatedAPIs = {
-    getDOMNode: [
-      'getDOMNode',
-      'Use React.findDOMNode(component) instead.'
-    ],
-    isMounted: [
-      'isMounted',
-      'Instead, make sure to clean up subscriptions and pending requests in ' +
-      'componentWillUnmount to prevent memory leaks.'
-    ],
-    replaceProps: [
-      'replaceProps',
-      'Instead, call React.render again at the top level.'
-    ],
-    replaceState: [
-      'replaceState',
-      'Refactor your code to use setState instead (see ' +
-      'https://github.com/facebook/react/issues/3236).'
-    ],
-    setProps: [
-      'setProps',
-      'Instead, call React.render again at the top level.'
-    ]
+    getDOMNode: 'getDOMNode',
+    isMounted: 'isMounted',
+    replaceProps: 'replaceProps',
+    replaceState: 'replaceState',
+    setProps: 'setProps'
   };
-  var defineDeprecationWarning = function(methodName, info) {
+  var defineDeprecationWarning = function(methodName, displayName) {
     try {
       Object.defineProperty(ReactComponent.prototype, methodName, {
         get: function() {
           ("production" !== "development" ? warning(
             false,
-            '%s(...) is deprecated in plain JavaScript React classes. %s',
-            info[0],
-            info[1]
+            '%s(...) is deprecated in plain JavaScript React classes.',
+            displayName
           ) : null);
           return undefined;
         }
@@ -23915,7 +24244,7 @@ if ("production" !== "development") {
 module.exports = ReactComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactComponent.js","/node_modules/react/lib")
-},{"./ReactUpdateQueue":231,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],172:[function(require,module,exports){
+},{"./ReactUpdateQueue":232,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],173:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -23964,7 +24293,7 @@ var ReactComponentBrowserEnvironment = {
 module.exports = ReactComponentBrowserEnvironment;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactComponentBrowserEnvironment.js","/node_modules/react/lib")
-},{"./ReactDOMIDOperations":182,"./ReactMount":209,"_process":31,"buffer":27}],173:[function(require,module,exports){
+},{"./ReactDOMIDOperations":183,"./ReactMount":210,"_process":32,"buffer":28}],174:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -24025,7 +24354,7 @@ var ReactComponentEnvironment = {
 module.exports = ReactComponentEnvironment;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactComponentEnvironment.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],174:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],175:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24076,7 +24405,7 @@ var ReactComponentWithPureRenderMixin = {
 module.exports = ReactComponentWithPureRenderMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactComponentWithPureRenderMixin.js","/node_modules/react/lib")
-},{"./shallowEqual":299,"_process":31,"buffer":27}],175:[function(require,module,exports){
+},{"./shallowEqual":300,"_process":32,"buffer":28}],176:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -24255,14 +24584,6 @@ var ReactCompositeComponentMixin = {
         this.getName() || 'a component'
       ) : null);
       ("production" !== "development" ? warning(
-        !inst.getDefaultProps ||
-        inst.getDefaultProps.isReactClassApproved,
-        'getDefaultProps was defined on %s, a plain JavaScript class. ' +
-        'This is only supported for classes created using React.createClass. ' +
-        'Use a static property to define defaultProps instead.',
-        this.getName() || 'a component'
-      ) : null);
-      ("production" !== "development" ? warning(
         !inst.propTypes,
         'propTypes was defined as an instance property on %s. Use a static ' +
         'property to define propTypes instead.',
@@ -24298,7 +24619,6 @@ var ReactCompositeComponentMixin = {
     this._pendingReplaceState = false;
     this._pendingForceUpdate = false;
 
-    var childContext;
     var renderedElement;
 
     var previouslyMounting = ReactLifeCycle.currentlyMountingInstance;
@@ -24313,8 +24633,7 @@ var ReactCompositeComponentMixin = {
         }
       }
 
-      childContext = this._getValidatedChildContext(context);
-      renderedElement = this._renderValidatedComponent(childContext);
+      renderedElement = this._renderValidatedComponent();
     } finally {
       ReactLifeCycle.currentlyMountingInstance = previouslyMounting;
     }
@@ -24328,7 +24647,7 @@ var ReactCompositeComponentMixin = {
       this._renderedComponent,
       rootID,
       transaction,
-      this._mergeChildContext(context, childContext)
+      this._processChildContext(context)
     );
     if (inst.componentDidMount) {
       transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);
@@ -24458,7 +24777,7 @@ var ReactCompositeComponentMixin = {
    * @return {object}
    * @private
    */
-  _getValidatedChildContext: function(currentContext) {
+  _processChildContext: function(currentContext) {
     var inst = this._instance;
     var childContext = inst.getChildContext && inst.getChildContext();
     if (childContext) {
@@ -24483,13 +24802,6 @@ var ReactCompositeComponentMixin = {
           name
         ) : invariant(name in inst.constructor.childContextTypes));
       }
-      return childContext;
-    }
-    return null;
-  },
-
-  _mergeChildContext: function(currentContext, childContext) {
-    if (childContext) {
       return assign({}, currentContext, childContext);
     }
     return currentContext;
@@ -24749,10 +25061,6 @@ var ReactCompositeComponentMixin = {
       return inst.state;
     }
 
-    if (replace && queue.length === 1) {
-      return queue[0];
-    }
-
     var nextState = assign({}, replace ? queue[0] : inst.state);
     for (var i = replace ? 1 : 0; i < queue.length; i++) {
       var partial = queue[i];
@@ -24822,14 +25130,13 @@ var ReactCompositeComponentMixin = {
   _updateRenderedComponent: function(transaction, context) {
     var prevComponentInstance = this._renderedComponent;
     var prevRenderedElement = prevComponentInstance._currentElement;
-    var childContext = this._getValidatedChildContext();
-    var nextRenderedElement = this._renderValidatedComponent(childContext);
+    var nextRenderedElement = this._renderValidatedComponent();
     if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
       ReactReconciler.receiveComponent(
         prevComponentInstance,
         nextRenderedElement,
         transaction,
-        this._mergeChildContext(context, childContext)
+        this._processChildContext(context)
       );
     } else {
       // These two IDs are actually the same! But nothing should rely on that.
@@ -24845,7 +25152,7 @@ var ReactCompositeComponentMixin = {
         this._renderedComponent,
         thisID,
         transaction,
-        this._mergeChildContext(context, childContext)
+        context
       );
       this._replaceNodeWithMarkupByID(prevComponentID, nextMarkup);
     }
@@ -24883,12 +25190,11 @@ var ReactCompositeComponentMixin = {
   /**
    * @private
    */
-  _renderValidatedComponent: function(childContext) {
+  _renderValidatedComponent: function() {
     var renderedComponent;
     var previousContext = ReactContext.current;
-    ReactContext.current = this._mergeChildContext(
-      this._currentElement._context,
-      childContext
+    ReactContext.current = this._processChildContext(
+      this._currentElement._context
     );
     ReactCurrentOwner.current = this;
     try {
@@ -24989,7 +25295,7 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactCompositeComponent.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactComponentEnvironment":173,"./ReactContext":176,"./ReactCurrentOwner":177,"./ReactElement":195,"./ReactElementValidator":196,"./ReactInstanceMap":205,"./ReactLifeCycle":206,"./ReactNativeComponent":212,"./ReactPerf":214,"./ReactPropTypeLocationNames":216,"./ReactPropTypeLocations":217,"./ReactReconciler":221,"./ReactUpdates":232,"./emptyObject":263,"./invariant":283,"./shouldUpdateReactComponent":300,"./warning":304,"_process":31,"buffer":27}],176:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactComponentEnvironment":174,"./ReactContext":177,"./ReactCurrentOwner":178,"./ReactElement":196,"./ReactElementValidator":197,"./ReactInstanceMap":206,"./ReactLifeCycle":207,"./ReactNativeComponent":213,"./ReactPerf":215,"./ReactPropTypeLocationNames":217,"./ReactPropTypeLocations":218,"./ReactReconciler":222,"./ReactUpdates":233,"./emptyObject":264,"./invariant":284,"./shouldUpdateReactComponent":301,"./warning":305,"_process":32,"buffer":28}],177:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25067,7 +25373,7 @@ var ReactContext = {
 module.exports = ReactContext;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactContext.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./emptyObject":263,"./warning":304,"_process":31,"buffer":27}],177:[function(require,module,exports){
+},{"./Object.assign":162,"./emptyObject":264,"./warning":305,"_process":32,"buffer":28}],178:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25103,7 +25409,7 @@ var ReactCurrentOwner = {
 module.exports = ReactCurrentOwner;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactCurrentOwner.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],178:[function(require,module,exports){
+},{"_process":32,"buffer":28}],179:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25259,7 +25565,6 @@ var ReactDOM = mapObject({
 
   // SVG
   circle: 'circle',
-  clipPath: 'clipPath',
   defs: 'defs',
   ellipse: 'ellipse',
   g: 'g',
@@ -25282,7 +25587,7 @@ var ReactDOM = mapObject({
 module.exports = ReactDOM;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOM.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactElementValidator":196,"./mapObject":291,"_process":31,"buffer":27}],179:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactElementValidator":197,"./mapObject":292,"_process":32,"buffer":28}],180:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25348,7 +25653,7 @@ var ReactDOMButton = ReactClass.createClass({
 module.exports = ReactDOMButton;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMButton.js","/node_modules/react/lib")
-},{"./AutoFocusMixin":134,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"./keyMirror":289,"_process":31,"buffer":27}],180:[function(require,module,exports){
+},{"./AutoFocusMixin":135,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"./keyMirror":290,"_process":32,"buffer":28}],181:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25413,13 +25718,11 @@ function assertValidProps(props) {
       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.'
     ) : invariant(props.children == null));
     ("production" !== "development" ? invariant(
-      typeof props.dangerouslySetInnerHTML === 'object' &&
-      '__html' in props.dangerouslySetInnerHTML,
+      props.dangerouslySetInnerHTML.__html != null,
       '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
-      'Please visit https://fb.me/react-invariant-dangerously-set-inner-html ' +
+      'Please visit http://fb.me/react-invariant-dangerously-set-inner-html ' +
       'for more information.'
-    ) : invariant(typeof props.dangerouslySetInnerHTML === 'object' &&
-    '__html' in props.dangerouslySetInnerHTML));
+    ) : invariant(props.dangerouslySetInnerHTML.__html != null));
   }
   if ("production" !== "development") {
     ("production" !== "development" ? warning(
@@ -25727,8 +26030,6 @@ ReactDOMComponent.Mixin = {
       if (propKey === STYLE) {
         if (nextProp) {
           nextProp = this._previousStyleCopy = assign({}, nextProp);
-        } else {
-          this._previousStyleCopy = null;
         }
         if (lastProp) {
           // Unset styles on `lastProp` but not on `nextProp`.
@@ -25858,7 +26159,7 @@ ReactDOMComponent.injection = {
 module.exports = ReactDOMComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMComponent.js","/node_modules/react/lib")
-},{"./CSSPropertyOperations":138,"./DOMProperty":143,"./DOMPropertyOperations":144,"./Object.assign":161,"./ReactBrowserEventEmitter":165,"./ReactComponentBrowserEnvironment":172,"./ReactMount":209,"./ReactMultiChild":210,"./ReactPerf":214,"./escapeTextContentForBrowser":264,"./invariant":283,"./isEventSupported":284,"./keyOf":290,"./warning":304,"_process":31,"buffer":27}],181:[function(require,module,exports){
+},{"./CSSPropertyOperations":139,"./DOMProperty":144,"./DOMPropertyOperations":145,"./Object.assign":162,"./ReactBrowserEventEmitter":166,"./ReactComponentBrowserEnvironment":173,"./ReactMount":210,"./ReactMultiChild":211,"./ReactPerf":215,"./escapeTextContentForBrowser":265,"./invariant":284,"./isEventSupported":285,"./keyOf":291,"./warning":305,"_process":32,"buffer":28}],182:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -25909,7 +26210,7 @@ var ReactDOMForm = ReactClass.createClass({
 module.exports = ReactDOMForm;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMForm.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./LocalEventTrapMixin":159,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"_process":31,"buffer":27}],182:[function(require,module,exports){
+},{"./EventConstants":149,"./LocalEventTrapMixin":160,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"_process":32,"buffer":28}],183:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26077,7 +26378,7 @@ ReactPerf.measureMethods(ReactDOMIDOperations, 'ReactDOMIDOperations', {
 module.exports = ReactDOMIDOperations;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMIDOperations.js","/node_modules/react/lib")
-},{"./CSSPropertyOperations":138,"./DOMChildrenOperations":142,"./DOMPropertyOperations":144,"./ReactMount":209,"./ReactPerf":214,"./invariant":283,"./setInnerHTML":297,"_process":31,"buffer":27}],183:[function(require,module,exports){
+},{"./CSSPropertyOperations":139,"./DOMChildrenOperations":143,"./DOMPropertyOperations":145,"./ReactMount":210,"./ReactPerf":215,"./invariant":284,"./setInnerHTML":298,"_process":32,"buffer":28}],184:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26124,7 +26425,7 @@ var ReactDOMIframe = ReactClass.createClass({
 module.exports = ReactDOMIframe;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMIframe.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./LocalEventTrapMixin":159,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"_process":31,"buffer":27}],184:[function(require,module,exports){
+},{"./EventConstants":149,"./LocalEventTrapMixin":160,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"_process":32,"buffer":28}],185:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26172,7 +26473,7 @@ var ReactDOMImg = ReactClass.createClass({
 module.exports = ReactDOMImg;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMImg.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./LocalEventTrapMixin":159,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"_process":31,"buffer":27}],185:[function(require,module,exports){
+},{"./EventConstants":149,"./LocalEventTrapMixin":160,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"_process":32,"buffer":28}],186:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26349,7 +26650,7 @@ var ReactDOMInput = ReactClass.createClass({
 module.exports = ReactDOMInput;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMInput.js","/node_modules/react/lib")
-},{"./AutoFocusMixin":134,"./DOMPropertyOperations":144,"./LinkedValueUtils":158,"./Object.assign":161,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"./ReactMount":209,"./ReactUpdates":232,"./invariant":283,"_process":31,"buffer":27}],186:[function(require,module,exports){
+},{"./AutoFocusMixin":135,"./DOMPropertyOperations":145,"./LinkedValueUtils":159,"./Object.assign":162,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"./ReactMount":210,"./ReactUpdates":233,"./invariant":284,"_process":32,"buffer":28}],187:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26401,7 +26702,7 @@ var ReactDOMOption = ReactClass.createClass({
 module.exports = ReactDOMOption;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMOption.js","/node_modules/react/lib")
-},{"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"./warning":304,"_process":31,"buffer":27}],187:[function(require,module,exports){
+},{"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"./warning":305,"_process":32,"buffer":28}],188:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26581,7 +26882,7 @@ var ReactDOMSelect = ReactClass.createClass({
 module.exports = ReactDOMSelect;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMSelect.js","/node_modules/react/lib")
-},{"./AutoFocusMixin":134,"./LinkedValueUtils":158,"./Object.assign":161,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"./ReactUpdates":232,"_process":31,"buffer":27}],188:[function(require,module,exports){
+},{"./AutoFocusMixin":135,"./LinkedValueUtils":159,"./Object.assign":162,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"./ReactUpdates":233,"_process":32,"buffer":28}],189:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26796,7 +27097,7 @@ var ReactDOMSelection = {
 module.exports = ReactDOMSelection;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMSelection.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"./getNodeForCharacterOffset":276,"./getTextContentAccessor":278,"_process":31,"buffer":27}],189:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"./getNodeForCharacterOffset":277,"./getTextContentAccessor":279,"_process":32,"buffer":28}],190:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -26915,7 +27216,7 @@ assign(ReactDOMTextComponent.prototype, {
 module.exports = ReactDOMTextComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMTextComponent.js","/node_modules/react/lib")
-},{"./DOMPropertyOperations":144,"./Object.assign":161,"./ReactComponentBrowserEnvironment":172,"./ReactDOMComponent":180,"./escapeTextContentForBrowser":264,"_process":31,"buffer":27}],190:[function(require,module,exports){
+},{"./DOMPropertyOperations":145,"./Object.assign":162,"./ReactComponentBrowserEnvironment":173,"./ReactDOMComponent":181,"./escapeTextContentForBrowser":265,"_process":32,"buffer":28}],191:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27055,7 +27356,7 @@ var ReactDOMTextarea = ReactClass.createClass({
 module.exports = ReactDOMTextarea;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDOMTextarea.js","/node_modules/react/lib")
-},{"./AutoFocusMixin":134,"./DOMPropertyOperations":144,"./LinkedValueUtils":158,"./Object.assign":161,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactElement":195,"./ReactUpdates":232,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],191:[function(require,module,exports){
+},{"./AutoFocusMixin":135,"./DOMPropertyOperations":145,"./LinkedValueUtils":159,"./Object.assign":162,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactElement":196,"./ReactUpdates":233,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],192:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27130,7 +27431,7 @@ var ReactDefaultBatchingStrategy = {
 module.exports = ReactDefaultBatchingStrategy;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDefaultBatchingStrategy.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactUpdates":232,"./Transaction":249,"./emptyFunction":262,"_process":31,"buffer":27}],192:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactUpdates":233,"./Transaction":250,"./emptyFunction":263,"_process":32,"buffer":28}],193:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27289,7 +27590,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDefaultInjection.js","/node_modules/react/lib")
-},{"./BeforeInputEventPlugin":135,"./ChangeEventPlugin":140,"./ClientReactRootIndex":141,"./DefaultEventPluginOrder":146,"./EnterLeaveEventPlugin":147,"./ExecutionEnvironment":154,"./HTMLDOMPropertyConfig":156,"./MobileSafariClickEventPlugin":160,"./ReactBrowserComponentMixin":164,"./ReactClass":170,"./ReactComponentBrowserEnvironment":172,"./ReactDOMButton":179,"./ReactDOMComponent":180,"./ReactDOMForm":181,"./ReactDOMIDOperations":182,"./ReactDOMIframe":183,"./ReactDOMImg":184,"./ReactDOMInput":185,"./ReactDOMOption":186,"./ReactDOMSelect":187,"./ReactDOMTextComponent":189,"./ReactDOMTextarea":190,"./ReactDefaultBatchingStrategy":191,"./ReactDefaultPerf":193,"./ReactElement":195,"./ReactEventListener":200,"./ReactInjection":202,"./ReactInstanceHandles":204,"./ReactMount":209,"./ReactReconcileTransaction":220,"./SVGDOMPropertyConfig":234,"./SelectEventPlugin":235,"./ServerReactRootIndex":236,"./SimpleEventPlugin":237,"./createFullPageComponent":258,"_process":31,"buffer":27}],193:[function(require,module,exports){
+},{"./BeforeInputEventPlugin":136,"./ChangeEventPlugin":141,"./ClientReactRootIndex":142,"./DefaultEventPluginOrder":147,"./EnterLeaveEventPlugin":148,"./ExecutionEnvironment":155,"./HTMLDOMPropertyConfig":157,"./MobileSafariClickEventPlugin":161,"./ReactBrowserComponentMixin":165,"./ReactClass":171,"./ReactComponentBrowserEnvironment":173,"./ReactDOMButton":180,"./ReactDOMComponent":181,"./ReactDOMForm":182,"./ReactDOMIDOperations":183,"./ReactDOMIframe":184,"./ReactDOMImg":185,"./ReactDOMInput":186,"./ReactDOMOption":187,"./ReactDOMSelect":188,"./ReactDOMTextComponent":190,"./ReactDOMTextarea":191,"./ReactDefaultBatchingStrategy":192,"./ReactDefaultPerf":194,"./ReactElement":196,"./ReactEventListener":201,"./ReactInjection":203,"./ReactInstanceHandles":205,"./ReactMount":210,"./ReactReconcileTransaction":221,"./SVGDOMPropertyConfig":235,"./SelectEventPlugin":236,"./ServerReactRootIndex":237,"./SimpleEventPlugin":238,"./createFullPageComponent":259,"_process":32,"buffer":28}],194:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27557,7 +27858,7 @@ var ReactDefaultPerf = {
 module.exports = ReactDefaultPerf;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDefaultPerf.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"./ReactDefaultPerfAnalysis":194,"./ReactMount":209,"./ReactPerf":214,"./performanceNow":295,"_process":31,"buffer":27}],194:[function(require,module,exports){
+},{"./DOMProperty":144,"./ReactDefaultPerfAnalysis":195,"./ReactMount":210,"./ReactPerf":215,"./performanceNow":296,"_process":32,"buffer":28}],195:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27765,7 +28066,7 @@ var ReactDefaultPerfAnalysis = {
 module.exports = ReactDefaultPerfAnalysis;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactDefaultPerfAnalysis.js","/node_modules/react/lib")
-},{"./Object.assign":161,"_process":31,"buffer":27}],195:[function(require,module,exports){
+},{"./Object.assign":162,"_process":32,"buffer":28}],196:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -28073,7 +28374,7 @@ ReactElement.isValidElement = function(object) {
 module.exports = ReactElement;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactElement.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactContext":176,"./ReactCurrentOwner":177,"./warning":304,"_process":31,"buffer":27}],196:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactContext":177,"./ReactCurrentOwner":178,"./warning":305,"_process":32,"buffer":28}],197:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -28243,7 +28544,7 @@ function warnAndMonitorForKeyUse(message, element, parentType) {
 
   ("production" !== "development" ? warning(
     false,
-    message + '%s%s See https://fb.me/react-warning-keys for more information.',
+    message + '%s%s See http://fb.me/react-warning-keys for more information.',
     parentOrOwnerAddendum,
     childOwnerAddendum
   ) : null);
@@ -28367,9 +28668,9 @@ function warnForPropsMutation(propName, element) {
 
   ("production" !== "development" ? warning(
     false,
-    'Don\'t set .props.%s of the React component%s. Instead, specify the ' +
-    'correct value when initially creating the element or use ' +
-    'React.cloneElement to make a new element with updated props.%s',
+    'Don\'t set .props.%s of the React component%s. ' +
+    'Instead, specify the correct value when ' +
+    'initially creating the element.%s',
     propName,
     elementInfo,
     ownerInfo
@@ -28538,7 +28839,7 @@ var ReactElementValidator = {
 module.exports = ReactElementValidator;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactElementValidator.js","/node_modules/react/lib")
-},{"./ReactCurrentOwner":177,"./ReactElement":195,"./ReactFragment":201,"./ReactNativeComponent":212,"./ReactPropTypeLocationNames":216,"./ReactPropTypeLocations":217,"./getIteratorFn":274,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],197:[function(require,module,exports){
+},{"./ReactCurrentOwner":178,"./ReactElement":196,"./ReactFragment":202,"./ReactNativeComponent":213,"./ReactPropTypeLocationNames":217,"./ReactPropTypeLocations":218,"./getIteratorFn":275,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],198:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -28633,7 +28934,7 @@ var ReactEmptyComponent = {
 module.exports = ReactEmptyComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactEmptyComponent.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactInstanceMap":205,"./invariant":283,"_process":31,"buffer":27}],198:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactInstanceMap":206,"./invariant":284,"_process":32,"buffer":28}],199:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28667,7 +28968,7 @@ var ReactErrorUtils = {
 module.exports = ReactErrorUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactErrorUtils.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],199:[function(require,module,exports){
+},{"_process":32,"buffer":28}],200:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28719,7 +29020,7 @@ var ReactEventEmitterMixin = {
 module.exports = ReactEventEmitterMixin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactEventEmitterMixin.js","/node_modules/react/lib")
-},{"./EventPluginHub":150,"_process":31,"buffer":27}],200:[function(require,module,exports){
+},{"./EventPluginHub":151,"_process":32,"buffer":28}],201:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28904,7 +29205,7 @@ var ReactEventListener = {
 module.exports = ReactEventListener;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactEventListener.js","/node_modules/react/lib")
-},{"./EventListener":149,"./ExecutionEnvironment":154,"./Object.assign":161,"./PooledClass":162,"./ReactInstanceHandles":204,"./ReactMount":209,"./ReactUpdates":232,"./getEventTarget":273,"./getUnboundedScrollPosition":279,"_process":31,"buffer":27}],201:[function(require,module,exports){
+},{"./EventListener":150,"./ExecutionEnvironment":155,"./Object.assign":162,"./PooledClass":163,"./ReactInstanceHandles":205,"./ReactMount":210,"./ReactUpdates":233,"./getEventTarget":274,"./getUnboundedScrollPosition":280,"_process":32,"buffer":28}],202:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -29089,7 +29390,7 @@ var ReactFragment = {
 module.exports = ReactFragment;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactFragment.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./warning":304,"_process":31,"buffer":27}],202:[function(require,module,exports){
+},{"./ReactElement":196,"./warning":305,"_process":32,"buffer":28}],203:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29133,7 +29434,7 @@ var ReactInjection = {
 module.exports = ReactInjection;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactInjection.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"./EventPluginHub":150,"./ReactBrowserEventEmitter":165,"./ReactClass":170,"./ReactComponentEnvironment":173,"./ReactDOMComponent":180,"./ReactEmptyComponent":197,"./ReactNativeComponent":212,"./ReactPerf":214,"./ReactRootIndex":223,"./ReactUpdates":232,"_process":31,"buffer":27}],203:[function(require,module,exports){
+},{"./DOMProperty":144,"./EventPluginHub":151,"./ReactBrowserEventEmitter":166,"./ReactClass":171,"./ReactComponentEnvironment":174,"./ReactDOMComponent":181,"./ReactEmptyComponent":198,"./ReactNativeComponent":213,"./ReactPerf":215,"./ReactRootIndex":224,"./ReactUpdates":233,"_process":32,"buffer":28}],204:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29270,7 +29571,7 @@ var ReactInputSelection = {
 module.exports = ReactInputSelection;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactInputSelection.js","/node_modules/react/lib")
-},{"./ReactDOMSelection":188,"./containsNode":256,"./focusNode":267,"./getActiveElement":269,"_process":31,"buffer":27}],204:[function(require,module,exports){
+},{"./ReactDOMSelection":189,"./containsNode":257,"./focusNode":268,"./getActiveElement":270,"_process":32,"buffer":28}],205:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29606,7 +29907,7 @@ var ReactInstanceHandles = {
 module.exports = ReactInstanceHandles;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactInstanceHandles.js","/node_modules/react/lib")
-},{"./ReactRootIndex":223,"./invariant":283,"_process":31,"buffer":27}],205:[function(require,module,exports){
+},{"./ReactRootIndex":224,"./invariant":284,"_process":32,"buffer":28}],206:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29657,7 +29958,7 @@ var ReactInstanceMap = {
 module.exports = ReactInstanceMap;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactInstanceMap.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],206:[function(require,module,exports){
+},{"_process":32,"buffer":28}],207:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -29696,7 +29997,7 @@ var ReactLifeCycle = {
 module.exports = ReactLifeCycle;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactLifeCycle.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],207:[function(require,module,exports){
+},{"_process":32,"buffer":28}],208:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29771,7 +30072,7 @@ ReactLink.PropTypes = {
 module.exports = ReactLink;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactLink.js","/node_modules/react/lib")
-},{"./React":163,"_process":31,"buffer":27}],208:[function(require,module,exports){
+},{"./React":164,"_process":32,"buffer":28}],209:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29821,7 +30122,7 @@ var ReactMarkupChecksum = {
 module.exports = ReactMarkupChecksum;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactMarkupChecksum.js","/node_modules/react/lib")
-},{"./adler32":252,"_process":31,"buffer":27}],209:[function(require,module,exports){
+},{"./adler32":253,"_process":32,"buffer":28}],210:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30712,7 +31013,7 @@ ReactPerf.measureMethods(ReactMount, 'ReactMount', {
 module.exports = ReactMount;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactMount.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"./ReactBrowserEventEmitter":165,"./ReactCurrentOwner":177,"./ReactElement":195,"./ReactElementValidator":196,"./ReactEmptyComponent":197,"./ReactInstanceHandles":204,"./ReactInstanceMap":205,"./ReactMarkupChecksum":208,"./ReactPerf":214,"./ReactReconciler":221,"./ReactUpdateQueue":231,"./ReactUpdates":232,"./containsNode":256,"./emptyObject":263,"./getReactRootElementInContainer":277,"./instantiateReactComponent":282,"./invariant":283,"./setInnerHTML":297,"./shouldUpdateReactComponent":300,"./warning":304,"_process":31,"buffer":27}],210:[function(require,module,exports){
+},{"./DOMProperty":144,"./ReactBrowserEventEmitter":166,"./ReactCurrentOwner":178,"./ReactElement":196,"./ReactElementValidator":197,"./ReactEmptyComponent":198,"./ReactInstanceHandles":205,"./ReactInstanceMap":206,"./ReactMarkupChecksum":209,"./ReactPerf":215,"./ReactReconciler":222,"./ReactUpdateQueue":232,"./ReactUpdates":233,"./containsNode":257,"./emptyObject":264,"./getReactRootElementInContainer":278,"./instantiateReactComponent":283,"./invariant":284,"./setInnerHTML":298,"./shouldUpdateReactComponent":301,"./warning":305,"_process":32,"buffer":28}],211:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31144,7 +31445,7 @@ var ReactMultiChild = {
 module.exports = ReactMultiChild;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactMultiChild.js","/node_modules/react/lib")
-},{"./ReactChildReconciler":168,"./ReactComponentEnvironment":173,"./ReactMultiChildUpdateTypes":211,"./ReactReconciler":221,"_process":31,"buffer":27}],211:[function(require,module,exports){
+},{"./ReactChildReconciler":169,"./ReactComponentEnvironment":174,"./ReactMultiChildUpdateTypes":212,"./ReactReconciler":222,"_process":32,"buffer":28}],212:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31179,7 +31480,7 @@ var ReactMultiChildUpdateTypes = keyMirror({
 module.exports = ReactMultiChildUpdateTypes;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactMultiChildUpdateTypes.js","/node_modules/react/lib")
-},{"./keyMirror":289,"_process":31,"buffer":27}],212:[function(require,module,exports){
+},{"./keyMirror":290,"_process":32,"buffer":28}],213:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -31286,7 +31587,7 @@ var ReactNativeComponent = {
 module.exports = ReactNativeComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactNativeComponent.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./invariant":283,"_process":31,"buffer":27}],213:[function(require,module,exports){
+},{"./Object.assign":162,"./invariant":284,"_process":32,"buffer":28}],214:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31398,7 +31699,7 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactOwner.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],214:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],215:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31502,7 +31803,7 @@ function _noMeasure(objName, fnName, func) {
 module.exports = ReactPerf;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPerf.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],215:[function(require,module,exports){
+},{"_process":32,"buffer":28}],216:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31614,7 +31915,7 @@ var ReactPropTransferer = {
 module.exports = ReactPropTransferer;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPropTransferer.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./emptyFunction":262,"./joinClasses":288,"_process":31,"buffer":27}],216:[function(require,module,exports){
+},{"./Object.assign":162,"./emptyFunction":263,"./joinClasses":289,"_process":32,"buffer":28}],217:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31642,7 +31943,7 @@ if ("production" !== "development") {
 module.exports = ReactPropTypeLocationNames;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPropTypeLocationNames.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],217:[function(require,module,exports){
+},{"_process":32,"buffer":28}],218:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31668,7 +31969,7 @@ var ReactPropTypeLocations = keyMirror({
 module.exports = ReactPropTypeLocations;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPropTypeLocations.js","/node_modules/react/lib")
-},{"./keyMirror":289,"_process":31,"buffer":27}],218:[function(require,module,exports){
+},{"./keyMirror":290,"_process":32,"buffer":28}],219:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32019,7 +32320,7 @@ function getPreciseType(propValue) {
 module.exports = ReactPropTypes;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPropTypes.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactFragment":201,"./ReactPropTypeLocationNames":216,"./emptyFunction":262,"_process":31,"buffer":27}],219:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactFragment":202,"./ReactPropTypeLocationNames":217,"./emptyFunction":263,"_process":32,"buffer":28}],220:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32077,7 +32378,7 @@ PooledClass.addPoolingTo(ReactPutListenerQueue);
 module.exports = ReactPutListenerQueue;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactPutListenerQueue.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./PooledClass":162,"./ReactBrowserEventEmitter":165,"_process":31,"buffer":27}],220:[function(require,module,exports){
+},{"./Object.assign":162,"./PooledClass":163,"./ReactBrowserEventEmitter":166,"_process":32,"buffer":28}],221:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32255,7 +32556,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 module.exports = ReactReconcileTransaction;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactReconcileTransaction.js","/node_modules/react/lib")
-},{"./CallbackQueue":139,"./Object.assign":161,"./PooledClass":162,"./ReactBrowserEventEmitter":165,"./ReactInputSelection":203,"./ReactPutListenerQueue":219,"./Transaction":249,"_process":31,"buffer":27}],221:[function(require,module,exports){
+},{"./CallbackQueue":140,"./Object.assign":162,"./PooledClass":163,"./ReactBrowserEventEmitter":166,"./ReactInputSelection":204,"./ReactPutListenerQueue":220,"./Transaction":250,"_process":32,"buffer":28}],222:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32379,7 +32680,7 @@ var ReactReconciler = {
 module.exports = ReactReconciler;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactReconciler.js","/node_modules/react/lib")
-},{"./ReactElementValidator":196,"./ReactRef":222,"_process":31,"buffer":27}],222:[function(require,module,exports){
+},{"./ReactElementValidator":197,"./ReactRef":223,"_process":32,"buffer":28}],223:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32452,7 +32753,7 @@ ReactRef.detachRefs = function(instance, element) {
 module.exports = ReactRef;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactRef.js","/node_modules/react/lib")
-},{"./ReactOwner":213,"_process":31,"buffer":27}],223:[function(require,module,exports){
+},{"./ReactOwner":214,"_process":32,"buffer":28}],224:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32485,7 +32786,7 @@ var ReactRootIndex = {
 module.exports = ReactRootIndex;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactRootIndex.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],224:[function(require,module,exports){
+},{"_process":32,"buffer":28}],225:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32567,7 +32868,7 @@ module.exports = {
 };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactServerRendering.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactInstanceHandles":204,"./ReactMarkupChecksum":208,"./ReactServerRenderingTransaction":225,"./emptyObject":263,"./instantiateReactComponent":282,"./invariant":283,"_process":31,"buffer":27}],225:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactInstanceHandles":205,"./ReactMarkupChecksum":209,"./ReactServerRenderingTransaction":226,"./emptyObject":264,"./instantiateReactComponent":283,"./invariant":284,"_process":32,"buffer":28}],226:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -32682,7 +32983,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 module.exports = ReactServerRenderingTransaction;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactServerRenderingTransaction.js","/node_modules/react/lib")
-},{"./CallbackQueue":139,"./Object.assign":161,"./PooledClass":162,"./ReactPutListenerQueue":219,"./Transaction":249,"./emptyFunction":262,"_process":31,"buffer":27}],226:[function(require,module,exports){
+},{"./CallbackQueue":140,"./Object.assign":162,"./PooledClass":163,"./ReactPutListenerQueue":220,"./Transaction":250,"./emptyFunction":263,"_process":32,"buffer":28}],227:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32790,7 +33091,7 @@ ReactStateSetters.Mixin = {
 module.exports = ReactStateSetters;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactStateSetters.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],227:[function(require,module,exports){
+},{"_process":32,"buffer":28}],228:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32820,7 +33121,6 @@ var ReactUpdates = require("./ReactUpdates");
 var SyntheticEvent = require("./SyntheticEvent");
 
 var assign = require("./Object.assign");
-var emptyObject = require("./emptyObject");
 
 var topLevelTypes = EventConstants.topLevelTypes;
 
@@ -33162,9 +33462,6 @@ assign(
 );
 
 ReactShallowRenderer.prototype.render = function(element, context) {
-  if (!context) {
-    context = emptyObject;
-  }
   var transaction = ReactUpdates.ReactReconcileTransaction.getPooled();
   this._render(element, transaction, context);
   ReactUpdates.ReactReconcileTransaction.release(transaction);
@@ -33306,7 +33603,7 @@ for (eventType in topLevelTypes) {
 module.exports = ReactTestUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTestUtils.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPluginHub":150,"./EventPropagators":153,"./Object.assign":161,"./React":163,"./ReactBrowserEventEmitter":165,"./ReactCompositeComponent":175,"./ReactElement":195,"./ReactEmptyComponent":197,"./ReactInstanceHandles":204,"./ReactInstanceMap":205,"./ReactMount":209,"./ReactUpdates":232,"./SyntheticEvent":241,"./emptyObject":263,"_process":31,"buffer":27}],228:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPluginHub":151,"./EventPropagators":154,"./Object.assign":162,"./React":164,"./ReactBrowserEventEmitter":166,"./ReactCompositeComponent":176,"./ReactElement":196,"./ReactEmptyComponent":198,"./ReactInstanceHandles":205,"./ReactInstanceMap":206,"./ReactMount":210,"./ReactUpdates":233,"./SyntheticEvent":242,"_process":32,"buffer":28}],229:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33413,7 +33710,7 @@ var ReactTransitionChildMapping = {
 module.exports = ReactTransitionChildMapping;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTransitionChildMapping.js","/node_modules/react/lib")
-},{"./ReactChildren":169,"./ReactFragment":201,"_process":31,"buffer":27}],229:[function(require,module,exports){
+},{"./ReactChildren":170,"./ReactFragment":202,"_process":32,"buffer":28}],230:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33526,7 +33823,7 @@ var ReactTransitionEvents = {
 module.exports = ReactTransitionEvents;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTransitionEvents.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"_process":31,"buffer":27}],230:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"_process":32,"buffer":28}],231:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33758,7 +34055,7 @@ var ReactTransitionGroup = React.createClass({
 module.exports = ReactTransitionGroup;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTransitionGroup.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./React":163,"./ReactTransitionChildMapping":228,"./cloneWithProps":255,"./emptyFunction":262,"_process":31,"buffer":27}],231:[function(require,module,exports){
+},{"./Object.assign":162,"./React":164,"./ReactTransitionChildMapping":229,"./cloneWithProps":256,"./emptyFunction":263,"_process":32,"buffer":28}],232:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -34057,7 +34354,7 @@ var ReactUpdateQueue = {
 module.exports = ReactUpdateQueue;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactUpdateQueue.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactCurrentOwner":177,"./ReactElement":195,"./ReactInstanceMap":205,"./ReactLifeCycle":206,"./ReactUpdates":232,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],232:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactCurrentOwner":178,"./ReactElement":196,"./ReactInstanceMap":206,"./ReactLifeCycle":207,"./ReactUpdates":233,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],233:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34339,7 +34636,7 @@ var ReactUpdates = {
 module.exports = ReactUpdates;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactUpdates.js","/node_modules/react/lib")
-},{"./CallbackQueue":139,"./Object.assign":161,"./PooledClass":162,"./ReactCurrentOwner":177,"./ReactPerf":214,"./ReactReconciler":221,"./Transaction":249,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],233:[function(require,module,exports){
+},{"./CallbackQueue":140,"./Object.assign":162,"./PooledClass":163,"./ReactCurrentOwner":178,"./ReactPerf":215,"./ReactReconciler":222,"./Transaction":250,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],234:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34395,7 +34692,7 @@ if ("production" !== "development") {
 module.exports = React;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactWithAddons.js","/node_modules/react/lib")
-},{"./LinkedStateMixin":157,"./React":163,"./ReactCSSTransitionGroup":166,"./ReactComponentWithPureRenderMixin":174,"./ReactDefaultPerf":193,"./ReactFragment":201,"./ReactTestUtils":227,"./ReactTransitionGroup":230,"./ReactUpdates":232,"./cloneWithProps":255,"./cx":260,"./update":303,"_process":31,"buffer":27}],234:[function(require,module,exports){
+},{"./LinkedStateMixin":158,"./React":164,"./ReactCSSTransitionGroup":167,"./ReactComponentWithPureRenderMixin":175,"./ReactDefaultPerf":194,"./ReactFragment":202,"./ReactTestUtils":228,"./ReactTransitionGroup":231,"./ReactUpdates":233,"./cloneWithProps":256,"./cx":261,"./update":304,"_process":32,"buffer":28}],235:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34418,7 +34715,6 @@ var MUST_USE_ATTRIBUTE = DOMProperty.injection.MUST_USE_ATTRIBUTE;
 
 var SVGDOMPropertyConfig = {
   Properties: {
-    clipPath: MUST_USE_ATTRIBUTE,
     cx: MUST_USE_ATTRIBUTE,
     cy: MUST_USE_ATTRIBUTE,
     d: MUST_USE_ATTRIBUTE,
@@ -34464,7 +34760,6 @@ var SVGDOMPropertyConfig = {
     y: MUST_USE_ATTRIBUTE
   },
   DOMAttributeNames: {
-    clipPath: 'clip-path',
     fillOpacity: 'fill-opacity',
     fontFamily: 'font-family',
     fontSize: 'font-size',
@@ -34491,7 +34786,7 @@ var SVGDOMPropertyConfig = {
 module.exports = SVGDOMPropertyConfig;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SVGDOMPropertyConfig.js","/node_modules/react/lib")
-},{"./DOMProperty":143,"_process":31,"buffer":27}],235:[function(require,module,exports){
+},{"./DOMProperty":144,"_process":32,"buffer":28}],236:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34688,7 +34983,7 @@ var SelectEventPlugin = {
 module.exports = SelectEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SelectEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPropagators":153,"./ReactInputSelection":203,"./SyntheticEvent":241,"./getActiveElement":269,"./isTextInputElement":286,"./keyOf":290,"./shallowEqual":299,"_process":31,"buffer":27}],236:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPropagators":154,"./ReactInputSelection":204,"./SyntheticEvent":242,"./getActiveElement":270,"./isTextInputElement":287,"./keyOf":291,"./shallowEqual":300,"_process":32,"buffer":28}],237:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34721,7 +35016,7 @@ var ServerReactRootIndex = {
 module.exports = ServerReactRootIndex;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ServerReactRootIndex.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],237:[function(require,module,exports){
+},{"_process":32,"buffer":28}],238:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35149,7 +35444,7 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SimpleEventPlugin.js","/node_modules/react/lib")
-},{"./EventConstants":148,"./EventPluginUtils":152,"./EventPropagators":153,"./SyntheticClipboardEvent":238,"./SyntheticDragEvent":240,"./SyntheticEvent":241,"./SyntheticFocusEvent":242,"./SyntheticKeyboardEvent":244,"./SyntheticMouseEvent":245,"./SyntheticTouchEvent":246,"./SyntheticUIEvent":247,"./SyntheticWheelEvent":248,"./getEventCharCode":270,"./invariant":283,"./keyOf":290,"./warning":304,"_process":31,"buffer":27}],238:[function(require,module,exports){
+},{"./EventConstants":149,"./EventPluginUtils":153,"./EventPropagators":154,"./SyntheticClipboardEvent":239,"./SyntheticDragEvent":241,"./SyntheticEvent":242,"./SyntheticFocusEvent":243,"./SyntheticKeyboardEvent":245,"./SyntheticMouseEvent":246,"./SyntheticTouchEvent":247,"./SyntheticUIEvent":248,"./SyntheticWheelEvent":249,"./getEventCharCode":271,"./invariant":284,"./keyOf":291,"./warning":305,"_process":32,"buffer":28}],239:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35196,7 +35491,7 @@ SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 module.exports = SyntheticClipboardEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticClipboardEvent.js","/node_modules/react/lib")
-},{"./SyntheticEvent":241,"_process":31,"buffer":27}],239:[function(require,module,exports){
+},{"./SyntheticEvent":242,"_process":32,"buffer":28}],240:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35243,7 +35538,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticCompositionEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticCompositionEvent.js","/node_modules/react/lib")
-},{"./SyntheticEvent":241,"_process":31,"buffer":27}],240:[function(require,module,exports){
+},{"./SyntheticEvent":242,"_process":32,"buffer":28}],241:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35284,7 +35579,7 @@ SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 module.exports = SyntheticDragEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticDragEvent.js","/node_modules/react/lib")
-},{"./SyntheticMouseEvent":245,"_process":31,"buffer":27}],241:[function(require,module,exports){
+},{"./SyntheticMouseEvent":246,"_process":32,"buffer":28}],242:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35452,7 +35747,7 @@ PooledClass.addPoolingTo(SyntheticEvent, PooledClass.threeArgumentPooler);
 module.exports = SyntheticEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticEvent.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./PooledClass":162,"./emptyFunction":262,"./getEventTarget":273,"_process":31,"buffer":27}],242:[function(require,module,exports){
+},{"./Object.assign":162,"./PooledClass":163,"./emptyFunction":263,"./getEventTarget":274,"_process":32,"buffer":28}],243:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35493,7 +35788,7 @@ SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 module.exports = SyntheticFocusEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticFocusEvent.js","/node_modules/react/lib")
-},{"./SyntheticUIEvent":247,"_process":31,"buffer":27}],243:[function(require,module,exports){
+},{"./SyntheticUIEvent":248,"_process":32,"buffer":28}],244:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35541,7 +35836,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticInputEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticInputEvent.js","/node_modules/react/lib")
-},{"./SyntheticEvent":241,"_process":31,"buffer":27}],244:[function(require,module,exports){
+},{"./SyntheticEvent":242,"_process":32,"buffer":28}],245:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35630,7 +35925,7 @@ SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 module.exports = SyntheticKeyboardEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticKeyboardEvent.js","/node_modules/react/lib")
-},{"./SyntheticUIEvent":247,"./getEventCharCode":270,"./getEventKey":271,"./getEventModifierState":272,"_process":31,"buffer":27}],245:[function(require,module,exports){
+},{"./SyntheticUIEvent":248,"./getEventCharCode":271,"./getEventKey":272,"./getEventModifierState":273,"_process":32,"buffer":28}],246:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35713,7 +36008,7 @@ SyntheticUIEvent.augmentClass(SyntheticMouseEvent, MouseEventInterface);
 module.exports = SyntheticMouseEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticMouseEvent.js","/node_modules/react/lib")
-},{"./SyntheticUIEvent":247,"./ViewportMetrics":250,"./getEventModifierState":272,"_process":31,"buffer":27}],246:[function(require,module,exports){
+},{"./SyntheticUIEvent":248,"./ViewportMetrics":251,"./getEventModifierState":273,"_process":32,"buffer":28}],247:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35763,7 +36058,7 @@ SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 module.exports = SyntheticTouchEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticTouchEvent.js","/node_modules/react/lib")
-},{"./SyntheticUIEvent":247,"./getEventModifierState":272,"_process":31,"buffer":27}],247:[function(require,module,exports){
+},{"./SyntheticUIEvent":248,"./getEventModifierState":273,"_process":32,"buffer":28}],248:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35827,7 +36122,7 @@ SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
 module.exports = SyntheticUIEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticUIEvent.js","/node_modules/react/lib")
-},{"./SyntheticEvent":241,"./getEventTarget":273,"_process":31,"buffer":27}],248:[function(require,module,exports){
+},{"./SyntheticEvent":242,"./getEventTarget":274,"_process":32,"buffer":28}],249:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35890,7 +36185,7 @@ SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 module.exports = SyntheticWheelEvent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/SyntheticWheelEvent.js","/node_modules/react/lib")
-},{"./SyntheticMouseEvent":245,"_process":31,"buffer":27}],249:[function(require,module,exports){
+},{"./SyntheticMouseEvent":246,"_process":32,"buffer":28}],250:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36131,7 +36426,7 @@ var Transaction = {
 module.exports = Transaction;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/Transaction.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],250:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],251:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36162,7 +36457,7 @@ var ViewportMetrics = {
 module.exports = ViewportMetrics;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ViewportMetrics.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],251:[function(require,module,exports){
+},{"_process":32,"buffer":28}],252:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -36228,7 +36523,7 @@ function accumulateInto(current, next) {
 module.exports = accumulateInto;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/accumulateInto.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],252:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],253:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36264,7 +36559,7 @@ function adler32(data) {
 module.exports = adler32;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/adler32.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],253:[function(require,module,exports){
+},{"_process":32,"buffer":28}],254:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36298,7 +36593,7 @@ function camelize(string) {
 module.exports = camelize;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/camelize.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],254:[function(require,module,exports){
+},{"_process":32,"buffer":28}],255:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -36342,7 +36637,7 @@ function camelizeStyleName(string) {
 module.exports = camelizeStyleName;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/camelizeStyleName.js","/node_modules/react/lib")
-},{"./camelize":253,"_process":31,"buffer":27}],255:[function(require,module,exports){
+},{"./camelize":254,"_process":32,"buffer":28}],256:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36401,7 +36696,7 @@ function cloneWithProps(child, props) {
 module.exports = cloneWithProps;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/cloneWithProps.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactPropTransferer":215,"./keyOf":290,"./warning":304,"_process":31,"buffer":27}],256:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactPropTransferer":216,"./keyOf":291,"./warning":305,"_process":32,"buffer":28}],257:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36447,7 +36742,7 @@ function containsNode(outerNode, innerNode) {
 module.exports = containsNode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/containsNode.js","/node_modules/react/lib")
-},{"./isTextNode":287,"_process":31,"buffer":27}],257:[function(require,module,exports){
+},{"./isTextNode":288,"_process":32,"buffer":28}],258:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36535,7 +36830,7 @@ function createArrayFromMixed(obj) {
 module.exports = createArrayFromMixed;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/createArrayFromMixed.js","/node_modules/react/lib")
-},{"./toArray":301,"_process":31,"buffer":27}],258:[function(require,module,exports){
+},{"./toArray":302,"_process":32,"buffer":28}],259:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36597,7 +36892,7 @@ function createFullPageComponent(tag) {
 module.exports = createFullPageComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/createFullPageComponent.js","/node_modules/react/lib")
-},{"./ReactClass":170,"./ReactElement":195,"./invariant":283,"_process":31,"buffer":27}],259:[function(require,module,exports){
+},{"./ReactClass":171,"./ReactElement":196,"./invariant":284,"_process":32,"buffer":28}],260:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36687,7 +36982,7 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/createNodesFromMarkup.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"./createArrayFromMixed":257,"./getMarkupWrap":275,"./invariant":283,"_process":31,"buffer":27}],260:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"./createArrayFromMixed":258,"./getMarkupWrap":276,"./invariant":284,"_process":32,"buffer":28}],261:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36743,7 +37038,7 @@ function cx(classNames) {
 module.exports = cx;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/cx.js","/node_modules/react/lib")
-},{"./warning":304,"_process":31,"buffer":27}],261:[function(require,module,exports){
+},{"./warning":305,"_process":32,"buffer":28}],262:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36803,7 +37098,7 @@ function dangerousStyleValue(name, value) {
 module.exports = dangerousStyleValue;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/dangerousStyleValue.js","/node_modules/react/lib")
-},{"./CSSProperty":137,"_process":31,"buffer":27}],262:[function(require,module,exports){
+},{"./CSSProperty":138,"_process":32,"buffer":28}],263:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36839,7 +37134,7 @@ emptyFunction.thatReturnsArgument = function(arg) { return arg; };
 module.exports = emptyFunction;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/emptyFunction.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],263:[function(require,module,exports){
+},{"_process":32,"buffer":28}],264:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36863,7 +37158,7 @@ if ("production" !== "development") {
 module.exports = emptyObject;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/emptyObject.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],264:[function(require,module,exports){
+},{"_process":32,"buffer":28}],265:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36905,7 +37200,7 @@ function escapeTextContentForBrowser(text) {
 module.exports = escapeTextContentForBrowser;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/escapeTextContentForBrowser.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],265:[function(require,module,exports){
+},{"_process":32,"buffer":28}],266:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36978,7 +37273,7 @@ function findDOMNode(componentOrElement) {
 module.exports = findDOMNode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/findDOMNode.js","/node_modules/react/lib")
-},{"./ReactCurrentOwner":177,"./ReactInstanceMap":205,"./ReactMount":209,"./invariant":283,"./isNode":285,"./warning":304,"_process":31,"buffer":27}],266:[function(require,module,exports){
+},{"./ReactCurrentOwner":178,"./ReactInstanceMap":206,"./ReactMount":210,"./invariant":284,"./isNode":286,"./warning":305,"_process":32,"buffer":28}],267:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37036,7 +37331,7 @@ function flattenChildren(children) {
 module.exports = flattenChildren;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/flattenChildren.js","/node_modules/react/lib")
-},{"./traverseAllChildren":302,"./warning":304,"_process":31,"buffer":27}],267:[function(require,module,exports){
+},{"./traverseAllChildren":303,"./warning":305,"_process":32,"buffer":28}],268:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -37067,7 +37362,7 @@ function focusNode(node) {
 module.exports = focusNode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/focusNode.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],268:[function(require,module,exports){
+},{"_process":32,"buffer":28}],269:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37100,7 +37395,7 @@ var forEachAccumulated = function(arr, cb, scope) {
 module.exports = forEachAccumulated;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/forEachAccumulated.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],269:[function(require,module,exports){
+},{"_process":32,"buffer":28}],270:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37131,7 +37426,7 @@ function getActiveElement() /*?DOMElement*/ {
 module.exports = getActiveElement;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getActiveElement.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],270:[function(require,module,exports){
+},{"_process":32,"buffer":28}],271:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37185,7 +37480,7 @@ function getEventCharCode(nativeEvent) {
 module.exports = getEventCharCode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getEventCharCode.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],271:[function(require,module,exports){
+},{"_process":32,"buffer":28}],272:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37292,7 +37587,7 @@ function getEventKey(nativeEvent) {
 module.exports = getEventKey;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getEventKey.js","/node_modules/react/lib")
-},{"./getEventCharCode":270,"_process":31,"buffer":27}],272:[function(require,module,exports){
+},{"./getEventCharCode":271,"_process":32,"buffer":28}],273:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37341,7 +37636,7 @@ function getEventModifierState(nativeEvent) {
 module.exports = getEventModifierState;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getEventModifierState.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],273:[function(require,module,exports){
+},{"_process":32,"buffer":28}],274:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37374,7 +37669,7 @@ function getEventTarget(nativeEvent) {
 module.exports = getEventTarget;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getEventTarget.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],274:[function(require,module,exports){
+},{"_process":32,"buffer":28}],275:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37420,7 +37715,7 @@ function getIteratorFn(maybeIterable) {
 module.exports = getIteratorFn;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getIteratorFn.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],275:[function(require,module,exports){
+},{"_process":32,"buffer":28}],276:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37453,7 +37748,6 @@ var shouldWrap = {
   // Force wrapping for SVG elements because if they get created inside a <div>,
   // they will be initialized in the wrong namespace (and will not display).
   'circle': true,
-  'clipPath': true,
   'defs': true,
   'ellipse': true,
   'g': true,
@@ -37496,7 +37790,6 @@ var markupWrap = {
   'th': trWrap,
 
   'circle': svgWrap,
-  'clipPath': svgWrap,
   'defs': svgWrap,
   'ellipse': svgWrap,
   'g': svgWrap,
@@ -37539,7 +37832,7 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getMarkupWrap.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"./invariant":283,"_process":31,"buffer":27}],276:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"./invariant":284,"_process":32,"buffer":28}],277:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37616,7 +37909,7 @@ function getNodeForCharacterOffset(root, offset) {
 module.exports = getNodeForCharacterOffset;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getNodeForCharacterOffset.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],277:[function(require,module,exports){
+},{"_process":32,"buffer":28}],278:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37653,7 +37946,7 @@ function getReactRootElementInContainer(container) {
 module.exports = getReactRootElementInContainer;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getReactRootElementInContainer.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],278:[function(require,module,exports){
+},{"_process":32,"buffer":28}],279:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37692,7 +37985,7 @@ function getTextContentAccessor() {
 module.exports = getTextContentAccessor;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getTextContentAccessor.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"_process":31,"buffer":27}],279:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"_process":32,"buffer":28}],280:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37734,7 +38027,7 @@ function getUnboundedScrollPosition(scrollable) {
 module.exports = getUnboundedScrollPosition;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/getUnboundedScrollPosition.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],280:[function(require,module,exports){
+},{"_process":32,"buffer":28}],281:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37769,7 +38062,7 @@ function hyphenate(string) {
 module.exports = hyphenate;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/hyphenate.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],281:[function(require,module,exports){
+},{"_process":32,"buffer":28}],282:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37812,7 +38105,7 @@ function hyphenateStyleName(string) {
 module.exports = hyphenateStyleName;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/hyphenateStyleName.js","/node_modules/react/lib")
-},{"./hyphenate":280,"_process":31,"buffer":27}],282:[function(require,module,exports){
+},{"./hyphenate":281,"_process":32,"buffer":28}],283:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37856,7 +38149,6 @@ assign(
 function isInternalComponentType(type) {
   return (
     typeof type === 'function' &&
-    typeof type.prototype !== 'undefined' &&
     typeof type.prototype.mountComponent === 'function' &&
     typeof type.prototype.receiveComponent === 'function'
   );
@@ -37950,7 +38242,7 @@ function instantiateReactComponent(node, parentCompositeType) {
 module.exports = instantiateReactComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/instantiateReactComponent.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./ReactCompositeComponent":175,"./ReactEmptyComponent":197,"./ReactNativeComponent":212,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],283:[function(require,module,exports){
+},{"./Object.assign":162,"./ReactCompositeComponent":176,"./ReactEmptyComponent":198,"./ReactNativeComponent":213,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],284:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38007,7 +38299,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/invariant.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],284:[function(require,module,exports){
+},{"_process":32,"buffer":28}],285:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38074,7 +38366,7 @@ function isEventSupported(eventNameSuffix, capture) {
 module.exports = isEventSupported;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/isEventSupported.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"_process":31,"buffer":27}],285:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"_process":32,"buffer":28}],286:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38103,7 +38395,7 @@ function isNode(object) {
 module.exports = isNode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/isNode.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],286:[function(require,module,exports){
+},{"_process":32,"buffer":28}],287:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38148,7 +38440,7 @@ function isTextInputElement(elem) {
 module.exports = isTextInputElement;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/isTextInputElement.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],287:[function(require,module,exports){
+},{"_process":32,"buffer":28}],288:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38175,7 +38467,7 @@ function isTextNode(object) {
 module.exports = isTextNode;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/isTextNode.js","/node_modules/react/lib")
-},{"./isNode":285,"_process":31,"buffer":27}],288:[function(require,module,exports){
+},{"./isNode":286,"_process":32,"buffer":28}],289:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38218,7 +38510,7 @@ function joinClasses(className/*, ... */) {
 module.exports = joinClasses;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/joinClasses.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],289:[function(require,module,exports){
+},{"_process":32,"buffer":28}],290:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38273,7 +38565,7 @@ var keyMirror = function(obj) {
 module.exports = keyMirror;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/keyMirror.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],290:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],291:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38311,7 +38603,7 @@ var keyOf = function(oneKeyObj) {
 module.exports = keyOf;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/keyOf.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],291:[function(require,module,exports){
+},{"_process":32,"buffer":28}],292:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38366,7 +38658,7 @@ function mapObject(object, callback, context) {
 module.exports = mapObject;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/mapObject.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],292:[function(require,module,exports){
+},{"_process":32,"buffer":28}],293:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38401,7 +38693,7 @@ function memoizeStringOnly(callback) {
 module.exports = memoizeStringOnly;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/memoizeStringOnly.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],293:[function(require,module,exports){
+},{"_process":32,"buffer":28}],294:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38441,7 +38733,7 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/onlyChild.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./invariant":283,"_process":31,"buffer":27}],294:[function(require,module,exports){
+},{"./ReactElement":196,"./invariant":284,"_process":32,"buffer":28}],295:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38471,7 +38763,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = performance || {};
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/performance.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"_process":31,"buffer":27}],295:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"_process":32,"buffer":28}],296:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38501,7 +38793,7 @@ var performanceNow = performance.now.bind(performance);
 module.exports = performanceNow;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/performanceNow.js","/node_modules/react/lib")
-},{"./performance":294,"_process":31,"buffer":27}],296:[function(require,module,exports){
+},{"./performance":295,"_process":32,"buffer":28}],297:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38531,7 +38823,7 @@ function quoteAttributeValueForBrowser(value) {
 module.exports = quoteAttributeValueForBrowser;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/quoteAttributeValueForBrowser.js","/node_modules/react/lib")
-},{"./escapeTextContentForBrowser":264,"_process":31,"buffer":27}],297:[function(require,module,exports){
+},{"./escapeTextContentForBrowser":265,"_process":32,"buffer":28}],298:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38622,7 +38914,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = setInnerHTML;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/setInnerHTML.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"_process":31,"buffer":27}],298:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"_process":32,"buffer":28}],299:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38666,7 +38958,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = setTextContent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/setTextContent.js","/node_modules/react/lib")
-},{"./ExecutionEnvironment":154,"./escapeTextContentForBrowser":264,"./setInnerHTML":297,"_process":31,"buffer":27}],299:[function(require,module,exports){
+},{"./ExecutionEnvironment":155,"./escapeTextContentForBrowser":265,"./setInnerHTML":298,"_process":32,"buffer":28}],300:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38712,7 +39004,7 @@ function shallowEqual(objA, objB) {
 module.exports = shallowEqual;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/shallowEqual.js","/node_modules/react/lib")
-},{"_process":31,"buffer":27}],300:[function(require,module,exports){
+},{"_process":32,"buffer":28}],301:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38816,7 +39108,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
 module.exports = shouldUpdateReactComponent;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/shouldUpdateReactComponent.js","/node_modules/react/lib")
-},{"./warning":304,"_process":31,"buffer":27}],301:[function(require,module,exports){
+},{"./warning":305,"_process":32,"buffer":28}],302:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -38888,7 +39180,7 @@ function toArray(obj) {
 module.exports = toArray;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/toArray.js","/node_modules/react/lib")
-},{"./invariant":283,"_process":31,"buffer":27}],302:[function(require,module,exports){
+},{"./invariant":284,"_process":32,"buffer":28}],303:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39141,7 +39433,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/traverseAllChildren.js","/node_modules/react/lib")
-},{"./ReactElement":195,"./ReactFragment":201,"./ReactInstanceHandles":204,"./getIteratorFn":274,"./invariant":283,"./warning":304,"_process":31,"buffer":27}],303:[function(require,module,exports){
+},{"./ReactElement":196,"./ReactFragment":202,"./ReactInstanceHandles":205,"./getIteratorFn":275,"./invariant":284,"./warning":305,"_process":32,"buffer":28}],304:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39154,14 +39446,11 @@ module.exports = traverseAllChildren;
  * @providesModule update
  */
 
- /* global hasOwnProperty:true */
-
 'use strict';
 
 var assign = require("./Object.assign");
 var keyOf = require("./keyOf");
 var invariant = require("./invariant");
-var hasOwnProperty = {}.hasOwnProperty;
 
 function shallowCopy(x) {
   if (Array.isArray(x)) {
@@ -39221,7 +39510,7 @@ function update(value, spec) {
     COMMAND_SET
   ) : invariant(typeof spec === 'object'));
 
-  if (hasOwnProperty.call(spec, COMMAND_SET)) {
+  if (spec.hasOwnProperty(COMMAND_SET)) {
     ("production" !== "development" ? invariant(
       Object.keys(spec).length === 1,
       'Cannot have more than one key in an object with %s',
@@ -39233,7 +39522,7 @@ function update(value, spec) {
 
   var nextValue = shallowCopy(value);
 
-  if (hasOwnProperty.call(spec, COMMAND_MERGE)) {
+  if (spec.hasOwnProperty(COMMAND_MERGE)) {
     var mergeObj = spec[COMMAND_MERGE];
     ("production" !== "development" ? invariant(
       mergeObj && typeof mergeObj === 'object',
@@ -39250,21 +39539,21 @@ function update(value, spec) {
     assign(nextValue, spec[COMMAND_MERGE]);
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_PUSH)) {
+  if (spec.hasOwnProperty(COMMAND_PUSH)) {
     invariantArrayCase(value, spec, COMMAND_PUSH);
     spec[COMMAND_PUSH].forEach(function(item) {
       nextValue.push(item);
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_UNSHIFT)) {
+  if (spec.hasOwnProperty(COMMAND_UNSHIFT)) {
     invariantArrayCase(value, spec, COMMAND_UNSHIFT);
     spec[COMMAND_UNSHIFT].forEach(function(item) {
       nextValue.unshift(item);
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_SPLICE)) {
+  if (spec.hasOwnProperty(COMMAND_SPLICE)) {
     ("production" !== "development" ? invariant(
       Array.isArray(value),
       'Expected %s target to be an array; got %s',
@@ -39290,7 +39579,7 @@ function update(value, spec) {
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_APPLY)) {
+  if (spec.hasOwnProperty(COMMAND_APPLY)) {
     ("production" !== "development" ? invariant(
       typeof spec[COMMAND_APPLY] === 'function',
       'update(): expected spec of %s to be a function; got %s.',
@@ -39312,7 +39601,7 @@ function update(value, spec) {
 module.exports = update;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/update.js","/node_modules/react/lib")
-},{"./Object.assign":161,"./invariant":283,"./keyOf":290,"_process":31,"buffer":27}],304:[function(require,module,exports){
+},{"./Object.assign":162,"./invariant":284,"./keyOf":291,"_process":32,"buffer":28}],305:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -39375,9 +39664,1561 @@ if ("production" !== "development") {
 module.exports = warning;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/warning.js","/node_modules/react/lib")
-},{"./emptyFunction":262,"_process":31,"buffer":27}],305:[function(require,module,exports){
+},{"./emptyFunction":263,"_process":32,"buffer":28}],306:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/React');
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/react.js","/node_modules/react")
-},{"./lib/React":163,"_process":31,"buffer":27}]},{},[25]);
+},{"./lib/React":164,"_process":32,"buffer":28}],307:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+//     Underscore.js 1.8.3
+//     http://underscorejs.org
+//     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
+
+(function() {
+
+  // Baseline setup
+  // --------------
+
+  // Establish the root object, `window` in the browser, or `exports` on the server.
+  var root = this;
+
+  // Save the previous value of the `_` variable.
+  var previousUnderscore = root._;
+
+  // Save bytes in the minified (but not gzipped) version:
+  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+
+  // Create quick reference variables for speed access to core prototypes.
+  var
+    push             = ArrayProto.push,
+    slice            = ArrayProto.slice,
+    toString         = ObjProto.toString,
+    hasOwnProperty   = ObjProto.hasOwnProperty;
+
+  // All **ECMAScript 5** native function implementations that we hope to use
+  // are declared here.
+  var
+    nativeIsArray      = Array.isArray,
+    nativeKeys         = Object.keys,
+    nativeBind         = FuncProto.bind,
+    nativeCreate       = Object.create;
+
+  // Naked function reference for surrogate-prototype-swapping.
+  var Ctor = function(){};
+
+  // Create a safe reference to the Underscore object for use below.
+  var _ = function(obj) {
+    if (obj instanceof _) return obj;
+    if (!(this instanceof _)) return new _(obj);
+    this._wrapped = obj;
+  };
+
+  // Export the Underscore object for **Node.js**, with
+  // backwards-compatibility for the old `require()` API. If we're in
+  // the browser, add `_` as a global object.
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = _;
+    }
+    exports._ = _;
+  } else {
+    root._ = _;
+  }
+
+  // Current version.
+  _.VERSION = '1.8.3';
+
+  // Internal function that returns an efficient (for current engines) version
+  // of the passed-in callback, to be repeatedly applied in other Underscore
+  // functions.
+  var optimizeCb = function(func, context, argCount) {
+    if (context === void 0) return func;
+    switch (argCount == null ? 3 : argCount) {
+      case 1: return function(value) {
+        return func.call(context, value);
+      };
+      case 2: return function(value, other) {
+        return func.call(context, value, other);
+      };
+      case 3: return function(value, index, collection) {
+        return func.call(context, value, index, collection);
+      };
+      case 4: return function(accumulator, value, index, collection) {
+        return func.call(context, accumulator, value, index, collection);
+      };
+    }
+    return function() {
+      return func.apply(context, arguments);
+    };
+  };
+
+  // A mostly-internal function to generate callbacks that can be applied
+  // to each element in a collection, returning the desired result — either
+  // identity, an arbitrary callback, a property matcher, or a property accessor.
+  var cb = function(value, context, argCount) {
+    if (value == null) return _.identity;
+    if (_.isFunction(value)) return optimizeCb(value, context, argCount);
+    if (_.isObject(value)) return _.matcher(value);
+    return _.property(value);
+  };
+  _.iteratee = function(value, context) {
+    return cb(value, context, Infinity);
+  };
+
+  // An internal function for creating assigner functions.
+  var createAssigner = function(keysFunc, undefinedOnly) {
+    return function(obj) {
+      var length = arguments.length;
+      if (length < 2 || obj == null) return obj;
+      for (var index = 1; index < length; index++) {
+        var source = arguments[index],
+            keys = keysFunc(source),
+            l = keys.length;
+        for (var i = 0; i < l; i++) {
+          var key = keys[i];
+          if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
+        }
+      }
+      return obj;
+    };
+  };
+
+  // An internal function for creating a new object that inherits from another.
+  var baseCreate = function(prototype) {
+    if (!_.isObject(prototype)) return {};
+    if (nativeCreate) return nativeCreate(prototype);
+    Ctor.prototype = prototype;
+    var result = new Ctor;
+    Ctor.prototype = null;
+    return result;
+  };
+
+  var property = function(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    };
+  };
+
+  // Helper for collection methods to determine whether a collection
+  // should be iterated as an array or as an object
+  // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
+  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+  var getLength = property('length');
+  var isArrayLike = function(collection) {
+    var length = getLength(collection);
+    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
+  };
+
+  // Collection Functions
+  // --------------------
+
+  // The cornerstone, an `each` implementation, aka `forEach`.
+  // Handles raw objects in addition to array-likes. Treats all
+  // sparse array-likes as if they were dense.
+  _.each = _.forEach = function(obj, iteratee, context) {
+    iteratee = optimizeCb(iteratee, context);
+    var i, length;
+    if (isArrayLike(obj)) {
+      for (i = 0, length = obj.length; i < length; i++) {
+        iteratee(obj[i], i, obj);
+      }
+    } else {
+      var keys = _.keys(obj);
+      for (i = 0, length = keys.length; i < length; i++) {
+        iteratee(obj[keys[i]], keys[i], obj);
+      }
+    }
+    return obj;
+  };
+
+  // Return the results of applying the iteratee to each element.
+  _.map = _.collect = function(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length,
+        results = Array(length);
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      results[index] = iteratee(obj[currentKey], currentKey, obj);
+    }
+    return results;
+  };
+
+  // Create a reducing function iterating left or right.
+  function createReduce(dir) {
+    // Optimized iterator function as using arguments.length
+    // in the main function will deoptimize the, see #1991.
+    function iterator(obj, iteratee, memo, keys, index, length) {
+      for (; index >= 0 && index < length; index += dir) {
+        var currentKey = keys ? keys[index] : index;
+        memo = iteratee(memo, obj[currentKey], currentKey, obj);
+      }
+      return memo;
+    }
+
+    return function(obj, iteratee, memo, context) {
+      iteratee = optimizeCb(iteratee, context, 4);
+      var keys = !isArrayLike(obj) && _.keys(obj),
+          length = (keys || obj).length,
+          index = dir > 0 ? 0 : length - 1;
+      // Determine the initial value if none is provided.
+      if (arguments.length < 3) {
+        memo = obj[keys ? keys[index] : index];
+        index += dir;
+      }
+      return iterator(obj, iteratee, memo, keys, index, length);
+    };
+  }
+
+  // **Reduce** builds up a single result from a list of values, aka `inject`,
+  // or `foldl`.
+  _.reduce = _.foldl = _.inject = createReduce(1);
+
+  // The right-associative version of reduce, also known as `foldr`.
+  _.reduceRight = _.foldr = createReduce(-1);
+
+  // Return the first value which passes a truth test. Aliased as `detect`.
+  _.find = _.detect = function(obj, predicate, context) {
+    var key;
+    if (isArrayLike(obj)) {
+      key = _.findIndex(obj, predicate, context);
+    } else {
+      key = _.findKey(obj, predicate, context);
+    }
+    if (key !== void 0 && key !== -1) return obj[key];
+  };
+
+  // Return all the elements that pass a truth test.
+  // Aliased as `select`.
+  _.filter = _.select = function(obj, predicate, context) {
+    var results = [];
+    predicate = cb(predicate, context);
+    _.each(obj, function(value, index, list) {
+      if (predicate(value, index, list)) results.push(value);
+    });
+    return results;
+  };
+
+  // Return all the elements for which a truth test fails.
+  _.reject = function(obj, predicate, context) {
+    return _.filter(obj, _.negate(cb(predicate)), context);
+  };
+
+  // Determine whether all of the elements match a truth test.
+  // Aliased as `all`.
+  _.every = _.all = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length;
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      if (!predicate(obj[currentKey], currentKey, obj)) return false;
+    }
+    return true;
+  };
+
+  // Determine if at least one element in the object matches a truth test.
+  // Aliased as `any`.
+  _.some = _.any = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length;
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      if (predicate(obj[currentKey], currentKey, obj)) return true;
+    }
+    return false;
+  };
+
+  // Determine if the array or object contains a given item (using `===`).
+  // Aliased as `includes` and `include`.
+  _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
+    if (!isArrayLike(obj)) obj = _.values(obj);
+    if (typeof fromIndex != 'number' || guard) fromIndex = 0;
+    return _.indexOf(obj, item, fromIndex) >= 0;
+  };
+
+  // Invoke a method (with arguments) on every item in a collection.
+  _.invoke = function(obj, method) {
+    var args = slice.call(arguments, 2);
+    var isFunc = _.isFunction(method);
+    return _.map(obj, function(value) {
+      var func = isFunc ? method : value[method];
+      return func == null ? func : func.apply(value, args);
+    });
+  };
+
+  // Convenience version of a common use case of `map`: fetching a property.
+  _.pluck = function(obj, key) {
+    return _.map(obj, _.property(key));
+  };
+
+  // Convenience version of a common use case of `filter`: selecting only objects
+  // containing specific `key:value` pairs.
+  _.where = function(obj, attrs) {
+    return _.filter(obj, _.matcher(attrs));
+  };
+
+  // Convenience version of a common use case of `find`: getting the first object
+  // containing specific `key:value` pairs.
+  _.findWhere = function(obj, attrs) {
+    return _.find(obj, _.matcher(attrs));
+  };
+
+  // Return the maximum element (or element-based computation).
+  _.max = function(obj, iteratee, context) {
+    var result = -Infinity, lastComputed = -Infinity,
+        value, computed;
+    if (iteratee == null && obj != null) {
+      obj = isArrayLike(obj) ? obj : _.values(obj);
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value > result) {
+          result = value;
+        }
+      }
+    } else {
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(value, index, list) {
+        computed = iteratee(value, index, list);
+        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
+          result = value;
+          lastComputed = computed;
+        }
+      });
+    }
+    return result;
+  };
+
+  // Return the minimum element (or element-based computation).
+  _.min = function(obj, iteratee, context) {
+    var result = Infinity, lastComputed = Infinity,
+        value, computed;
+    if (iteratee == null && obj != null) {
+      obj = isArrayLike(obj) ? obj : _.values(obj);
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value < result) {
+          result = value;
+        }
+      }
+    } else {
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(value, index, list) {
+        computed = iteratee(value, index, list);
+        if (computed < lastComputed || computed === Infinity && result === Infinity) {
+          result = value;
+          lastComputed = computed;
+        }
+      });
+    }
+    return result;
+  };
+
+  // Shuffle a collection, using the modern version of the
+  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+  _.shuffle = function(obj) {
+    var set = isArrayLike(obj) ? obj : _.values(obj);
+    var length = set.length;
+    var shuffled = Array(length);
+    for (var index = 0, rand; index < length; index++) {
+      rand = _.random(0, index);
+      if (rand !== index) shuffled[index] = shuffled[rand];
+      shuffled[rand] = set[index];
+    }
+    return shuffled;
+  };
+
+  // Sample **n** random values from a collection.
+  // If **n** is not specified, returns a single random element.
+  // The internal `guard` argument allows it to work with `map`.
+  _.sample = function(obj, n, guard) {
+    if (n == null || guard) {
+      if (!isArrayLike(obj)) obj = _.values(obj);
+      return obj[_.random(obj.length - 1)];
+    }
+    return _.shuffle(obj).slice(0, Math.max(0, n));
+  };
+
+  // Sort the object's values by a criterion produced by an iteratee.
+  _.sortBy = function(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    return _.pluck(_.map(obj, function(value, index, list) {
+      return {
+        value: value,
+        index: index,
+        criteria: iteratee(value, index, list)
+      };
+    }).sort(function(left, right) {
+      var a = left.criteria;
+      var b = right.criteria;
+      if (a !== b) {
+        if (a > b || a === void 0) return 1;
+        if (a < b || b === void 0) return -1;
+      }
+      return left.index - right.index;
+    }), 'value');
+  };
+
+  // An internal function used for aggregate "group by" operations.
+  var group = function(behavior) {
+    return function(obj, iteratee, context) {
+      var result = {};
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(value, index) {
+        var key = iteratee(value, index, obj);
+        behavior(result, value, key);
+      });
+      return result;
+    };
+  };
+
+  // Groups the object's values by a criterion. Pass either a string attribute
+  // to group by, or a function that returns the criterion.
+  _.groupBy = group(function(result, value, key) {
+    if (_.has(result, key)) result[key].push(value); else result[key] = [value];
+  });
+
+  // Indexes the object's values by a criterion, similar to `groupBy`, but for
+  // when you know that your index values will be unique.
+  _.indexBy = group(function(result, value, key) {
+    result[key] = value;
+  });
+
+  // Counts instances of an object that group by a certain criterion. Pass
+  // either a string attribute to count by, or a function that returns the
+  // criterion.
+  _.countBy = group(function(result, value, key) {
+    if (_.has(result, key)) result[key]++; else result[key] = 1;
+  });
+
+  // Safely create a real, live array from anything iterable.
+  _.toArray = function(obj) {
+    if (!obj) return [];
+    if (_.isArray(obj)) return slice.call(obj);
+    if (isArrayLike(obj)) return _.map(obj, _.identity);
+    return _.values(obj);
+  };
+
+  // Return the number of elements in an object.
+  _.size = function(obj) {
+    if (obj == null) return 0;
+    return isArrayLike(obj) ? obj.length : _.keys(obj).length;
+  };
+
+  // Split a collection into two arrays: one whose elements all satisfy the given
+  // predicate, and one whose elements all do not satisfy the predicate.
+  _.partition = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var pass = [], fail = [];
+    _.each(obj, function(value, key, obj) {
+      (predicate(value, key, obj) ? pass : fail).push(value);
+    });
+    return [pass, fail];
+  };
+
+  // Array Functions
+  // ---------------
+
+  // Get the first element of an array. Passing **n** will return the first N
+  // values in the array. Aliased as `head` and `take`. The **guard** check
+  // allows it to work with `_.map`.
+  _.first = _.head = _.take = function(array, n, guard) {
+    if (array == null) return void 0;
+    if (n == null || guard) return array[0];
+    return _.initial(array, array.length - n);
+  };
+
+  // Returns everything but the last entry of the array. Especially useful on
+  // the arguments object. Passing **n** will return all the values in
+  // the array, excluding the last N.
+  _.initial = function(array, n, guard) {
+    return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
+  };
+
+  // Get the last element of an array. Passing **n** will return the last N
+  // values in the array.
+  _.last = function(array, n, guard) {
+    if (array == null) return void 0;
+    if (n == null || guard) return array[array.length - 1];
+    return _.rest(array, Math.max(0, array.length - n));
+  };
+
+  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+  // Especially useful on the arguments object. Passing an **n** will return
+  // the rest N values in the array.
+  _.rest = _.tail = _.drop = function(array, n, guard) {
+    return slice.call(array, n == null || guard ? 1 : n);
+  };
+
+  // Trim out all falsy values from an array.
+  _.compact = function(array) {
+    return _.filter(array, _.identity);
+  };
+
+  // Internal implementation of a recursive `flatten` function.
+  var flatten = function(input, shallow, strict, startIndex) {
+    var output = [], idx = 0;
+    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
+      var value = input[i];
+      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
+        //flatten current level of array or arguments object
+        if (!shallow) value = flatten(value, shallow, strict);
+        var j = 0, len = value.length;
+        output.length += len;
+        while (j < len) {
+          output[idx++] = value[j++];
+        }
+      } else if (!strict) {
+        output[idx++] = value;
+      }
+    }
+    return output;
+  };
+
+  // Flatten out an array, either recursively (by default), or just one level.
+  _.flatten = function(array, shallow) {
+    return flatten(array, shallow, false);
+  };
+
+  // Return a version of the array that does not contain the specified value(s).
+  _.without = function(array) {
+    return _.difference(array, slice.call(arguments, 1));
+  };
+
+  // Produce a duplicate-free version of the array. If the array has already
+  // been sorted, you have the option of using a faster algorithm.
+  // Aliased as `unique`.
+  _.uniq = _.unique = function(array, isSorted, iteratee, context) {
+    if (!_.isBoolean(isSorted)) {
+      context = iteratee;
+      iteratee = isSorted;
+      isSorted = false;
+    }
+    if (iteratee != null) iteratee = cb(iteratee, context);
+    var result = [];
+    var seen = [];
+    for (var i = 0, length = getLength(array); i < length; i++) {
+      var value = array[i],
+          computed = iteratee ? iteratee(value, i, array) : value;
+      if (isSorted) {
+        if (!i || seen !== computed) result.push(value);
+        seen = computed;
+      } else if (iteratee) {
+        if (!_.contains(seen, computed)) {
+          seen.push(computed);
+          result.push(value);
+        }
+      } else if (!_.contains(result, value)) {
+        result.push(value);
+      }
+    }
+    return result;
+  };
+
+  // Produce an array that contains the union: each distinct element from all of
+  // the passed-in arrays.
+  _.union = function() {
+    return _.uniq(flatten(arguments, true, true));
+  };
+
+  // Produce an array that contains every item shared between all the
+  // passed-in arrays.
+  _.intersection = function(array) {
+    var result = [];
+    var argsLength = arguments.length;
+    for (var i = 0, length = getLength(array); i < length; i++) {
+      var item = array[i];
+      if (_.contains(result, item)) continue;
+      for (var j = 1; j < argsLength; j++) {
+        if (!_.contains(arguments[j], item)) break;
+      }
+      if (j === argsLength) result.push(item);
+    }
+    return result;
+  };
+
+  // Take the difference between one array and a number of other arrays.
+  // Only the elements present in just the first array will remain.
+  _.difference = function(array) {
+    var rest = flatten(arguments, true, true, 1);
+    return _.filter(array, function(value){
+      return !_.contains(rest, value);
+    });
+  };
+
+  // Zip together multiple lists into a single array -- elements that share
+  // an index go together.
+  _.zip = function() {
+    return _.unzip(arguments);
+  };
+
+  // Complement of _.zip. Unzip accepts an array of arrays and groups
+  // each array's elements on shared indices
+  _.unzip = function(array) {
+    var length = array && _.max(array, getLength).length || 0;
+    var result = Array(length);
+
+    for (var index = 0; index < length; index++) {
+      result[index] = _.pluck(array, index);
+    }
+    return result;
+  };
+
+  // Converts lists into objects. Pass either a single array of `[key, value]`
+  // pairs, or two parallel arrays of the same length -- one of keys, and one of
+  // the corresponding values.
+  _.object = function(list, values) {
+    var result = {};
+    for (var i = 0, length = getLength(list); i < length; i++) {
+      if (values) {
+        result[list[i]] = values[i];
+      } else {
+        result[list[i][0]] = list[i][1];
+      }
+    }
+    return result;
+  };
+
+  // Generator function to create the findIndex and findLastIndex functions
+  function createPredicateIndexFinder(dir) {
+    return function(array, predicate, context) {
+      predicate = cb(predicate, context);
+      var length = getLength(array);
+      var index = dir > 0 ? 0 : length - 1;
+      for (; index >= 0 && index < length; index += dir) {
+        if (predicate(array[index], index, array)) return index;
+      }
+      return -1;
+    };
+  }
+
+  // Returns the first index on an array-like that passes a predicate test
+  _.findIndex = createPredicateIndexFinder(1);
+  _.findLastIndex = createPredicateIndexFinder(-1);
+
+  // Use a comparator function to figure out the smallest index at which
+  // an object should be inserted so as to maintain order. Uses binary search.
+  _.sortedIndex = function(array, obj, iteratee, context) {
+    iteratee = cb(iteratee, context, 1);
+    var value = iteratee(obj);
+    var low = 0, high = getLength(array);
+    while (low < high) {
+      var mid = Math.floor((low + high) / 2);
+      if (iteratee(array[mid]) < value) low = mid + 1; else high = mid;
+    }
+    return low;
+  };
+
+  // Generator function to create the indexOf and lastIndexOf functions
+  function createIndexFinder(dir, predicateFind, sortedIndex) {
+    return function(array, item, idx) {
+      var i = 0, length = getLength(array);
+      if (typeof idx == 'number') {
+        if (dir > 0) {
+            i = idx >= 0 ? idx : Math.max(idx + length, i);
+        } else {
+            length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+        }
+      } else if (sortedIndex && idx && length) {
+        idx = sortedIndex(array, item);
+        return array[idx] === item ? idx : -1;
+      }
+      if (item !== item) {
+        idx = predicateFind(slice.call(array, i, length), _.isNaN);
+        return idx >= 0 ? idx + i : -1;
+      }
+      for (idx = dir > 0 ? i : length - 1; idx >= 0 && idx < length; idx += dir) {
+        if (array[idx] === item) return idx;
+      }
+      return -1;
+    };
+  }
+
+  // Return the position of the first occurrence of an item in an array,
+  // or -1 if the item is not included in the array.
+  // If the array is large and already in sort order, pass `true`
+  // for **isSorted** to use binary search.
+  _.indexOf = createIndexFinder(1, _.findIndex, _.sortedIndex);
+  _.lastIndexOf = createIndexFinder(-1, _.findLastIndex);
+
+  // Generate an integer Array containing an arithmetic progression. A port of
+  // the native Python `range()` function. See
+  // [the Python documentation](http://docs.python.org/library/functions.html#range).
+  _.range = function(start, stop, step) {
+    if (stop == null) {
+      stop = start || 0;
+      start = 0;
+    }
+    step = step || 1;
+
+    var length = Math.max(Math.ceil((stop - start) / step), 0);
+    var range = Array(length);
+
+    for (var idx = 0; idx < length; idx++, start += step) {
+      range[idx] = start;
+    }
+
+    return range;
+  };
+
+  // Function (ahem) Functions
+  // ------------------
+
+  // Determines whether to execute a function as a constructor
+  // or a normal function with the provided arguments
+  var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
+    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
+    var self = baseCreate(sourceFunc.prototype);
+    var result = sourceFunc.apply(self, args);
+    if (_.isObject(result)) return result;
+    return self;
+  };
+
+  // Create a function bound to a given object (assigning `this`, and arguments,
+  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
+  // available.
+  _.bind = function(func, context) {
+    if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+    if (!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
+    var args = slice.call(arguments, 2);
+    var bound = function() {
+      return executeBound(func, bound, context, this, args.concat(slice.call(arguments)));
+    };
+    return bound;
+  };
+
+  // Partially apply a function by creating a version that has had some of its
+  // arguments pre-filled, without changing its dynamic `this` context. _ acts
+  // as a placeholder, allowing any combination of arguments to be pre-filled.
+  _.partial = function(func) {
+    var boundArgs = slice.call(arguments, 1);
+    var bound = function() {
+      var position = 0, length = boundArgs.length;
+      var args = Array(length);
+      for (var i = 0; i < length; i++) {
+        args[i] = boundArgs[i] === _ ? arguments[position++] : boundArgs[i];
+      }
+      while (position < arguments.length) args.push(arguments[position++]);
+      return executeBound(func, bound, this, this, args);
+    };
+    return bound;
+  };
+
+  // Bind a number of an object's methods to that object. Remaining arguments
+  // are the method names to be bound. Useful for ensuring that all callbacks
+  // defined on an object belong to it.
+  _.bindAll = function(obj) {
+    var i, length = arguments.length, key;
+    if (length <= 1) throw new Error('bindAll must be passed function names');
+    for (i = 1; i < length; i++) {
+      key = arguments[i];
+      obj[key] = _.bind(obj[key], obj);
+    }
+    return obj;
+  };
+
+  // Memoize an expensive function by storing its results.
+  _.memoize = function(func, hasher) {
+    var memoize = function(key) {
+      var cache = memoize.cache;
+      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
+      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+      return cache[address];
+    };
+    memoize.cache = {};
+    return memoize;
+  };
+
+  // Delays a function for the given number of milliseconds, and then calls
+  // it with the arguments supplied.
+  _.delay = function(func, wait) {
+    var args = slice.call(arguments, 2);
+    return setTimeout(function(){
+      return func.apply(null, args);
+    }, wait);
+  };
+
+  // Defers a function, scheduling it to run after the current call stack has
+  // cleared.
+  _.defer = _.partial(_.delay, _, 1);
+
+  // Returns a function, that, when invoked, will only be triggered at most once
+  // during a given window of time. Normally, the throttled function will run
+  // as much as it can, without ever going more than once per `wait` duration;
+  // but if you'd like to disable the execution on the leading edge, pass
+  // `{leading: false}`. To disable execution on the trailing edge, ditto.
+  _.throttle = function(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options) options = {};
+    var later = function() {
+      previous = options.leading === false ? 0 : _.now();
+      timeout = null;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    };
+    return function() {
+      var now = _.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+        previous = now;
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  };
+
+  // Returns a function, that, as long as it continues to be invoked, will not
+  // be triggered. The function will be called after it stops being called for
+  // N milliseconds. If `immediate` is passed, trigger the function on the
+  // leading edge, instead of the trailing.
+  _.debounce = function(func, wait, immediate) {
+    var timeout, args, context, timestamp, result;
+
+    var later = function() {
+      var last = _.now() - timestamp;
+
+      if (last < wait && last >= 0) {
+        timeout = setTimeout(later, wait - last);
+      } else {
+        timeout = null;
+        if (!immediate) {
+          result = func.apply(context, args);
+          if (!timeout) context = args = null;
+        }
+      }
+    };
+
+    return function() {
+      context = this;
+      args = arguments;
+      timestamp = _.now();
+      var callNow = immediate && !timeout;
+      if (!timeout) timeout = setTimeout(later, wait);
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
+      return result;
+    };
+  };
+
+  // Returns the first function passed as an argument to the second,
+  // allowing you to adjust arguments, run code before and after, and
+  // conditionally execute the original function.
+  _.wrap = function(func, wrapper) {
+    return _.partial(wrapper, func);
+  };
+
+  // Returns a negated version of the passed-in predicate.
+  _.negate = function(predicate) {
+    return function() {
+      return !predicate.apply(this, arguments);
+    };
+  };
+
+  // Returns a function that is the composition of a list of functions, each
+  // consuming the return value of the function that follows.
+  _.compose = function() {
+    var args = arguments;
+    var start = args.length - 1;
+    return function() {
+      var i = start;
+      var result = args[start].apply(this, arguments);
+      while (i--) result = args[i].call(this, result);
+      return result;
+    };
+  };
+
+  // Returns a function that will only be executed on and after the Nth call.
+  _.after = function(times, func) {
+    return function() {
+      if (--times < 1) {
+        return func.apply(this, arguments);
+      }
+    };
+  };
+
+  // Returns a function that will only be executed up to (but not including) the Nth call.
+  _.before = function(times, func) {
+    var memo;
+    return function() {
+      if (--times > 0) {
+        memo = func.apply(this, arguments);
+      }
+      if (times <= 1) func = null;
+      return memo;
+    };
+  };
+
+  // Returns a function that will be executed at most one time, no matter how
+  // often you call it. Useful for lazy initialization.
+  _.once = _.partial(_.before, 2);
+
+  // Object Functions
+  // ----------------
+
+  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+                      'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+
+  function collectNonEnumProps(obj, keys) {
+    var nonEnumIdx = nonEnumerableProps.length;
+    var constructor = obj.constructor;
+    var proto = (_.isFunction(constructor) && constructor.prototype) || ObjProto;
+
+    // Constructor is a special case.
+    var prop = 'constructor';
+    if (_.has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
+
+    while (nonEnumIdx--) {
+      prop = nonEnumerableProps[nonEnumIdx];
+      if (prop in obj && obj[prop] !== proto[prop] && !_.contains(keys, prop)) {
+        keys.push(prop);
+      }
+    }
+  }
+
+  // Retrieve the names of an object's own properties.
+  // Delegates to **ECMAScript 5**'s native `Object.keys`
+  _.keys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
+    var keys = [];
+    for (var key in obj) if (_.has(obj, key)) keys.push(key);
+    // Ahem, IE < 9.
+    if (hasEnumBug) collectNonEnumProps(obj, keys);
+    return keys;
+  };
+
+  // Retrieve all the property names of an object.
+  _.allKeys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    var keys = [];
+    for (var key in obj) keys.push(key);
+    // Ahem, IE < 9.
+    if (hasEnumBug) collectNonEnumProps(obj, keys);
+    return keys;
+  };
+
+  // Retrieve the values of an object's properties.
+  _.values = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var values = Array(length);
+    for (var i = 0; i < length; i++) {
+      values[i] = obj[keys[i]];
+    }
+    return values;
+  };
+
+  // Returns the results of applying the iteratee to each element of the object
+  // In contrast to _.map it returns an object
+  _.mapObject = function(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    var keys =  _.keys(obj),
+          length = keys.length,
+          results = {},
+          currentKey;
+      for (var index = 0; index < length; index++) {
+        currentKey = keys[index];
+        results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+      }
+      return results;
+  };
+
+  // Convert an object into a list of `[key, value]` pairs.
+  _.pairs = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var pairs = Array(length);
+    for (var i = 0; i < length; i++) {
+      pairs[i] = [keys[i], obj[keys[i]]];
+    }
+    return pairs;
+  };
+
+  // Invert the keys and values of an object. The values must be serializable.
+  _.invert = function(obj) {
+    var result = {};
+    var keys = _.keys(obj);
+    for (var i = 0, length = keys.length; i < length; i++) {
+      result[obj[keys[i]]] = keys[i];
+    }
+    return result;
+  };
+
+  // Return a sorted list of the function names available on the object.
+  // Aliased as `methods`
+  _.functions = _.methods = function(obj) {
+    var names = [];
+    for (var key in obj) {
+      if (_.isFunction(obj[key])) names.push(key);
+    }
+    return names.sort();
+  };
+
+  // Extend a given object with all the properties in passed-in object(s).
+  _.extend = createAssigner(_.allKeys);
+
+  // Assigns a given object with all the own properties in the passed-in object(s)
+  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
+  _.extendOwn = _.assign = createAssigner(_.keys);
+
+  // Returns the first key on an object that passes a predicate test
+  _.findKey = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = _.keys(obj), key;
+    for (var i = 0, length = keys.length; i < length; i++) {
+      key = keys[i];
+      if (predicate(obj[key], key, obj)) return key;
+    }
+  };
+
+  // Return a copy of the object only containing the whitelisted properties.
+  _.pick = function(object, oiteratee, context) {
+    var result = {}, obj = object, iteratee, keys;
+    if (obj == null) return result;
+    if (_.isFunction(oiteratee)) {
+      keys = _.allKeys(obj);
+      iteratee = optimizeCb(oiteratee, context);
+    } else {
+      keys = flatten(arguments, false, false, 1);
+      iteratee = function(value, key, obj) { return key in obj; };
+      obj = Object(obj);
+    }
+    for (var i = 0, length = keys.length; i < length; i++) {
+      var key = keys[i];
+      var value = obj[key];
+      if (iteratee(value, key, obj)) result[key] = value;
+    }
+    return result;
+  };
+
+   // Return a copy of the object without the blacklisted properties.
+  _.omit = function(obj, iteratee, context) {
+    if (_.isFunction(iteratee)) {
+      iteratee = _.negate(iteratee);
+    } else {
+      var keys = _.map(flatten(arguments, false, false, 1), String);
+      iteratee = function(value, key) {
+        return !_.contains(keys, key);
+      };
+    }
+    return _.pick(obj, iteratee, context);
+  };
+
+  // Fill in a given object with default properties.
+  _.defaults = createAssigner(_.allKeys, true);
+
+  // Creates an object that inherits from the given prototype object.
+  // If additional properties are provided then they will be added to the
+  // created object.
+  _.create = function(prototype, props) {
+    var result = baseCreate(prototype);
+    if (props) _.extendOwn(result, props);
+    return result;
+  };
+
+  // Create a (shallow-cloned) duplicate of an object.
+  _.clone = function(obj) {
+    if (!_.isObject(obj)) return obj;
+    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+  };
+
+  // Invokes interceptor with the obj, and then returns obj.
+  // The primary purpose of this method is to "tap into" a method chain, in
+  // order to perform operations on intermediate results within the chain.
+  _.tap = function(obj, interceptor) {
+    interceptor(obj);
+    return obj;
+  };
+
+  // Returns whether an object has a given set of `key:value` pairs.
+  _.isMatch = function(object, attrs) {
+    var keys = _.keys(attrs), length = keys.length;
+    if (object == null) return !length;
+    var obj = Object(object);
+    for (var i = 0; i < length; i++) {
+      var key = keys[i];
+      if (attrs[key] !== obj[key] || !(key in obj)) return false;
+    }
+    return true;
+  };
+
+
+  // Internal recursive comparison function for `isEqual`.
+  var eq = function(a, b, aStack, bStack) {
+    // Identical objects are equal. `0 === -0`, but they aren't identical.
+    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
+    if (a === b) return a !== 0 || 1 / a === 1 / b;
+    // A strict comparison is necessary because `null == undefined`.
+    if (a == null || b == null) return a === b;
+    // Unwrap any wrapped objects.
+    if (a instanceof _) a = a._wrapped;
+    if (b instanceof _) b = b._wrapped;
+    // Compare `[[Class]]` names.
+    var className = toString.call(a);
+    if (className !== toString.call(b)) return false;
+    switch (className) {
+      // Strings, numbers, regular expressions, dates, and booleans are compared by value.
+      case '[object RegExp]':
+      // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
+      case '[object String]':
+        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
+        // equivalent to `new String("5")`.
+        return '' + a === '' + b;
+      case '[object Number]':
+        // `NaN`s are equivalent, but non-reflexive.
+        // Object(NaN) is equivalent to NaN
+        if (+a !== +a) return +b !== +b;
+        // An `egal` comparison is performed for other numeric values.
+        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
+      case '[object Date]':
+      case '[object Boolean]':
+        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
+        // millisecond representations. Note that invalid dates with millisecond representations
+        // of `NaN` are not equivalent.
+        return +a === +b;
+    }
+
+    var areArrays = className === '[object Array]';
+    if (!areArrays) {
+      if (typeof a != 'object' || typeof b != 'object') return false;
+
+      // Objects with different constructors are not equivalent, but `Object`s or `Array`s
+      // from different frames are.
+      var aCtor = a.constructor, bCtor = b.constructor;
+      if (aCtor !== bCtor && !(_.isFunction(aCtor) && aCtor instanceof aCtor &&
+                               _.isFunction(bCtor) && bCtor instanceof bCtor)
+                          && ('constructor' in a && 'constructor' in b)) {
+        return false;
+      }
+    }
+    // Assume equality for cyclic structures. The algorithm for detecting cyclic
+    // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
+
+    // Initializing stack of traversed objects.
+    // It's done here since we only need them for objects and arrays comparison.
+    aStack = aStack || [];
+    bStack = bStack || [];
+    var length = aStack.length;
+    while (length--) {
+      // Linear search. Performance is inversely proportional to the number of
+      // unique nested structures.
+      if (aStack[length] === a) return bStack[length] === b;
+    }
+
+    // Add the first object to the stack of traversed objects.
+    aStack.push(a);
+    bStack.push(b);
+
+    // Recursively compare objects and arrays.
+    if (areArrays) {
+      // Compare array lengths to determine if a deep comparison is necessary.
+      length = a.length;
+      if (length !== b.length) return false;
+      // Deep compare the contents, ignoring non-numeric properties.
+      while (length--) {
+        if (!eq(a[length], b[length], aStack, bStack)) return false;
+      }
+    } else {
+      // Deep compare objects.
+      var keys = _.keys(a), key;
+      length = keys.length;
+      // Ensure that both objects contain the same number of properties before comparing deep equality.
+      if (_.keys(b).length !== length) return false;
+      while (length--) {
+        // Deep compare each member
+        key = keys[length];
+        if (!(_.has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+      }
+    }
+    // Remove the first object from the stack of traversed objects.
+    aStack.pop();
+    bStack.pop();
+    return true;
+  };
+
+  // Perform a deep comparison to check if two objects are equal.
+  _.isEqual = function(a, b) {
+    return eq(a, b);
+  };
+
+  // Is a given array, string, or object empty?
+  // An "empty" object has no enumerable own-properties.
+  _.isEmpty = function(obj) {
+    if (obj == null) return true;
+    if (isArrayLike(obj) && (_.isArray(obj) || _.isString(obj) || _.isArguments(obj))) return obj.length === 0;
+    return _.keys(obj).length === 0;
+  };
+
+  // Is a given value a DOM element?
+  _.isElement = function(obj) {
+    return !!(obj && obj.nodeType === 1);
+  };
+
+  // Is a given value an array?
+  // Delegates to ECMA5's native Array.isArray
+  _.isArray = nativeIsArray || function(obj) {
+    return toString.call(obj) === '[object Array]';
+  };
+
+  // Is a given variable an object?
+  _.isObject = function(obj) {
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
+  };
+
+  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError.
+  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
+    _['is' + name] = function(obj) {
+      return toString.call(obj) === '[object ' + name + ']';
+    };
+  });
+
+  // Define a fallback version of the method in browsers (ahem, IE < 9), where
+  // there isn't any inspectable "Arguments" type.
+  if (!_.isArguments(arguments)) {
+    _.isArguments = function(obj) {
+      return _.has(obj, 'callee');
+    };
+  }
+
+  // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
+  // IE 11 (#1621), and in Safari 8 (#1929).
+  if (typeof /./ != 'function' && typeof Int8Array != 'object') {
+    _.isFunction = function(obj) {
+      return typeof obj == 'function' || false;
+    };
+  }
+
+  // Is a given object a finite number?
+  _.isFinite = function(obj) {
+    return isFinite(obj) && !isNaN(parseFloat(obj));
+  };
+
+  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+  _.isNaN = function(obj) {
+    return _.isNumber(obj) && obj !== +obj;
+  };
+
+  // Is a given value a boolean?
+  _.isBoolean = function(obj) {
+    return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
+  };
+
+  // Is a given value equal to null?
+  _.isNull = function(obj) {
+    return obj === null;
+  };
+
+  // Is a given variable undefined?
+  _.isUndefined = function(obj) {
+    return obj === void 0;
+  };
+
+  // Shortcut function for checking if an object has a given property directly
+  // on itself (in other words, not on a prototype).
+  _.has = function(obj, key) {
+    return obj != null && hasOwnProperty.call(obj, key);
+  };
+
+  // Utility Functions
+  // -----------------
+
+  // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
+  // previous owner. Returns a reference to the Underscore object.
+  _.noConflict = function() {
+    root._ = previousUnderscore;
+    return this;
+  };
+
+  // Keep the identity function around for default iteratees.
+  _.identity = function(value) {
+    return value;
+  };
+
+  // Predicate-generating functions. Often useful outside of Underscore.
+  _.constant = function(value) {
+    return function() {
+      return value;
+    };
+  };
+
+  _.noop = function(){};
+
+  _.property = property;
+
+  // Generates a function for a given object that returns a given property.
+  _.propertyOf = function(obj) {
+    return obj == null ? function(){} : function(key) {
+      return obj[key];
+    };
+  };
+
+  // Returns a predicate for checking whether an object has a given set of
+  // `key:value` pairs.
+  _.matcher = _.matches = function(attrs) {
+    attrs = _.extendOwn({}, attrs);
+    return function(obj) {
+      return _.isMatch(obj, attrs);
+    };
+  };
+
+  // Run a function **n** times.
+  _.times = function(n, iteratee, context) {
+    var accum = Array(Math.max(0, n));
+    iteratee = optimizeCb(iteratee, context, 1);
+    for (var i = 0; i < n; i++) accum[i] = iteratee(i);
+    return accum;
+  };
+
+  // Return a random integer between min and max (inclusive).
+  _.random = function(min, max) {
+    if (max == null) {
+      max = min;
+      min = 0;
+    }
+    return min + Math.floor(Math.random() * (max - min + 1));
+  };
+
+  // A (possibly faster) way to get the current timestamp as an integer.
+  _.now = Date.now || function() {
+    return new Date().getTime();
+  };
+
+   // List of HTML entities for escaping.
+  var escapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '`': '&#x60;'
+  };
+  var unescapeMap = _.invert(escapeMap);
+
+  // Functions for escaping and unescaping strings to/from HTML interpolation.
+  var createEscaper = function(map) {
+    var escaper = function(match) {
+      return map[match];
+    };
+    // Regexes for identifying a key that needs to be escaped
+    var source = '(?:' + _.keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
+    return function(string) {
+      string = string == null ? '' : '' + string;
+      return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
+    };
+  };
+  _.escape = createEscaper(escapeMap);
+  _.unescape = createEscaper(unescapeMap);
+
+  // If the value of the named `property` is a function then invoke it with the
+  // `object` as context; otherwise, return it.
+  _.result = function(object, property, fallback) {
+    var value = object == null ? void 0 : object[property];
+    if (value === void 0) {
+      value = fallback;
+    }
+    return _.isFunction(value) ? value.call(object) : value;
+  };
+
+  // Generate a unique integer id (unique within the entire client session).
+  // Useful for temporary DOM ids.
+  var idCounter = 0;
+  _.uniqueId = function(prefix) {
+    var id = ++idCounter + '';
+    return prefix ? prefix + id : id;
+  };
+
+  // By default, Underscore uses ERB-style template delimiters, change the
+  // following template settings to use alternative delimiters.
+  _.templateSettings = {
+    evaluate    : /<%([\s\S]+?)%>/g,
+    interpolate : /<%=([\s\S]+?)%>/g,
+    escape      : /<%-([\s\S]+?)%>/g
+  };
+
+  // When customizing `templateSettings`, if you don't want to define an
+  // interpolation, evaluation or escaping regex, we need one that is
+  // guaranteed not to match.
+  var noMatch = /(.)^/;
+
+  // Certain characters need to be escaped so that they can be put into a
+  // string literal.
+  var escapes = {
+    "'":      "'",
+    '\\':     '\\',
+    '\r':     'r',
+    '\n':     'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+  };
+
+  var escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+
+  var escapeChar = function(match) {
+    return '\\' + escapes[match];
+  };
+
+  // JavaScript micro-templating, similar to John Resig's implementation.
+  // Underscore templating handles arbitrary delimiters, preserves whitespace,
+  // and correctly escapes quotes within interpolated code.
+  // NB: `oldSettings` only exists for backwards compatibility.
+  _.template = function(text, settings, oldSettings) {
+    if (!settings && oldSettings) settings = oldSettings;
+    settings = _.defaults({}, settings, _.templateSettings);
+
+    // Combine delimiters into one regular expression via alternation.
+    var matcher = RegExp([
+      (settings.escape || noMatch).source,
+      (settings.interpolate || noMatch).source,
+      (settings.evaluate || noMatch).source
+    ].join('|') + '|$', 'g');
+
+    // Compile the template source, escaping string literals appropriately.
+    var index = 0;
+    var source = "__p+='";
+    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+      source += text.slice(index, offset).replace(escaper, escapeChar);
+      index = offset + match.length;
+
+      if (escape) {
+        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+      } else if (interpolate) {
+        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+      } else if (evaluate) {
+        source += "';\n" + evaluate + "\n__p+='";
+      }
+
+      // Adobe VMs need the match returned to produce the correct offest.
+      return match;
+    });
+    source += "';\n";
+
+    // If a variable is not specified, place data values in local scope.
+    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+
+    source = "var __t,__p='',__j=Array.prototype.join," +
+      "print=function(){__p+=__j.call(arguments,'');};\n" +
+      source + 'return __p;\n';
+
+    try {
+      var render = new Function(settings.variable || 'obj', '_', source);
+    } catch (e) {
+      e.source = source;
+      throw e;
+    }
+
+    var template = function(data) {
+      return render.call(this, data, _);
+    };
+
+    // Provide the compiled source as a convenience for precompilation.
+    var argument = settings.variable || 'obj';
+    template.source = 'function(' + argument + '){\n' + source + '}';
+
+    return template;
+  };
+
+  // Add a "chain" function. Start chaining a wrapped Underscore object.
+  _.chain = function(obj) {
+    var instance = _(obj);
+    instance._chain = true;
+    return instance;
+  };
+
+  // OOP
+  // ---------------
+  // If Underscore is called as a function, it returns a wrapped object that
+  // can be used OO-style. This wrapper holds altered versions of all the
+  // underscore functions. Wrapped objects may be chained.
+
+  // Helper function to continue chaining intermediate results.
+  var result = function(instance, obj) {
+    return instance._chain ? _(obj).chain() : obj;
+  };
+
+  // Add your own custom functions to the Underscore object.
+  _.mixin = function(obj) {
+    _.each(_.functions(obj), function(name) {
+      var func = _[name] = obj[name];
+      _.prototype[name] = function() {
+        var args = [this._wrapped];
+        push.apply(args, arguments);
+        return result(this, func.apply(_, args));
+      };
+    });
+  };
+
+  // Add all of the Underscore functions to the wrapper object.
+  _.mixin(_);
+
+  // Add all mutator Array functions to the wrapper.
+  _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      var obj = this._wrapped;
+      method.apply(obj, arguments);
+      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
+      return result(this, obj);
+    };
+  });
+
+  // Add all accessor Array functions to the wrapper.
+  _.each(['concat', 'join', 'slice'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      return result(this, method.apply(this._wrapped, arguments));
+    };
+  });
+
+  // Extracts the result from a wrapped and chained object.
+  _.prototype.value = function() {
+    return this._wrapped;
+  };
+
+  // Provide unwrapping proxy for some methods used in engine operations
+  // such as arithmetic and JSON stringification.
+  _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
+
+  _.prototype.toString = function() {
+    return '' + this._wrapped;
+  };
+
+  // AMD registration happens at the end for compatibility with AMD loaders
+  // that may not enforce next-turn semantics on modules. Even though general
+  // practice for AMD registration is to be anonymous, underscore registers
+  // as a named module because, like jQuery, it is a base library that is
+  // popular enough to be bundled in a third party lib, but not be part of
+  // an AMD load request. Those cases could generate an error when an
+  // anonymous define() is called outside of a loader request.
+  if (typeof define === 'function' && define.amd) {
+    define('underscore', [], function() {
+      return _;
+    });
+  }
+}.call(this));
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/underscore/underscore.js","/node_modules/underscore")
+},{"_process":32,"buffer":28}]},{},[26]);
