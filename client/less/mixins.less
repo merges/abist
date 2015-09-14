@@ -2,8 +2,9 @@
 
 // Colors
 
-@color-grey-xxxxxxl: #fafafa;
-@color-grey-xxxxxl: #f4f4f4;
+@color-grey-xxxxxxxl: #fafafa;
+@color-grey-xxxxxxl: #f7f7f7;
+@color-grey-xxxxxl: #f3f3f3;
 @color-grey-xxxxl: #eee;
 @color-grey-xxxl: #e8e8e8;
 @color-grey-xxl: #ddd;
@@ -30,10 +31,23 @@
 @color-risks: #cab22d;
 @color-risks-l: #f7f4dc;
 
+// Visual modifiers
+
+.light {
+  opacity: .6;
+}
+
+// Font sizes
+
+@font-small: 11px;
+
 // Shadows
 
 .shadow-l {
 	box-shadow: 0 1px 1px rgba(0,0,0,.3);
+}
+.shadow-xl {
+  box-shadow: 0 1px 1px rgba(0,0,0,.1);
 }
 .shadow-l-right {
   box-shadow: 1px 0 1px rgba(0,0,0,.3);
@@ -65,4 +79,32 @@
   background: #f35626;
   background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
   -webkit-animation: hue 1440s infinite linear;
+}
+
+// Buttons
+
+.button {
+  display: inline-block;
+  padding: .5em 1em;
+  border-radius: 4px;
+  border: 1px solid @color-grey-xxxl;
+  text-decoration: none;
+  background: white;
+  transition: border-color .7s ease-out,
+              background-color .7s ease-out,
+              color .7s ease-out,
+              background .7s ease-out;
+  
+  &:hover {
+    border: 1px solid @color-blue;
+    text-decoration: none;
+    transition: border-color .15s ease-in,
+                background .15s ease-in,
+                color .15s ease-in;
+  }
+  &.active {
+    color: white;
+    border: 1px solid @color-blue;
+    background: @color-blue;
+  }
 }

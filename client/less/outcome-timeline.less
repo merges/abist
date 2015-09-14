@@ -26,7 +26,7 @@
 						height: 100%;
 
 						&.line {
-							width: 43px;
+							width: 41px;
 							position: relative;
 
 							&:before {
@@ -34,21 +34,21 @@
 							  position: absolute;
 							  left: 20px;
 							  height: 100%;
-							  width: 3px;
-							  background: @color-grey-l;
+							  width: 1px;
+							  background: @color-grey-xl;
 							}
 
 							.bar {
 								position: relative;
-								width: 33px;
+								width: 31px;
 								margin: 0 auto;
 
 								&:before {
 									content: '';
 								  position: absolute;
-								  background: @color-grey-l;
-									width: 33px;
-									height: 3px;
+								  background: @color-grey-xl;
+									width: 31px;
+									height: 1px;
 								}
 							}
 							.ball {
@@ -59,10 +59,10 @@
 								&:before {
 									content: '';
 								  position: absolute;
-								  background: @color-grey-l;
+								  background: @color-grey-xl;
 									width: 19px;
 									height: 19px;
-									border-radius: 9.5px;
+									border-radius: 8.5px;
 								}
 							}
 						}
@@ -102,9 +102,22 @@
 			  position: absolute;
 			  left: 20px;
 			  height: 100%;
-			  width: 3px;
-			  background: @color-grey-l;
+			  width: 1px;
+			  background: @color-grey-xl;
 			}
+		}
+	}
+
+	.tag {
+		.make-row();
+		background: @color-grey-xxxxxxl;
+		padding: 15px 3em 30px 15px;
+		line-height: 1.15;
+	}
+	.tag-navigation {
+		> ul {
+			border-top: none !important;
+			padding: .5em 0 1.5em 0 !important;
 		}
 	}
 }

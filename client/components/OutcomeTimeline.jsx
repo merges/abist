@@ -479,18 +479,21 @@ var OutcomeTimeline = React.createClass({
     };
 
     if (metric) {
-      if (results[metric]) {
+    	if (results[metric]) {
         return renderAppropriateVisualization(results, metric, results[metric].measure);
       }
     }
     else {
-      // Iterate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
+    	// Iterate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
           if (!comparisonResults) {
           	if (metrics[metric].kind == 'absolute') {
+          		return renderAppropriateVisualization(results, metric, results[metric].measure);
+            }
+            else if (metrics[metric].kind == 'relative') {
             	return renderAppropriateVisualization(results, metric, results[metric].measure);
             }
           }
@@ -505,7 +508,6 @@ var OutcomeTimeline = React.createClass({
 
     return (
       <div>
-        {results.parts && <span>{results.parts.join(' + ')}<br /></span>}
         <small>{metrics[metric].name_short}</small><br />
         <strong>{data.value.value}</strong> {metric == 'ar_100' && <span className='light'>of 100 people<br /></span>} {metric == 'ar_1000' && <span className='light'>of 1000 people<br /></span>}
         {data.value.value_ci_low && data.value.value_ci_high &&
@@ -949,19 +951,48 @@ var OutcomeTimeline = React.createClass({
   },
 
   filterEntriesByMedication: function(entries) {
+  	// disabledMedications is an object with key value pairs like so:
+  	//
+  	// {
+  	// 	"Methotrexate": true,
+  	// 	"Simponi": false
+  	// }
+  	//
+  	// This function gets a simple list of medications that are not disabled,
+  	// i.e. whose value is false.
+
+  	var enabledMedicationNames = [];
   	var disabledMedications = this.props.disabledMedications;
-
-  	console.log('WILL BE FILTERED')
   	
+  	Object.keys(disabledMedications).forEach(function(key) {
+  		if (disabledMedications[key] === false) {
+  			
+  			// If the medication is not disabled, we want to add its name(s)—including
+				// generic name and all brand names—to a list that we can use to filter
+				// data entries. Typically the data entries list drugs by generic name,
+				// but this is more comprehensive.
 
-  	// TODO use underscore to
-  	// filter entries to only those with intervention.parts containing a NON-disabled medication
-  	
-  	_.mapObject(entries, function(val, key) {
-  		console.log('VALUE', val.intervention.parts);
+				var medicationObject = _.find(medications, function(medication) {
+					return medication.name_common == key;
+				});
+
+				enabledMedicationNames.push(medicationObject.name_generic.toLowerCase());
+				_.each(medicationObject.names_brand, function(nameBrand) {
+					enabledMedicationNames.push(nameBrand.toLowerCase());
+				});
+			}
   	});
 
-  	return entries;
+  	// Filter entries to only those in which the intervention included one of the
+  	// enabled medications.
+  	var filteredEntries = _.filter(entries, function(entry) {
+  		if (entry.intervention) {
+  			var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames);
+  			return intersection.length > 0;
+  		}
+  	});
+
+  	return filteredEntries;
   },
 
   renderTimelineByMeasure: function(measures) {
@@ -1072,7 +1103,7 @@ var OutcomeTimeline = React.createClass({
 			        			<div className='line'>
 			        				<div className='bar'></div>
 			        			</div>
-			        			<div className='description'>Assignment.</div>
+			        			<div className='description'>Comparison.</div>
 			        		</section>
 			      		</div>
 			      		<div className='moment-data'>
@@ -1082,9 +1113,16 @@ var OutcomeTimeline = React.createClass({
 
 						        	return entries.map(function (entry, i) {
 						      			if (entry.intervention) {
-							      			return (
+						      				{/*TODO: Find out why some entries are being reprojected without the comparison parts. */}
+						      				return (
 								         		<div key={i}>
                               <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
+                              {entry.comparison &&
+                              	<div className='light'>
+                              		vs.<br />
+                              		{entry.comparison.parts.join(' + ')}
+                              	</div>
+                              }
                             </div>
 								         	);
 								        }
@@ -1153,10 +1191,13 @@ var OutcomeTimeline = React.createClass({
 
     return (
       <section key={tag} className='data'>
-        <h2>
+        <h2 className='tag'>
           <strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
           {tagDescriptions[tag] && <p>{tagDescriptions[tag].description}</p>}
         </h2>
+        <div>
+    			<strong>{tagDescriptions[tag].name_friendly}</strong> research is done using lots of different measures. Click each one to see examples of findings.
+    		</div>
         <div>
           {this.renderTimelineByMeasure(dataByTag[tag])}
         </div>
@@ -1230,26 +1271,15 @@ var OutcomeTimeline = React.createClass({
     var dataByTag = this.getDataByTag(tags, data);
     var tagDescriptions = this.state.tagDescriptions;
 
-    if (2 > 3) {
-	    return (
-	      <section key={tag} className='data'>
-	        <h2>
-	          <strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
-	          {tagDescriptions[tag] && <p>{tagDescriptions[tag].description}</p>}
-	        </h2>
-	        <div>
-	          {this.renderTimelineByMeasure(dataByTag[tag])}
-	        </div>
-	      </section>
-	    );
-	  }
-
-		return (
+    return (
 			<div>
-				<h2>
+				<h2 className='tag'>
           <strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
           {tagDescriptions[tag] && <p>{tagDescriptions[tag].description}</p>}
         </h2>
+        <div>
+    			<strong>{tagDescriptions[tag].name_friendly}</strong> research is done using lots of different measures. Click each one to see examples of findings.
+    		</div>
 				{this.renderTimelineByMeasure(dataByTag[tag])}
 	    </div>
 		);
@@ -1283,15 +1313,14 @@ var OutcomeTimeline = React.createClass({
       return (
         <div className={classes}>
           <section>
-            <h2>Live connection to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a></h2>
-          </section>
-
-          <section>
           	{this.renderTagBar(tags)}
           </section>
 
           {selectedTag && this.renderTimelineByTag(data, tags, selectedTag)}
 
+          <section>
+            Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
+          </section>
         </div>
       );
     }

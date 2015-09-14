@@ -5874,6 +5874,10 @@ button.close {
 .panel-body:after,
 .modal-footer:before,
 .modal-footer:after,
+.navigator:before,
+.navigator:after,
+.outcome-timeline .tag:before,
+.outcome-timeline .tag:after,
 .processing:before,
 .processing:after,
 .processing nav.tag-navigation:before,
@@ -5918,6 +5922,8 @@ button.close {
 .pager:after,
 .panel-body:after,
 .modal-footer:after,
+.navigator:after,
+.outcome-timeline .tag:after,
 .processing:after,
 .processing nav.tag-navigation:after,
 .processing > section:after,
@@ -11016,8 +11022,14 @@ html:hover [class^="ss-"] {
 .ss-share.right:after {
   content: '';
 }
+.light {
+  opacity: .6;
+}
 .shadow-l {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+.shadow-xl {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 .shadow-l-right {
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
@@ -11044,6 +11056,25 @@ html:hover [class^="ss-"] {
   background: #f35626;
   background-image: -webkit-linear-gradient(92deg, #f35626, #feab3a);
   -webkit-animation: hue 1440s infinite linear;
+}
+.button {
+  display: inline-block;
+  padding: .5em 1em;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+  text-decoration: none;
+  background: white;
+  transition: border-color 0.7s ease-out, background-color 0.7s ease-out, color 0.7s ease-out, background 0.7s ease-out;
+}
+.button:hover {
+  border: 1px solid #6699ff;
+  text-decoration: none;
+  transition: border-color 0.15s ease-in, background 0.15s ease-in, color 0.15s ease-in;
+}
+.button.active {
+  color: white;
+  border: 1px solid #6699ff;
+  background: #6699ff;
 }
 .visualization .highlight {
   color: #999999;
@@ -11087,7 +11118,7 @@ html:hover [class^="ss-"] {
   width: 100%;
   height: 24em;
   position: relative;
-  border: 1px solid #f4f4f4;
+  border: 1px solid #f3f3f3;
   background: white;
 }
 .visualization.relative-risk-comparison .chart-holder,
@@ -11252,6 +11283,125 @@ html:hover [class^="ss-"] {
 .population .ss-icon + span {
   margin-left: .5em;
 }
+.navigator {
+  margin-left: -15px;
+  margin-right: -15px;
+}
+.navigator .drug-picker,
+.navigator .medication-list {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  font-size: 11px;
+}
+@media (min-width: 992px) {
+  .navigator .drug-picker,
+  .navigator .medication-list {
+    float: left;
+    width: 16.66666667%;
+  }
+}
+@media (min-width: 1200px) {
+  .navigator .drug-picker,
+  .navigator .medication-list {
+    float: left;
+    width: 8.33333333%;
+  }
+}
+.navigator .drug-picker {
+  background: #f3f3f3;
+}
+.navigator .medication-list {
+  background: #f7f7f7;
+}
+.navigator .details {
+  position: relative;
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+  transition: opacity 0.2s ease-out;
+}
+@media (min-width: 992px) {
+  .navigator .details {
+    float: left;
+    width: 66.66666667%;
+  }
+}
+@media (min-width: 1200px) {
+  .navigator .details {
+    float: left;
+    width: 83.33333333%;
+  }
+}
+.navigator .details.open {
+  opacity: 1;
+}
+.navigator .details.closed {
+  opacity: .2;
+}
+.navigator .brief-header {
+  font-weight: bolder;
+  font-size: 13px;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+  border-bottom: 1px dotted #999999;
+}
+.navigator .filter-controls > section {
+  display: bock;
+  text-align: left;
+}
+.navigator .filter-controls > section + section {
+  margin-top: 5px;
+}
+@media (max-width: 991px) {
+  .navigator .filter-controls > section {
+    display: inline-block;
+  }
+  .navigator .filter-controls > section + section {
+    margin-top: 0;
+    margin-left: 5px;
+  }
+}
+.navigator .filter-controls .description {
+  display: block;
+}
+.navigator .filter-controls input {
+  margin-right: .25em;
+}
+.navigator .medication-cards > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.navigator .medication-cards > ul > li {
+  display: block;
+}
+.navigator .medication-cards > ul > li + li {
+  margin-top: 5px;
+}
+.navigator .medication-cards > ul > li > a {
+  display: block;
+  border-radius: 0;
+  padding: .25em .25em 1.5em .25em;
+  background: white;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.navigator .medication-cards > ul > li.disabled > a {
+  color: #bbbbbb;
+  background: none;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 991px) {
+  .navigator .medication-cards > ul > li {
+    display: inline-block;
+  }
+  .navigator .medication-cards > ul > li + li {
+    margin-top: 0;
+    margin-left: 5px;
+  }
+}
 .outcome-timeline {
   display: table;
   table-layout: fixed;
@@ -11278,7 +11428,7 @@ html:hover [class^="ss-"] {
   height: 100%;
 }
 .outcome-timeline > section > div.moment > section > div.line {
-  width: 43px;
+  width: 41px;
   position: relative;
 }
 .outcome-timeline > section > div.moment > section > div.line:before {
@@ -11286,20 +11436,20 @@ html:hover [class^="ss-"] {
   position: absolute;
   left: 20px;
   height: 100%;
-  width: 3px;
-  background: #999999;
+  width: 1px;
+  background: #bbbbbb;
 }
 .outcome-timeline > section > div.moment > section > div.line .bar {
   position: relative;
-  width: 33px;
+  width: 31px;
   margin: 0 auto;
 }
 .outcome-timeline > section > div.moment > section > div.line .bar:before {
   content: '';
   position: absolute;
-  background: #999999;
-  width: 33px;
-  height: 3px;
+  background: #bbbbbb;
+  width: 31px;
+  height: 1px;
 }
 .outcome-timeline > section > div.moment > section > div.line .ball {
   position: relative;
@@ -11309,10 +11459,10 @@ html:hover [class^="ss-"] {
 .outcome-timeline > section > div.moment > section > div.line .ball:before {
   content: '';
   position: absolute;
-  background: #999999;
+  background: #bbbbbb;
   width: 19px;
   height: 19px;
-  border-radius: 9.5px;
+  border-radius: 8.5px;
 }
 .outcome-timeline > section > div.moment > section > div.title,
 .outcome-timeline > section > div.moment > section > div.description {
@@ -11333,15 +11483,26 @@ html:hover [class^="ss-"] {
   padding: 0 .5em;
 }
 .outcome-timeline > section > div.moment-data > section > div + div {
-  border-left: 1px solid #f4f4f4;
+  border-left: 1px solid #f3f3f3;
 }
 .outcome-timeline > section:last-of-type .moment .line:after {
   content: '';
   position: absolute;
   left: 20px;
   height: 100%;
-  width: 3px;
-  background: #999999;
+  width: 1px;
+  background: #bbbbbb;
+}
+.outcome-timeline .tag {
+  margin-left: -15px;
+  margin-right: -15px;
+  background: #f7f7f7;
+  padding: 15px 3em 30px 15px;
+  line-height: 1.15;
+}
+.outcome-timeline .tag-navigation > ul {
+  border-top: none !important;
+  padding: .5em 0 1.5em 0 !important;
 }
 .processing {
   margin-right: auto;
@@ -11541,10 +11702,10 @@ html:hover [class^="ss-"] {
   color: white;
 }
 .processing > section.grades > ul > li:nth-of-type(1) {
-  background: #fafafa;
+  background: #f7f7f7;
 }
 .processing > section.grades > ul > li:nth-of-type(2) {
-  background: #f4f4f4;
+  background: #f3f3f3;
 }
 .processing > section.grades > ul > li:nth-of-type(3) {
   background: #eeeeee;
@@ -11662,7 +11823,7 @@ html:hover [class^="ss-"] {
   line-height: .8;
 }
 .processing > section.data > div > div > ul > li > h3 {
-  background: #f4f4f4;
+  background: #f3f3f3;
 }
 .processing > section.data > div > div > ul > li > h3 + h3 {
   border-left: 1px solid white;
@@ -11696,7 +11857,7 @@ html:hover [class^="ss-"] {
   border-bottom: 1px solid #bbbbbb;
 }
 .processing > section.data > div > div > ul.visualization-rr > li {
-  background: #f4f4f4;
+  background: #f3f3f3;
   display: block;
   padding: 2em !important;
 }
@@ -11883,7 +12044,7 @@ html:hover [class^="ss-"] {
   font-weight: bolder;
 }
 .ptda .mini .name h3 {
-  color: #f4f4f4;
+  color: #f3f3f3;
   font-weight: 400;
 }
 .ptda .mini .name small {
@@ -12340,7 +12501,7 @@ body {
   border-top: 3px solid #eeeeee;
 }
 .experiment > nav > h2:hover {
-  background: #fafafa;
+  background: #f7f7f7;
 }
 .experiment > nav > h2 > p {
   color: #888888;
@@ -12383,7 +12544,7 @@ body {
   margin-top: .85em;
 }
 .experiment .description {
-  background: #fafafa;
+  background: #f7f7f7;
   padding-top: 1em;
   padding-bottom: 1em;
   padding-right: 15%;
@@ -12448,7 +12609,7 @@ body {
   color: #666666;
   font-weight: bold;
   text-align: left;
-  background: #f4f4f4;
+  background: #f3f3f3;
 }
 .preference-controls > section > .description {
   color: #999999;
@@ -12463,7 +12624,7 @@ body {
   .preference-controls > .preference:hover,
   .preference-controls > section > .option:hover {
     color: #fe6939;
-    background: #fafafa;
+    background: #f7f7f7;
   }
   .preference-controls > .preference:hover > .description,
   .preference-controls > section > .option:hover > .description {

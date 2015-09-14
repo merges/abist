@@ -119,10 +119,18 @@ var Navigator = React.createClass({
       return classes;
     };
 
+    var getDisabledMedications = function(medications) {
+      var disabled = {};
+      medications.forEach(function(medication) {
+        disabled[medication.name] = false;
+      });
+      return disabled;
+    };
+
     return {
       // Medication filtering-related
-      disabledMedications: {},
-      menuOpen: null,
+      disabledMedications: getDisabledMedications(medications),
+      menuOpen: false,
       preferences: this.props.preferences,
       preferencesSelected: {
         alcohol: false,
@@ -138,90 +146,113 @@ var Navigator = React.createClass({
     }
   },
 
-  togglePreferenceControls: function () {
-    var isOpen = this.state.menuOpen;
-    isOpen = !isOpen;
+  togglePreferenceControls: function (direction) {
+    // var isOpen = this.state.menuOpen;
+    // isOpen = !isOpen;
+    // this.setState({
+    //   menuOpen: isOpen
+    // });
+
+    if (direction == 'open') {
+      this.setState({
+        menuOpen: true
+      });
+    }
+    if (direction == 'close') {
+      this.setState({
+        menuOpen: false
+      });
+    }
+  },
+
+  togglePreferenceControlsOpen: function() {
     this.setState({
-      menuOpen: isOpen
-    })
+      menuOpen: true
+    });
+  },
+
+  togglePreferenceControlsClose: function() {
+    this.setState({
+      menuOpen: false
+    });
   },
 
   renderPreferenceControls: function(preferences) {
     var filterPreference = this.filterPreference;
-    var togglePreferenceControls = this.togglePreferenceControls;
+    var toggleOpen = this.togglePreferenceControlsOpen;
+    var toggleClose = this.togglePreferenceControlsClose;
 
     var preferences = this.props.preferences;
     var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
-    var preferenceControlClasses = cx({
-      // 'preference-controls': true,
-      // 'open': this.state.menuOpen == true,
-      // 'closed': this.state.menuOpen == false
-      'preferences': true
-    });
-
+    
     return (
-      <div className={preferenceControlClasses}>
-        <h2 onClick={togglePreferenceControls}>
-          Filter your options
-          <strong>{this.state.menuOpen? '‹' : '›'}</strong>
-        </h2>
+      <div className='filter-controls'
+        onMouseEnter={toggleOpen}
+        onMouseLeave={toggleClose}>
+          <h3 className='brief-header'>Filter medications to match your preferences and needs</h3>
 
-        {Object.keys(preferences).map(function(key) {
-          var preference = preferences[key];
+          {Object.keys(preferences).map(function(key) {
+            var preference = preferences[key];
 
-          // Boolean preferences become a push button
-          if (preference.type == 'boolean') {
-            var preferenceClasses = cx({
-              'preference': true,
-              'active': preferencesSelected[key]
-            });
-            return (
-              <section className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
-              </section>
-            );
-          }
-          // List preferences become a list
-          else if (preference.type == 'list') {
-            // Get the possible options for this preference from this.state.preferencesSelected.
-            // There is a function in getInitialState() that iterates through the provided medications,
-            // collecting the "options" they provide for vis à vis this preference.
-            var options = Object.keys(preferencesSelected[key]);
+            // Boolean preferences become a push button
+            if (preference.type == 'boolean') {
+              var preferenceClasses = cx({
+                'button': true,
+                'active': preferencesSelected[key]
+              });
+              return (
+                <section>
+                  <a className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
+                    {preference.name}
+                  </a>
+                  {/*<span className='description'>{preference.description}</span>*/}
+                </section>
+              );
+            }
+            // List preferences become a list
+            else if (preference.type == 'list') {
+              // Get the possible options for this preference from this.state.preferencesSelected.
+              // There is a function in getInitialState() that iterates through the provided medications,
+              // collecting the "options" they provide for vis à vis this preference.
+              var options = Object.keys(preferencesSelected[key]);
 
-            return (
-              <section key={key}>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
+              return (
+                <section key={key}>
+                  {preference.name}
+                  {/*<span className='description'>{preference.description}</span>*/}
 
-                {options.map(function(option, i) {
-                  var optionClasses = cx({
-                    'option': true,
-                    'active': !preferencesSelected[key][option]
-                  });
-                  return (
-                    <div
-                      className={optionClasses}
-                      key={option}
-                      onClick={filterPreference.bind(null, key, option)}>
-                        <strong>› </strong>{option}
-                    </div>
-                  );
-                })}
-              </section>
-            );
-          }
-          else {
-            return (
-              <section>
-                {preference.name}
-                <span className='description'>{preference.description}</span>
-              </section>
-            );
-          }
-        })}
+                  {options.map(function(option, i) {
+                    var optionClasses = cx({
+                      'option': true,
+                      'active': !preferencesSelected[key][option]
+                    });
+                    return (
+                      <div>
+                        <input type='checkbox'
+                          className={optionClasses}
+                          key={option}
+                          value={option}
+                          checked={!preferencesSelected[key][option]}
+                          onChange={filterPreference.bind(null, key, option)}>
+                            {option}
+                        </input>
+                      </div>
+                    );
+                  })}
+                </section>
+              );
+            }
+            else {
+              return (
+                <section>
+                  {preference.name}
+                  <span className='description'>{preference.description}</span>
+                </section>
+              );
+            }
+          })}
       </div>
     );
   },
@@ -437,24 +468,55 @@ var Navigator = React.createClass({
 		);
   },
 
-  handleMedicationSelect: function(key) {
+  handleMedicationClick: function(key) {
+    var disabledMedications = this.state.disabledMedications;
+    disabledMedications[key] = !disabledMedications[key];
     this.setState({
-      selectedMedication: key
+      disabledMedications: disabledMedications
     });
   },
 
+  renderPreferredMedicationName: function(medication) {
+    if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
+      return (
+        <span>
+          <strong>{medication.name_generic.toLowerCase()}</strong>
+        </span>
+      );
+    }
+    else {
+      return (
+        <span>
+          {medication.name_common}<br />
+          <strong>{medication.name_generic}</strong>
+        </span>
+      );
+    }
+  },
+
   renderMedicationBar: function(medications) {
-  	var selectedMedication = this.state.selectedMedication;
   	var disabledMedications = this.state.disabledMedications;
+    var handleMedicationClick = this.handleMedicationClick;
+    var renderPreferredMedicationName = this.renderPreferredMedicationName;
 
     if (medications) {
       return (
-        <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMedication && selectedMedication}>
-          {Object.keys(medications).map(function (medication, i) {
-          	var medication = medications[medication];
-            return (<NavItem key={i} eventKey={medication.name} disabled={disabledMedications[medication.name] == true}>{medication.name_common}</NavItem>);
-          })}
-        </Nav>
+        <div className='medication-cards'>
+          <h3 className='brief-header'>Medications that match the selected preferences and needs</h3>
+          <ul>
+            {Object.keys(medications).map(function (medication, i) {
+            	var medication = medications[medication];
+              return (
+                <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
+                  <a
+                    onClick={handleMedicationClick.bind(null, medication.name)}>
+                      {renderPreferredMedicationName(medication)}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       );
     }
   },
@@ -470,25 +532,35 @@ var Navigator = React.createClass({
     var disabledMedications = this.state.disabledMedications;
     var selectedMedication = this.state.selectedMedication;
     
-    var cardContainerClasses = cx({
-      'card-container': true,
-      'open': this.state.menuOpen == true,
-      'closed': this.state.menuOpen == false
-    });
     var navigatorClasses = cx({
       'navigator': true,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
     });
 
+    var drugPickerClasses = cx({
+      'drug-picker': true,
+      'open': this.state.menuOpen == true,
+      'closed': this.state.menuOpen == false
+    });
+
+    var detailsClasses = cx({
+      'details outcome-timeline': true,
+      'closed': this.state.menuOpen == true,
+      'open': this.state.menuOpen == false
+    });
+
     return (
-      <div>
+      <div className='container-fluid'>
         <div className={navigatorClasses}>
-        	<section className='drug-picker'>
+        	<section className={drugPickerClasses}>
         		{this.renderPreferenceControls(preferences)}
         	</section>
-          <section className='outcome-timeline'>
-          	{this.renderMedicationBar(medications)}
+          <section className='medication-list'>
+            {this.renderMedicationBar(medications)}
+          </section>
+          <section className={detailsClasses}>
+            <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
           	<OutcomeTimeline disabledMedications={disabledMedications} />
          	</section>
         </div>
