@@ -2,7 +2,7 @@
 
 var React = require('react/addons');
 
-var medications = require('../Data.jsx');
+var medications = require('../../data/drugs.js');
 
 // Adverse events
 

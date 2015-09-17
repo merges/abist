@@ -2,7 +2,7 @@
 
 var React = require('react/addons');
 
-var medications = require('./Data.jsx');
+var medications = require('../data/drugs.js');
 
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
@@ -257,7 +257,7 @@ var Processing = React.createClass({
       var entry = {};
           // Key
           entry['which']                					= value.gsx$which ? value.gsx$which.$t : null;
-          
+
           // Population / intervention / comparison
           entry['population']           					= value.gsx$population ? value.gsx$population.$t.split(',') : null;
           entry['intervention']         					= value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
@@ -269,8 +269,8 @@ var Processing = React.createClass({
           entry['measure']              					= value.gsx$measure ? value.gsx$measure.$t : null;
           entry['measure_detail']            			= value.gsx$measuredetail ? value.gsx$measuredetail.$t : null;
           entry['metric']               					= value.gsx$metric ? value.gsx$metric.$t : null;
-          entry['grade']                					= value.gsx$grade ? value.gsx$grade.$t : null;     
-          
+          entry['grade']                					= value.gsx$grade ? value.gsx$grade.$t : null;
+
           // Value
           entry['value']													= {};
           entry['value']['value']                		= value.gsx$value && getNumber(value.gsx$value.$t);
@@ -279,13 +279,13 @@ var Processing = React.createClass({
           entry['value']['value_sd']         				= value.gsx$valuesd && getNumber(value.gsx$valuesd.$t);
           entry['value']['value_iqr_low']         	= value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t);
           entry['value']['value_iqr_high']        	= value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t);
-          
+
           // Duration
           entry['duration']												= {};
           entry['duration']['low']         					= value.gsx$durationlow ? value.gsx$durationlow.$t : null;
           entry['duration']['high']        					= value.gsx$durationhigh ? value.gsx$durationhigh.$t : null;
-          entry['duration']['interval']    					= value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;			
-          
+          entry['duration']['interval']    					= value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
+
           // Dosage
           entry['dosage']													=	{};
           entry['dosage']['dosage']  								= value.gsx$dosage ? value.gsx$dosage.$t : null;
@@ -293,7 +293,7 @@ var Processing = React.createClass({
           entry['dosage']['dosage_frequency']     	= value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null;
           entry['dosage']['dosage_multiple']     		= value.gsx$dosagemultiple ? value.gsx$dosagemultiple.$t : null;
           entry['dosage']['dosage_interval']      	= value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null;
-          
+
           // Evidence source and notes
           entry['source']               					= value.gsx$source ? value.gsx$source.$t : null;
           entry['notes']                					= value.gsx$notes ? value.gsx$notes.$t : null;
@@ -540,10 +540,10 @@ var Processing = React.createClass({
 
   renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
   	var measures = this.state.measures;
-  	
+
   	var measure = results[metric].measure;
   	var data = results[metric].value;
-		
+
   	var baseline = comparisonResults ? comparisonResults[metric].value.value : null;
 
 		return (
@@ -562,10 +562,10 @@ var Processing = React.createClass({
   renderDifference: function(results, metric, measure) {
   	var measures = this.state.measures;
   	var metrics = this.state.metrics;
-  	
+
   	var measure = results[metric].measure;
   	var data = results[metric].value;
-		
+
     return (
     	<div>
         {results.parts && <span>{results.parts.join(' + ')}<br /></span>}
@@ -609,7 +609,7 @@ var Processing = React.createClass({
 				PROCESSING DIFFERENT KINDS OF 'FINDINGS', PIVOTED AROUND A MEASURE.
 
 				Here data are reprojected around a measure—for example, ACR 50 (50% improvement
-				in RA symptoms). We iterate over the rows that show 'acr_50' as the 'measure', and 
+				in RA symptoms). We iterate over the rows that show 'acr_50' as the 'measure', and
 				reorganize the data into a sensible chunk.
 
 				Each measure here is used to describe an outcome, a data point from research:
@@ -703,7 +703,7 @@ var Processing = React.createClass({
 					- measure: 'acr_50'
 					- metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
 					- value: '8'
-					
+
 					ROW 1
 					- intervention: 'methotrexate'
 					- comparison: 'placebo'
@@ -740,7 +740,7 @@ var Processing = React.createClass({
 					- measure: 'acr_50'
 					- metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
 					- value: '8'
-					
+
 					ROW 1
 					- which: 'intervention'
 					- intervention: 'methotrexate'
@@ -764,7 +764,7 @@ var Processing = React.createClass({
 					- measure: 'acr_50'
 					- metric: 'rr'
 					- value: '3.0'
-				
+
 				Now we know that row 0 refers to the comparison (placebo) and all the other rows refer to
 				the intervention (methotrexate). We can use this to group all those rows together—they all refer
 				to a finding: How methotrexate compares to placebo in terms of the ACR 50 outcome.
@@ -777,7 +777,7 @@ var Processing = React.createClass({
 
 				In general, there are a few standard cases we'll encounter and need to deal with in order
 				to gather and reproject data around a measure. They are:
-					
+
 					1. intervention only
 					2. comparison + intervention
 					3. population
@@ -808,7 +808,7 @@ var Processing = React.createClass({
 				All the metrics that are used to describe that specific outcome are grouped under that key.
 
 				2. COMPARISON + INTERVENTION
-				
+
 				In comparison cases, it's likely we have more rows and multiple metrics describing the measure
 				(outcome) of interest. In a single data source we might even have many interventions compared
 				to placebo. For example, in the Cochrane review of systematic reviews of biologic DMARDs for
@@ -822,7 +822,7 @@ var Processing = React.createClass({
 					key = measure + comparison + intervention + dosage + source (+ measure_detail)
 
 				TODO: describe how the "study details" are recorded/divided
-				
+
 				3. POPULATION
 
 				TODO: describe this case
@@ -836,7 +836,7 @@ var Processing = React.createClass({
 				TODO: Better description of this.
 
 				For example:
-				
+
 				'acr_50' = {
 					'placebo-methotrexate (oral, parenteral) (5 mg-25 mg / week)-52 52 week-http://www.ncbi.nlm.nih.gov/pubmed/24916606': {},
 					'dmard only-etanercept (subcutaneous) (25 mg 2x / week)-6 24 month-http://www.ncbi.nlm.nih.gov/pubmed/23728649': {}
@@ -855,12 +855,12 @@ var Processing = React.createClass({
     var reprojected = {};
 
    	entries.forEach(function (entry, i) {
-      
+
       // Construct a key based on the properties of this entry.
       //
       var key = entry.measure
       				+ entry.comparison
-      				+ entry.intervention 
+      				+ entry.intervention
       				+ entry.population
       				+ entry.duration_low + entry.duration_high + entry.duration_interval
       				+ entry.source;
@@ -870,7 +870,7 @@ var Processing = React.createClass({
       //
       // - We already encountered a row for the 'comparison'
       // - We already saw an entry for this measure, reported with a different metric
-      // 
+      //
       // It's a new object.
       //
       if (!reprojected[key]) {
@@ -902,7 +902,7 @@ var Processing = React.createClass({
       if (entry.which == 'comparison' || entry.which == 'population') {
 	      reprojected[key]['which'] = entry.which;
       }
-      
+
       // Details of the comparison, intervention, or population
       //
       if (!reprojected[key][entry.which]) {
@@ -912,8 +912,8 @@ var Processing = React.createClass({
       reprojected[key][entry.which]['parts']								= entry[entry.which]; 			// Array 		// = entry.comparison.join(' + ');
       reprojected[key][entry.which]['dosage']								= entry.dosage;
       reprojected[key][entry.which]['notes']								= entry.notes;
-      
-      
+
+
       // Metrics and values
       //
       if (!reprojected[key][entry.which][entry.metric]) {
@@ -1023,7 +1023,7 @@ var Processing = React.createClass({
 
   	var renderRelativeRiskComparison = function(entries, measure) {
 	  	var sources = {};
-  		
+
   		Object.keys(entries).map(function (key) {
   			var entry = entries[key];
 
@@ -1033,7 +1033,7 @@ var Processing = React.createClass({
 	      		sources[entry.comparison.parts]['items'] = [];
 	      	}
 	      	sources[entry.comparison.parts]['baseline'] = entry.comparison;
-	      	
+
 	      	// Check to see that we have relative risk
 	      	if (entry.intervention.rr) {
 	      		sources[entry.comparison.parts].items.push(entry.intervention);
@@ -1062,7 +1062,7 @@ var Processing = React.createClass({
 
 		var renderRiskRelativeToBaselineComparison = function(entries, measure) {
 	  	var sources = {};
-  		
+
   		Object.keys(entries).map(function (key) {
   			var entry = entries[key];
 
@@ -1072,7 +1072,7 @@ var Processing = React.createClass({
 	      		sources[entry.comparison.parts]['items'] = [];
 	      	}
 	      	sources[entry.comparison.parts]['comparison'] = entry.comparison;
-	      	
+
 	      	// Check to see that we have relative risk
 	      	if (entry.intervention.rr) {
 	      		sources[entry.comparison.parts].items.push(entry.intervention);
@@ -1102,7 +1102,7 @@ var Processing = React.createClass({
 
   	return Object.keys(measures).map(function (measure) {
   		var measureData = measures[measure].data;
-  		
+
   		if (measureData) {
   			var entries = getEntriesForMeasure(measureData);
 
@@ -1114,8 +1114,8 @@ var Processing = React.createClass({
 		        </h3>
 
 		     		{(measure == 'acr_20' || measure == 'acr_50' || measure == 'discontinued_ae') && renderRiskRelativeToBaselineComparison(entries, measure)}
-		        
-		        <ul>       
+
+		        <ul>
 		          <li>
 		            <h3 className='text'>Intervention / Population</h3>
 		            <h3 className='text'>Comparison</h3>
@@ -1134,7 +1134,7 @@ var Processing = React.createClass({
 		            <h3 className='text'>Relative percent change (95% CI)</h3>
 		            <h3>Quality of the evidence (GRADE)</h3>
 		          </li>
-		          
+
 		          {Object.keys(entries).map(function (entry, i) {
 		          	return renderEntry(entries[entry], entry + i);
 		          })}
@@ -1399,7 +1399,7 @@ var Processing = React.createClass({
       //
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference]) {
-          
+
           // a. Simple boolean preference
           if (typeof preferencesSelected[preference] === 'boolean') {
 
@@ -1427,7 +1427,7 @@ var Processing = React.createClass({
             // each option in order to get disabled.
             var selectedOptions = {};
             var medicationMatchingOptions = {};
-            
+
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
@@ -1485,7 +1485,7 @@ var Processing = React.createClass({
                   }
                 }
               }
-            }            
+            }
 
             // Check if the drug should be disabled based on one of the options matching.
             if (Object.keys(selectedOptions).length > 0) {
@@ -1586,7 +1586,7 @@ var Processing = React.createClass({
             <p>The summaries below are connected to <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>data in a Google Spreadsheet</a> where I am encoding findings (data) from various sources. Updates to the spreadsheet are instantly visible here.</p>
           </section>
 
-          
+
 
           {this.renderTagBar(tags)}
           {selectedTag && this.renderDataByTag(data, tags, selectedTag)}

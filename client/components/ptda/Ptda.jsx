@@ -21,7 +21,7 @@ var DropdownButton = require('react-bootstrap').DropdownButton;
 var MenuItem = require('react-bootstrap').MenuItem;
 var Modal = require('react-bootstrap').Modal;
 
-var medications = require('../Data.jsx');
+var medications = require('../../data/drugs.js');
 
 // PtDA option
 
@@ -578,7 +578,7 @@ var Ptda = React.createClass({
       //
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference]) {
-          
+
           // a. Simple boolean preference
           if (typeof preferencesSelected[preference] === 'boolean') {
 
@@ -606,7 +606,7 @@ var Ptda = React.createClass({
             // each option in order to get disabled.
             var selectedOptions = {};
             var medicationMatchingOptions = {};
-            
+
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
@@ -664,7 +664,7 @@ var Ptda = React.createClass({
                   }
                 }
               }
-            }            
+            }
 
             // Check if the drug should be disabled based on one of the options matching.
             if (Object.keys(selectedOptions).length > 0) {

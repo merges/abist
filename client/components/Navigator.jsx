@@ -3,7 +3,8 @@
 var React = require('react/addons');
 var _ = require('underscore');
 
-var medications = require('./Data.jsx');
+var medications = require('../data/drugs.js');
+var get = require('../data/get.js');
 
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
@@ -186,7 +187,7 @@ var Navigator = React.createClass({
     var preferencesSelected = this.state.preferencesSelected;
 
     var cx = React.addons.classSet;
-    
+
     return (
       <div className='filter-controls'
         onMouseEnter={toggleOpen}
@@ -523,7 +524,7 @@ var Navigator = React.createClass({
 
   render: function() {
     var cx = React.addons.classSet;
-    
+
     var medications = this.props.medications;
     var preferences = this.props.preferences;
     var risks = this.props.risks;
@@ -531,7 +532,7 @@ var Navigator = React.createClass({
 
     var disabledMedications = this.state.disabledMedications;
     var selectedMedication = this.state.selectedMedication;
-    
+
     var navigatorClasses = cx({
       'navigator': true,
       'mobile': this.state.mobile,

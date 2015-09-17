@@ -1,4 +1,4 @@
-var medications = [
+var drugs = [
   {
     "name": "Methotrexate",
     "name_generic": "methotrexate",
@@ -843,4 +843,4 @@ var medications = [
   }
 ];
 
-module.exports = medications;
+module.exports = drugs;
