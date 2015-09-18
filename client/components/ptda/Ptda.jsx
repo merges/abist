@@ -2,6 +2,11 @@
 
 var React = require('react/addons');
 
+// Data
+var get = require('../../data/get.js');
+var medications = require('../../data/medications.js');
+var mockData = require('../../data/mock.js');
+
 // // Detect mobile if we're on client side.
 var isMobile = require('ismobilejs');
 var mobile;
@@ -20,8 +25,6 @@ var PtdaSideEffects = require('./PtdaSideEffects');
 var DropdownButton = require('react-bootstrap').DropdownButton;
 var MenuItem = require('react-bootstrap').MenuItem;
 var Modal = require('react-bootstrap').Modal;
-
-var medications = require('../../data/drugs.js');
 
 // PtDA option
 

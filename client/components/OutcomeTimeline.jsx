@@ -3,8 +3,10 @@
 var React = require('react/addons');
 var _ = require('underscore');
 
-var medications = require('../data/drugs.js');
+// Data
 var get = require('../data/get.js');
+var medications = require('../data/medications.js');
+var mockData = require('../data/mock.js');
 
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
@@ -1076,8 +1078,6 @@ var OutcomeTimeline = React.createClass({
   },
 
   render: function() {
-    console.log(this.state)
-
     var cx = React.addons.classSet;
 
     // Data-related

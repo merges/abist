@@ -3,8 +3,10 @@
 var React = require('react/addons');
 var _ = require('underscore');
 
-var medications = require('../data/drugs.js');
+// Data
 var get = require('../data/get.js');
+var medications = require('../data/medications.js');
+var mockData = require('../data/mock.js');
 
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
@@ -145,6 +147,55 @@ var Navigator = React.createClass({
       },
       selectedMedication: null
     }
+  },
+
+  handleDrugFilterClick: function(key, selectedValue) {
+    var preferencesSelected = this.state.drugPreferencesSelected;
+    if (selectedValue) {
+      Object.keys(preferencesSelected[key]).forEach(function(pref) {
+        preferencesSelected[key][pref] = false;
+      });
+      preferencesSelected[key][selectedValue] = true;
+    }
+    else {
+      preferencesSelected[key] = !preferencesSelected[key];
+    }
+    this.setState({
+      userHasFiltered: true,
+      preferencesSelected: preferencesSelected
+    });
+  },
+
+  filterDrugs: function(drugs, preferencesSelected) {
+    var disabledDrugs = {};
+
+    drugs.forEach(function(drug, i) {
+      var drugFeatures = {};
+
+      // 1. Examine all the preferences for a match
+      for (var preference in preferencesSelected) {
+        if (preferencesSelected[preference] && preferencesSelected[preference] != null) {
+          var filter = drugFilters[preference];
+          var options = preferencesSelected[preference];
+          drugFeatures[preference] = filter.isMatch(drug, options);
+        }
+      }
+
+      // 2. Check if the drug should be disabled
+      var keepDrug = true;
+      for (var preference in preferencesSelected) {
+        if (preferencesSelected[preference] != null) {
+          for (var feature in drugFeatures) {
+            if (preferencesSelected[preference] && !drugFeatures[preference]) {
+              keepDrug = false;
+            }
+          }
+        }
+      }
+      disabledDrugs[drug.name] = !keepDrug;
+    });
+
+    return disabledDrugs;
   },
 
   togglePreferenceControls: function (direction) {
