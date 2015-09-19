@@ -136,53 +136,81 @@ var OutcomeTimeline = React.createClass({
       .trigger('resize');
   },
 
-  componentDidMount: function() {
+  getData: function() {
     var instance = this;
-
-    // Get tag descriptions
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-    $.getJSON(urlTagDescriptions).done(function (data) {
-      instance.setState({grades: get.processTagDescriptions(data)});
-    });
-
-    // Get measures & tags
     var urlMeasures = get.getSheetUrl(get.sheets.measures);
-    $.getJSON(urlMeasures).done(function (data) {
-      var newStateItems = get.processMeasures(data);
-      instance.setState({
-        measures: newStateItems.measures,
-        tags: newStateItems.tags
-      });
-    });
-
-    // Get metrics
     var urlMetrics = get.getSheetUrl(get.sheets.metrics);
-    $.getJSON(urlMetrics).done(function (data) {
-      instance.setState({metrics: get.processMetrics(data)});
-    });
-
-    // Get GRADE levels
-    // var processGrades = this.processGrades;
     var urlGrades = get.getSheetUrl(get.sheets.grades);
-    $.getJSON(urlGrades).done(function (data) {
-      instance.setState({grades: get.processGrades(data)});
-    });
-
-    // Get tag descriptions
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-    $.getJSON(urlTagDescriptions).done(function (data) {
-      instance.setState({tagDescriptions: get.processTagDescriptions(data)});
-    });
+    
+    $.when(
+      // Get GRADE
+      $.getJSON(urlGrades).done(function (data) {
+        instance.setState({grades: get.processGrades(data)});
+      }),
 
-    // Get data
-    Object.keys(get.sheets.data).forEach(function (source) {
-      var url = get.getSheetUrl(get.sheets.data[source]);
-      $.getJSON(url).done(function (data) {
-        var existingData = instance.state.data;
-        existingData[source] = get.processData(data);
-        instance.setState({data: existingData});
-      });
+      // Get measures & tags
+      $.getJSON(urlMeasures).done(function (data) {
+        var newStateItems = get.processMeasures(data);
+        instance.setState({
+          measures: newStateItems.measures,
+          tags: newStateItems.tags,
+          // selectedMeasure: newStateItems.tags['improvement'] && newStateItems.measures['acr_50'] && 'acr_50',
+          // selectedTag: newStateItems.tags['improvement'] && newStateItems.measures['acr_50'] && 'improvement'
+        });
+      }),
+
+      // Get metrics
+      $.getJSON(urlMetrics).done(function (data) {
+        instance.setState({metrics: get.processMetrics(data)});
+      }),
+
+      // Get GRADE levels
+      // var processGrades = this.processGrades;
+      $.getJSON(urlGrades).done(function (data) {
+        instance.setState({grades: get.processGrades(data)});
+      }),
+
+      // Get tag descriptions
+      $.getJSON(urlTagDescriptions).done(function (data) {
+        instance.setState({tagDescriptions: get.processTagDescriptions(data)});
+      }),
+
+      // Get data
+      $.when(Object.keys(get.sheets.data).forEach(function (source) {
+        var url = get.getSheetUrl(get.sheets.data[source]);
+        $.getJSON(url).done(function (data) {
+          var existingData = instance.state.data;
+          existingData[source] = get.processData(data);
+          instance.setState({data: existingData});
+        });
+      })
+      ).done(function() {
+        return true;
+      })
+    ).done(function() {
+      var state = instance.state;
+      if (state.tags['improvement'] && state.measures['acr_50'] && state.grades && state.data != {}) {
+        instance.setState({
+          selectedMeasure: 'acr_50',
+          selectedTag: 'improvement'
+        });
+      }
     });
+  },
+
+  componentDidMount: function() {
+    this.getData();
+    // var instance = this;
+    // var getData = this.getData;
+
+    // $.when(getData).done(function(){
+    //   instance.setState({
+    //     selectedMeasure: instance.state.tags['improvement'] && instance.state.measures['acr_50'] && 'acr_50',
+    //     selectedTag: instance.state.tags['improvement'] && instance.state.measures['acr_50'] && 'improvement'
+    //   });
+    // });
   },
 
   renderDataBySource: function(data) {
@@ -876,10 +904,10 @@ var OutcomeTimeline = React.createClass({
       })
     };
 
-    var measure = this.state.selectedMeasure ? this.state.selectedMeasure : Object.keys(measures)[0];
-    var measureData = measures[measure].data;
+    var measure = this.state.selectedMeasure;
+    var measureData = measure && measures[measure].data;
 
-    if (measureData) {
+    if (measure && measureData) {
       var durations = groupEntriesByDuration(filterEntriesByMedication(getEntriesForMeasure(measureData)));
       // var entries = getEntriesForMeasure(measureData);
 
@@ -1086,8 +1114,9 @@ var OutcomeTimeline = React.createClass({
     var metrics = this.state.metrics;
     var tags = this.state.tags;
     var data = this.state.data;
+    var selectedMeasure = this.state.selectedMeasure;
     var selectedTag = this.state.selectedTag;
-
+    
     // Medication filtering-related
     var medications = this.props.medications;
     var preferences = this.props.preferences;
@@ -1108,7 +1137,7 @@ var OutcomeTimeline = React.createClass({
           	{this.renderTagBar(tags)}
           </section>
 
-          {selectedTag && this.renderTimelineByTag(data, tags, selectedTag)}
+          {selectedTag !== null && this.renderTimelineByTag(data, tags, selectedTag)}
 
           <section>
             Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
