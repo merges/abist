@@ -11,6 +11,7 @@ var mockData = require('../data/mock.js');
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
+var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
 var OutcomeTimeline = require('./OutcomeTimeline.jsx');
 
 var PtdaConsiderations = require('./ptda/PtdaConsiderations');
@@ -28,6 +29,89 @@ String.prototype.capitalizeFirstletter = function() {
 // Navigator experiment
 
 var Navigator = React.createClass({
+
+  componentDidMount: function() {
+    var instance = this;
+
+    Query spreadsheets
+    this.getData()
+    .done(function(data) {
+      console.log('thinks promise is done')
+      if (instance.isMounted) {
+        console.log('setting data in state', data)
+        instance.setState({data: data})
+
+        if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
+          instance.setState({
+            selectedMeasure: 'acr_50',
+            selectedTag: 'improvement'
+          });
+        }
+      }
+    });
+
+    // // Use mock data
+    // this.setState({
+    //   data: mockData,
+    //   selectedMeasure: 'acr_50',
+    //   selectedTag: 'improvement'
+    // });
+  },
+
+  getData: function() {
+    console.log('getting data')
+    
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlMeasures = get.getSheetUrl(get.sheets.measures);
+    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
+    var urlGrades = get.getSheetUrl(get.sheets.grades);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+
+    var allData = {};
+    
+    var deferred = new $.Deferred;
+
+    $.when(
+      // Get GRADE
+      $.getJSON(urlGrades).done(function (data) {
+        allData['grades'] = get.processGrades(data);
+      }),
+
+      // Get measures & tags
+      $.getJSON(urlMeasures).done(function (data) {
+        // var newStateItems = get.processMeasures(data);
+        allData['measures'] = get.processMeasures(data).measures;
+        allData['tags'] = get.processMeasures(data).tags;
+      }),
+
+      // Get metrics
+      $.getJSON(urlMetrics).done(function (data) {
+        allData['metrics'] = get.processMetrics(data);
+      }),
+
+      // Get tag descriptions
+      $.getJSON(urlTagDescriptions).done(function (data) {
+        allData['tagDescriptions'] = get.processTagDescriptions(data);
+      }),
+
+      // Get data
+      $.when(Object.keys(get.sheets.data).forEach(function (source) {
+        var url = get.getSheetUrl(get.sheets.data[source]);
+        $.getJSON(url).done(function (data) {
+          !allData['data'] && (allData['data'] = {});
+          allData['data'][source] = get.processData(data);
+        });
+      })
+      ).done(function() {
+        return true;
+      })
+    ).done(function() {
+      console.log('done getting data')
+      deferred.resolve(allData);
+    });
+
+    return deferred.promise();
+  },
 
   getDefaultProps: function () {
     return {
@@ -131,6 +215,8 @@ var Navigator = React.createClass({
     };
 
     return {
+      data: {},
+
       // Medication filtering-related
       disabledMedications: getDisabledMedications(medications),
       menuOpen: false,
@@ -145,7 +231,10 @@ var Navigator = React.createClass({
         pregnancy: false,
         tb: false
       },
-      selectedMedication: null
+
+      // User interaction-related
+      selectedTag: null,
+      selectedMeasure: null
     }
   },
 
@@ -491,33 +580,31 @@ var Navigator = React.createClass({
     });
   },
 
-  renderTimelineByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data);
-    var tagDescriptions = this.state.tagDescriptions;
+  getDataByTag: function(selectedTag) {
+    var data = this.state.data.data;
+    var tags = this.state.data.tags;
+    var dataByTag = JSON.parse(JSON.stringify(tags));
 
-    if (2 > 3) {
-	    return (
-	      <section key={tag} className='data'>
-	        <h2>
-	          <strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
-	          {tagDescriptions[tag] && <p>{tagDescriptions[tag].description}</p>}
-	        </h2>
-	        <div>
-	          {this.renderTimelineByMeasure(dataByTag[tag])}
-	        </div>
-	      </section>
-	    );
-	  }
+    // Each tag (pain, function, etc.)
+    Object.keys(tags).map(function (tag) {
+      // Each source (sheet of data)
+      Object.keys(data).map(function (source) {
+        // Each entry in the source data (line of sheet)
+        data[source].map(function (entry) {
+          // Entry records an outcome in a measure that is associated with one of the tags?
+          // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
+          if (tags[tag][entry.measure]) {
+            // Create a place for data about each measure
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
 
-		return (
-			<div>
-				<h2>
-          <strong>{tagDescriptions[tag] ? tagDescriptions[tag].name_friendly : tag}</strong>
-          {tagDescriptions[tag] && <p>{tagDescriptions[tag].description}</p>}
-        </h2>
-				{this.renderTimelineByMeasure(dataByTag[tag])}
-	    </div>
-		);
+            dataByTag[tag][entry.measure]['data'].push(entry);
+          }
+        });
+      });
+    });
+
+    return dataByTag;
   },
 
   handleMedicationClick: function(key) {
@@ -573,6 +660,87 @@ var Navigator = React.createClass({
     }
   },
 
+  handleMeasureSelect: function(key) {
+    this.setState({
+      selectedMeasure: key
+    });
+  },
+
+  renderMeasureBar: function(selectedTag, selectedMeasure) {
+    var tags = this.state.data.tags;
+    var tagDescriptions = this.state.data.tagDescriptions;
+    var measures = this.state.data.measures;
+
+    if (selectedTag) {
+      var tagMeasures = tags[selectedTag];
+      return (
+        <div>
+          <div><strong>{tagDescriptions[selectedTag].name_friendly}</strong> research is done using lots of different measures. Click each one to see examples of findings.</div>
+          <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
+            {Object.keys(tagMeasures).map(function (measure, i) {
+              return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_short : measure}</NavItem>);
+            })}
+          </Nav>
+        </div>
+      );
+    }
+  },
+
+  handleTagSelect: function(key) {
+    this.setState({
+      selectedTag: key,
+      selectedMeasure: null
+    });
+  },
+
+  renderTagBar: function(selectedTag) {
+    var tags = this.state.data.tags;
+    var tagDescriptions = this.state.data.tagDescriptions;
+
+    if (tags && tagDescriptions) {
+      return (
+        <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedTag && selectedTag} onSelect={this.handleTagSelect}>
+          {Object.keys(tags).map(function (tag, i) {
+            return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>);
+          })}
+        </Nav>
+      );
+    }
+  },
+
+  renderTagDescription: function(selectedTag) {
+    var tagDescriptions = this.state.data.tagDescriptions;
+    
+    if (selectedTag && tagDescriptions) {
+      return (
+        <div className='panel'>
+          <h2 className='tag-description'>
+            <strong>{tagDescriptions[selectedTag] ? tagDescriptions[selectedTag].name_friendly : selectedTag}</strong>
+            {tagDescriptions[selectedTag] && <p>{tagDescriptions[selectedTag].description}</p>}
+          </h2>
+        </div>
+      );
+    }
+  },
+
+  renderDataToJSON: function(grades, metrics, measures, tags, tagDescriptions, data) {
+    return (
+      <div>
+        <div>grades: {JSON.stringify(grades)}</div>
+        <hr />
+        <div>measures: {JSON.stringify(measures)}</div>
+        <hr />
+        <div>metrics: {JSON.stringify(metrics)}</div>
+        <hr />
+        <div>tags: {JSON.stringify(tags)}</div>
+        <hr />
+        <div>tagDescriptions: {JSON.stringify(tagDescriptions)}</div>
+        <hr />
+        <div>data: {JSON.stringify(data)}</div>
+      </div>
+    );
+  },
+
   render: function() {
     var cx = React.addons.classSet;
 
@@ -581,8 +749,9 @@ var Navigator = React.createClass({
     var risks = this.props.risks;
     var risksFriendly = this.props.risksFriendly;
 
+    console.log(this.state)
+
     var disabledMedications = this.state.disabledMedications;
-    var selectedMedication = this.state.selectedMedication;
 
     var navigatorClasses = cx({
       'navigator': true,
@@ -602,22 +771,55 @@ var Navigator = React.createClass({
       'open': this.state.menuOpen == false
     });
 
-    return (
-      <div className='container-fluid'>
-        <div className={navigatorClasses}>
-        	<section className={drugPickerClasses}>
-        		{this.renderPreferenceControls(preferences)}
-        	</section>
-          <section className='medication-list'>
-            {this.renderMedicationBar(medications)}
-          </section>
-          <section className={detailsClasses}>
-            <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
-          	<OutcomeTimeline disabledMedications={disabledMedications} />
-         	</section>
+    var data            = this.state.data;
+    var selectedMeasure = this.state.selectedMeasure;
+    var selectedTag     = this.state.selectedTag; 
+
+    if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
+      return (
+        <div className='container-fluid'>
+          <div className={navigatorClasses}>
+          	<section className={drugPickerClasses}>
+          		{this.renderPreferenceControls(preferences)}
+          	</section>
+
+            <section className='medication-list'>
+              {this.renderMedicationBar(medications)}
+            </section>
+            
+            <section className={detailsClasses}>
+              <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
+              
+              {this.renderTagBar(selectedTag)}
+              {this.renderTagDescription(selectedTag)}
+              {this.renderMeasureBar(selectedTag, selectedMeasure)}
+              
+              {selectedMeasure == 'discontinued_ae' ?
+                <OutcomeRelativeComparison
+                  data={data}
+                  dataByTag={this.getDataByTag(selectedTag)}
+                  medications={medications}
+                  disabledMedications={disabledMedications}
+                  selectedTag={selectedTag}
+                  selectedMeasure={selectedMeasure} />
+                :
+                <OutcomeTimeline
+                  data={data}
+                  medications={medications}
+                  disabledMedications={disabledMedications}
+                  selectedTag={selectedTag}
+                  selectedMeasure={selectedMeasure} />
+              }
+
+              <section>
+                Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
+              </section>
+           	</section>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return (<div><h1>Loading</h1></div>); 
   }
 
 });

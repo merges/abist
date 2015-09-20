@@ -46,7 +46,9 @@ gulp.task('server', function() {
 });
 
 gulp.task('watch', function() {
-  livereload.listen();
+  livereload.listen({
+    port: 18828
+  });
   gulp.watch('client/less/*.less', ['less']);
   gulp.watch('client/components/**/*.jsx', ['browserify']);
   gulp.watch('client/components/**/*.jsx', function() {

@@ -50,7 +50,7 @@
   &.relative-risk-comparison,
   &.risk-relative-to-baseline {
     width: 100%;
-    height: 24em;
+    min-height: 32em;
     position: relative;
     border: 1px solid @color-grey-xxxxxl;
     background: white;
@@ -199,6 +199,12 @@
     text-decoration: none;
     color: white;
     opacity: 1;
+  }
+}
+
+.intervention {
+  .name {
+    font-weight: bolder;
   }
 }
 

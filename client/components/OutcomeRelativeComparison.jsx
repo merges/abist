@@ -12,9 +12,9 @@ var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.js
 var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
 var Source = require('./visualizations/Source.jsx');
 
-// Outcome timeline test
+// Outcome relative comparison
 
-var OutcomeTimeline = React.createClass({
+var OutcomeRelativeComparison = React.createClass({
 	propTypes: {
     data: React.PropTypes.object.isRequired,
 		disabledMedications: React.PropTypes.object,
@@ -580,7 +580,7 @@ var OutcomeTimeline = React.createClass({
 
   filterEntriesByMedication: function(entries) {
     var medications = this.props.medications;
-    
+
   	// disabledMedications is an object with key value pairs like so:
   	//
   	// {
@@ -625,15 +625,10 @@ var OutcomeTimeline = React.createClass({
   	return filteredEntries;
   },
 
-  renderTimelineByMeasure: function(measures) {
-    var measureMap = this.props.data.measures;
-    var grades = this.props.data.grades;
-    var getDurationAsWeeks = this.getDurationAsWeeks;
-    var filterEntriesByMedication = this.filterEntriesByMedication;
+  renderDataByMeasure: function(selectedMeasure) {
+    var measures = this.props.data.measures;
     var getEntriesForMeasure = this.getEntriesForMeasure;
-    var groupEntriesByDuration = this.groupEntriesByDuration;
     var renderEntry = this.renderEntry;
-    var renderValue = this.renderValue;
 
     var renderRelativeRiskComparison = function(entries, measure) {
       var sources = {};
@@ -658,17 +653,12 @@ var OutcomeTimeline = React.createClass({
       return Object.keys(sources).map(function (comparison) {
         if (sources[comparison].items.length > 1) {
           return (
-            <ul className='visualization-rr'>
-              <li>
-                <h3><strong>relative risk</strong> › {measureMap[measure].name_friendly}</h3>
-              </li>
-              <li>
-                <RelativeRiskComparison
+            <div className='visualization-rr'>
+              <RelativeRiskComparison
                   baseline={sources[comparison].baseline}
-                  items={sources[comparison].items}
-                  measure={measure} />
-              </li>
-            </ul>
+                items={sources[comparison].items}
+                measure={measure} />
+            </div>
           );
         }
       })
@@ -697,173 +687,50 @@ var OutcomeTimeline = React.createClass({
       return Object.keys(sources).map(function (comparison) {
         if (sources[comparison].items.length > 1) {
           return (
-            <ul className='visualization-rr'>
-              <li>
-                <h3><strong>relative risk</strong> › {measureMap[measure].name_friendly}</h3>
-              </li>
-              <li>
-                <RiskRelativeToBaseline
-                  comparison={sources[comparison].comparison}
-                  items={sources[comparison].items}
-                  measure={measure}
-                  measures={measureMap} />
-              </li>
-            </ul>
+            <div className='visualization-rr'>
+              <RiskRelativeToBaseline
+                comparison={sources[comparison].comparison}
+                items={sources[comparison].items}
+                measure={measure}
+                measures={measures} />
+            </div>
           );
         }
       })
     };
 
-    var measure = this.props.selectedMeasure;
-    var measureData = measure && measures[measure].data;
+    var dataByTag = this.props.dataByTag;
+    var measure = selectedMeasure;
+    var tag = this.props.selectedTag;
+    var measureData = dataByTag[tag][selectedMeasure].data;
 
-    if (measure && measureData) {
-      var durations = groupEntriesByDuration(filterEntriesByMedication(getEntriesForMeasure(measureData)));
-      // var entries = getEntriesForMeasure(measureData);
+    if (measureData) {
+      var entries = this.filterEntriesByMedication(getEntriesForMeasure(measureData));
 
       return (
-      	<div>
-      		<div key={measure}>
-	        	<section className='outcome-timeline'>
-			      	<section>
-			      		<div className='moment'>
-			      			<section>
-			        			<div className='title'>Start</div>
-			        			<div className='line'>
-			        				<div className='bar'></div>
-			        			</div>
-			        			<div className='description'>Comparison.</div>
-			        		</section>
-			      		</div>
-			      		<div className='moment-data'>
-			      			<section>
-				      			{Object.keys(durations).map(function (numberOfWeeks) {
-					        		var entries = durations[numberOfWeeks];
-
-						        	return entries.map(function (entry, i) {
-						      			if (entry.intervention) {
-						      				{/*TODO: Find out why some entries are being reprojected without the comparison parts. */}
-						      				return (
-								         		<div key={i}>
-                              <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
-                              {entry.comparison &&
-                              	<div className='light'>
-                              		vs.<br />
-                              		{entry.comparison.parts.join(' + ')}
-                              	</div>
-                              }
-                            </div>
-								         	);
-								        }
-							       	});
-										})}
-									</section>
-				      	</div>
-				      </section>
-
-              {Object.keys(durations).map(function (timepoint) {
-				      	return (
-				      		<section key={measure + timepoint}>
-					      		<div className='moment'>
-					      			<section>
-					        			<div className='title'><strong>{timepoint} weeks</strong></div>
-					        			<div className='line'>
-					        				<div className='ball'></div>
-					        			</div>
-					        			<div className='description'>
-					        				<strong>{measureMap[measure].name_short}</strong> {measureMap[measure].name_friendly}
-						              {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
-					        			</div>
-					        		</section>
-					      		</div>
-					      		<div className='moment-data'>
-								      <section>
-						      			{Object.keys(durations).map(function (numberOfWeeks) {
-							        		var entries = durations[numberOfWeeks];
-
-							        		return entries.map(function (entry, i) {
-								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
-									      			return (
-										         		<div key={i}>
-										         			{/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
-                                  {renderValue(entry.intervention)}
-										         			<Source source={entry.source} kind={entry.kind} />
-                                  <GradeQuality grade={entry.quality} gradeMap={grades} />
-										         		</div>
-										         	);
-										        }
-										        else if (entry.intervention) {
-										        	return (<div key={i}></div>);
-										        }
-										      });
-												})}
-											</section>
-								    </div>
-					      	</section>
-					      );
-							})}
-						</section>
-		      </div>
-		    </div>
-		  );
-	  }
-  },
-
-  renderDataByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data);
-    var tagDescriptions = this.props.data.tagDescriptions;
-
-    return (
-      <section key={tag} className='data'>
-        <div>
-          {this.renderTimelineByMeasure(dataByTag[tag])}
+        <div key={measure}>
+          {renderRiskRelativeToBaselineComparison(entries, measure)}
         </div>
-      </section>
-    );
-  },
-
-  renderTimelineByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data);
-    var tagDescriptions = this.props.data.tagDescriptions;
-
-    return (
-			<div>
-				{this.renderTimelineByMeasure(dataByTag[tag])}
-	    </div>
-		);
+      );
+    }
   },
 
   render: function() {
     var cx = React.addons.classSet;
-    
-    // Medication filtering-related
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var risks = this.props.risks;
-    var risksFriendly = this.props.risksFriendly;
-    var disabledMedications = this.props.disabledMedications;
 
     var classes = cx({
       'processing': true,
       'results': true
     });
 
-    // Data
-    var grades          = this.props.data.grades;
-    var measures        = this.props.data.measures;
-    var metrics         = this.props.data.metrics;
-    var tags            = this.props.data.tags;
-    var tagDescriptions = this.props.data.tagDescriptions;
-    var data            = this.props.data.data;
-
-    var selectedTag     = this.props.selectedTag;
+    var selectedMeasure = this.props.selectedMeasure;
 
     return (
       <div className={classes}>
-        {selectedTag !== null && this.renderTimelineByTag(data, tags, selectedTag)}
+        {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
       </div>
     );
   }
 });
 
-module.exports = OutcomeTimeline;
+module.exports = OutcomeRelativeComparison;

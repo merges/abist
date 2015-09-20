@@ -138,12 +138,15 @@ var RelativeRiskComparison = React.createClass({
   },
 
   render: function() {
+    console.log('RelativeRiskComparison')
+    
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization relative-risk-comparison': true
     });
 
     var items = this.props.items;
+        items.push(this.props.comparison);
 
     // Get ranges and values
     var values = [];
@@ -155,16 +158,20 @@ var RelativeRiskComparison = React.createClass({
     var range = (max - min);
 
     // Set a difference threshold based on the range
-    var threshold = range / 25;
+    var threshold = 5;
 
     var getPosition = function(value) {
-      return ((value - min) * 100) / range;
+      return Math.floor(((value - min) * 100) / range);
     };
 
     // Sort entries
     var sortedItems = items.sort(function(a, b) {
       return a.rr.value.value - b.rr.value.value;
     });
+
+    // Deprecated—placebo should be with all other items
+    // // Put placebo into a pill group
+    // groups['0'] = [makePill(this.props.baseline)]
 
     var makePill = this.makePill;
 
@@ -173,14 +180,14 @@ var RelativeRiskComparison = React.createClass({
     var previousValue;
     var position;
 
-    // Put placebo into a pill group
-    groups['0'] = [makePill(this.props.baseline)]
-    
+    // Make the pills
     items.forEach(function(item) {
       var value = item.rr.value.value;
 
+      // No previous position
       if (!previousValue) {
-        position = Math.round(getPosition(value));
+        console.log('first')
+        position = getPosition(value);
         groups[position] = [];
 
         pill = makePill(item);
@@ -188,15 +195,18 @@ var RelativeRiskComparison = React.createClass({
         groups[position].push(pill);
         previousValue = value;
       }
+      // Very close (within threshold range)
       else if (previousValue && ((value - previousValue) < threshold)) {
+        console.log('value below threshold', value, previousValue)
         pill = makePill(item);
         groups[position].push(pill);
         previousValue = value;
       }
+      // Significantly different
       else {
-        position = Math.round(getPosition(value));
+        console.log('significantly different', value)
+        position = getPosition(value);
         groups[position] = [];
-
         pill = makePill(item);
         groups[position].push(pill);
         previousValue = value;

@@ -54,15 +54,16 @@
 							.ball {
 								position: relative;
 								margin: 0 auto;
-								width: 19px;
+								width: 17px;
 
 								&:before {
 									content: '';
 								  position: absolute;
 								  background: @color-grey-xl;
-									width: 19px;
-									height: 19px;
-									border-radius: 8.5px;
+									width: 17px;
+									height: 17px;
+									top: 2px;
+									border-radius: 9.5px;
 								}
 							}
 						}
@@ -86,7 +87,8 @@
 					> div {
 						display: table-cell;
 						height: 100%;
-						padding: 0 .5em;
+						padding: 0 1em;
+						word-wrap: break-word;
 						
 						+ div {
 							border-left: 1px solid @color-grey-xxxxxl;
@@ -105,19 +107,6 @@
 			  width: 1px;
 			  background: @color-grey-xl;
 			}
-		}
-	}
-
-	.tag {
-		.make-row();
-		background: @color-grey-xxxxxxl;
-		padding: 15px 3em 30px 15px;
-		line-height: 1.15;
-	}
-	.tag-navigation {
-		> ul {
-			border-top: none !important;
-			padding: .5em 0 1.5em 0 !important;
 		}
 	}
 }

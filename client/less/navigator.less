@@ -19,22 +19,22 @@
 			opacity: 1;
 		}
 		&.closed {
-			opacity: .2;
+			opacity: .4;
 		}
 	}
 
 	.brief-header {
+		color: @color-blue;
 		font-weight: bolder;
 		font-size: 13px;
 		padding-bottom: 1em;
 		margin-bottom: 1em;
-		border-bottom: 1px dotted @color-grey-l;
+		border-bottom: 1px solid @color-blue;
 	}
 
 	.filter-controls {
-		// // width: 100%;
-		// // display: table;
-		// // table-layout: fixed;
+		padding-bottom: 1em;
+		border-bottom: 5px solid @color-blue;
 
 		> section {
 			display: bock;
@@ -53,6 +53,9 @@
 				}
 			}
 		}
+		a.button {
+			display: block;
+		}
 		.description {
 			display: block;
 		}
@@ -62,6 +65,9 @@
 	}
 
 	.medication-cards {
+		padding-bottom: 1em;
+		border-bottom: 5px solid @color-blue;
+
 		> ul {
 			list-style-type: none;
 			margin: 0;
@@ -71,14 +77,15 @@
 				display: block;
 
 				+ li {
-					margin-top: 5px;
+					margin-top: .75em;
 				}
 
 				> a {
 					display: block;
 					border-radius: 0;
-					padding: .25em .25em 1.5em .25em;
-					background: white;
+					padding: .5em .5em 1.5em .5em;
+					background: #f7f7f7;
+					word-wrap: break-word;
 					.shadow-l;
 
 					transition: box-shadow .15s ease,
@@ -104,5 +111,72 @@
 				}
 			}
 		}
+	}
+
+	.panel {
+		padding: 3em 0 0 0;
+		border-bottom: 1px solid @color-grey-l;
+	}
+
+	.tag-description {
+		font-size: 1.5em;
+		margin: 0;
+		padding-right: 20%;
+		color: @color-grey-l;
+		line-height: 1.2;
+
+		strong {
+			color: @color-grey-d;
+		}
+	}
+
+	nav.tag-navigation {
+
+		> ul {
+			padding-top: 1em;
+			padding-bottom: 1em;
+
+			> li {
+				> a {
+					border-radius: 2px;
+					border: 1px solid @color-grey-xxxl;
+					font-weight: normal;
+					color: @color-grey-l;
+					transition: color .1s ease,
+											border .1s ease,
+											background .1s ease;
+					
+					&:hover {
+						border-color: @color-blue;
+						color: @color-blue;
+						background: none;
+					}
+				}
+				&.active {
+					> a {
+						color: @color-grey-xd;
+						border-color: @color-grey-xd;
+						background: none;
+					}
+				}
+			}
+
+			@media (max-width: @screen-xs-max) {
+				> li {
+					float: none;
+					display: block;
+					margin: 0;
+
+					> a {
+						display: block;
+						padding: .1em 15px;
+					}
+				}
+			}
+		}
+	}
+
+	.results {
+		padding: 2em 0;
 	}
 }

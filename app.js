@@ -35,6 +35,10 @@ app.use(function (err, req, res, next) {
   res.send('<pre>' + err.stack + '</pre>');
 });
 
+app.use(require('connect-livereload')({
+  port: 18828
+}));
+
 app.use(function (req, res) {
   Router.run(routes, req.url, function (Handler) {
     var content = React.renderToString(React.createElement(Handler));
@@ -43,11 +47,6 @@ app.use(function (req, res) {
     })
   });
 });
-
-if (env != 'production') {
-  consoleLog('NOT production');
-  app.use(require('connect-livereload')());
-}
 
 app.listen(port, function() {
   consoleLog("server listening on port " + port);
