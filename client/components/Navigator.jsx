@@ -723,20 +723,20 @@ var Navigator = React.createClass({
     }
   },
 
-  renderDataToJSON: function(grades, metrics, measures, tags, tagDescriptions, data) {
+  renderDataToJSON: function(data) {
     return (
       <div>
-        <div>grades: {JSON.stringify(grades)}</div>
+        <div>grades: {JSON.stringify(data.grades)}</div>
         <hr />
-        <div>measures: {JSON.stringify(measures)}</div>
+        <div>measures: {JSON.stringify(data.measures)}</div>
         <hr />
-        <div>metrics: {JSON.stringify(metrics)}</div>
+        <div>metrics: {JSON.stringify(data.metrics)}</div>
         <hr />
-        <div>tags: {JSON.stringify(tags)}</div>
+        <div>tags: {JSON.stringify(data.tags)}</div>
         <hr />
-        <div>tagDescriptions: {JSON.stringify(tagDescriptions)}</div>
+        <div>tagDescriptions: {JSON.stringify(data.tagDescriptions)}</div>
         <hr />
-        <div>data: {JSON.stringify(data)}</div>
+        <div>data: {JSON.stringify(data.data)}</div>
       </div>
     );
   },
@@ -807,6 +807,9 @@ var Navigator = React.createClass({
     var selectedTag     = this.state.selectedTag; 
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
+      // return (
+      //   <div>{this.renderDataToJSON(data)}</div>
+      // );
       return (
         <div className='container-fluid'>
           <div className={navigatorClasses}>

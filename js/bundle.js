@@ -864,20 +864,20 @@ var Navigator = React.createClass({displayName: "Navigator",
     }
   },
 
-  renderDataToJSON: function(grades, metrics, measures, tags, tagDescriptions, data) {
+  renderDataToJSON: function(data) {
     return (
       React.createElement("div", null, 
-        React.createElement("div", null, "grades: ", JSON.stringify(grades)), 
+        React.createElement("div", null, "grades: ", JSON.stringify(data.grades)), 
         React.createElement("hr", null), 
-        React.createElement("div", null, "measures: ", JSON.stringify(measures)), 
+        React.createElement("div", null, "measures: ", JSON.stringify(data.measures)), 
         React.createElement("hr", null), 
-        React.createElement("div", null, "metrics: ", JSON.stringify(metrics)), 
+        React.createElement("div", null, "metrics: ", JSON.stringify(data.metrics)), 
         React.createElement("hr", null), 
-        React.createElement("div", null, "tags: ", JSON.stringify(tags)), 
+        React.createElement("div", null, "tags: ", JSON.stringify(data.tags)), 
         React.createElement("hr", null), 
-        React.createElement("div", null, "tagDescriptions: ", JSON.stringify(tagDescriptions)), 
+        React.createElement("div", null, "tagDescriptions: ", JSON.stringify(data.tagDescriptions)), 
         React.createElement("hr", null), 
-        React.createElement("div", null, "data: ", JSON.stringify(data))
+        React.createElement("div", null, "data: ", JSON.stringify(data.data))
       )
     );
   },
@@ -949,31 +949,34 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       return (
-        React.createElement("div", {className: "container-fluid"}, 
-          React.createElement("div", {className: navigatorClasses}, 
-          	React.createElement("section", {className: drugPickerClasses}, 
-          		this.renderPreferenceControls(preferences)
-          	), 
-
-            React.createElement("section", {className: "medication-list"}, 
-              this.renderMedicationBar(medications)
-            ), 
-            
-            React.createElement("section", {className: detailsClasses}, 
-              React.createElement("h3", {className: "brief-header"}, "Look at evidence about the selected medications, in various categories"), 
-              
-              this.renderTagBar(selectedTag), 
-              this.renderTagDescription(selectedTag), 
-              this.renderMeasureBar(selectedTag, selectedMeasure), 
-              this.renderMeasure(selectedTag, selectedMeasure), 
-
-              React.createElement("section", null, 
-                "Source data in ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "this Google Spreadsheet")
-              )
-           	)
-          )
-        )
+        React.createElement("div", null, this.renderDataToJSON(data))
       );
+      // return (
+      //   <div className='container-fluid'>
+      //     <div className={navigatorClasses}>
+      //     	<section className={drugPickerClasses}>
+      //     		{this.renderPreferenceControls(preferences)}
+      //     	</section>
+
+      //       <section className='medication-list'>
+      //         {this.renderMedicationBar(medications)}
+      //       </section>
+            
+      //       <section className={detailsClasses}>
+      //         <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
+              
+      //         {this.renderTagBar(selectedTag)}
+      //         {this.renderTagDescription(selectedTag)}
+      //         {this.renderMeasureBar(selectedTag, selectedMeasure)}
+      //         {this.renderMeasure(selectedTag, selectedMeasure)}
+
+      //         <section>
+      //           Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
+      //         </section>
+      //      	</section>
+      //     </div>
+      //   </div>
+      // );
     }
     return (React.createElement("div", null, React.createElement("h1", null, "Loading"))); 
   }
