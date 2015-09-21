@@ -175,28 +175,28 @@ var Navigator = React.createClass({displayName: "Navigator",
     var instance = this;
 
     // Query spreadsheets
-    // this.getData()
-    // .done(function(data) {
-    //   console.log('thinks promise is done')
-    //   if (instance.isMounted) {
-    //     console.log('setting data in state', data)
-    //     instance.setState({data: data})
+    this.getData()
+    .done(function(data) {
+      console.log('thinks promise is done')
+      if (instance.isMounted) {
+        console.log('setting data in state', data)
+        instance.setState({data: data})
 
-    //     if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
-    //       instance.setState({
-    //         selectedMeasure: 'acr_50',
-    //         selectedTag: 'improvement'
-    //       });
-    //     }
-    //   }
-    // });
-
-    // Use mock data
-    this.setState({
-      data: mockData,
-      selectedMeasure: 'acr_50',
-      selectedTag: 'improvement'
+        if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
+          instance.setState({
+            selectedMeasure: 'acr_50',
+            selectedTag: 'improvement'
+          });
+        }
+      }
     });
+
+    // // Use mock data
+    // this.setState({
+    //   data: mockData,
+    //   selectedMeasure: 'acr_50',
+    //   selectedTag: 'improvement'
+    // });
   },
 
   getData: function() {
@@ -882,6 +882,37 @@ var Navigator = React.createClass({displayName: "Navigator",
     );
   },
 
+  renderMeasure: function(selectedTag, selectedMeasure) {
+    var medications = this.props.medications;
+    var data = this.state.data;
+    var disabledMedications = this.state.disabledMedications;
+
+    if (selectedMeasure == 'discontinued_ae') {
+      return (
+        React.createElement(OutcomeRelativeComparison, {
+          data: data, 
+          dataByTag: this.getDataByTag(selectedTag), 
+          medications: medications, 
+          disabledMedications: disabledMedications, 
+          selectedTag: selectedTag, 
+          selectedMeasure: selectedMeasure})
+      );
+    }
+    else if (selectedMeasure == 'ae') {
+      return (
+        React.createElement("div", null, "Should be AEs here")
+      );
+    }
+    return(
+      React.createElement(OutcomeTimeline, {
+        data: data, 
+        medications: medications, 
+        disabledMedications: disabledMedications, 
+        selectedTag: selectedTag, 
+        selectedMeasure: selectedMeasure})
+    );
+  },
+
   render: function() {
     var cx = React.addons.classSet;
 
@@ -934,23 +965,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               this.renderTagBar(selectedTag), 
               this.renderTagDescription(selectedTag), 
               this.renderMeasureBar(selectedTag, selectedMeasure), 
-              
-              selectedMeasure == 'discontinued_ae' ?
-                React.createElement(OutcomeRelativeComparison, {
-                  data: data, 
-                  dataByTag: this.getDataByTag(selectedTag), 
-                  medications: medications, 
-                  disabledMedications: disabledMedications, 
-                  selectedTag: selectedTag, 
-                  selectedMeasure: selectedMeasure})
-                :
-                React.createElement(OutcomeTimeline, {
-                  data: data, 
-                  medications: medications, 
-                  disabledMedications: disabledMedications, 
-                  selectedTag: selectedTag, 
-                  selectedMeasure: selectedMeasure}), 
-              
+              this.renderMeasure(selectedTag, selectedMeasure), 
 
               React.createElement("section", null, 
                 "Source data in ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "this Google Spreadsheet")
@@ -7059,8 +7074,9 @@ var get = {
       methotrexate: 'oa4uchu',
       finraco: 'oclozwl'
     },
-    side_effects: {
-      celecoxib: 'od6'
+    adverse: {
+      celecoxib: 'od6',
+      // etanercept: 'o5b388z'
     },
     tagDescriptions: 'o2pd8py'
   },
@@ -7129,8 +7145,8 @@ var get = {
           entry['n_type']                         = value.gsx$type && value.gsx$ntype.$t;
 
           // Outcome
-          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['measure_detail']                 = value.gsx$measuredetail ? value.gsx$measuredetail.$t : null;
+          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['metric']                         = value.gsx$metric ? value.gsx$metric.$t : null;
           entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null;
 

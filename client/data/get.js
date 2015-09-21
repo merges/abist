@@ -11,8 +11,9 @@ var get = {
       methotrexate: 'oa4uchu',
       finraco: 'oclozwl'
     },
-    side_effects: {
-      celecoxib: 'od6'
+    adverse: {
+      celecoxib: 'od6',
+      // etanercept: 'o5b388z'
     },
     tagDescriptions: 'o2pd8py'
   },
@@ -81,8 +82,8 @@ var get = {
           entry['n_type']                         = value.gsx$type && value.gsx$ntype.$t;
 
           // Outcome
-          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['measure_detail']                 = value.gsx$measuredetail ? value.gsx$measuredetail.$t : null;
+          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
           entry['metric']                         = value.gsx$metric ? value.gsx$metric.$t : null;
           entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null;
 

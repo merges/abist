@@ -33,7 +33,7 @@ var Navigator = React.createClass({
   componentDidMount: function() {
     var instance = this;
 
-    Query spreadsheets
+    // Query spreadsheets
     this.getData()
     .done(function(data) {
       console.log('thinks promise is done')
@@ -741,6 +741,37 @@ var Navigator = React.createClass({
     );
   },
 
+  renderMeasure: function(selectedTag, selectedMeasure) {
+    var medications = this.props.medications;
+    var data = this.state.data;
+    var disabledMedications = this.state.disabledMedications;
+
+    if (selectedMeasure == 'discontinued_ae') {
+      return (
+        <OutcomeRelativeComparison
+          data={data}
+          dataByTag={this.getDataByTag(selectedTag)}
+          medications={medications}
+          disabledMedications={disabledMedications}
+          selectedTag={selectedTag}
+          selectedMeasure={selectedMeasure} />
+      );
+    }
+    else if (selectedMeasure == 'ae') {
+      return (
+        <div>Should be AEs here</div>
+      );
+    }
+    return(
+      <OutcomeTimeline
+        data={data}
+        medications={medications}
+        disabledMedications={disabledMedications}
+        selectedTag={selectedTag}
+        selectedMeasure={selectedMeasure} />
+    );
+  },
+
   render: function() {
     var cx = React.addons.classSet;
 
@@ -793,23 +824,7 @@ var Navigator = React.createClass({
               {this.renderTagBar(selectedTag)}
               {this.renderTagDescription(selectedTag)}
               {this.renderMeasureBar(selectedTag, selectedMeasure)}
-              
-              {selectedMeasure == 'discontinued_ae' ?
-                <OutcomeRelativeComparison
-                  data={data}
-                  dataByTag={this.getDataByTag(selectedTag)}
-                  medications={medications}
-                  disabledMedications={disabledMedications}
-                  selectedTag={selectedTag}
-                  selectedMeasure={selectedMeasure} />
-                :
-                <OutcomeTimeline
-                  data={data}
-                  medications={medications}
-                  disabledMedications={disabledMedications}
-                  selectedTag={selectedTag}
-                  selectedMeasure={selectedMeasure} />
-              }
+              {this.renderMeasure(selectedTag, selectedMeasure)}
 
               <section>
                 Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
