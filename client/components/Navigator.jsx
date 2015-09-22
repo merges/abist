@@ -11,6 +11,7 @@ var mockData = require('../data/mock.js');
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
+var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx');
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
 var OutcomeTimeline = require('./OutcomeTimeline.jsx');
 
@@ -32,7 +33,7 @@ var Navigator = React.createClass({
 
   getDefaultProps: function () {
     return {
-      offline: true,
+      offline: false,
       medications: medications,
       preferences: {
         'alcohol': {
@@ -178,8 +179,10 @@ var Navigator = React.createClass({
 
           if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
             instance.setState({
-              selectedMeasure: 'acr_50',
-              selectedTag: 'improvement'
+              // selectedMeasure: 'acr_50',
+              // selectedTag: 'improvement'
+              selectedMeasure: 'ae',
+              selectedTag: 'adverse event'
             });
           }
         }
@@ -589,6 +592,8 @@ var Navigator = React.createClass({
     var tags = this.state.data.tags;
     var dataByTag = JSON.parse(JSON.stringify(tags));
 
+    console.log('dataByTag', dataByTag)
+
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
       // Each source (sheet of data)
@@ -763,7 +768,13 @@ var Navigator = React.createClass({
     }
     else if (selectedMeasure == 'ae') {
       return (
-        <div>Should be AEs here</div>
+        <OutcomeAdverseEvents
+          data={data}
+          dataByTag={this.getDataByTag(selectedTag)}
+          medications={medications}
+          disabledMedications={disabledMedications}
+          selectedTag={selectedTag}
+          selectedMeasure={selectedMeasure} />
       );
     }
     return(

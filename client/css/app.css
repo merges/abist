@@ -11111,7 +11111,8 @@ html:hover [class^="ss-"] {
   vertical-align: middle;
 }
 .visualization.relative-risk-comparison,
-.visualization.risk-relative-to-baseline {
+.visualization.risk-relative-to-baseline,
+.visualization.absolute-risk-comparison {
   width: 100%;
   min-height: 32em;
   position: relative;
@@ -11119,13 +11120,15 @@ html:hover [class^="ss-"] {
   background: white;
 }
 .visualization.relative-risk-comparison .chart-holder,
-.visualization.risk-relative-to-baseline .chart-holder {
+.visualization.risk-relative-to-baseline .chart-holder,
+.visualization.absolute-risk-comparison .chart-holder {
   width: 100%;
   position: absolute;
   bottom: 0;
 }
 .visualization.relative-risk-comparison ul,
-.visualization.risk-relative-to-baseline ul {
+.visualization.risk-relative-to-baseline ul,
+.visualization.absolute-risk-comparison ul {
   height: 12em;
   width: 80%;
   padding-bottom: 0;
@@ -11136,12 +11139,14 @@ html:hover [class^="ss-"] {
   left: 10%;
 }
 .visualization.relative-risk-comparison .item,
-.visualization.risk-relative-to-baseline .item {
+.visualization.risk-relative-to-baseline .item,
+.visualization.absolute-risk-comparison .item {
   position: absolute;
   bottom: 0;
 }
 .visualization.relative-risk-comparison .item .pill,
-.visualization.risk-relative-to-baseline .item .pill {
+.visualization.risk-relative-to-baseline .item .pill,
+.visualization.absolute-risk-comparison .item .pill {
   font-size: .9em;
   cursor: pointer;
   display: block;
@@ -11159,21 +11164,25 @@ html:hover [class^="ss-"] {
                     background .3s ease;
 }
 .visualization.relative-risk-comparison .item .pill + .pill,
-.visualization.risk-relative-to-baseline .item .pill + .pill {
+.visualization.risk-relative-to-baseline .item .pill + .pill,
+.visualization.absolute-risk-comparison .item .pill + .pill {
   margin-top: 1em;
 }
 .visualization.relative-risk-comparison .item .pill:hover,
-.visualization.risk-relative-to-baseline .item .pill:hover {
+.visualization.risk-relative-to-baseline .item .pill:hover,
+.visualization.absolute-risk-comparison .item .pill:hover {
   color: #dddddd;
   background: #666666;
 }
 .visualization.relative-risk-comparison .item .pill.active,
-.visualization.risk-relative-to-baseline .item .pill.active {
+.visualization.risk-relative-to-baseline .item .pill.active,
+.visualization.absolute-risk-comparison .item .pill.active {
   color: #222222;
   background: #bbbbbb;
 }
 .visualization.relative-risk-comparison .item .legend,
-.visualization.risk-relative-to-baseline .item .legend {
+.visualization.risk-relative-to-baseline .item .legend,
+.visualization.absolute-risk-comparison .item .legend {
   position: absolute;
   bottom: .1em;
   left: .1em;
@@ -11183,40 +11192,47 @@ html:hover [class^="ss-"] {
   font-size: 1em;
 }
 .visualization.relative-risk-comparison .item .line,
-.visualization.risk-relative-to-baseline .item .line {
+.visualization.risk-relative-to-baseline .item .line,
+.visualization.absolute-risk-comparison .item .line {
   background: #e8e8e8;
   width: 1px;
   height: 7em;
 }
 .visualization.relative-risk-comparison .note,
-.visualization.risk-relative-to-baseline .note {
+.visualization.risk-relative-to-baseline .note,
+.visualization.absolute-risk-comparison .note {
   color: #F48325;
 }
 .visualization.relative-risk-comparison .axis-labels,
-.visualization.risk-relative-to-baseline .axis-labels {
+.visualization.risk-relative-to-baseline .axis-labels,
+.visualization.absolute-risk-comparison .axis-labels {
   width: 100%;
   padding-left: 10%;
   padding-right: 10%;
 }
 .visualization.relative-risk-comparison .axis-labels .axis-label,
-.visualization.risk-relative-to-baseline .axis-labels .axis-label {
+.visualization.risk-relative-to-baseline .axis-labels .axis-label,
+.visualization.absolute-risk-comparison .axis-labels .axis-label {
   float: left;
   width: 25%;
 }
 .visualization.relative-risk-comparison .axis-labels .axis-label.right,
-.visualization.risk-relative-to-baseline .axis-labels .axis-label.right {
+.visualization.risk-relative-to-baseline .axis-labels .axis-label.right,
+.visualization.absolute-risk-comparison .axis-labels .axis-label.right {
   position: relative;
   margin-left: 50%;
   text-align: right;
 }
 .visualization.relative-risk-comparison .icon-array,
-.visualization.risk-relative-to-baseline .icon-array {
+.visualization.risk-relative-to-baseline .icon-array,
+.visualization.absolute-risk-comparison .icon-array {
   display: table;
   table-layout: fixed;
   width: 100%;
 }
 .visualization.relative-risk-comparison .icon-array > .ss-icon,
-.visualization.risk-relative-to-baseline .icon-array > .ss-icon {
+.visualization.risk-relative-to-baseline .icon-array > .ss-icon,
+.visualization.absolute-risk-comparison .icon-array > .ss-icon {
   position: relative;
   cursor: pointer;
   display: table-cell;
@@ -11225,7 +11241,8 @@ html:hover [class^="ss-"] {
   font-size: .75em;
 }
 .visualization.relative-risk-comparison .icon-array > .ss-icon > .number,
-.visualization.risk-relative-to-baseline .icon-array > .ss-icon > .number {
+.visualization.risk-relative-to-baseline .icon-array > .ss-icon > .number,
+.visualization.absolute-risk-comparison .icon-array > .ss-icon > .number {
   position: absolute;
   top: -1em;
   border-radius: 50%;
@@ -11239,11 +11256,13 @@ html:hover [class^="ss-"] {
   transition: opacity .3s ease;
 }
 .visualization.relative-risk-comparison .icon-array > .ss-icon.active,
-.visualization.risk-relative-to-baseline .icon-array > .ss-icon.active {
+.visualization.risk-relative-to-baseline .icon-array > .ss-icon.active,
+.visualization.absolute-risk-comparison .icon-array > .ss-icon.active {
   color: #888888;
 }
 .visualization.relative-risk-comparison .icon-array > .ss-icon:hover > .number,
-.visualization.risk-relative-to-baseline .icon-array > .ss-icon:hover > .number {
+.visualization.risk-relative-to-baseline .icon-array > .ss-icon:hover > .number,
+.visualization.absolute-risk-comparison .icon-array > .ss-icon:hover > .number {
   opacity: 1;
   display: block;
 }

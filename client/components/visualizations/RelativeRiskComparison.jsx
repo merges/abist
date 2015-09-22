@@ -8,7 +8,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // Intervention display with tooltip
 
 var RelativeRiskComparison = React.createClass({
-  
+
   propTypes: {
     baseline: React.PropTypes.object
   },
@@ -139,14 +139,13 @@ var RelativeRiskComparison = React.createClass({
 
   render: function() {
     console.log('RelativeRiskComparison')
-    
+
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization relative-risk-comparison': true
     });
 
     var items = this.props.items;
-        items.push(this.props.comparison);
 
     // Get ranges and values
     var values = [];
@@ -218,7 +217,7 @@ var RelativeRiskComparison = React.createClass({
       var style = {
         left: group + '%'
       }
-      
+
       var legend;
       if (group == '0') {
         legend = 'baseline';

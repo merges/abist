@@ -3,6 +3,9 @@
 var React = require('react/addons');
 var _ = require('underscore');
 
+// Data
+var get = require('../data/get.js');
+
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
 var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
@@ -222,329 +225,6 @@ var OutcomeTimeline = React.createClass({
     return dataByTag;
   },
 
-  getEntriesForMeasure: function(entries) {
-    /*
-        PROCESSING DIFFERENT KINDS OF 'FINDINGS', PIVOTED AROUND A MEASURE.
-
-        Here data are reprojected around a measure—for example, ACR 50 (50% improvement
-        in RA symptoms). We iterate over the rows that show 'acr_50' as the 'measure', and
-        reorganize the data into a sensible chunk.
-
-        Each measure here is used to describe an outcome, a data point from research:
-        the result of a study or an estimate of effect. It may be a way of describing what was observed
-        when a treatment was administered, or a placebo, what happened to a population of people
-        over time, an estimate of effect derived as a result of an analysis of multiple studies.
-
-        Importantly, each row describes a certain MEASURE (outcome) using a certain METRIC.
-        Multiple rows might be used to report the *same measure* with *multiple metrics*.
-        For example, the same outcome might be recorded as a frequency, as a percent change,
-        and as a relative risk ratio compared to some baseline.
-
-        For example:
-
-          ROW 1
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '23'
-
-          ROW 2
-          - measure: 'acr_50'
-          - metric: 'abs_difference' (absolute change or difference, a.k.a. absolute treatment benefit)
-          - value: '0.15'
-
-          ROW 3
-          - measure: 'acr_50'
-          - metric: 'rr'
-          - value: '3.0'
-
-        With three rows referring to the same measure, we need a way of knowing what "finding"
-        we're looking at, so we can group all the data together, and pick and choose the metrics
-        we need for our UI. So, each row also has information about the treatment, population, comparison,
-        and other information necessary to know what finding we're talking about. In effect, each row
-        contains almost all the information necessary to 'recreate' a minimal understanding of the
-        experiment or study that produced the result. For example, the row might
-
-          ROW 1
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '23'
-
-          ROW 2
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'abs_difference' (absolute change or difference, a.k.a. absolute treatment benefit)
-          - value: '0.15'
-
-          ROW 3
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'rr'
-          - value: '3.0'
-
-        The 'intervention' and 'comparison' fields (columns in the spreadsheet) describe (basically)
-        the treatment that was administered and what comparison was made. There are other fields that
-        elaborate on the treatment and comparison, but effectively, here's what we can learn from
-        the example above:
-
-          - Methotrexate was the treatment, and results compared to treatment with a placebo.
-          - The outcome (ACR 50) was achieved by (or estimated at) 15 of 100 patients.
-          - The absolute treatment benefit (difference) compared to placebo was 15%.
-          - The relative risk (likelihood of experiencing that outcome) was 3.0.
-
-        It is possible from this information to *infer* the comparison (placebo) data. With an absolute
-        risk (frequency) of 23 of 100 (23%), and an absolute treatment benefit of 15%:
-
-          23%   absolute risk
-         -15%   absolute treatment benefit (absolute difference)
-        -----
-           8%   placebo's absolute risk
-
-        Similarly, the relative risk of 3.0 tells us that the absolute risk of the comparison (placebo)
-        would be:
-
-          23%   absolute risk
-         ÷ 3    relative risk
-        -----
-          ~8%   placebo's absolute risk
-
-        However, in most cases where a comparison is involved, the data for the comparison are ALSO
-        recorded in a row in the spreadsheet. So, here's rows 0 through 3, all of which describe a
-        single "finding".
-
-          ROW 0
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '8'
-
-          ROW 1
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '23'
-
-          ROW 2
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'abs_difference' (absolute change or difference, a.k.a. absolute treatment benefit)
-          - value: '0.15'
-
-          ROW 3
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'rr'
-          - value: '3.0'
-
-        So, now there appears to be no way to distinguish between rows 0 and 1. Both say that the
-        intervention was methotrexate, and the comparison was placebo, and report ACR 50, with the
-        same metric. But one says the value was '8' and the other says '23'. Which was the methotrexate
-        value, and which was the placebo value?
-
-        Each row has a field called 'which', which tells us *which* of the intervention or comparison
-        this particular row refers to. So:
-
-          ROW 0
-          - which: 'comparison'
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '8'
-
-          ROW 1
-          - which: 'intervention'
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'ar_100' (absolute risk out of 100, a.k.a. frequency)
-          - value: '23'
-
-          ROW 2
-          - which: 'intervention'
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'abs_difference' (absolute change or difference, a.k.a. absolute treatment benefit)
-          - value: '0.15'
-
-          ROW 3
-          - which: 'intervention'
-          - intervention: 'methotrexate'
-          - comparison: 'placebo'
-          - measure: 'acr_50'
-          - metric: 'rr'
-          - value: '3.0'
-
-        Now we know that row 0 refers to the comparison (placebo) and all the other rows refer to
-        the intervention (methotrexate). We can use this to group all those rows together—they all refer
-        to a finding: How methotrexate compares to placebo in terms of the ACR 50 outcome.
-
-        (Of course, 'methotrexate' and 'placebo' and 'ACR 50' alone are insufficient to describe
-        the study at hand, so other fields are also used to group a finding around a measure.
-        For example population, dosage, duration of study/follow-up time, and data source.)
-
-        TYPICAL CASES
-
-        In general, there are a few standard cases we'll encounter and need to deal with in order
-        to gather and reproject data around a measure. They are:
-
-          1. intervention only
-          2. comparison + intervention
-          3. population
-          - ...
-
-        1. INTERVENTION ONLY
-
-        If *only* an intervention is specified, then no comparison information is available. In such
-        cases, we should assume that the only kinds of metrics that will be reported are absolute
-        numbers, rather than information about change. For example, if there's no comparison, there
-        is no way to report any kind of difference or relative value. We might see this in the case
-        of side effects from clinical trials, where the data source (a drug product label or monograph)
-        might just say that a certain side effect occurred at a certain frequency. For example:
-
-          ROW FROM SIDE EFFECTS SPREADSHEET
-          - which: 'intervention'
-          - intervention: 'celecoxib'
-          - measure: 'ae'
-          - measure_detail: 'Nausea'
-          - metric: 'percentage'
-          - value: '0.07'
-
-        In intervention-only cases, we want to reproject the data around a key which is sufficient
-        to describe the intervention:
-
-          key = measure + intervention + dosage + source (+ measure_detail)
-
-        All the metrics that are used to describe that specific outcome are grouped under that key.
-
-        2. COMPARISON + INTERVENTION
-
-        In comparison cases, it's likely we have more rows and multiple metrics describing the measure
-        (outcome) of interest. In a single data source we might even have many interventions compared
-        to placebo. For example, in the Cochrane review of systematic reviews of biologic DMARDs for
-        RA, estimates of effect are reported for 6 drugs (interventions) compared to placebo,
-        for two measures (ACR 50 and discontinuation due to an adverse event), and using many metrics,
-        some absolute risk frequency, some relative differences, etc.
-
-        Because there may be many rows that need to be "grouped" to describe the relevant findings,
-        we use a key that includes the comparison:
-
-          key = measure + comparison + intervention + dosage + source (+ measure_detail)
-
-        TODO: describe how the "study details" are recorded/divided
-
-        3. POPULATION
-
-        TODO: describe this case
-
-
-        OUTPUT
-
-        Ultimately, we want to end up with reprojected data that is organized around 'finding groups',
-        so to speak, which we can then use for visualizations and comparisons etc.
-
-        TODO: Better description of this.
-
-        For example:
-
-        'acr_50' = {
-          'placebo-methotrexate (oral, parenteral) (5 mg-25 mg / week)-52 52 week-http://www.ncbi.nlm.nih.gov/pubmed/24916606': {},
-          'dmard only-etanercept (subcutaneous) (25 mg 2x / week)-6 24 month-http://www.ncbi.nlm.nih.gov/pubmed/23728649': {}
-        }
-
-        Each object in the 'acr_50' object is a unique group of findings, possibly including multiple measures.
-
-    */
-
-    // If there are no entries for this measure, stop.
-    //
-    if (!entries || entries.length == 0) {
-      return;
-    }
-
-    var reprojected = {};
-
-    entries.forEach(function (entry, i) {
-
-      // Construct a key based on the properties of this entry.
-      //
-      var key = entry.measure
-              + entry.comparison
-              + entry.intervention
-              + entry.population
-              + entry.duration_low + entry.duration_high + entry.duration_interval
-              + entry.source;
-
-
-      // Check to see if we already have an object for this key a.k.a. 'finding group.' This will be true when:
-      //
-      // - We already encountered a row for the 'comparison'
-      // - We already saw an entry for this measure, reported with a different metric
-      //
-      // It's a new object.
-      //
-      if (!reprojected[key]) {
-        // Set up an empty object to hold the data
-        //
-        reprojected[key] = {};
-
-        // Populate Basic details of the 'finding group'
-        //
-        // reprojected[key]['n']                          = entry.n_total;
-        reprojected[key]['measure']                       = entry.measure;          // Repeated for later convenience of use
-        reprojected[key]['quality']                       = entry.grade;
-        reprojected[key]['source']                        = entry.source;
-        reprojected[key]['kind']                          = entry.kind;
-
-        // Duration / follow-up
-        //
-        reprojected[key]['duration']                      = entry.duration;
-        // reprojected[key]['follow_up']                  = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
-      }
-
-      // Describe what kind of 'finding group' this is—a high level distinction
-      // used to decide how to present data in the UI later.
-      //
-      // COMPARISON + INTERVENTION CASE
-      // If we encounter a row whose 'which' == 'comparison', we know that we have a full on intervention-comparison case,
-      // and can mark this 'finding group' as such.
-      //
-      if (entry.which == 'comparison' || entry.which == 'population') {
-        reprojected[key]['which'] = entry.which;
-      }
-
-      // Details of the comparison, intervention, or population
-      //
-      if (!reprojected[key][entry.which]) {
-        reprojected[key][entry.which]                     = {};
-      }
-      reprojected[key][entry.which]['which']                = entry.which;
-      reprojected[key][entry.which]['parts']                = entry[entry.which];       // Array    // = entry.comparison.join(' + ');
-      reprojected[key][entry.which]['dosage']               = entry.dosage;
-      reprojected[key][entry.which]['notes']                = entry.notes;
-
-
-      // Metrics and values
-      //
-      if (!reprojected[key][entry.which][entry.metric]) {
-        reprojected[key][entry.which][entry.metric] = {};
-      }
-      reprojected[key][entry.which][entry.metric]['value']  = entry.value;          // Object with all confidence bounds, etc. if reported.
-      reprojected[key][entry.which][entry.metric]['which']  = entry.which;          // Repeated here because they're useful and can be passed to UI elements
-      reprojected[key][entry.which][entry.metric]['measure']= entry.measure;        // Repeated here because they're useful and can be passed to UI elements
-    });
-
-    return reprojected;
-  },
-
   getDurationAsWeeks: function(duration) {
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
@@ -578,59 +258,10 @@ var OutcomeTimeline = React.createClass({
   	return entriesByDuration;
   },
 
-  filterEntriesByMedication: function(entries) {
-    var medications = this.props.medications;
-    
-  	// disabledMedications is an object with key value pairs like so:
-  	//
-  	// {
-  	// 	"Methotrexate": true,
-  	// 	"Simponi": false
-  	// }
-  	//
-  	// This function gets a simple list of medications that are not disabled,
-  	// i.e. whose value is false.
-
-  	var enabledMedicationNames = [];
-  	var disabledMedications = this.props.disabledMedications;
-
-  	Object.keys(disabledMedications).forEach(function(key) {
-  		if (disabledMedications[key] === false) {
-
-  			// If the medication is not disabled, we want to add its name(s)—including
-				// generic name and all brand names—to a list that we can use to filter
-				// data entries. Typically the data entries list drugs by generic name,
-				// but this is more comprehensive.
-
-				var medicationObject = _.find(medications, function(medication) {
-					return medication.name_common == key;
-				});
-
-				enabledMedicationNames.push(medicationObject.name_generic.toLowerCase());
-				_.each(medicationObject.names_brand, function(nameBrand) {
-					enabledMedicationNames.push(nameBrand.toLowerCase());
-				});
-			}
-  	});
-
-  	// Filter entries to only those in which the intervention included one of the
-  	// enabled medications.
-  	var filteredEntries = _.filter(entries, function(entry) {
-  		if (entry.intervention) {
-  			var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames);
-  			return intersection.length > 0;
-  		}
-  	});
-
-  	return filteredEntries;
-  },
-
   renderTimelineByMeasure: function(measures) {
     var measureMap = this.props.data.measures;
     var grades = this.props.data.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
-    var filterEntriesByMedication = this.filterEntriesByMedication;
-    var getEntriesForMeasure = this.getEntriesForMeasure;
     var groupEntriesByDuration = this.groupEntriesByDuration;
     var renderEntry = this.renderEntry;
     var renderValue = this.renderValue;
@@ -718,8 +349,9 @@ var OutcomeTimeline = React.createClass({
     var measureData = measure && measures[measure].data;
 
     if (measure && measureData) {
-      var durations = groupEntriesByDuration(filterEntriesByMedication(getEntriesForMeasure(measureData)));
-      // var entries = getEntriesForMeasure(measureData);
+      var medications = this.props.medications;
+      var disabledMedications = this.props.disabledMedications;
+      var durations = groupEntriesByDuration(get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications));
 
       return (
       	<div>
@@ -835,7 +467,7 @@ var OutcomeTimeline = React.createClass({
 
   render: function() {
     var cx = React.addons.classSet;
-    
+
     // Medication filtering-related
     var medications = this.props.medications;
     var preferences = this.props.preferences;
