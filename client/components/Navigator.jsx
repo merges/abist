@@ -30,91 +30,9 @@ String.prototype.capitalizeFirstletter = function() {
 
 var Navigator = React.createClass({
 
-  componentDidMount: function() {
-    var instance = this;
-
-    // Query spreadsheets
-    this.getData()
-    .done(function(data) {
-      console.log('thinks promise is done')
-      if (instance.isMounted) {
-        console.log('setting data in state', data)
-        instance.setState({data: data})
-
-        if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
-          instance.setState({
-            selectedMeasure: 'acr_50',
-            selectedTag: 'improvement'
-          });
-        }
-      }
-    });
-
-    // // Use mock data
-    // this.setState({
-    //   data: mockData,
-    //   selectedMeasure: 'acr_50',
-    //   selectedTag: 'improvement'
-    // });
-  },
-
-  getData: function() {
-    console.log('getting data')
-    
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-    var urlMeasures = get.getSheetUrl(get.sheets.measures);
-    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
-    var urlGrades = get.getSheetUrl(get.sheets.grades);
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-
-    var allData = {};
-    
-    var deferred = new $.Deferred;
-
-    $.when(
-      // Get GRADE
-      $.getJSON(urlGrades).done(function (data) {
-        allData['grades'] = get.processGrades(data);
-      }),
-
-      // Get measures & tags
-      $.getJSON(urlMeasures).done(function (data) {
-        // var newStateItems = get.processMeasures(data);
-        allData['measures'] = get.processMeasures(data).measures;
-        allData['tags'] = get.processMeasures(data).tags;
-      }),
-
-      // Get metrics
-      $.getJSON(urlMetrics).done(function (data) {
-        allData['metrics'] = get.processMetrics(data);
-      }),
-
-      // Get tag descriptions
-      $.getJSON(urlTagDescriptions).done(function (data) {
-        allData['tagDescriptions'] = get.processTagDescriptions(data);
-      }),
-
-      // Get data
-      $.when(Object.keys(get.sheets.data).forEach(function (source) {
-        var url = get.getSheetUrl(get.sheets.data[source]);
-        $.getJSON(url).done(function (data) {
-          !allData['data'] && (allData['data'] = {});
-          allData['data'][source] = get.processData(data);
-        });
-      })
-      ).done(function() {
-        return true;
-      })
-    ).done(function() {
-      console.log('done getting data')
-      deferred.resolve(allData);
-    });
-
-    return deferred.promise();
-  },
-
   getDefaultProps: function () {
     return {
+      offline: true,
       medications: medications,
       preferences: {
         'alcohol': {
@@ -236,6 +154,92 @@ var Navigator = React.createClass({
       selectedTag: null,
       selectedMeasure: null
     }
+  },
+
+  componentDidMount: function() {
+    var instance = this;
+
+    if (this.props.offline) {
+      // Use mock data
+      this.setState({
+        data: mockData,
+        selectedMeasure: 'acr_50',
+        selectedTag: 'improvement'
+      });
+    }
+    else {
+      // Query spreadsheets
+      this.getData()
+      .done(function(data) {
+        console.log('thinks promise is done')
+        if (instance.isMounted) {
+          console.log('setting data in state', data)
+          instance.setState({data: data})
+
+          if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
+            instance.setState({
+              selectedMeasure: 'acr_50',
+              selectedTag: 'improvement'
+            });
+          }
+        }
+      });
+    }
+  },
+
+  getData: function() {
+    console.log('getting data')
+
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlMeasures = get.getSheetUrl(get.sheets.measures);
+    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
+    var urlGrades = get.getSheetUrl(get.sheets.grades);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+
+    var allData = {};
+
+    var deferred = new $.Deferred;
+
+    $.when(
+      // Get GRADE
+      $.getJSON(urlGrades).done(function (data) {
+        allData['grades'] = get.processGrades(data);
+      }),
+
+      // Get measures & tags
+      $.getJSON(urlMeasures).done(function (data) {
+        // var newStateItems = get.processMeasures(data);
+        allData['measures'] = get.processMeasures(data).measures;
+        allData['tags'] = get.processMeasures(data).tags;
+      }),
+
+      // Get metrics
+      $.getJSON(urlMetrics).done(function (data) {
+        allData['metrics'] = get.processMetrics(data);
+      }),
+
+      // Get tag descriptions
+      $.getJSON(urlTagDescriptions).done(function (data) {
+        allData['tagDescriptions'] = get.processTagDescriptions(data);
+      }),
+
+      // Get data
+      $.when(Object.keys(get.sheets.data).forEach(function (source) {
+        var url = get.getSheetUrl(get.sheets.data[source]);
+        $.getJSON(url).done(function (data) {
+          !allData['data'] && (allData['data'] = {});
+          allData['data'][source] = get.processData(data);
+        });
+      })
+      ).done(function() {
+        return true;
+      })
+    ).done(function() {
+      console.log('done getting data')
+      deferred.resolve(allData);
+    });
+
+    return deferred.promise();
   },
 
   handleDrugFilterClick: function(key, selectedValue) {
@@ -710,7 +714,7 @@ var Navigator = React.createClass({
 
   renderTagDescription: function(selectedTag) {
     var tagDescriptions = this.state.data.tagDescriptions;
-    
+
     if (selectedTag && tagDescriptions) {
       return (
         <div className='panel'>
@@ -804,11 +808,15 @@ var Navigator = React.createClass({
 
     var data            = this.state.data;
     var selectedMeasure = this.state.selectedMeasure;
-    var selectedTag     = this.state.selectedTag; 
+    var selectedTag     = this.state.selectedTag;
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       // return (
-      //   <div>{this.renderDataToJSON(data)}</div>
+      //   <div className='container-fluid'>
+      //     <div className={navigatorClasses}>
+      //       {this.renderDataToJSON(data)}
+      //     </div>
+      //   </div>
       // );
       return (
         <div className='container-fluid'>
@@ -820,10 +828,10 @@ var Navigator = React.createClass({
             <section className='medication-list'>
               {this.renderMedicationBar(medications)}
             </section>
-            
+
             <section className={detailsClasses}>
               <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
-              
+
               {this.renderTagBar(selectedTag)}
               {this.renderTagDescription(selectedTag)}
               {this.renderMeasureBar(selectedTag, selectedMeasure)}
@@ -837,7 +845,7 @@ var Navigator = React.createClass({
         </div>
       );
     }
-    return (<div><h1>Loading</h1></div>); 
+    return (<div><h1>Loading</h1></div>);
   }
 
 });
