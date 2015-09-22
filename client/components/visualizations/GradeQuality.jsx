@@ -29,7 +29,7 @@ var GradeQuality = React.createClass({
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
-            'ss-icon ss-star': true,
+            'ss-icon ss-navigateright': true,
             'highlight': i <= gradeNumber
           });
           icons.push(<i key={i} className={iconClasses}></i>);

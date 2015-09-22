@@ -181,24 +181,20 @@
 }
 
 .source {
-  font-size: .75em;
-  font-weight: bolder;
+  font-size: 10px;
   color: white;
-  background: @color-blue;
-  padding: 0 .5em .17em .5em;
-  opacity: .4;
+  padding: .2em 1em .25em 0;
   transition: opacity .2s ease;
-  border-radius: 16px;
-  margin-top: .5em;
+  border-radius: 1px;
+  border-top: 2px solid @color-blue;
+  margin: 1em 0;
   display: inline-block;
   overflow-x: hidden;
-  white-space: nowrap;
-  line-height: 1;
+  line-height: 1.1;
+  color: @color-blue;
 
   &:hover {
     text-decoration: none;
-    color: white;
-    opacity: 1;
   }
 }
 
@@ -206,6 +202,10 @@
   .name {
     font-weight: bolder;
   }
+}
+
+.grade-quality {
+  font-size: 1em !important;
 }
 
 .population {
@@ -220,5 +220,16 @@
   .ss-icon + strong,
   .ss-icon + span {
     margin-left: .5em;
+  }
+}
+
+.progress-bar {
+  background: @color-grey-xl;
+
+  &.better {
+    background: @color-grey-l;
+  }
+  &.worse {
+    background: @color-grey-l;
   }
 }

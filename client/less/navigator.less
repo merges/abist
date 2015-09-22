@@ -24,17 +24,17 @@
 	}
 
 	.brief-header {
-		color: @color-blue;
+		color: @color-grey-xl;
 		font-weight: bolder;
 		font-size: 13px;
 		padding-bottom: 1em;
 		margin-bottom: 1em;
-		border-bottom: 1px solid @color-blue;
+		border-bottom: 15px solid @color-grey-xxxl;
 	}
 
 	.filter-controls {
 		padding-bottom: 1em;
-		border-bottom: 5px solid @color-blue;
+		border-bottom: 15px solid @color-grey-xxxl;
 
 		> section {
 			display: bock;
@@ -66,7 +66,7 @@
 
 	.medication-cards {
 		padding-bottom: 1em;
-		border-bottom: 5px solid @color-blue;
+		border-bottom: 15px solid @color-grey-xxxl;
 
 		> ul {
 			list-style-type: none;
@@ -77,20 +77,25 @@
 				display: block;
 
 				+ li {
-					margin-top: .75em;
+					margin-top: 1em;
 				}
 
 				> a {
+					color: white;
 					display: block;
-					border-radius: 0;
+					border-radius: 2px;
 					padding: .5em .5em 1.5em .5em;
-					background: #f7f7f7;
+					background: @color-blue;
 					word-wrap: break-word;
 					.shadow-l;
 
 					transition: box-shadow .15s ease,
 											color .15s ease,
 											background .15s ease;
+
+					&:hover {
+						text-decoration: none;
+					}
 				}
 
 				&.disabled {
@@ -114,7 +119,7 @@
 	}
 
 	.panel {
-		padding: 3em 0 0 0;
+		padding: 5em 0 0 0;
 		border-bottom: 1px solid @color-grey-l;
 	}
 
@@ -138,10 +143,10 @@
 
 			> li {
 				> a {
-					border-radius: 2px;
-					border: 1px solid @color-grey-xxxl;
-					font-weight: normal;
-					color: @color-grey-l;
+					padding: .5em 2.5em 1.5em .5em;
+				  border-radius: 2px;
+				  text-decoration: none;
+				  background: #f6f6f6;
 					transition: color .1s ease,
 											border .1s ease,
 											background .1s ease;
@@ -149,14 +154,14 @@
 					&:hover {
 						border-color: @color-blue;
 						color: @color-blue;
-						background: none;
+						background: #efefef;
 					}
 				}
 				&.active {
 					> a {
-						color: @color-grey-xd;
-						border-color: @color-grey-xd;
-						background: none;
+						color: white;
+				    background: @color-blue;
+				    .shadow-l;
 					}
 				}
 			}
@@ -177,6 +182,6 @@
 	}
 
 	.results {
-		padding: 2em 0;
+		padding: 3em 0;
 	}
 }

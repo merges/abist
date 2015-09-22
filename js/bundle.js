@@ -203,25 +203,25 @@ var Navigator = React.createClass({displayName: "Navigator",
         },
         'generic_available': {
           'key': 'generic_available',
-          'name': 'Generic available',
+          'name': 'Generic available (less expensive)',
           'type': 'boolean',
           'description': 'A cheaper, generic version is available'
         },
         'liver_disease': {
           'key': 'liver_disease',
-          'name': 'Liver disease',
+          'name': 'Safer for liver disease',
           'type': 'boolean',
           'description': 'if you have liver disease'
         },
         'pregnancy': {
           'key': 'pregnancy',
-          'name': 'Pregnancy',
+          'name': 'Safer for pregnancy',
           'type': 'boolean',
           'description': 'if you’re pregnant or considering it'
         },
         'tb': {
           'key': 'tb',
-          'name': 'Tuberculosis',
+          'name': 'Safer for tuberculosis',
           'type': 'boolean',
           'description': 'if you have or might be exposed to tuberculosis'
         }
@@ -313,17 +313,14 @@ var Navigator = React.createClass({displayName: "Navigator",
       // Query spreadsheets
       this.getData()
       .done(function(data) {
-        console.log('thinks promise is done')
         if (instance.isMounted) {
-          console.log('setting data in state', data)
           instance.setState({data: data})
-
           if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
             instance.setState({
-              // selectedMeasure: 'acr_50',
-              // selectedTag: 'improvement'
-              selectedMeasure: 'ae',
-              selectedTag: 'adverse event'
+              selectedMeasure: 'acr_50',
+              selectedTag: 'improvement',
+              // selectedMeasure: 'ae',
+              // selectedTag: 'adverse event'
             });
           }
         }
@@ -332,8 +329,6 @@ var Navigator = React.createClass({displayName: "Navigator",
   },
 
   getData: function() {
-    console.log('getting data')
-
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
     var urlMeasures = get.getSheetUrl(get.sheets.measures);
     var urlMetrics = get.getSheetUrl(get.sheets.metrics);
@@ -341,7 +336,6 @@ var Navigator = React.createClass({displayName: "Navigator",
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
 
     var allData = {};
-
     var deferred = new $.Deferred;
 
     $.when(
@@ -379,7 +373,6 @@ var Navigator = React.createClass({displayName: "Navigator",
         return true;
       })
     ).done(function() {
-      console.log('done getting data')
       deferred.resolve(allData);
     });
 
@@ -953,7 +946,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     });
 
     var detailsClasses = cx({
-      'details outcome-timeline': true,
+      'details': true,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
     });
@@ -990,7 +983,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               this.renderMeasure(selectedTag, selectedMeasure), 
 
               React.createElement("section", null, 
-                "Source data in ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "this Google Spreadsheet")
+                "See the individual data items in ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/", target: "_top"}, "this Google Spreadsheet")
               )
            	)
           )
@@ -1023,6 +1016,8 @@ var Population = require('./visualizations/Population.jsx');
 var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
 var Source = require('./visualizations/Source.jsx');
+
+var ProgressBar = require('react-bootstrap').ProgressBar;
 
 // Outcome adverse events
 
@@ -1119,8 +1114,6 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       var disabledMedications = this.props.disabledMedications;
       var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications);
 
-      console.log('OutcomeAdverseEvents ENTRIES', entries);
-
       return (
         React.createElement("div", {key: measure}, 
           renderRiskRelativeToBaselineComparison(entries, measure)
@@ -1129,6 +1122,8 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
     }
   },
 
+
+
   render: function() {
     var cx = React.addons.classSet;
     var classes = cx({
@@ -1136,32 +1131,97 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       'results': true
     });
 
+    var data                = this.props.data;
+    var medications         = this.props.medications;
     var selectedMeasure     = this.props.selectedMeasure;
     var selectedTag         = this.props.selectedTag;
     var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data;
     var disabledMedications = this.props.disabledMedications;
 
     if (measureData) {
+      // return (
+      //   <AbsoluteRiskComparison />
+      // );
+
+      measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
+
+      console.log(measureData);
+      
+      var groupedMeasureData = _.groupBy(measureData, function (entry) {
+        return entry.comparison + entry.intervention;
+      });
+
       return (
-        React.createElement(AbsoluteRiskComparison, null)
+        React.createElement("section", {className: classes}, 
+          _.map(groupedMeasureData, function (group) {
+            var firstEntry = group[0];
+            var comparison = firstEntry.comparison.join(' + ');
+            var intervention = firstEntry.intervention.join(' + ');
+            
+            var groupedByDetail = _.chain(group)
+                                  .groupBy(function (entry) {
+                                    return entry.measure_detail;
+                                  })
+                                  .sortBy(function (clump) {
+                                    return _.max(clump, function (part) {
+                                      return part.value.value;
+                                    });
+                                  })
+                                  .value();
+
+            return (
+              React.createElement("div", {key: group}, 
+                React.createElement("h4", null, 
+                  "When ", React.createElement("strong", null, intervention), " was compared with ", React.createElement("strong", null, comparison), " for people with RA", React.createElement("br", null), 
+                  React.createElement("span", {className: "light"}, "these were the most common side effects")
+                ), 
+                React.createElement(Source, {source: firstEntry.source, kind: firstEntry.kind}), 
+                React.createElement(GradeQuality, {grade: firstEntry.quality, gradeMap: data.grades}), 
+
+                groupedByDetail.map(function (clump, i) {
+                  var name              = clump[0].measure_detail;
+                  var comparisonValue   = _.chain(clump)
+                                           .findWhere({'which': 'comparison'})
+                                           .value()
+                                           .value.value;
+                  var interventionValue = _.chain(clump)
+                                           .findWhere({'which': 'intervention'})
+                                           .value()
+                                           .value.value;
+
+                  console.log(name, comparisonValue, interventionValue)
+
+                  if (interventionValue < comparisonValue) {
+                    var stackedValue = comparisonValue - interventionValue;
+                    return (
+                      React.createElement("div", {key: i}, 
+                        React.createElement("strong", null, name), " ", React.createElement("span", {className: "light"}, "less common with ", React.createElement("strong", null, intervention)), 
+                        React.createElement(ProgressBar, null, 
+                          React.createElement(ProgressBar, {bsSize: "xsmall", className: "better", label: "%(percent)s% taking " + intervention, now: interventionValue, key: 1}), 
+                          React.createElement(ProgressBar, {bsSize: "xsmall", label: comparisonValue + '% on ' + comparison, now: stackedValue, key: 2})
+                        )
+                      )
+                    );
+                  }
+                  else {
+                    var stackedValue = interventionValue - comparisonValue;
+                    return (
+                      React.createElement("div", {key: i}, 
+                        React.createElement("strong", null, name), " ", React.createElement("span", {className: "light"}, "as or more common with ", React.createElement("strong", null, intervention)), 
+                        React.createElement(ProgressBar, null, 
+                          React.createElement(ProgressBar, {bsSize: "xsmall", label: "%(percent)s% on " + comparison, now: comparisonValue, key: 1}), 
+                          React.createElement(ProgressBar, {bsSize: "xsmall", className: "worse", label: interventionValue + '% on ' + intervention, now: stackedValue, key: 2})
+                          
+                        )
+                      )
+                    );
+                  }
+                })
+              )
+            );
+          })
+        )
       );
-      // return (
-      //   <div className={classes}>
-      //     {measureData.map(function (entry, i) {
-      //       console.log(entry)
-      //       return (
-      //         <div key={i}>
-      //           <strong>{entry.measure_detail}</strong><br />
-      //           {entry.which == 'comparison' && <span>{entry.comparison.join(' + ')} - {entry.value}%</span>}
-      //           {entry.which == 'intervention' && <span>{entry.intervention.join(' + ')} - {entry.value}%</span>}
-      //         </div>
-      //       );
-      //     })}
-      //   </div>
-      // );
-      // return (
-      //   <div>{JSON.stringify(measureData)}</div>
-      // );
     }
     return (React.createElement("noscript", null));
   }
@@ -1169,7 +1229,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
 module.exports = OutcomeAdverseEvents;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/client/components/OutcomeAdverseEvents.jsx","/client/components")
-},{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/AbsoluteRiskComparison.jsx":18,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"_process":37,"buffer":33,"react/addons":138,"underscore":311}],5:[function(require,module,exports){
+},{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/AbsoluteRiskComparison.jsx":18,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"_process":37,"buffer":33,"react-bootstrap":88,"react/addons":138,"underscore":311}],5:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /** @jsx React.DOM */
 
@@ -5651,7 +5711,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
-            'ss-icon ss-star': true,
+            'ss-icon ss-navigateright': true,
             'highlight': i <= gradeNumber
           });
           icons.push(React.createElement("i", {key: i, className: iconClasses}));
@@ -6754,10 +6814,10 @@ var get = {
     grades: 'oo3g5h2',
     data: {
       biologics: 'oij9tdp',
-      // hydroxycholoroquine: 'oozzuoc',
+      hydroxycholoroquine: 'oozzuoc',
       etanercept: 'oogh8lu',
       methotrexate: 'oa4uchu',
-      // finraco: 'oclozwl'
+      finraco: 'oclozwl'
     },
     tagDescriptions: 'o2pd8py'
   },
@@ -7340,12 +7400,15 @@ var get = {
     // Filter entries to only those in which the intervention included one of the
     // enabled medications.
     var filteredEntries = _.filter(entries, function(entry) {
-      if (entry.intervention) {
+      if (entry.intervention && entry.intervention.parts) {
         var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames);
         return intersection.length > 0;
       }
+      else if (entry.intervention) {
+        var intersection = _.intersection(entry.intervention, enabledMedicationNames);
+        return intersection.length > 0;
+      }
     });
-
     return filteredEntries;
   }
 
@@ -8210,7 +8273,7 @@ var mockData = {
   ,metrics: {"ar_100":{"name":"ar_100","name_short":"absolute risk","name_friendly":"absolute risk (out of 100)","description":"","presentation":"frequency","kind":"absolute","source":"","notes":""},"ar_1000":{"name":"ar_1000","name_short":"absolute risk","name_friendly":"absolute risk (out of 1000)","description":"","presentation":"frequency","kind":"absolute","source":"","notes":""},"rr":{"name":"rr","name_short":"relative risk","name_friendly":"","description":"","presentation":"value","kind":"relative","source":"","notes":""},"or":{"name":"or","name_short":"odds ratio","name_friendly":"","description":"","presentation":"value","kind":"relative","source":"","notes":""},"abs_difference":{"name":"abs_difference","name_short":"absolute difference","name_friendly":"absolute treatment benefit","description":"","presentation":"percentage","kind":"relative","source":"","notes":""},"rel_difference":{"name":"rel_difference","name_short":"relative difference","name_friendly":"relative percent change","description":"","presentation":"percentage","kind":"absolute","source":"","notes":""},"mean_score":{"name":"mean_score","name_short":"mean score","name_friendly":"","description":"","presentation":"value","kind":"absolute","source":"","notes":""},"mean_score_difference":{"name":"mean_score_difference","name_short":"mean difference in score","name_friendly":"","description":"\"The mean difference is the average difference between the intervention group and the control group across studies.\"","presentation":"difference","kind":"relative","source":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html","notes":""},"percentage":{"name":"percentage","name_short":"percentage","name_friendly":"percentage of people","description":"","presentation":"percentage","kind":"absolute","source":"","notes":""},"mean_score_10":{"name":"mean_score_10","name_short":"mean score (out of 10)","name_friendly":"","description":"","presentation":"value","kind":"absolute","source":"","notes":""},"mean_score_100":{"name":"mean_score_100","name_short":"mean score (out of 100)","name_friendly":"","description":"","presentation":"value","kind":"absolute","source":"","notes":""},"count":{"name":"count","name_short":"count","name_friendly":"","description":"","presentation":"value","kind":"absolute","source":"","notes":""}}
   ,tags: {"pain":{"tjc":true,"acr_tjc":true,"patient_pain":true},"function":{"tjc":true,"sjc":true,"acr_tjc":true,"acr_sjc":true,"patient_physical_function":true,"sf36_physical_20":true,"permanent_work_disability":true,"median_work_disability_days":true},"swelling":{"sjc":true,"acr_sjc":true},"well being":{"patient_global_das":true,"physician_global_das":true,"discontinued_ae":true,"haq":true,"sf36_mental_20":true},"biomarker":{"apr":true,"esr":true},"improvement":{"sub_acr_20":true,"acr_20":true,"acr_50":true,"acr_70":true,"sf36_physical_20":true,"sf36_mental_20":true,"remission":true},"adverse event":{"discontinued_ae":true,"serious_ae":true,"ae":true},"satisfaction":{"discontinued_efficacy":true},"remission":{"remission":true},"work":{"permanent_work_disability":true,"median_work_disability_days":true}}
   ,tagDescriptions: {"pain":{"name":"pain","description":"Pain, including tenderness in joints and self-reported pain.","name_friendly":"Pain","name_short":"Pain"},"function":{"name":"function","description":"Ability to do daily activities, a combination of how you feel and how well your joints are working.","name_friendly":"Physical function","name_short":"Physical function"},"improvement":{"name":"improvement","description":"Overall improvement, usually measured by looking at a combination of swelling, pain, RA disease activity, and how you're feeling.","name_friendly":"Overall improvement","name_short":"Overall improvement"},"satisfaction":{"name":"satisfaction","description":"Satisfaction with how well a treatment is working.","name_friendly":"Satisfaction","name_short":"Satisfaction"},"swelling":{"name":"swelling","description":"","name_friendly":"Swollen joints","name_short":"Swelling"},"biomarker":{"name":"biomarker","description":"","name_friendly":"Lab results","name_short":"Lab results"},"adverse event":{"name":"adverse event","description":"Side effects, adverse events (undesirable outcomes), etc.","name_friendly":"Side effects","name_short":"Side effects"},"well being":{"name":"well being","description":"?","name_friendly":"Well being","name_short":"Well being"},"remission":{"name":"remission","description":"When arthritis activity has gone away, and people experience little pain and swelling.","name_friendly":"Remission","name_short":"Remission"},"work":{"name":"work","description":"Ability to work.","name_friendly":"Work","name_short":"Work"}}
-  ,data: {"methotrexate":[{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"3","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"3","value":{"value":23,"value_ci_low":12,"value_ci_high":46},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"rr","grade":"3","value":{"value":3,"value_ci_low":1.5,"value_ci_high":6},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"abs_difference","grade":"3","value":{"value":0.15,"value_ci_low":0.08,"value_ci_high":0.23},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"rel_difference","grade":"3","value":{"value":2.03,"value_ci_low":0.53,"value_ci_high":4.98},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"remssion","metric":"ar_100","grade":"2","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"18","high":"18","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"remssion","metric":"ar_100","grade":"2","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"18","high":"18","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"3","value":{"value":1,"value_ci_low":0.53,"value_ci_high":1.34},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"3","value":{"value":1.3,"value_ci_low":0.92,"value_ci_high":1.5},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score_difference","grade":"3","value":{"value":-0.27,"value_ci_low":-0.39,"value_ci_high":-0.16},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"abs_difference","grade":"3","value":{"value":-0.09,"value_ci_low":-0.13,"value_ci_high":-0.05},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"rel_difference","grade":"3","value":{"value":0.2,"value_ci_low":0.29,"value_ci_high":0.12},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"ar_100","grade":"3","value":{"value":27,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"ar_100","grade":"3","value":{"value":39,"value_ci_low":27,"value_ci_high":57},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"rr","grade":"3","value":{"value":1.5,"value_ci_low":1,"value_ci_high":2.1},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"abs_difference","grade":"3","value":{"value":0.12,"value_ci_low":0.01,"value_ci_high":0.24},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"rel_difference","grade":"3","value":{"value":0.5,"value_ci_low":0,"value_ci_high":1.12},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"ar_100","grade":"3","value":{"value":21,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"ar_100","grade":"3","value":{"value":26,"value_ci_low":16,"value_ci_high":41},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"rr","grade":"3","value":{"value":1.3,"value_ci_low":0.79,"value_ci_high":2},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"abs_difference","grade":"3","value":{"value":0.05,"value_ci_low":-0.05,"value_ci_high":0.16},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"rel_difference","grade":"3","value":{"value":0.25,"value_ci_low":-0.21,"value_ci_high":0.98},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"ar_100","grade":"4","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"ar_100","grade":"4","value":{"value":16,"value_ci_low":10,"value_ci_high":25},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"rr","grade":"4","value":{"value":2.1,"value_ci_low":1.3,"value_ci_high":3.3},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"abs_difference","grade":"4","value":{"value":0.09,"value_ci_low":0.03,"value_ci_high":0.14},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"rel_difference","grade":"4","value":{"value":1.06,"value_ci_low":0.3,"value_ci_high":2.25},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"ar_100","grade":"3","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"ar_100","grade":"3","value":{"value":3,"value_ci_low":1,"value_ci_high":14},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"rr","grade":"3","value":{"value":1.4,"value_ci_low":0.36,"value_ci_high":5.7},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"abs_difference","grade":"3","value":{"value":0.01,"value_ci_low":-0.03,"value_ci_high":0.04},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"rel_difference","grade":"3","value":{"value":0.44,"value_ci_low":-0.64,"value_ci_high":4.74},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"}],"finraco":[{"which":"intervention","population":["Remission after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"remission","metric":"ar_100","grade":"","value":{"value":26,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Remission after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"remission","metric":"ar_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 50 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"","value":{"value":42,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 50 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"","value":{"value":41,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 20 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"acr_20","metric":"ar_100","grade":"","value":{"value":12,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 20 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"acr_20","metric":"ar_100","grade":"","value":{"value":25,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Less than ACR 20 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"sub_acr_20","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Less than ACR 20 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"sub_acr_20","metric":"ar_100","grade":"","value":{"value":23,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null,"value_sd":14,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":31,"value_ci_low":null,"value_ci_high":null,"value_sd":19,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":47,"value_ci_low":null,"value_ci_high":null,"value_sd":43,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null,"value_sd":4,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null,"value_sd":8,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":28,"value_ci_low":null,"value_ci_high":null,"value_sd":14,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":38,"value_ci_low":null,"value_ci_high":null,"value_sd":19,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":15,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":27,"value_ci_low":null,"value_ci_high":null,"value_sd":17,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":40,"value_ci_low":null,"value_ci_high":null,"value_sd":23,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":0.2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.2,"value_ci_low":null,"value_ci_high":null,"value_sd":0.3,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.4,"value_ci_low":null,"value_ci_high":null,"value_sd":0.4,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.6,"value_ci_low":null,"value_ci_high":null,"value_sd":0.5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":10,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":7,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null,"value_sd":2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":8,"value_ci_low":null,"value_ci_high":null,"value_sd":7,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":23,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":54,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":3},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":131},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":170},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":337,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":27,"value_iqr_high":365},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"}],"etanercept":[{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":405,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":793,"value_ci_low":538,"value_ci_high":1000},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rr","grade":"3","value":{"value":1.96,"value_ci_low":1.33,"value_ci_high":2.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"abs_difference","grade":"3","value":{"value":0.38,"value_ci_low":0.13,"value_ci_high":0.59},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rel_difference","grade":"3","value":{"value":0.96,"value_ci_low":0.33,"value_ci_high":1.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":236,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":454,"value_ci_low":378,"value_ci_high":546},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rr","grade":"4","value":{"value":1.92,"value_ci_low":1.6,"value_ci_high":2.31},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"abs_difference","grade":"4","value":{"value":0.22,"value_ci_low":0.17,"value_ci_high":0.27},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rel_difference","grade":"4","value":{"value":1.22,"value_ci_low":0.5,"value_ci_high":2.29},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":null,"value_ci_low":-0.72,"value_ci_high":-0.15},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":-0.36,"value_ci_low":-0.43,"value_ci_high":-0.28},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"abs_difference","grade":"4","value":{"value":-0.12,"value_ci_low":-0.16,"value_ci_high":-0.02},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"rel_difference","grade":"4","value":{"value":0.57,"value_ci_low":0.05,"value_ci_high":0.76},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":158,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":118,"value_ci_low":90,"value_ci_high":158},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rr","grade":"3","value":{"value":0.75,"value_ci_low":0.57,"value_ci_high":1},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"abs_difference","grade":"3","value":{"value":-0.04,"value_ci_low":-0.08,"value_ci_high":0},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rel_difference","grade":"3","value":{"value":-0.25,"value_ci_low":-0.43,"value_ci_high":0},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":141,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":176,"value_ci_low":104,"value_ci_high":297},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rr","grade":"3","value":{"value":1.25,"value_ci_low":0.74,"value_ci_high":2.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"abs_difference","grade":"3","value":{"value":0.05,"value_ci_low":-0.04,"value_ci_high":0.13},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rel_difference","grade":"3","value":{"value":0.25,"value_ci_low":-0.26,"value_ci_high":1.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":49,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":45,"value_ci_low":27,"value_ci_high":77},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rr","grade":"4","value":{"value":0.91,"value_ci_low":0.54,"value_ci_high":1.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"abs_difference","grade":"4","value":{"value":-0.05,"value_ci_low":-0.03,"value_ci_high":0.02},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rel_difference","grade":"4","value":{"value":-0.09,"value_ci_low":-0.46,"value_ci_high":0.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"}]}
+  ,data: {"etanercept":[{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":405,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":793,"value_ci_low":538,"value_ci_high":1000},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rr","grade":"3","value":{"value":1.96,"value_ci_low":1.33,"value_ci_high":2.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"abs_difference","grade":"3","value":{"value":0.38,"value_ci_low":0.13,"value_ci_high":0.59},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rel_difference","grade":"3","value":{"value":0.96,"value_ci_low":0.33,"value_ci_high":1.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":236,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":454,"value_ci_low":378,"value_ci_high":546},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rr","grade":"4","value":{"value":1.92,"value_ci_low":1.6,"value_ci_high":2.31},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"abs_difference","grade":"4","value":{"value":0.22,"value_ci_low":0.17,"value_ci_high":0.27},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rel_difference","grade":"4","value":{"value":1.22,"value_ci_low":0.5,"value_ci_high":2.29},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":null,"value_ci_low":-0.72,"value_ci_high":-0.15},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":-0.36,"value_ci_low":-0.43,"value_ci_high":-0.28},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"abs_difference","grade":"4","value":{"value":-0.12,"value_ci_low":-0.16,"value_ci_high":-0.02},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"rel_difference","grade":"4","value":{"value":0.57,"value_ci_low":0.05,"value_ci_high":0.76},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":158,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":118,"value_ci_low":90,"value_ci_high":158},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rr","grade":"3","value":{"value":0.75,"value_ci_low":0.57,"value_ci_high":1},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"abs_difference","grade":"3","value":{"value":-0.04,"value_ci_low":-0.08,"value_ci_high":0},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rel_difference","grade":"3","value":{"value":-0.25,"value_ci_low":-0.43,"value_ci_high":0},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":141,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":176,"value_ci_low":104,"value_ci_high":297},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rr","grade":"3","value":{"value":1.25,"value_ci_low":0.74,"value_ci_high":2.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"abs_difference","grade":"3","value":{"value":0.05,"value_ci_low":-0.04,"value_ci_high":0.13},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rel_difference","grade":"3","value":{"value":0.25,"value_ci_low":-0.26,"value_ci_high":1.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":49,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":45,"value_ci_low":27,"value_ci_high":77},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rr","grade":"4","value":{"value":0.91,"value_ci_low":0.54,"value_ci_high":1.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"abs_difference","grade":"4","value":{"value":-0.05,"value_ci_low":-0.03,"value_ci_high":0.02},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rel_difference","grade":"4","value":{"value":-0.09,"value_ci_low":-0.46,"value_ci_high":0.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":39,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":50,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":30,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":38,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":37,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":9,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":86,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":81,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":70,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":65,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":59,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":54,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":18,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":43,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":19,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":13,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hypersensitivity","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hypersensitivity","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"}],"methotrexate":[{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"3","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"3","value":{"value":23,"value_ci_low":12,"value_ci_high":46},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"rr","grade":"3","value":{"value":3,"value_ci_low":1.5,"value_ci_high":6},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"abs_difference","grade":"3","value":{"value":0.15,"value_ci_low":0.08,"value_ci_high":0.23},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"acr_50","metric":"rel_difference","grade":"3","value":{"value":2.03,"value_ci_low":0.53,"value_ci_high":4.98},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"remssion","metric":"ar_100","grade":"2","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"18","high":"18","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"remssion","metric":"ar_100","grade":"2","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"18","high":"18","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"3","value":{"value":1,"value_ci_low":0.53,"value_ci_high":1.34},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"3","value":{"value":1.3,"value_ci_low":0.92,"value_ci_high":1.5},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"mean_score_difference","grade":"3","value":{"value":-0.27,"value_ci_low":-0.39,"value_ci_high":-0.16},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"abs_difference","grade":"3","value":{"value":-0.09,"value_ci_low":-0.13,"value_ci_high":-0.05},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"haq","metric":"rel_difference","grade":"3","value":{"value":0.2,"value_ci_low":0.29,"value_ci_high":0.12},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"ar_100","grade":"3","value":{"value":27,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"ar_100","grade":"3","value":{"value":39,"value_ci_low":27,"value_ci_high":57},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"rr","grade":"3","value":{"value":1.5,"value_ci_low":1,"value_ci_high":2.1},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"abs_difference","grade":"3","value":{"value":0.12,"value_ci_low":0.01,"value_ci_high":0.24},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_physical_20","metric":"rel_difference","grade":"3","value":{"value":0.5,"value_ci_low":0,"value_ci_high":1.12},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"ar_100","grade":"3","value":{"value":21,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"ar_100","grade":"3","value":{"value":26,"value_ci_low":16,"value_ci_high":41},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"rr","grade":"3","value":{"value":1.3,"value_ci_low":0.79,"value_ci_high":2},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"abs_difference","grade":"3","value":{"value":0.05,"value_ci_low":-0.05,"value_ci_high":0.16},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"sf36_mental_20","metric":"rel_difference","grade":"3","value":{"value":0.25,"value_ci_low":-0.21,"value_ci_high":0.98},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"ar_100","grade":"4","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"ar_100","grade":"4","value":{"value":16,"value_ci_low":10,"value_ci_high":25},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"rr","grade":"4","value":{"value":2.1,"value_ci_low":1.3,"value_ci_high":3.3},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"abs_difference","grade":"4","value":{"value":0.09,"value_ci_low":0.03,"value_ci_high":0.14},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"discontinued_ae","metric":"rel_difference","grade":"4","value":{"value":1.06,"value_ci_low":0.3,"value_ci_high":2.25},"duration":{"low":"12","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"ar_100","grade":"3","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"ar_100","grade":"3","value":{"value":3,"value_ci_low":1,"value_ci_high":14},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"rr","grade":"3","value":{"value":1.4,"value_ci_low":0.36,"value_ci_high":5.7},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"abs_difference","grade":"3","value":{"value":0.01,"value_ci_low":-0.03,"value_ci_high":0.04},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["methotrexate"],"comparison":["placebo"],"measure_detail":null,"measure":"serious_ae","metric":"rel_difference","grade":"3","value":{"value":0.44,"value_ci_low":-0.64,"value_ci_high":4.74},"duration":{"low":"52","high":"52","interval":"week"},"dosage":{"dosage":"5 mg-25 mg","dosage_form":["oral","parenteral"],"dosage_frequency":"1","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/24916606","notes":"\"People with a diagnosis of RA that was severe and of long duration, who had a high prevalence of positive rheumatoid factor (RF), and had previously failed other second line disease-modifying antirheumatic drug (DMARD) therapy.\"","kind":"systematic review"}],"finraco":[{"which":"intervention","population":["Remission after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"remission","metric":"ar_100","grade":"","value":{"value":26,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Remission after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"remission","metric":"ar_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 50 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"","value":{"value":42,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 50 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"acr_50","metric":"ar_100","grade":"","value":{"value":41,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 20 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"acr_20","metric":"ar_100","grade":"","value":{"value":12,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["ACR 20 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"acr_20","metric":"ar_100","grade":"","value":{"value":25,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Less than ACR 20 after 6 months of treatment"],"intervention":["methotrexate","sulfasalazine","hydroxychloroquine","prednisolone"],"comparison":[""],"measure_detail":null,"measure":"sub_acr_20","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"intervention","population":["Less than ACR 20 after 6 months of treatment"],"intervention":["sulfasalazine","prednisolone (optional)","switch to methotrexate if inadequate response on sulfasalazine"],"comparison":[""],"measure_detail":null,"measure":"sub_acr_20","metric":"ar_100","grade":"","value":{"value":23,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null,"value_sd":14,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":31,"value_ci_low":null,"value_ci_high":null,"value_sd":19,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"patient_global_das","metric":"mean_score_100","grade":"","value":{"value":47,"value_ci_low":null,"value_ci_high":null,"value_sd":43,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null,"value_sd":4,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null,"value_sd":8,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":28,"value_ci_low":null,"value_ci_high":null,"value_sd":14,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"physician_global_das","metric":"mean_score_100","grade":"","value":{"value":38,"value_ci_low":null,"value_ci_high":null,"value_sd":19,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":15,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":27,"value_ci_low":null,"value_ci_high":null,"value_sd":17,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"pain","metric":"mean_score_100","grade":"","value":{"value":40,"value_ci_low":null,"value_ci_high":null,"value_sd":23,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":0.2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.2,"value_ci_low":null,"value_ci_high":null,"value_sd":0.3,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.4,"value_ci_low":null,"value_ci_high":null,"value_sd":0.4,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"haq","metric":"mean_score","grade":"","value":{"value":0.6,"value_ci_low":null,"value_ci_high":null,"value_sd":0.5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":10,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"tjc","metric":"mean_score","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":7,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null,"value_sd":2,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null,"value_sd":5,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"sjc","metric":"mean_score","grade":"","value":{"value":8,"value_ci_low":null,"value_ci_high":null,"value_sd":7,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"6","high":"","interval":"month"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":23,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"permanent_work_disability","metric":"ar_100","grade":"","value":{"value":54,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":null,"value_iqr_high":null},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Remission after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":3},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 50 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":131},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":0,"value_iqr_high":170},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"},{"which":"population","population":["Less than ACR 20 after 6 months of treatment"],"intervention":[""],"comparison":[""],"measure_detail":null,"measure":"median_work_disability_days","metric":"count","grade":"","value":{"value":337,"value_ci_low":null,"value_ci_high":null,"value_sd":null,"value_iqr_low":27,"value_iqr_high":365},"duration":{"low":"5","high":"","interval":"year"},"dosage":{"dosage":"6 months of methotrexate + sulfasalazine + hydroxychloroquine + prednisolone OR sulfasalazine + prednisolone (optional) + switch to methotrexate if inadequate response on sulfasalazine","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/15641055","notes":"","kind":"randomized trial"}],"etanercept":[{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":405,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"ar_1000","grade":"3","value":{"value":793,"value_ci_low":538,"value_ci_high":1000},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rr","grade":"3","value":{"value":1.96,"value_ci_low":1.33,"value_ci_high":2.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"abs_difference","grade":"3","value":{"value":0.38,"value_ci_low":0.13,"value_ci_high":0.59},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"acr_50","metric":"rel_difference","grade":"3","value":{"value":0.96,"value_ci_low":0.33,"value_ci_high":1.89},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":236,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"ar_1000","grade":"4","value":{"value":454,"value_ci_low":378,"value_ci_high":546},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rr","grade":"4","value":{"value":1.92,"value_ci_low":1.6,"value_ci_high":2.31},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"abs_difference","grade":"4","value":{"value":0.22,"value_ci_low":0.17,"value_ci_high":0.27},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"remission","metric":"rel_difference","grade":"4","value":{"value":1.22,"value_ci_low":0.5,"value_ci_high":2.29},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":null,"value_ci_low":-0.72,"value_ci_high":-0.15},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"mean_score_difference","grade":"4","value":{"value":-0.36,"value_ci_low":-0.43,"value_ci_high":-0.28},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"abs_difference","grade":"4","value":{"value":-0.12,"value_ci_low":-0.16,"value_ci_high":-0.02},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"haq","metric":"rel_difference","grade":"4","value":{"value":0.57,"value_ci_low":0.05,"value_ci_high":0.76},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":158,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"ar_1000","grade":"3","value":{"value":118,"value_ci_low":90,"value_ci_high":158},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rr","grade":"3","value":{"value":0.75,"value_ci_low":0.57,"value_ci_high":1},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"abs_difference","grade":"3","value":{"value":-0.04,"value_ci_low":-0.08,"value_ci_high":0},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"discontinued_ae","metric":"rel_difference","grade":"3","value":{"value":-0.25,"value_ci_low":-0.43,"value_ci_high":0},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":141,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"ar_1000","grade":"3","value":{"value":176,"value_ci_low":104,"value_ci_high":297},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rr","grade":"3","value":{"value":1.25,"value_ci_low":0.74,"value_ci_high":2.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"abs_difference","grade":"3","value":{"value":0.05,"value_ci_low":-0.04,"value_ci_high":0.13},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_ae","metric":"rel_difference","grade":"3","value":{"value":0.25,"value_ci_low":-0.26,"value_ci_high":1.11},"duration":{"low":"24","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"comparison","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":49,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"","dosage_form":[""],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"ar_1000","grade":"4","value":{"value":45,"value_ci_low":27,"value_ci_high":77},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rr","grade":"4","value":{"value":0.91,"value_ci_low":0.54,"value_ci_high":1.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"abs_difference","grade":"4","value":{"value":-0.05,"value_ci_low":-0.03,"value_ci_high":0.02},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"},{"which":"intervention","population":null,"intervention":["etanercept","dmard"],"comparison":["dmard only"],"measure_detail":"","measure":"serious_infection","metric":"rel_difference","grade":"4","value":{"value":-0.09,"value_ci_low":-0.46,"value_ci_high":0.55},"duration":{"low":"52","high":"156","interval":"week"},"dosage":{"dosage":"25 mg","dosage_form":["subcutaneous"],"dosage_frequency":"2","dosage_multiple":"","dosage_interval":"week"},"source":"http://www.ncbi.nlm.nih.gov/pubmed/23728649","notes":"","kind":"systematic review"}]}
 }
 
 module.exports = mockData;
@@ -8329,41 +8392,36 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
  * By augmenting the instances, we can avoid modifying the `Uint8Array`
  * prototype.
  */
-function Buffer (subject, encoding, noZero) {
-  if (!(this instanceof Buffer))
-    return new Buffer(subject, encoding, noZero)
+function Buffer (subject, encoding) {
+  var self = this
+  if (!(self instanceof Buffer)) return new Buffer(subject, encoding)
 
   var type = typeof subject
-
-  // Find the length
   var length
-  if (type === 'number')
+
+  if (type === 'number') {
     length = +subject
-  else if (type === 'string') {
+  } else if (type === 'string') {
     length = Buffer.byteLength(subject, encoding)
-  } else if (type === 'object' && subject !== null) { // assume object is array-like
-    if (subject.type === 'Buffer' && isArray(subject.data))
-      subject = subject.data
+  } else if (type === 'object' && subject !== null) {
+    // assume object is array-like
+    if (subject.type === 'Buffer' && isArray(subject.data)) subject = subject.data
     length = +subject.length
   } else {
     throw new TypeError('must start with number, buffer, array or string')
   }
 
-  if (length > kMaxLength)
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-      'size: 0x' + kMaxLength.toString(16) + ' bytes')
+  if (length > kMaxLength) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum size: 0x' +
+      kMaxLength.toString(16) + ' bytes')
+  }
 
-  if (length < 0)
-    length = 0
-  else
-    length >>>= 0 // Coerce to uint32.
+  if (length < 0) length = 0
+  else length >>>= 0 // coerce to uint32
 
-  var self = this
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Preferred: Return an augmented `Uint8Array` instance for best performance
-    /*eslint-disable consistent-this */
-    self = Buffer._augment(new Uint8Array(length))
-    /*eslint-enable consistent-this */
+    self = Buffer._augment(new Uint8Array(length)) // eslint-disable-line consistent-this
   } else {
     // Fallback: Return THIS instance of Buffer (created by `new`)
     self.length = length
@@ -8377,42 +8435,43 @@ function Buffer (subject, encoding, noZero) {
   } else if (isArrayish(subject)) {
     // Treat array-ish objects as a byte array
     if (Buffer.isBuffer(subject)) {
-      for (i = 0; i < length; i++)
+      for (i = 0; i < length; i++) {
         self[i] = subject.readUInt8(i)
+      }
     } else {
-      for (i = 0; i < length; i++)
+      for (i = 0; i < length; i++) {
         self[i] = ((subject[i] % 256) + 256) % 256
+      }
     }
   } else if (type === 'string') {
     self.write(subject, 0, encoding)
-  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT && !noZero) {
+  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT) {
     for (i = 0; i < length; i++) {
       self[i] = 0
     }
   }
 
-  if (length > 0 && length <= Buffer.poolSize)
-    self.parent = rootParent
+  if (length > 0 && length <= Buffer.poolSize) self.parent = rootParent
 
   return self
 }
 
-function SlowBuffer (subject, encoding, noZero) {
-  if (!(this instanceof SlowBuffer))
-    return new SlowBuffer(subject, encoding, noZero)
+function SlowBuffer (subject, encoding) {
+  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding)
 
-  var buf = new Buffer(subject, encoding, noZero)
+  var buf = new Buffer(subject, encoding)
   delete buf.parent
   return buf
 }
 
-Buffer.isBuffer = function (b) {
+Buffer.isBuffer = function isBuffer (b) {
   return !!(b != null && b._isBuffer)
 }
 
-Buffer.compare = function (a, b) {
-  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b))
+Buffer.compare = function compare (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
     throw new TypeError('Arguments must be Buffers')
+  }
 
   if (a === b) return 0
 
@@ -8428,7 +8487,7 @@ Buffer.compare = function (a, b) {
   return 0
 }
 
-Buffer.isEncoding = function (encoding) {
+Buffer.isEncoding = function isEncoding (encoding) {
   switch (String(encoding).toLowerCase()) {
     case 'hex':
     case 'utf8':
@@ -8447,8 +8506,8 @@ Buffer.isEncoding = function (encoding) {
   }
 }
 
-Buffer.concat = function (list, totalLength) {
-  if (!isArray(list)) throw new TypeError('Usage: Buffer.concat(list[, length])')
+Buffer.concat = function concat (list, totalLength) {
+  if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
 
   if (list.length === 0) {
     return new Buffer(0)
@@ -8474,7 +8533,7 @@ Buffer.concat = function (list, totalLength) {
   return buf
 }
 
-Buffer.byteLength = function (str, encoding) {
+Buffer.byteLength = function byteLength (str, encoding) {
   var ret
   str = str + ''
   switch (encoding || 'utf8') {
@@ -8510,7 +8569,7 @@ Buffer.prototype.length = undefined
 Buffer.prototype.parent = undefined
 
 // toString(encoding, start=0, end=buffer.length)
-Buffer.prototype.toString = function (encoding, start, end) {
+Buffer.prototype.toString = function toString (encoding, start, end) {
   var loweredCase = false
 
   start = start >>> 0
@@ -8546,45 +8605,84 @@ Buffer.prototype.toString = function (encoding, start, end) {
         return utf16leSlice(this, start, end)
 
       default:
-        if (loweredCase)
-          throw new TypeError('Unknown encoding: ' + encoding)
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
         encoding = (encoding + '').toLowerCase()
         loweredCase = true
     }
   }
 }
 
-Buffer.prototype.equals = function (b) {
+Buffer.prototype.equals = function equals (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
   if (this === b) return true
   return Buffer.compare(this, b) === 0
 }
 
-Buffer.prototype.inspect = function () {
+Buffer.prototype.inspect = function inspect () {
   var str = ''
   var max = exports.INSPECT_MAX_BYTES
   if (this.length > 0) {
     str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
-    if (this.length > max)
-      str += ' ... '
+    if (this.length > max) str += ' ... '
   }
   return '<Buffer ' + str + '>'
 }
 
-Buffer.prototype.compare = function (b) {
+Buffer.prototype.compare = function compare (b) {
   if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
   if (this === b) return 0
   return Buffer.compare(this, b)
 }
 
+Buffer.prototype.indexOf = function indexOf (val, byteOffset) {
+  if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff
+  else if (byteOffset < -0x80000000) byteOffset = -0x80000000
+  byteOffset >>= 0
+
+  if (this.length === 0) return -1
+  if (byteOffset >= this.length) return -1
+
+  // Negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = Math.max(this.length + byteOffset, 0)
+
+  if (typeof val === 'string') {
+    if (val.length === 0) return -1 // special case: looking for empty string always fails
+    return String.prototype.indexOf.call(this, val, byteOffset)
+  }
+  if (Buffer.isBuffer(val)) {
+    return arrayIndexOf(this, val, byteOffset)
+  }
+  if (typeof val === 'number') {
+    if (Buffer.TYPED_ARRAY_SUPPORT && Uint8Array.prototype.indexOf === 'function') {
+      return Uint8Array.prototype.indexOf.call(this, val, byteOffset)
+    }
+    return arrayIndexOf(this, [ val ], byteOffset)
+  }
+
+  function arrayIndexOf (arr, val, byteOffset) {
+    var foundIndex = -1
+    for (var i = 0; byteOffset + i < arr.length; i++) {
+      if (arr[byteOffset + i] === val[foundIndex === -1 ? 0 : i - foundIndex]) {
+        if (foundIndex === -1) foundIndex = i
+        if (i - foundIndex + 1 === val.length) return byteOffset + foundIndex
+      } else {
+        foundIndex = -1
+      }
+    }
+    return -1
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
 // `get` will be removed in Node 0.13+
-Buffer.prototype.get = function (offset) {
+Buffer.prototype.get = function get (offset) {
   console.log('.get() is deprecated. Access using array indexes instead.')
   return this.readUInt8(offset)
 }
 
 // `set` will be removed in Node 0.13+
-Buffer.prototype.set = function (v, offset) {
+Buffer.prototype.set = function set (v, offset) {
   console.log('.set() is deprecated. Access using array indexes instead.')
   return this.writeUInt8(v, offset)
 }
@@ -8609,9 +8707,9 @@ function hexWrite (buf, string, offset, length) {
     length = strLen / 2
   }
   for (var i = 0; i < length; i++) {
-    var byte = parseInt(string.substr(i * 2, 2), 16)
-    if (isNaN(byte)) throw new Error('Invalid hex string')
-    buf[offset + i] = byte
+    var parsed = parseInt(string.substr(i * 2, 2), 16)
+    if (isNaN(parsed)) throw new Error('Invalid hex string')
+    buf[offset + i] = parsed
   }
   return i
 }
@@ -8636,11 +8734,11 @@ function base64Write (buf, string, offset, length) {
 }
 
 function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length, 2)
+  var charsWritten = blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
   return charsWritten
 }
 
-Buffer.prototype.write = function (string, offset, length, encoding) {
+Buffer.prototype.write = function write (string, offset, length, encoding) {
   // Support both (string, offset, length, encoding)
   // and the legacy (string, encoding, offset, length)
   if (isFinite(offset)) {
@@ -8657,8 +8755,9 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
 
   offset = Number(offset) || 0
 
-  if (length < 0 || offset < 0 || offset > this.length)
+  if (length < 0 || offset < 0 || offset > this.length) {
     throw new RangeError('attempt to write outside buffer bounds')
+  }
 
   var remaining = this.length - offset
   if (!length) {
@@ -8701,7 +8800,7 @@ Buffer.prototype.write = function (string, offset, length, encoding) {
   return ret
 }
 
-Buffer.prototype.toJSON = function () {
+Buffer.prototype.toJSON = function toJSON () {
   return {
     type: 'Buffer',
     data: Array.prototype.slice.call(this._arr || this, 0)
@@ -8775,43 +8874,39 @@ function utf16leSlice (buf, start, end) {
   return res
 }
 
-Buffer.prototype.slice = function (start, end) {
+Buffer.prototype.slice = function slice (start, end) {
   var len = this.length
   start = ~~start
   end = end === undefined ? len : ~~end
 
   if (start < 0) {
     start += len
-    if (start < 0)
-      start = 0
+    if (start < 0) start = 0
   } else if (start > len) {
     start = len
   }
 
   if (end < 0) {
     end += len
-    if (end < 0)
-      end = 0
+    if (end < 0) end = 0
   } else if (end > len) {
     end = len
   }
 
-  if (end < start)
-    end = start
+  if (end < start) end = start
 
   var newBuf
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     newBuf = Buffer._augment(this.subarray(start, end))
   } else {
     var sliceLen = end - start
-    newBuf = new Buffer(sliceLen, undefined, true)
+    newBuf = new Buffer(sliceLen, undefined)
     for (var i = 0; i < sliceLen; i++) {
       newBuf[i] = this[i + start]
     }
   }
 
-  if (newBuf.length)
-    newBuf.parent = this.parent || this
+  if (newBuf.length) newBuf.parent = this.parent || this
 
   return newBuf
 }
@@ -8820,62 +8915,58 @@ Buffer.prototype.slice = function (start, end) {
  * Need to make sure that buffer isn't trying to write out of bounds.
  */
 function checkOffset (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0)
-    throw new RangeError('offset is not uint')
-  if (offset + ext > length)
-    throw new RangeError('Trying to access beyond buffer length')
+  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
 }
 
-Buffer.prototype.readUIntLE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
   var mul = 1
   var i = 0
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     val += this[offset + i] * mul
+  }
 
   return val
 }
 
-Buffer.prototype.readUIntBE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
+  if (!noAssert) {
     checkOffset(offset, byteLength, this.length)
+  }
 
   var val = this[offset + --byteLength]
   var mul = 1
-  while (byteLength > 0 && (mul *= 0x100))
+  while (byteLength > 0 && (mul *= 0x100)) {
     val += this[offset + --byteLength] * mul
+  }
 
   return val
 }
 
-Buffer.prototype.readUInt8 = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 1, this.length)
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
   return this[offset]
 }
 
-Buffer.prototype.readUInt16LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   return this[offset] | (this[offset + 1] << 8)
 }
 
-Buffer.prototype.readUInt16BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   return (this[offset] << 8) | this[offset + 1]
 }
 
-Buffer.prototype.readUInt32LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return ((this[offset]) |
       (this[offset + 1] << 8) |
@@ -8883,117 +8974,104 @@ Buffer.prototype.readUInt32LE = function (offset, noAssert) {
       (this[offset + 3] * 0x1000000)
 }
 
-Buffer.prototype.readUInt32BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] * 0x1000000) +
-      ((this[offset + 1] << 16) |
-      (this[offset + 2] << 8) |
-      this[offset + 3])
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
 }
 
-Buffer.prototype.readIntLE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
   var mul = 1
   var i = 0
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     val += this[offset + i] * mul
+  }
   mul *= 0x80
 
-  if (val >= mul)
-    val -= Math.pow(2, 8 * byteLength)
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
 
-Buffer.prototype.readIntBE = function (offset, byteLength, noAssert) {
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkOffset(offset, byteLength, this.length)
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var i = byteLength
   var mul = 1
   var val = this[offset + --i]
-  while (i > 0 && (mul *= 0x100))
+  while (i > 0 && (mul *= 0x100)) {
     val += this[offset + --i] * mul
+  }
   mul *= 0x80
 
-  if (val >= mul)
-    val -= Math.pow(2, 8 * byteLength)
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
 
   return val
 }
 
-Buffer.prototype.readInt8 = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 1, this.length)
-  if (!(this[offset] & 0x80))
-    return (this[offset])
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80)) return (this[offset])
   return ((0xff - this[offset] + 1) * -1)
 }
 
-Buffer.prototype.readInt16LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset] | (this[offset + 1] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
-Buffer.prototype.readInt16BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 2, this.length)
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset + 1] | (this[offset] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
-Buffer.prototype.readInt32LE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16) |
-      (this[offset + 3] << 24)
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
 }
 
-Buffer.prototype.readInt32BE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] << 24) |
-      (this[offset + 1] << 16) |
-      (this[offset + 2] << 8) |
-      (this[offset + 3])
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
 }
 
-Buffer.prototype.readFloatLE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, true, 23, 4)
 }
 
-Buffer.prototype.readFloatBE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 4, this.length)
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, false, 23, 4)
 }
 
-Buffer.prototype.readDoubleLE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 8, this.length)
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, true, 52, 8)
 }
 
-Buffer.prototype.readDoubleBE = function (offset, noAssert) {
-  if (!noAssert)
-    checkOffset(offset, 8, this.length)
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, false, 52, 8)
 }
 
@@ -9003,43 +9081,42 @@ function checkInt (buf, value, offset, ext, max, min) {
   if (offset + ext > buf.length) throw new RangeError('index out of range')
 }
 
-Buffer.prototype.writeUIntLE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var mul = 1
   var i = 0
   this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     this[offset + i] = (value / mul) >>> 0 & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeUIntBE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   byteLength = byteLength >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var i = byteLength - 1
   var mul = 1
   this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100))
+  while (--i >= 0 && (mul *= 0x100)) {
     this[offset + i] = (value / mul) >>> 0 & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeUInt8 = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 1, 0xff, 0)
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   this[offset] = value
   return offset + 1
@@ -9053,27 +9130,29 @@ function objectWriteUInt16 (buf, value, offset, littleEndian) {
   }
 }
 
-Buffer.prototype.writeUInt16LE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
-  } else objectWriteUInt16(this, value, offset, true)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeUInt16BE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0xffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
     this[offset + 1] = value
-  } else objectWriteUInt16(this, value, offset, false)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
   return offset + 2
 }
 
@@ -9084,139 +9163,144 @@ function objectWriteUInt32 (buf, value, offset, littleEndian) {
   }
 }
 
-Buffer.prototype.writeUInt32LE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset + 3] = (value >>> 24)
     this[offset + 2] = (value >>> 16)
     this[offset + 1] = (value >>> 8)
     this[offset] = value
-  } else objectWriteUInt32(this, value, offset, true)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeUInt32BE = function (value, offset, noAssert) {
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
     this[offset + 3] = value
-  } else objectWriteUInt32(this, value, offset, false)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeIntLE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   if (!noAssert) {
-    checkInt(this,
-             value,
-             offset,
-             byteLength,
-             Math.pow(2, 8 * byteLength - 1) - 1,
-             -Math.pow(2, 8 * byteLength - 1))
+    checkInt(
+      this, value, offset, byteLength,
+      Math.pow(2, 8 * byteLength - 1) - 1,
+      -Math.pow(2, 8 * byteLength - 1)
+    )
   }
 
   var i = 0
   var mul = 1
   var sub = value < 0 ? 1 : 0
   this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100))
+  while (++i < byteLength && (mul *= 0x100)) {
     this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeIntBE = function (value, offset, byteLength, noAssert) {
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
   value = +value
   offset = offset >>> 0
   if (!noAssert) {
-    checkInt(this,
-             value,
-             offset,
-             byteLength,
-             Math.pow(2, 8 * byteLength - 1) - 1,
-             -Math.pow(2, 8 * byteLength - 1))
+    checkInt(
+      this, value, offset, byteLength,
+      Math.pow(2, 8 * byteLength - 1) - 1,
+      -Math.pow(2, 8 * byteLength - 1)
+    )
   }
 
   var i = byteLength - 1
   var mul = 1
   var sub = value < 0 ? 1 : 0
   this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100))
+  while (--i >= 0 && (mul *= 0x100)) {
     this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
 
   return offset + byteLength
 }
 
-Buffer.prototype.writeInt8 = function (value, offset, noAssert) {
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
   this[offset] = value
   return offset + 1
 }
 
-Buffer.prototype.writeInt16LE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
-  } else objectWriteUInt16(this, value, offset, true)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeInt16BE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
     this[offset + 1] = value
-  } else objectWriteUInt16(this, value, offset, false)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
   return offset + 2
 }
 
-Buffer.prototype.writeInt32LE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
     this[offset + 1] = (value >>> 8)
     this[offset + 2] = (value >>> 16)
     this[offset + 3] = (value >>> 24)
-  } else objectWriteUInt32(this, value, offset, true)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
   return offset + 4
 }
 
-Buffer.prototype.writeInt32BE = function (value, offset, noAssert) {
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
   value = +value
   offset = offset >>> 0
-  if (!noAssert)
-    checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (value < 0) value = 0xffffffff + value + 1
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 24)
     this[offset + 1] = (value >>> 16)
     this[offset + 2] = (value >>> 8)
     this[offset + 3] = value
-  } else objectWriteUInt32(this, value, offset, false)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
   return offset + 4
 }
 
@@ -9227,39 +9311,39 @@ function checkIEEE754 (buf, value, offset, ext, max, min) {
 }
 
 function writeFloat (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert)
+  if (!noAssert) {
     checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
   ieee754.write(buf, value, offset, littleEndian, 23, 4)
   return offset + 4
 }
 
-Buffer.prototype.writeFloatLE = function (value, offset, noAssert) {
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
   return writeFloat(this, value, offset, true, noAssert)
 }
 
-Buffer.prototype.writeFloatBE = function (value, offset, noAssert) {
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
   return writeFloat(this, value, offset, false, noAssert)
 }
 
 function writeDouble (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert)
+  if (!noAssert) {
     checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
   ieee754.write(buf, value, offset, littleEndian, 52, 8)
   return offset + 8
 }
 
-Buffer.prototype.writeDoubleLE = function (value, offset, noAssert) {
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
   return writeDouble(this, value, offset, true, noAssert)
 }
 
-Buffer.prototype.writeDoubleBE = function (value, offset, noAssert) {
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
   return writeDouble(this, value, offset, false, noAssert)
 }
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function (target, target_start, start, end) {
-  var self = this // source
-
+Buffer.prototype.copy = function copy (target, target_start, start, end) {
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
   if (target_start >= target.length) target_start = target.length
@@ -9268,19 +9352,20 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 
   // Copy 0 bytes; we're done
   if (end === start) return 0
-  if (target.length === 0 || self.length === 0) return 0
+  if (target.length === 0 || this.length === 0) return 0
 
   // Fatal error conditions
-  if (target_start < 0)
+  if (target_start < 0) {
     throw new RangeError('targetStart out of bounds')
-  if (start < 0 || start >= self.length) throw new RangeError('sourceStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
   if (end < 0) throw new RangeError('sourceEnd out of bounds')
 
   // Are we oob?
-  if (end > this.length)
-    end = this.length
-  if (target.length - target_start < end - start)
+  if (end > this.length) end = this.length
+  if (target.length - target_start < end - start) {
     end = target.length - target_start + start
+  }
 
   var len = end - start
 
@@ -9296,7 +9381,7 @@ Buffer.prototype.copy = function (target, target_start, start, end) {
 }
 
 // fill(value, start=0, end=buffer.length)
-Buffer.prototype.fill = function (value, start, end) {
+Buffer.prototype.fill = function fill (value, start, end) {
   if (!value) value = 0
   if (!start) start = 0
   if (!end) end = this.length
@@ -9330,7 +9415,7 @@ Buffer.prototype.fill = function (value, start, end) {
  * Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
  * Added in Node 0.12. Only available in browsers that support ArrayBuffer.
  */
-Buffer.prototype.toArrayBuffer = function () {
+Buffer.prototype.toArrayBuffer = function toArrayBuffer () {
   if (typeof Uint8Array !== 'undefined') {
     if (Buffer.TYPED_ARRAY_SUPPORT) {
       return (new Buffer(this)).buffer
@@ -9354,12 +9439,11 @@ var BP = Buffer.prototype
 /**
  * Augment a Uint8Array *instance* (not the Uint8Array class!) with Buffer methods
  */
-Buffer._augment = function (arr) {
+Buffer._augment = function _augment (arr) {
   arr.constructor = Buffer
   arr._isBuffer = true
 
-  // save reference to original Uint8Array get/set methods before overwriting
-  arr._get = arr.get
+  // save reference to original Uint8Array set method before overwriting
   arr._set = arr.set
 
   // deprecated, will be removed in node 0.13+
@@ -9372,6 +9456,7 @@ Buffer._augment = function (arr) {
   arr.toJSON = BP.toJSON
   arr.equals = BP.equals
   arr.compare = BP.compare
+  arr.indexOf = BP.indexOf
   arr.copy = BP.copy
   arr.slice = BP.slice
   arr.readUIntLE = BP.readUIntLE
@@ -9557,11 +9642,9 @@ function base64ToBytes (str) {
   return base64.toByteArray(base64clean(str))
 }
 
-function blitBuffer (src, dst, offset, length, unitSize) {
-  if (unitSize) length -= length % unitSize
+function blitBuffer (src, dst, offset, length) {
   for (var i = 0; i < length; i++) {
-    if ((i + offset >= dst.length) || (i >= src.length))
-      break
+    if ((i + offset >= dst.length) || (i >= src.length)) break
     dst[i + offset] = src[i]
   }
   return i
@@ -12678,8 +12761,15 @@ module.exports = {
       this._mountOverlayTarget();
     }
 
+    var overlay = this.renderOverlay();
+
     // Save reference to help testing
-    this._overlayInstance = React.render(this.renderOverlay(), this._overlayTarget);
+    if (overlay !== null) {
+      this._overlayInstance = React.render(overlay, this._overlayTarget);
+    } else {
+      // Unrender if the component is null for transitions to null
+      this._unrenderOverlay();
+    }
   },
 
   _unrenderOverlay: function () {
@@ -12692,7 +12782,11 @@ module.exports = {
       throw new Error('getOverlayDOMNode(): A component must be mounted to have a DOM node.');
     }
 
-    return this._overlayInstance.getDOMNode();
+    if (this._overlayInstance) {
+      return this._overlayInstance.getDOMNode();
+    }
+
+    return null;
   },
 
   getContainerDOMNode: function () {
@@ -15162,22 +15256,22 @@ module.exports = joinClasses;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-bootstrap/utils/joinClasses.js","/node_modules/react-bootstrap/utils")
 },{"_process":37,"buffer":33}],99:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Represents a cancellation caused by navigating away
  * before the previous transition has fully resolved.
  */
-"use strict";
-
 function Cancellation() {}
 
 module.exports = Cancellation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Cancellation.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33}],100:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
 
 var History = {
 
@@ -15192,7 +15286,7 @@ var History = {
    * Sends the browser back one entry in the history.
    */
   back: function back() {
-    invariant(canUseDOM, 'Cannot use History.back without a DOM');
+    invariant(canUseDOM, "Cannot use History.back without a DOM");
 
     // Do this first so that History.length will
     // be accurate in location change listeners.
@@ -15207,14 +15301,14 @@ module.exports = History;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/History.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33,"react/lib/ExecutionEnvironment":159,"react/lib/invariant":288}],101:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 /* jshint -W084 */
-var PathUtils = require('./PathUtils');
+var PathUtils = require("./PathUtils");
 
 function deepSearch(route, pathname, query) {
   // Check the subtree first to find the most deeply-nested match.
@@ -15259,24 +15353,26 @@ var Match = (function () {
     this.routes = routes;
   }
 
-  _createClass(Match, null, [{
-    key: 'findMatch',
+  _createClass(Match, null, {
+    findMatch: {
 
-    /**
-     * Attempts to match depth-first a route in the given route's
-     * subtree against the given path and returns the match if it
-     * succeeds, null if no match can be made.
-     */
-    value: function findMatch(routes, path) {
-      var pathname = PathUtils.withoutQuery(path);
-      var query = PathUtils.extractQuery(path);
-      var match = null;
+      /**
+       * Attempts to match depth-first a route in the given route's
+       * subtree against the given path and returns the match if it
+       * succeeds, null if no match can be made.
+       */
 
-      for (var i = 0, len = routes.length; match == null && i < len; ++i) match = deepSearch(routes[i], pathname, query);
+      value: function findMatch(routes, path) {
+        var pathname = PathUtils.withoutQuery(path);
+        var query = PathUtils.extractQuery(path);
+        var match = null;
 
-      return match;
+        for (var i = 0, len = routes.length; match == null && i < len; ++i) match = deepSearch(routes[i], pathname, query);
+
+        return match;
+      }
     }
-  }]);
+  });
 
   return Match;
 })();
@@ -15285,9 +15381,18 @@ module.exports = Match;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Match.js","/node_modules/react-router/lib")
 },{"./PathUtils":103,"_process":37,"buffer":33}],102:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var PropTypes = require('./PropTypes');
+var warning = require("react/lib/warning");
+var PropTypes = require("./PropTypes");
+
+function deprecatedMethod(routerMethodName, fn) {
+  return function () {
+    warning(false, "Router.Navigation is deprecated. Please use this.context.router." + routerMethodName + "() instead");
+
+    return fn.apply(this, arguments);
+  };
+}
 
 /**
  * A mixin for components that modify the URL.
@@ -15317,52 +15422,52 @@ var Navigation = {
    * Returns an absolute URL path created from the given route
    * name, URL parameters, and query values.
    */
-  makePath: function makePath(to, params, query) {
+  makePath: deprecatedMethod("makePath", function (to, params, query) {
     return this.context.router.makePath(to, params, query);
-  },
+  }),
 
   /**
    * Returns a string that may safely be used as the href of a
    * link to the route with the given name.
    */
-  makeHref: function makeHref(to, params, query) {
+  makeHref: deprecatedMethod("makeHref", function (to, params, query) {
     return this.context.router.makeHref(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the URL specified in the arguments by pushing
    * a new URL onto the history stack.
    */
-  transitionTo: function transitionTo(to, params, query) {
+  transitionTo: deprecatedMethod("transitionTo", function (to, params, query) {
     this.context.router.transitionTo(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the URL specified in the arguments by replacing
    * the current URL in the history stack.
    */
-  replaceWith: function replaceWith(to, params, query) {
+  replaceWith: deprecatedMethod("replaceWith", function (to, params, query) {
     this.context.router.replaceWith(to, params, query);
-  },
+  }),
 
   /**
    * Transitions to the previous URL.
    */
-  goBack: function goBack() {
+  goBack: deprecatedMethod("goBack", function () {
     return this.context.router.goBack();
-  }
+  })
 
 };
 
 module.exports = Navigation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Navigation.js","/node_modules/react-router/lib")
-},{"./PropTypes":104,"_process":37,"buffer":33}],103:[function(require,module,exports){
+},{"./PropTypes":104,"_process":37,"buffer":33,"react/lib/warning":309}],103:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var assign = require('object-assign');
-var qs = require('qs');
+var invariant = require("react/lib/invariant");
+var objectAssign = require("object-assign");
+var qs = require("qs");
 
 var paramCompileMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$]*)|[*.()\[\]\\+|{}^$]/g;
 var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?]?)|[*]/g;
@@ -15377,17 +15482,17 @@ function compilePattern(pattern) {
     var source = pattern.replace(paramCompileMatcher, function (match, paramName) {
       if (paramName) {
         paramNames.push(paramName);
-        return '([^/?#]+)';
-      } else if (match === '*') {
-        paramNames.push('splat');
-        return '(.*?)';
+        return "([^/?#]+)";
+      } else if (match === "*") {
+        paramNames.push("splat");
+        return "(.*?)";
       } else {
-        return '\\' + match;
+        return "\\" + match;
       }
     });
 
     _compiledPatterns[pattern] = {
-      matcher: new RegExp('^' + source + '$', 'i'),
+      matcher: new RegExp("^" + source + "$", "i"),
       paramNames: paramNames
     };
   }
@@ -15401,14 +15506,14 @@ var PathUtils = {
    * Returns true if the given path is absolute.
    */
   isAbsolute: function isAbsolute(path) {
-    return path.charAt(0) === '/';
+    return path.charAt(0) === "/";
   },
 
   /**
    * Joins two URL paths together.
    */
   join: function join(a, b) {
-    return a.replace(/\/*$/, '/') + b;
+    return a.replace(/\/*$/, "/") + b;
   },
 
   /**
@@ -15452,28 +15557,28 @@ var PathUtils = {
     var splatIndex = 0;
 
     return pattern.replace(paramInjectMatcher, function (match, paramName) {
-      paramName = paramName || 'splat';
+      paramName = paramName || "splat";
 
       // If param is optional don't check for existence
-      if (paramName.slice(-1) === '?') {
+      if (paramName.slice(-1) === "?") {
         paramName = paramName.slice(0, -1);
 
-        if (params[paramName] == null) return '';
+        if (params[paramName] == null) return "";
       } else {
-        invariant(params[paramName] != null, 'Missing "%s" parameter for path "%s"', paramName, pattern);
+        invariant(params[paramName] != null, "Missing \"%s\" parameter for path \"%s\"", paramName, pattern);
       }
 
       var segment;
-      if (paramName === 'splat' && Array.isArray(params[paramName])) {
+      if (paramName === "splat" && Array.isArray(params[paramName])) {
         segment = params[paramName][splatIndex++];
 
-        invariant(segment != null, 'Missing splat # %s for path "%s"', splatIndex, pattern);
+        invariant(segment != null, "Missing splat # %s for path \"%s\"", splatIndex, pattern);
       } else {
         segment = params[paramName];
       }
 
       return segment;
-    }).replace(paramInjectTrailingSlashMatcher, '/');
+    }).replace(paramInjectTrailingSlashMatcher, "/");
   },
 
   /**
@@ -15489,7 +15594,7 @@ var PathUtils = {
    * Returns a version of the given path without the query string.
    */
   withoutQuery: function withoutQuery(path) {
-    return path.replace(queryMatcher, '');
+    return path.replace(queryMatcher, "");
   },
 
   /**
@@ -15499,12 +15604,12 @@ var PathUtils = {
   withQuery: function withQuery(path, query) {
     var existingQuery = PathUtils.extractQuery(path);
 
-    if (existingQuery) query = query ? assign(existingQuery, query) : existingQuery;
+    if (existingQuery) query = query ? objectAssign(existingQuery, query) : existingQuery;
 
-    var queryString = qs.stringify(query, { arrayFormat: 'brackets' });
+    var queryString = qs.stringify(query, { arrayFormat: "brackets" });
 
     if (queryString) {
-      return PathUtils.withoutQuery(path) + '?' + queryString;
+      return PathUtils.withoutQuery(path) + "?" + queryString;
     }return PathUtils.withoutQuery(path);
   }
 
@@ -15514,11 +15619,11 @@ module.exports = PathUtils;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/PathUtils.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33,"object-assign":132,"qs":133,"react/lib/invariant":288}],104:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var assign = require('react/lib/Object.assign');
-var ReactPropTypes = require('react').PropTypes;
-var Route = require('./Route');
+var assign = require("react/lib/Object.assign");
+var ReactPropTypes = require("react").PropTypes;
+var Route = require("./Route");
 
 var PropTypes = assign({}, ReactPropTypes, {
 
@@ -15527,7 +15632,7 @@ var PropTypes = assign({}, ReactPropTypes, {
    */
   falsy: function falsy(props, propName, componentName) {
     if (props[propName]) {
-      return new Error('<' + componentName + '> should not have a "' + propName + '" prop');
+      return new Error("<" + componentName + "> may not have a \"" + propName + "\" prop");
     }
   },
 
@@ -15548,11 +15653,11 @@ module.exports = PropTypes;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/PropTypes.js","/node_modules/react-router/lib")
 },{"./Route":106,"_process":37,"buffer":33,"react":310,"react/lib/Object.assign":166}],105:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Encapsulates a redirect to the given route.
  */
-"use strict";
-
 function Redirect(to, params, query) {
   this.to = to;
   this.params = params;
@@ -15563,16 +15668,16 @@ module.exports = Redirect;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Redirect.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33}],106:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var assign = require('react/lib/Object.assign');
-var invariant = require('react/lib/invariant');
-var warning = require('react/lib/warning');
-var PathUtils = require('./PathUtils');
+var assign = require("react/lib/Object.assign");
+var invariant = require("react/lib/invariant");
+var warning = require("react/lib/warning");
+var PathUtils = require("./PathUtils");
 
 var _currentRoute;
 
@@ -15591,173 +15696,180 @@ var Route = (function () {
     this.handler = handler;
   }
 
-  _createClass(Route, [{
-    key: 'appendChild',
+  _createClass(Route, {
+    appendChild: {
 
-    /**
-     * Appends the given route to this route's child routes.
-     */
-    value: function appendChild(route) {
-      invariant(route instanceof Route, 'route.appendChild must use a valid Route');
+      /**
+       * Appends the given route to this route's child routes.
+       */
 
-      if (!this.childRoutes) this.childRoutes = [];
+      value: function appendChild(route) {
+        invariant(route instanceof Route, "route.appendChild must use a valid Route");
 
-      this.childRoutes.push(route);
+        if (!this.childRoutes) this.childRoutes = [];
+
+        this.childRoutes.push(route);
+      }
+    },
+    toString: {
+      value: function toString() {
+        var string = "<Route";
+
+        if (this.name) string += " name=\"" + this.name + "\"";
+
+        string += " path=\"" + this.path + "\">";
+
+        return string;
+      }
     }
   }, {
-    key: 'toString',
-    value: function toString() {
-      var string = '<Route';
+    createRoute: {
 
-      if (this.name) string += ' name="' + this.name + '"';
+      /**
+       * Creates and returns a new route. Options may be a URL pathname string
+       * with placeholders for named params or an object with any of the following
+       * properties:
+       *
+       * - name                     The name of the route. This is used to lookup a
+       *                            route relative to its parent route and should be
+       *                            unique among all child routes of the same parent
+       * - path                     A URL pathname string with optional placeholders
+       *                            that specify the names of params to extract from
+       *                            the URL when the path matches. Defaults to `/${name}`
+       *                            when there is a name given, or the path of the parent
+       *                            route, or /
+       * - ignoreScrollBehavior     True to make this route (and all descendants) ignore
+       *                            the scroll behavior of the router
+       * - isDefault                True to make this route the default route among all
+       *                            its siblings
+       * - isNotFound               True to make this route the "not found" route among
+       *                            all its siblings
+       * - onEnter                  A transition hook that will be called when the
+       *                            router is going to enter this route
+       * - onLeave                  A transition hook that will be called when the
+       *                            router is going to leave this route
+       * - handler                  A React component that will be rendered when
+       *                            this route is active
+       * - parentRoute              The parent route to use for this route. This option
+       *                            is automatically supplied when creating routes inside
+       *                            the callback to another invocation of createRoute. You
+       *                            only ever need to use this when declaring routes
+       *                            independently of one another to manually piece together
+       *                            the route hierarchy
+       *
+       * The callback may be used to structure your route hierarchy. Any call to
+       * createRoute, createDefaultRoute, createNotFoundRoute, or createRedirect
+       * inside the callback automatically uses this route as its parent.
+       */
 
-      string += ' path="' + this.path + '">';
+      value: function createRoute(options, callback) {
+        options = options || {};
 
-      return string;
-    }
-  }], [{
-    key: 'createRoute',
+        if (typeof options === "string") options = { path: options };
 
-    /**
-     * Creates and returns a new route. Options may be a URL pathname string
-     * with placeholders for named params or an object with any of the following
-     * properties:
-     *
-     * - name                     The name of the route. This is used to lookup a
-     *                            route relative to its parent route and should be
-     *                            unique among all child routes of the same parent
-     * - path                     A URL pathname string with optional placeholders
-     *                            that specify the names of params to extract from
-     *                            the URL when the path matches. Defaults to `/${name}`
-     *                            when there is a name given, or the path of the parent
-     *                            route, or /
-     * - ignoreScrollBehavior     True to make this route (and all descendants) ignore
-     *                            the scroll behavior of the router
-     * - isDefault                True to make this route the default route among all
-     *                            its siblings
-     * - isNotFound               True to make this route the "not found" route among
-     *                            all its siblings
-     * - onEnter                  A transition hook that will be called when the
-     *                            router is going to enter this route
-     * - onLeave                  A transition hook that will be called when the
-     *                            router is going to leave this route
-     * - handler                  A React component that will be rendered when
-     *                            this route is active
-     * - parentRoute              The parent route to use for this route. This option
-     *                            is automatically supplied when creating routes inside
-     *                            the callback to another invocation of createRoute. You
-     *                            only ever need to use this when declaring routes
-     *                            independently of one another to manually piece together
-     *                            the route hierarchy
-     *
-     * The callback may be used to structure your route hierarchy. Any call to
-     * createRoute, createDefaultRoute, createNotFoundRoute, or createRedirect
-     * inside the callback automatically uses this route as its parent.
-     */
-    value: function createRoute(options, callback) {
-      options = options || {};
+        var parentRoute = _currentRoute;
 
-      if (typeof options === 'string') options = { path: options };
-
-      var parentRoute = _currentRoute;
-
-      if (parentRoute) {
-        warning(options.parentRoute == null || options.parentRoute === parentRoute, 'You should not use parentRoute with createRoute inside another route\'s child callback; it is ignored');
-      } else {
-        parentRoute = options.parentRoute;
-      }
-
-      var name = options.name;
-      var path = options.path || name;
-
-      if (path && !(options.isDefault || options.isNotFound)) {
-        if (PathUtils.isAbsolute(path)) {
-          if (parentRoute) {
-            invariant(path === parentRoute.path || parentRoute.paramNames.length === 0, 'You cannot nest path "%s" inside "%s"; the parent requires URL parameters', path, parentRoute.path);
-          }
-        } else if (parentRoute) {
-          // Relative paths extend their parent.
-          path = PathUtils.join(parentRoute.path, path);
+        if (parentRoute) {
+          warning(options.parentRoute == null || options.parentRoute === parentRoute, "You should not use parentRoute with createRoute inside another route's child callback; it is ignored");
         } else {
-          path = '/' + path;
-        }
-      } else {
-        path = parentRoute ? parentRoute.path : '/';
-      }
-
-      if (options.isNotFound && !/\*$/.test(path)) path += '*'; // Auto-append * to the path of not found routes.
-
-      var route = new Route(name, path, options.ignoreScrollBehavior, options.isDefault, options.isNotFound, options.onEnter, options.onLeave, options.handler);
-
-      if (parentRoute) {
-        if (route.isDefault) {
-          invariant(parentRoute.defaultRoute == null, '%s may not have more than one default route', parentRoute);
-
-          parentRoute.defaultRoute = route;
-        } else if (route.isNotFound) {
-          invariant(parentRoute.notFoundRoute == null, '%s may not have more than one not found route', parentRoute);
-
-          parentRoute.notFoundRoute = route;
+          parentRoute = options.parentRoute;
         }
 
-        parentRoute.appendChild(route);
-      }
+        var name = options.name;
+        var path = options.path || name;
 
-      // Any routes created in the callback
-      // use this route as their parent.
-      if (typeof callback === 'function') {
-        var currentRoute = _currentRoute;
-        _currentRoute = route;
-        callback.call(route, route);
-        _currentRoute = currentRoute;
-      }
-
-      return route;
-    }
-  }, {
-    key: 'createDefaultRoute',
-
-    /**
-     * Creates and returns a route that is rendered when its parent matches
-     * the current URL.
-     */
-    value: function createDefaultRoute(options) {
-      return Route.createRoute(assign({}, options, { isDefault: true }));
-    }
-  }, {
-    key: 'createNotFoundRoute',
-
-    /**
-     * Creates and returns a route that is rendered when its parent matches
-     * the current URL but none of its siblings do.
-     */
-    value: function createNotFoundRoute(options) {
-      return Route.createRoute(assign({}, options, { isNotFound: true }));
-    }
-  }, {
-    key: 'createRedirect',
-
-    /**
-     * Creates and returns a route that automatically redirects the transition
-     * to another route. In addition to the normal options to createRoute, this
-     * function accepts the following options:
-     *
-     * - from         An alias for the `path` option. Defaults to *
-     * - to           The path/route/route name to redirect to
-     * - params       The params to use in the redirect URL. Defaults
-     *                to using the current params
-     * - query        The query to use in the redirect URL. Defaults
-     *                to using the current query
-     */
-    value: function createRedirect(options) {
-      return Route.createRoute(assign({}, options, {
-        path: options.path || options.from || '*',
-        onEnter: function onEnter(transition, params, query) {
-          transition.redirect(options.to, options.params || params, options.query || query);
+        if (path && !(options.isDefault || options.isNotFound)) {
+          if (PathUtils.isAbsolute(path)) {
+            if (parentRoute) {
+              invariant(path === parentRoute.path || parentRoute.paramNames.length === 0, "You cannot nest path \"%s\" inside \"%s\"; the parent requires URL parameters", path, parentRoute.path);
+            }
+          } else if (parentRoute) {
+            // Relative paths extend their parent.
+            path = PathUtils.join(parentRoute.path, path);
+          } else {
+            path = "/" + path;
+          }
+        } else {
+          path = parentRoute ? parentRoute.path : "/";
         }
-      }));
+
+        if (options.isNotFound && !/\*$/.test(path)) path += "*"; // Auto-append * to the path of not found routes.
+
+        var route = new Route(name, path, options.ignoreScrollBehavior, options.isDefault, options.isNotFound, options.onEnter, options.onLeave, options.handler);
+
+        if (parentRoute) {
+          if (route.isDefault) {
+            invariant(parentRoute.defaultRoute == null, "%s may not have more than one default route", parentRoute);
+
+            parentRoute.defaultRoute = route;
+          } else if (route.isNotFound) {
+            invariant(parentRoute.notFoundRoute == null, "%s may not have more than one not found route", parentRoute);
+
+            parentRoute.notFoundRoute = route;
+          }
+
+          parentRoute.appendChild(route);
+        }
+
+        // Any routes created in the callback
+        // use this route as their parent.
+        if (typeof callback === "function") {
+          var currentRoute = _currentRoute;
+          _currentRoute = route;
+          callback.call(route, route);
+          _currentRoute = currentRoute;
+        }
+
+        return route;
+      }
+    },
+    createDefaultRoute: {
+
+      /**
+       * Creates and returns a route that is rendered when its parent matches
+       * the current URL.
+       */
+
+      value: function createDefaultRoute(options) {
+        return Route.createRoute(assign({}, options, { isDefault: true }));
+      }
+    },
+    createNotFoundRoute: {
+
+      /**
+       * Creates and returns a route that is rendered when its parent matches
+       * the current URL but none of its siblings do.
+       */
+
+      value: function createNotFoundRoute(options) {
+        return Route.createRoute(assign({}, options, { isNotFound: true }));
+      }
+    },
+    createRedirect: {
+
+      /**
+       * Creates and returns a route that automatically redirects the transition
+       * to another route. In addition to the normal options to createRoute, this
+       * function accepts the following options:
+       *
+       * - from         An alias for the `path` option. Defaults to *
+       * - to           The path/route/route name to redirect to
+       * - params       The params to use in the redirect URL. Defaults
+       *                to using the current params
+       * - query        The query to use in the redirect URL. Defaults
+       *                to using the current query
+       */
+
+      value: function createRedirect(options) {
+        return Route.createRoute(assign({}, options, {
+          path: options.path || options.from || "*",
+          onEnter: function onEnter(transition, params, query) {
+            transition.redirect(options.to, options.params || params, options.query || query);
+          }
+        }));
+      }
     }
-  }]);
+  });
 
   return Route;
 })();
@@ -15766,11 +15878,11 @@ module.exports = Route;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Route.js","/node_modules/react-router/lib")
 },{"./PathUtils":103,"_process":37,"buffer":33,"react/lib/Object.assign":166,"react/lib/invariant":288,"react/lib/warning":309}],107:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
-var getWindowScrollPosition = require('./getWindowScrollPosition');
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
+var getWindowScrollPosition = require("./getWindowScrollPosition");
 
 function shouldUpdateScroll(state, prevState) {
   if (!prevState) {
@@ -15819,7 +15931,7 @@ var ScrollHistory = {
   },
 
   componentWillMount: function componentWillMount() {
-    invariant(this.constructor.getScrollBehavior() == null || canUseDOM, 'Cannot use scroll behavior without a DOM');
+    invariant(this.constructor.getScrollBehavior() == null || canUseDOM, "Cannot use scroll behavior without a DOM");
   },
 
   componentDidMount: function componentDidMount() {
@@ -15844,9 +15956,18 @@ module.exports = ScrollHistory;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/ScrollHistory.js","/node_modules/react-router/lib")
 },{"./getWindowScrollPosition":122,"_process":37,"buffer":33,"react/lib/ExecutionEnvironment":159,"react/lib/invariant":288}],108:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var PropTypes = require('./PropTypes');
+var warning = require("react/lib/warning");
+var PropTypes = require("./PropTypes");
+
+function deprecatedMethod(routerMethodName, fn) {
+  return function () {
+    warning(false, "Router.State is deprecated. Please use this.context.router." + routerMethodName + "() instead");
+
+    return fn.apply(this, arguments);
+  };
+}
 
 /**
  * A mixin for components that need to know the path, routes, URL
@@ -15858,10 +15979,10 @@ var PropTypes = require('./PropTypes');
  *     mixins: [ Router.State ],
  *     render() {
  *       var className = this.props.className;
- *
+ *   
  *       if (this.isActive('about'))
  *         className += ' is-active';
- *
+ *   
  *       return React.DOM.a({ className: className }, this.props.children);
  *     }
  *   });
@@ -15875,58 +15996,58 @@ var State = {
   /**
    * Returns the current URL path.
    */
-  getPath: function getPath() {
+  getPath: deprecatedMethod("getCurrentPath", function () {
     return this.context.router.getCurrentPath();
-  },
+  }),
 
   /**
    * Returns the current URL path without the query string.
    */
-  getPathname: function getPathname() {
+  getPathname: deprecatedMethod("getCurrentPathname", function () {
     return this.context.router.getCurrentPathname();
-  },
+  }),
 
   /**
    * Returns an object of the URL params that are currently active.
    */
-  getParams: function getParams() {
+  getParams: deprecatedMethod("getCurrentParams", function () {
     return this.context.router.getCurrentParams();
-  },
+  }),
 
   /**
    * Returns an object of the query params that are currently active.
    */
-  getQuery: function getQuery() {
+  getQuery: deprecatedMethod("getCurrentQuery", function () {
     return this.context.router.getCurrentQuery();
-  },
+  }),
 
   /**
    * Returns an array of the routes that are currently active.
    */
-  getRoutes: function getRoutes() {
+  getRoutes: deprecatedMethod("getCurrentRoutes", function () {
     return this.context.router.getCurrentRoutes();
-  },
+  }),
 
   /**
    * A helper method to determine if a given route, params, and query
    * are active.
    */
-  isActive: function isActive(to, params, query) {
+  isActive: deprecatedMethod("isActive", function (to, params, query) {
     return this.context.router.isActive(to, params, query);
-  }
+  })
 
 };
 
 module.exports = State;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/State.js","/node_modules/react-router/lib")
-},{"./PropTypes":104,"_process":37,"buffer":33}],109:[function(require,module,exports){
+},{"./PropTypes":104,"_process":37,"buffer":33,"react/lib/warning":309}],109:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /* jshint -W058 */
 
-'use strict';
-
-var Cancellation = require('./Cancellation');
-var Redirect = require('./Redirect');
+var Cancellation = require("./Cancellation");
+var Redirect = require("./Redirect");
 
 /**
  * Encapsulates a transition to a given path.
@@ -15942,7 +16063,7 @@ function Transition(path, retry) {
 }
 
 Transition.prototype.abort = function (reason) {
-  if (this.abortReason == null) this.abortReason = reason || 'ABORT';
+  if (this.abortReason == null) this.abortReason = reason || "ABORT";
 };
 
 Transition.prototype.redirect = function (to, params, query) {
@@ -15999,27 +16120,27 @@ module.exports = Transition;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/Transition.js","/node_modules/react-router/lib")
 },{"./Cancellation":99,"./Redirect":105,"_process":37,"buffer":33}],110:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * Actions that modify the URL.
  */
-'use strict';
-
 var LocationActions = {
 
   /**
    * Indicates a new location is being pushed to the history stack.
    */
-  PUSH: 'push',
+  PUSH: "push",
 
   /**
    * Indicates the current location should be replaced.
    */
-  REPLACE: 'replace',
+  REPLACE: "replace",
 
   /**
    * Indicates the most recent entry should be removed from the history stack.
    */
-  POP: 'pop'
+  POP: "pop"
 
 };
 
@@ -16027,9 +16148,9 @@ module.exports = LocationActions;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/actions/LocationActions.js","/node_modules/react-router/lib/actions")
 },{"_process":37,"buffer":33}],111:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
+var LocationActions = require("../actions/LocationActions");
 
 /**
  * A scroll behavior that attempts to imitate the default behavior
@@ -16059,12 +16180,12 @@ module.exports = ImitateBrowserBehavior;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/behaviors/ImitateBrowserBehavior.js","/node_modules/react-router/lib/behaviors")
 },{"../actions/LocationActions":110,"_process":37,"buffer":33}],112:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+"use strict";
+
 /**
  * A scroll behavior that always scrolls to the top of the page
  * after a transition.
  */
-"use strict";
-
 var ScrollToTopBehavior = {
 
   updateScrollPosition: function updateScrollPosition() {
@@ -16077,13 +16198,13 @@ module.exports = ScrollToTopBehavior;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/behaviors/ScrollToTopBehavior.js","/node_modules/react-router/lib/behaviors")
 },{"_process":37,"buffer":33}],113:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 /**
  * This component is necessary to get around a context warning
@@ -16091,7 +16212,7 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== 'fun
  * between the "owner" and "parent" contexts.
  */
 
-var React = require('react');
+var React = require("react");
 
 var ContextWrapper = (function (_React$Component) {
   function ContextWrapper() {
@@ -16104,12 +16225,13 @@ var ContextWrapper = (function (_React$Component) {
 
   _inherits(ContextWrapper, _React$Component);
 
-  _createClass(ContextWrapper, [{
-    key: 'render',
-    value: function render() {
-      return this.props.children;
+  _createClass(ContextWrapper, {
+    render: {
+      value: function render() {
+        return this.props.children;
+      }
     }
-  }]);
+  });
 
   return ContextWrapper;
 })(React.Component);
@@ -16118,15 +16240,15 @@ module.exports = ContextWrapper;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/ContextWrapper.js","/node_modules/react-router/lib/components")
 },{"_process":37,"buffer":33,"react":310}],114:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
+var Route = require("./Route");
 
 /**
  * A <DefaultRoute> component is a special kind of <Route> that
@@ -16168,17 +16290,17 @@ module.exports = DefaultRoute;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/DefaultRoute.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"./Route":118,"./RouteHandler":119,"_process":37,"buffer":33}],115:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var assign = require('react/lib/Object.assign');
-var PropTypes = require('../PropTypes');
+var React = require("react");
+var assign = require("react/lib/Object.assign");
+var PropTypes = require("../PropTypes");
 
 function isLeftClickEvent(event) {
   return event.button === 0;
@@ -16218,64 +16340,67 @@ var Link = (function (_React$Component) {
 
   _inherits(Link, _React$Component);
 
-  _createClass(Link, [{
-    key: 'handleClick',
-    value: function handleClick(event) {
-      var allowTransition = true;
-      var clickResult;
+  _createClass(Link, {
+    handleClick: {
+      value: function handleClick(event) {
+        var allowTransition = true;
+        var clickResult;
 
-      if (this.props.onClick) clickResult = this.props.onClick(event);
+        if (this.props.onClick) clickResult = this.props.onClick(event);
 
-      if (isModifiedEvent(event) || !isLeftClickEvent(event)) {
-        return;
-      }if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
+        if (isModifiedEvent(event) || !isLeftClickEvent(event)) {
+          return;
+        }if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
 
-      event.preventDefault();
+        event.preventDefault();
 
-      if (allowTransition) this.context.router.transitionTo(this.props.to, this.props.params, this.props.query);
+        if (allowTransition) this.context.router.transitionTo(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    getHref: {
+
+      /**
+       * Returns the value of the "href" attribute to use on the DOM element.
+       */
+
+      value: function getHref() {
+        return this.context.router.makeHref(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    getClassName: {
+
+      /**
+       * Returns the value of the "class" attribute to use on the DOM element, which contains
+       * the value of the activeClassName property when this <Link> is active.
+       */
+
+      value: function getClassName() {
+        var className = this.props.className;
+
+        if (this.getActiveState()) className += " " + this.props.activeClassName;
+
+        return className;
+      }
+    },
+    getActiveState: {
+      value: function getActiveState() {
+        return this.context.router.isActive(this.props.to, this.props.params, this.props.query);
+      }
+    },
+    render: {
+      value: function render() {
+        var props = assign({}, this.props, {
+          href: this.getHref(),
+          className: this.getClassName(),
+          onClick: this.handleClick.bind(this)
+        });
+
+        if (props.activeStyle && this.getActiveState()) props.style = props.activeStyle;
+
+        return React.DOM.a(props, this.props.children);
+      }
     }
-  }, {
-    key: 'getHref',
-
-    /**
-     * Returns the value of the "href" attribute to use on the DOM element.
-     */
-    value: function getHref() {
-      return this.context.router.makeHref(this.props.to, this.props.params, this.props.query);
-    }
-  }, {
-    key: 'getClassName',
-
-    /**
-     * Returns the value of the "class" attribute to use on the DOM element, which contains
-     * the value of the activeClassName property when this <Link> is active.
-     */
-    value: function getClassName() {
-      var className = this.props.className;
-
-      if (this.getActiveState()) className += ' ' + this.props.activeClassName;
-
-      return className;
-    }
-  }, {
-    key: 'getActiveState',
-    value: function getActiveState() {
-      return this.context.router.isActive(this.props.to, this.props.params, this.props.query);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var props = assign({}, this.props, {
-        href: this.getHref(),
-        className: this.getClassName(),
-        onClick: this.handleClick.bind(this)
-      });
-
-      if (props.activeStyle && this.getActiveState()) props.style = props.activeStyle;
-
-      return React.DOM.a(props, this.props.children);
-    }
-  }]);
+  });
 
   return Link;
 })(React.Component);
@@ -16298,23 +16423,23 @@ Link.propTypes = {
 };
 
 Link.defaultProps = {
-  activeClassName: 'active',
-  className: ''
+  activeClassName: "active",
+  className: ""
 };
 
 module.exports = Link;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Link.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"_process":37,"buffer":33,"react":310,"react/lib/Object.assign":166}],116:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
+var Route = require("./Route");
 
 /**
  * A <NotFoundRoute> is a special kind of <Route> that
@@ -16357,14 +16482,14 @@ module.exports = NotFoundRoute;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/NotFoundRoute.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"./Route":118,"./RouteHandler":119,"_process":37,"buffer":33}],117:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var PropTypes = require('../PropTypes');
-var Route = require('./Route');
+var PropTypes = require("../PropTypes");
+var Route = require("./Route");
 
 /**
  * A <Redirect> component is a special kind of <Route> that always
@@ -16403,18 +16528,18 @@ module.exports = Redirect;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Redirect.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"./Route":118,"_process":37,"buffer":33}],118:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var invariant = require('react/lib/invariant');
-var PropTypes = require('../PropTypes');
-var RouteHandler = require('./RouteHandler');
+var React = require("react");
+var invariant = require("react/lib/invariant");
+var PropTypes = require("../PropTypes");
+var RouteHandler = require("./RouteHandler");
 
 /**
  * <Route> components specify components that are rendered to the page when the
@@ -16468,12 +16593,13 @@ var Route = (function (_React$Component) {
 
   _inherits(Route, _React$Component);
 
-  _createClass(Route, [{
-    key: 'render',
-    value: function render() {
-      invariant(false, '%s elements are for router configuration only and should not be rendered', this.constructor.name);
+  _createClass(Route, {
+    render: {
+      value: function render() {
+        invariant(false, "%s elements are for router configuration only and should not be rendered", this.constructor.name);
+      }
     }
-  }]);
+  });
 
   return Route;
 })(React.Component);
@@ -16497,20 +16623,20 @@ module.exports = Route;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/Route.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"./RouteHandler":119,"_process":37,"buffer":33,"react":310,"react/lib/invariant":288}],119:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var React = require('react');
-var ContextWrapper = require('./ContextWrapper');
-var assign = require('react/lib/Object.assign');
-var PropTypes = require('../PropTypes');
+var React = require("react");
+var ContextWrapper = require("./ContextWrapper");
+var assign = require("react/lib/Object.assign");
+var PropTypes = require("../PropTypes");
 
-var REF_NAME = '__routeHandler__';
+var REF_NAME = "__routeHandler__";
 
 /**
  * A <RouteHandler> component renders the active child route handler
@@ -16528,65 +16654,57 @@ var RouteHandler = (function (_React$Component) {
 
   _inherits(RouteHandler, _React$Component);
 
-  _createClass(RouteHandler, [{
-    key: 'getChildContext',
-    value: function getChildContext() {
-      return {
-        routeDepth: this.context.routeDepth + 1
-      };
+  _createClass(RouteHandler, {
+    getChildContext: {
+      value: function getChildContext() {
+        return {
+          routeDepth: this.context.routeDepth + 1
+        };
+      }
+    },
+    componentDidMount: {
+      value: function componentDidMount() {
+        this._updateRouteComponent(this.refs[REF_NAME]);
+      }
+    },
+    componentDidUpdate: {
+      value: function componentDidUpdate() {
+        this._updateRouteComponent(this.refs[REF_NAME]);
+      }
+    },
+    componentWillUnmount: {
+      value: function componentWillUnmount() {
+        this._updateRouteComponent(null);
+      }
+    },
+    _updateRouteComponent: {
+      value: function _updateRouteComponent(component) {
+        this.context.router.setRouteComponentAtDepth(this.getRouteDepth(), component);
+      }
+    },
+    getRouteDepth: {
+      value: function getRouteDepth() {
+        return this.context.routeDepth;
+      }
+    },
+    createChildRouteHandler: {
+      value: function createChildRouteHandler(props) {
+        var route = this.context.router.getRouteAtDepth(this.getRouteDepth());
+        return route ? React.createElement(route.handler, assign({}, props || this.props, { ref: REF_NAME })) : null;
+      }
+    },
+    render: {
+      value: function render() {
+        var handler = this.createChildRouteHandler();
+        // <script/> for things like <CSSTransitionGroup/> that don't like null
+        return handler ? React.createElement(
+          ContextWrapper,
+          null,
+          handler
+        ) : React.createElement("script", null);
+      }
     }
-  }, {
-    key: 'componentDidMount',
-    value: function componentDidMount() {
-      this._updateRouteComponent(this.refs[REF_NAME]);
-    }
-  }, {
-    key: 'componentDidUpdate',
-    value: function componentDidUpdate() {
-      this._updateRouteComponent(this.refs[REF_NAME]);
-    }
-  }, {
-    key: 'componentWillUnmount',
-    value: function componentWillUnmount() {
-      this._updateRouteComponent(null);
-    }
-  }, {
-    key: '_updateRouteComponent',
-    value: function _updateRouteComponent(component) {
-      this.context.router.setRouteComponentAtDepth(this.getRouteDepth(), component);
-    }
-  }, {
-    key: 'getRouteDepth',
-    value: function getRouteDepth() {
-      return this.context.routeDepth;
-    }
-  }, {
-    key: 'createChildRouteHandler',
-    value: function createChildRouteHandler(props) {
-      var route = this.context.router.getRouteAtDepth(this.getRouteDepth());
-
-      if (route == null) {
-        return null;
-      }var childProps = assign({}, props || this.props, {
-        ref: REF_NAME,
-        params: this.context.router.getCurrentParams(),
-        query: this.context.router.getCurrentQuery()
-      });
-
-      return React.createElement(route.handler, childProps);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var handler = this.createChildRouteHandler();
-      // <script/> for things like <CSSTransitionGroup/> that don't like null
-      return handler ? React.createElement(
-        ContextWrapper,
-        null,
-        handler
-      ) : React.createElement('script', null);
-    }
-  }]);
+  });
 
   return RouteHandler;
 })(React.Component);
@@ -16608,36 +16726,36 @@ module.exports = RouteHandler;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/components/RouteHandler.js","/node_modules/react-router/lib/components")
 },{"../PropTypes":104,"./ContextWrapper":113,"_process":37,"buffer":33,"react":310,"react/lib/Object.assign":166}],120:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/* jshint -W058 */
-'use strict';
+"use strict";
 
-var React = require('react');
-var warning = require('react/lib/warning');
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
-var LocationActions = require('./actions/LocationActions');
-var ImitateBrowserBehavior = require('./behaviors/ImitateBrowserBehavior');
-var HashLocation = require('./locations/HashLocation');
-var HistoryLocation = require('./locations/HistoryLocation');
-var RefreshLocation = require('./locations/RefreshLocation');
-var StaticLocation = require('./locations/StaticLocation');
-var ScrollHistory = require('./ScrollHistory');
-var createRoutesFromReactChildren = require('./createRoutesFromReactChildren');
-var isReactChildren = require('./isReactChildren');
-var Transition = require('./Transition');
-var PropTypes = require('./PropTypes');
-var Redirect = require('./Redirect');
-var History = require('./History');
-var Cancellation = require('./Cancellation');
-var Match = require('./Match');
-var Route = require('./Route');
-var supportsHistory = require('./supportsHistory');
-var PathUtils = require('./PathUtils');
+/* jshint -W058 */
+var React = require("react");
+var warning = require("react/lib/warning");
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
+var LocationActions = require("./actions/LocationActions");
+var ImitateBrowserBehavior = require("./behaviors/ImitateBrowserBehavior");
+var HashLocation = require("./locations/HashLocation");
+var HistoryLocation = require("./locations/HistoryLocation");
+var RefreshLocation = require("./locations/RefreshLocation");
+var StaticLocation = require("./locations/StaticLocation");
+var ScrollHistory = require("./ScrollHistory");
+var createRoutesFromReactChildren = require("./createRoutesFromReactChildren");
+var isReactChildren = require("./isReactChildren");
+var Transition = require("./Transition");
+var PropTypes = require("./PropTypes");
+var Redirect = require("./Redirect");
+var History = require("./History");
+var Cancellation = require("./Cancellation");
+var Match = require("./Match");
+var Route = require("./Route");
+var supportsHistory = require("./supportsHistory");
+var PathUtils = require("./PathUtils");
 
 /**
  * The default location for new routers.
  */
-var DEFAULT_LOCATION = canUseDOM ? HashLocation : '/';
+var DEFAULT_LOCATION = canUseDOM ? HashLocation : "/";
 
 /**
  * The default scroll behavior for new routers.
@@ -16675,7 +16793,7 @@ function addRoutesToNamedRoutes(routes, namedRoutes) {
     route = routes[i];
 
     if (route.name) {
-      invariant(namedRoutes[route.name] == null, 'You may not have more than one route named "%s"', route.name);
+      invariant(namedRoutes[route.name] == null, "You may not have more than one route named \"%s\"", route.name);
 
       namedRoutes[route.name] = route;
     }
@@ -16733,12 +16851,12 @@ function createRouter(options) {
   var pendingTransition = null;
   var dispatchHandler = null;
 
-  if (typeof location === 'string') location = new StaticLocation(location);
+  if (typeof location === "string") location = new StaticLocation(location);
 
   if (location instanceof StaticLocation) {
-    warning(!canUseDOM || process.env.NODE_ENV === 'test', 'You should not use a static location in a DOM environment because ' + 'the router will not be kept in sync with the current URL');
+    warning(!canUseDOM || process.env.NODE_ENV === "test", "You should not use a static location in a DOM environment because " + "the router will not be kept in sync with the current URL");
   } else {
-    invariant(canUseDOM || location.needsDOM === false, 'You cannot use %s without a DOM', location);
+    invariant(canUseDOM || location.needsDOM === false, "You cannot use %s without a DOM", location);
   }
 
   // Automatically fall back to full page refreshes in
@@ -16747,7 +16865,7 @@ function createRouter(options) {
 
   var Router = React.createClass({
 
-    displayName: 'Router',
+    displayName: "Router",
 
     statics: {
 
@@ -16806,7 +16924,7 @@ function createRouter(options) {
         } else {
           var route = to instanceof Route ? to : Router.namedRoutes[to];
 
-          invariant(route instanceof Route, 'Cannot find a route named "%s"', to);
+          invariant(route instanceof Route, "Cannot find a route named \"%s\"", to);
 
           path = route.path;
         }
@@ -16820,7 +16938,7 @@ function createRouter(options) {
        */
       makeHref: function makeHref(to, params, query) {
         var path = Router.makePath(to, params, query);
-        return location === HashLocation ? '#' + path : path;
+        return location === HashLocation ? "#" + path : path;
       },
 
       /**
@@ -16863,13 +16981,13 @@ function createRouter(options) {
           return true;
         }
 
-        warning(false, 'goBack() was ignored because there is no router history');
+        warning(false, "goBack() was ignored because there is no router history");
 
         return false;
       },
 
       handleAbort: options.onAbort || function (abortReason) {
-        if (location instanceof StaticLocation) throw new Error('Unhandled aborted transition! Reason: ' + abortReason);
+        if (location instanceof StaticLocation) throw new Error("Unhandled aborted transition! Reason: " + abortReason);
 
         if (abortReason instanceof Cancellation) {
           return;
@@ -16921,7 +17039,7 @@ function createRouter(options) {
 
         var match = Router.match(path);
 
-        warning(match != null, 'No route matches path "%s". Make sure you have <Route path="%s"> somewhere in your routes', path, path);
+        warning(match != null, "No route matches path \"%s\". Make sure you have <Route path=\"%s\"> somewhere in your routes", path, path);
 
         if (match == null) match = {};
 
@@ -16976,7 +17094,7 @@ function createRouter(options) {
        * Router.*Location objects (e.g. Router.HashLocation or Router.HistoryLocation).
        */
       run: function run(callback) {
-        invariant(!Router.isRunning, 'Router is already running');
+        invariant(!Router.isRunning, "Router is already running");
 
         dispatchHandler = function (error, transition, newState) {
           if (error) Router.handleError(error);
@@ -17125,19 +17243,19 @@ module.exports = createRouter;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/createRouter.js","/node_modules/react-router/lib")
 },{"./Cancellation":99,"./History":100,"./Match":101,"./PathUtils":103,"./PropTypes":104,"./Redirect":105,"./Route":106,"./ScrollHistory":107,"./Transition":109,"./actions/LocationActions":110,"./behaviors/ImitateBrowserBehavior":111,"./createRoutesFromReactChildren":121,"./isReactChildren":124,"./locations/HashLocation":125,"./locations/HistoryLocation":126,"./locations/RefreshLocation":127,"./locations/StaticLocation":128,"./supportsHistory":131,"_process":37,"buffer":33,"react":310,"react/lib/ExecutionEnvironment":159,"react/lib/invariant":288,"react/lib/warning":309}],121:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/* jshint -W084 */
-'use strict';
+"use strict";
 
-var React = require('react');
-var assign = require('react/lib/Object.assign');
-var warning = require('react/lib/warning');
-var DefaultRoute = require('./components/DefaultRoute');
-var NotFoundRoute = require('./components/NotFoundRoute');
-var Redirect = require('./components/Redirect');
-var Route = require('./Route');
+/* jshint -W084 */
+var React = require("react");
+var assign = require("react/lib/Object.assign");
+var warning = require("react/lib/warning");
+var DefaultRoute = require("./components/DefaultRoute");
+var NotFoundRoute = require("./components/NotFoundRoute");
+var Redirect = require("./components/Redirect");
+var Route = require("./Route");
 
 function checkPropTypes(componentName, propTypes, props) {
-  componentName = componentName || 'UnknownComponent';
+  componentName = componentName || "UnknownComponent";
 
   for (var propName in propTypes) {
     if (propTypes.hasOwnProperty(propName)) {
@@ -17209,16 +17327,16 @@ module.exports = createRoutesFromReactChildren;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/createRoutesFromReactChildren.js","/node_modules/react-router/lib")
 },{"./Route":106,"./components/DefaultRoute":114,"./components/NotFoundRoute":116,"./components/Redirect":117,"_process":37,"buffer":33,"react":310,"react/lib/Object.assign":166,"react/lib/warning":309}],122:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var invariant = require('react/lib/invariant');
-var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
+var invariant = require("react/lib/invariant");
+var canUseDOM = require("react/lib/ExecutionEnvironment").canUseDOM;
 
 /**
  * Returns the current scroll position of the window as { x, y }.
  */
 function getWindowScrollPosition() {
-  invariant(canUseDOM, 'Cannot get current scroll position without a DOM');
+  invariant(canUseDOM, "Cannot get current scroll position without a DOM");
 
   return {
     x: window.pageXOffset || document.documentElement.scrollLeft,
@@ -17230,43 +17348,41 @@ module.exports = getWindowScrollPosition;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/getWindowScrollPosition.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33,"react/lib/ExecutionEnvironment":159,"react/lib/invariant":288}],123:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-exports.DefaultRoute = require('./components/DefaultRoute');
-exports.Link = require('./components/Link');
-exports.NotFoundRoute = require('./components/NotFoundRoute');
-exports.Redirect = require('./components/Redirect');
-exports.Route = require('./components/Route');
-exports.ActiveHandler = require('./components/RouteHandler');
-exports.RouteHandler = exports.ActiveHandler;
+exports.DefaultRoute = require("./components/DefaultRoute");
+exports.Link = require("./components/Link");
+exports.NotFoundRoute = require("./components/NotFoundRoute");
+exports.Redirect = require("./components/Redirect");
+exports.Route = require("./components/Route");
+exports.RouteHandler = require("./components/RouteHandler");
 
-exports.HashLocation = require('./locations/HashLocation');
-exports.HistoryLocation = require('./locations/HistoryLocation');
-exports.RefreshLocation = require('./locations/RefreshLocation');
-exports.StaticLocation = require('./locations/StaticLocation');
-exports.TestLocation = require('./locations/TestLocation');
+exports.HashLocation = require("./locations/HashLocation");
+exports.HistoryLocation = require("./locations/HistoryLocation");
+exports.RefreshLocation = require("./locations/RefreshLocation");
+exports.StaticLocation = require("./locations/StaticLocation");
+exports.TestLocation = require("./locations/TestLocation");
 
-exports.ImitateBrowserBehavior = require('./behaviors/ImitateBrowserBehavior');
-exports.ScrollToTopBehavior = require('./behaviors/ScrollToTopBehavior');
+exports.ImitateBrowserBehavior = require("./behaviors/ImitateBrowserBehavior");
+exports.ScrollToTopBehavior = require("./behaviors/ScrollToTopBehavior");
 
-exports.History = require('./History');
-exports.Navigation = require('./Navigation');
-exports.State = require('./State');
+exports.History = require("./History");
+exports.Navigation = require("./Navigation");
+exports.State = require("./State");
 
-exports.createRoute = require('./Route').createRoute;
-exports.createDefaultRoute = require('./Route').createDefaultRoute;
-exports.createNotFoundRoute = require('./Route').createNotFoundRoute;
-exports.createRedirect = require('./Route').createRedirect;
-exports.createRoutesFromReactChildren = require('./createRoutesFromReactChildren');
-
-exports.create = require('./createRouter');
-exports.run = require('./runRouter');
+exports.createRoute = require("./Route").createRoute;
+exports.createDefaultRoute = require("./Route").createDefaultRoute;
+exports.createNotFoundRoute = require("./Route").createNotFoundRoute;
+exports.createRedirect = require("./Route").createRedirect;
+exports.createRoutesFromReactChildren = require("./createRoutesFromReactChildren");
+exports.create = require("./createRouter");
+exports.run = require("./runRouter");
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/index.js","/node_modules/react-router/lib")
 },{"./History":100,"./Navigation":102,"./Route":106,"./State":108,"./behaviors/ImitateBrowserBehavior":111,"./behaviors/ScrollToTopBehavior":112,"./components/DefaultRoute":114,"./components/Link":115,"./components/NotFoundRoute":116,"./components/Redirect":117,"./components/Route":118,"./components/RouteHandler":119,"./createRouter":120,"./createRoutesFromReactChildren":121,"./locations/HashLocation":125,"./locations/HistoryLocation":126,"./locations/RefreshLocation":127,"./locations/StaticLocation":128,"./locations/TestLocation":129,"./runRouter":130,"_process":37,"buffer":33}],124:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var React = require('react');
+var React = require("react");
 
 function isValidChild(object) {
   return object == null || React.isValidElement(object);
@@ -17280,10 +17396,10 @@ module.exports = isReactChildren;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/isReactChildren.js","/node_modules/react-router/lib")
 },{"_process":37,"buffer":33,"react":310}],125:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 var _listeners = [];
 var _isListening = false;
@@ -17305,9 +17421,9 @@ function notifyChange(type) {
 function ensureSlash() {
   var path = HashLocation.getCurrentPath();
 
-  if (path.charAt(0) === '/') {
+  if (path.charAt(0) === "/") {
     return true;
-  }HashLocation.replace('/' + path);
+  }HashLocation.replace("/" + path);
 
   return false;
 }
@@ -17337,9 +17453,9 @@ var HashLocation = {
 
     if (!_isListening) {
       if (window.addEventListener) {
-        window.addEventListener('hashchange', onHashChange, false);
+        window.addEventListener("hashchange", onHashChange, false);
       } else {
-        window.attachEvent('onhashchange', onHashChange);
+        window.attachEvent("onhashchange", onHashChange);
       }
 
       _isListening = true;
@@ -17353,9 +17469,9 @@ var HashLocation = {
 
     if (_listeners.length === 0) {
       if (window.removeEventListener) {
-        window.removeEventListener('hashchange', onHashChange, false);
+        window.removeEventListener("hashchange", onHashChange, false);
       } else {
-        window.removeEvent('onhashchange', onHashChange);
+        window.removeEvent("onhashchange", onHashChange);
       }
 
       _isListening = false;
@@ -17369,7 +17485,7 @@ var HashLocation = {
 
   replace: function replace(path) {
     _actionType = LocationActions.REPLACE;
-    window.location.replace(window.location.pathname + window.location.search + '#' + path);
+    window.location.replace(window.location.pathname + window.location.search + "#" + path);
   },
 
   pop: function pop() {
@@ -17381,11 +17497,11 @@ var HashLocation = {
     return decodeURI(
     // We can't use window.location.hash here because it's not
     // consistent across browsers - Firefox will pre-decode it!
-    window.location.href.split('#')[1] || '');
+    window.location.href.split("#")[1] || "");
   },
 
   toString: function toString() {
-    return '<HashLocation>';
+    return "<HashLocation>";
   }
 
 };
@@ -17394,10 +17510,10 @@ module.exports = HashLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/HashLocation.js","/node_modules/react-router/lib/locations")
 },{"../History":100,"../actions/LocationActions":110,"_process":37,"buffer":33}],126:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 var _listeners = [];
 var _isListening = false;
@@ -17431,9 +17547,9 @@ var HistoryLocation = {
 
     if (!_isListening) {
       if (window.addEventListener) {
-        window.addEventListener('popstate', onPopState, false);
+        window.addEventListener("popstate", onPopState, false);
       } else {
-        window.attachEvent('onpopstate', onPopState);
+        window.attachEvent("onpopstate", onPopState);
       }
 
       _isListening = true;
@@ -17447,9 +17563,9 @@ var HistoryLocation = {
 
     if (_listeners.length === 0) {
       if (window.addEventListener) {
-        window.removeEventListener('popstate', onPopState, false);
+        window.removeEventListener("popstate", onPopState, false);
       } else {
-        window.removeEvent('onpopstate', onPopState);
+        window.removeEvent("onpopstate", onPopState);
       }
 
       _isListening = false;
@@ -17457,13 +17573,13 @@ var HistoryLocation = {
   },
 
   push: function push(path) {
-    window.history.pushState({ path: path }, '', path);
+    window.history.pushState({ path: path }, "", path);
     History.length += 1;
     notifyChange(LocationActions.PUSH);
   },
 
   replace: function replace(path) {
-    window.history.replaceState({ path: path }, '', path);
+    window.history.replaceState({ path: path }, "", path);
     notifyChange(LocationActions.REPLACE);
   },
 
@@ -17474,7 +17590,7 @@ var HistoryLocation = {
   },
 
   toString: function toString() {
-    return '<HistoryLocation>';
+    return "<HistoryLocation>";
   }
 
 };
@@ -17483,10 +17599,10 @@ module.exports = HistoryLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/HistoryLocation.js","/node_modules/react-router/lib/locations")
 },{"../History":100,"../actions/LocationActions":110,"_process":37,"buffer":33}],127:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var HistoryLocation = require('./HistoryLocation');
-var History = require('../History');
+var HistoryLocation = require("./HistoryLocation");
+var History = require("../History");
 
 /**
  * A Location that uses full page refreshes. This is used as
@@ -17508,7 +17624,7 @@ var RefreshLocation = {
   getCurrentPath: HistoryLocation.getCurrentPath,
 
   toString: function toString() {
-    return '<RefreshLocation>';
+    return "<RefreshLocation>";
   }
 
 };
@@ -17517,16 +17633,16 @@ module.exports = RefreshLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/RefreshLocation.js","/node_modules/react-router/lib/locations")
 },{"../History":100,"./HistoryLocation":126,"_process":37,"buffer":33}],128:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var invariant = require('react/lib/invariant');
+var invariant = require("react/lib/invariant");
 
 function throwCannotModify() {
-  invariant(false, 'You cannot modify a static location');
+  invariant(false, "You cannot modify a static location");
 }
 
 /**
@@ -17542,17 +17658,18 @@ var StaticLocation = (function () {
     this.path = path;
   }
 
-  _createClass(StaticLocation, [{
-    key: 'getCurrentPath',
-    value: function getCurrentPath() {
-      return this.path;
+  _createClass(StaticLocation, {
+    getCurrentPath: {
+      value: function getCurrentPath() {
+        return this.path;
+      }
+    },
+    toString: {
+      value: function toString() {
+        return "<StaticLocation path=\"" + this.path + "\">";
+      }
     }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return '<StaticLocation path="' + this.path + '">';
-    }
-  }]);
+  });
 
   return StaticLocation;
 })();
@@ -17569,15 +17686,15 @@ module.exports = StaticLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/StaticLocation.js","/node_modules/react-router/lib/locations")
 },{"_process":37,"buffer":33,"react/lib/invariant":288}],129:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var invariant = require('react/lib/invariant');
-var LocationActions = require('../actions/LocationActions');
-var History = require('../History');
+var invariant = require("react/lib/invariant");
+var LocationActions = require("../actions/LocationActions");
+var History = require("../History");
 
 /**
  * A location that is convenient for testing and does not require a DOM.
@@ -17592,72 +17709,73 @@ var TestLocation = (function () {
     this._updateHistoryLength();
   }
 
-  _createClass(TestLocation, [{
-    key: 'needsDOM',
-    get: function () {
-      return false;
-    }
-  }, {
-    key: '_updateHistoryLength',
-    value: function _updateHistoryLength() {
-      History.length = this.history.length;
-    }
-  }, {
-    key: '_notifyChange',
-    value: function _notifyChange(type) {
-      var change = {
-        path: this.getCurrentPath(),
-        type: type
-      };
+  _createClass(TestLocation, {
+    needsDOM: {
+      get: function () {
+        return false;
+      }
+    },
+    _updateHistoryLength: {
+      value: function _updateHistoryLength() {
+        History.length = this.history.length;
+      }
+    },
+    _notifyChange: {
+      value: function _notifyChange(type) {
+        var change = {
+          path: this.getCurrentPath(),
+          type: type
+        };
 
-      for (var i = 0, len = this.listeners.length; i < len; ++i) this.listeners[i].call(this, change);
-    }
-  }, {
-    key: 'addChangeListener',
-    value: function addChangeListener(listener) {
-      this.listeners.push(listener);
-    }
-  }, {
-    key: 'removeChangeListener',
-    value: function removeChangeListener(listener) {
-      this.listeners = this.listeners.filter(function (l) {
-        return l !== listener;
-      });
-    }
-  }, {
-    key: 'push',
-    value: function push(path) {
-      this.history.push(path);
-      this._updateHistoryLength();
-      this._notifyChange(LocationActions.PUSH);
-    }
-  }, {
-    key: 'replace',
-    value: function replace(path) {
-      invariant(this.history.length, 'You cannot replace the current path with no history');
+        for (var i = 0, len = this.listeners.length; i < len; ++i) this.listeners[i].call(this, change);
+      }
+    },
+    addChangeListener: {
+      value: function addChangeListener(listener) {
+        this.listeners.push(listener);
+      }
+    },
+    removeChangeListener: {
+      value: function removeChangeListener(listener) {
+        this.listeners = this.listeners.filter(function (l) {
+          return l !== listener;
+        });
+      }
+    },
+    push: {
+      value: function push(path) {
+        this.history.push(path);
+        this._updateHistoryLength();
+        this._notifyChange(LocationActions.PUSH);
+      }
+    },
+    replace: {
+      value: function replace(path) {
+        invariant(this.history.length, "You cannot replace the current path with no history");
 
-      this.history[this.history.length - 1] = path;
+        this.history[this.history.length - 1] = path;
 
-      this._notifyChange(LocationActions.REPLACE);
+        this._notifyChange(LocationActions.REPLACE);
+      }
+    },
+    pop: {
+      value: function pop() {
+        this.history.pop();
+        this._updateHistoryLength();
+        this._notifyChange(LocationActions.POP);
+      }
+    },
+    getCurrentPath: {
+      value: function getCurrentPath() {
+        return this.history[this.history.length - 1];
+      }
+    },
+    toString: {
+      value: function toString() {
+        return "<TestLocation>";
+      }
     }
-  }, {
-    key: 'pop',
-    value: function pop() {
-      this.history.pop();
-      this._updateHistoryLength();
-      this._notifyChange(LocationActions.POP);
-    }
-  }, {
-    key: 'getCurrentPath',
-    value: function getCurrentPath() {
-      return this.history[this.history.length - 1];
-    }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      return '<TestLocation>';
-    }
-  }]);
+  });
 
   return TestLocation;
 })();
@@ -17666,9 +17784,9 @@ module.exports = TestLocation;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/locations/TestLocation.js","/node_modules/react-router/lib/locations")
 },{"../History":100,"../actions/LocationActions":110,"_process":37,"buffer":33,"react/lib/invariant":288}],130:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
-var createRouter = require('./createRouter');
+var createRouter = require("./createRouter");
 
 /**
  * A high-level convenience method that creates, configures, and
@@ -17700,7 +17818,7 @@ var createRouter = require('./createRouter');
  *   });
  */
 function runRouter(routes, location, callback) {
-  if (typeof location === 'function') {
+  if (typeof location === "function") {
     callback = location;
     location = null;
   }
@@ -17719,7 +17837,7 @@ module.exports = runRouter;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/runRouter.js","/node_modules/react-router/lib")
 },{"./createRouter":120,"_process":37,"buffer":33}],131:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
+"use strict";
 
 function supportsHistory() {
   /*! taken from modernizr
@@ -17728,10 +17846,10 @@ function supportsHistory() {
    * changed to avoid false negatives for Windows Phones: https://github.com/rackt/react-router/issues/586
    */
   var ua = navigator.userAgent;
-  if ((ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) && ua.indexOf('Mobile Safari') !== -1 && ua.indexOf('Chrome') === -1 && ua.indexOf('Windows Phone') === -1) {
+  if ((ua.indexOf("Android 2.") !== -1 || ua.indexOf("Android 4.0") !== -1) && ua.indexOf("Mobile Safari") !== -1 && ua.indexOf("Chrome") === -1 && ua.indexOf("Windows Phone") === -1) {
     return false;
   }
-  return window.history && 'pushState' in window.history;
+  return window.history && "pushState" in window.history;
 }
 
 module.exports = supportsHistory;
@@ -18859,9 +18977,7 @@ var isUnitlessNumber = {
   columnCount: true,
   flex: true,
   flexGrow: true,
-  flexPositive: true,
   flexShrink: true,
-  flexNegative: true,
   fontWeight: true,
   lineClamp: true,
   lineHeight: true,
@@ -18874,9 +18990,7 @@ var isUnitlessNumber = {
 
   // SVG-related properties
   fillOpacity: true,
-  strokeDashoffset: true,
-  strokeOpacity: true,
-  strokeWidth: true
+  strokeOpacity: true
 };
 
 /**
@@ -21979,7 +22093,6 @@ var HTMLDOMPropertyConfig = {
     headers: null,
     height: MUST_USE_ATTRIBUTE,
     hidden: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
-    high: null,
     href: null,
     hrefLang: null,
     htmlFor: null,
@@ -21990,7 +22103,6 @@ var HTMLDOMPropertyConfig = {
     lang: null,
     list: MUST_USE_ATTRIBUTE,
     loop: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
-    low: null,
     manifest: MUST_USE_ATTRIBUTE,
     marginHeight: null,
     marginWidth: null,
@@ -22005,7 +22117,6 @@ var HTMLDOMPropertyConfig = {
     name: null,
     noValidate: HAS_BOOLEAN_VALUE,
     open: HAS_BOOLEAN_VALUE,
-    optimum: null,
     pattern: null,
     placeholder: null,
     poster: null,
@@ -22019,7 +22130,6 @@ var HTMLDOMPropertyConfig = {
     rowSpan: null,
     sandbox: null,
     scope: null,
-    scoped: HAS_BOOLEAN_VALUE,
     scrolling: null,
     seamless: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
     selected: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
@@ -22061,9 +22171,7 @@ var HTMLDOMPropertyConfig = {
     itemID: MUST_USE_ATTRIBUTE,
     itemRef: MUST_USE_ATTRIBUTE,
     // property is supported for OpenGraph in meta tags.
-    property: null,
-    // IE-only attribute that controls focus behavior
-    unselectable: MUST_USE_ATTRIBUTE
+    property: null
   },
   DOMAttributeNames: {
     acceptCharset: 'accept-charset',
@@ -22686,7 +22794,7 @@ if ("production" !== "development") {
       if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === 'undefined') {
         console.debug(
           'Download the React DevTools for a better development experience: ' +
-          'https://fb.me/react-devtools'
+          'http://fb.me/react-devtools'
         );
       }
     }
@@ -22713,7 +22821,7 @@ if ("production" !== "development") {
       if (!expectedFeatures[i]) {
         console.error(
           'One or more ES5 shim/shams expected by React are not available: ' +
-          'https://fb.me/react-warning-polyfills'
+          'http://fb.me/react-warning-polyfills'
         );
         break;
       }
@@ -22721,7 +22829,7 @@ if ("production" !== "development") {
   }
 }
 
-React.version = '0.13.3';
+React.version = '0.13.1';
 
 module.exports = React;
 
@@ -24454,7 +24562,7 @@ var ReactClass = {
         ("production" !== "development" ? warning(
           this instanceof Constructor,
           'Something is calling a React component directly. Use a factory or ' +
-          'JSX instead. See: https://fb.me/react-legacyfactory'
+          'JSX instead. See: http://fb.me/react-legacyfactory'
         ) : null);
       }
 
@@ -24666,38 +24774,20 @@ ReactComponent.prototype.forceUpdate = function(callback) {
  */
 if ("production" !== "development") {
   var deprecatedAPIs = {
-    getDOMNode: [
-      'getDOMNode',
-      'Use React.findDOMNode(component) instead.'
-    ],
-    isMounted: [
-      'isMounted',
-      'Instead, make sure to clean up subscriptions and pending requests in ' +
-      'componentWillUnmount to prevent memory leaks.'
-    ],
-    replaceProps: [
-      'replaceProps',
-      'Instead, call React.render again at the top level.'
-    ],
-    replaceState: [
-      'replaceState',
-      'Refactor your code to use setState instead (see ' +
-      'https://github.com/facebook/react/issues/3236).'
-    ],
-    setProps: [
-      'setProps',
-      'Instead, call React.render again at the top level.'
-    ]
+    getDOMNode: 'getDOMNode',
+    isMounted: 'isMounted',
+    replaceProps: 'replaceProps',
+    replaceState: 'replaceState',
+    setProps: 'setProps'
   };
-  var defineDeprecationWarning = function(methodName, info) {
+  var defineDeprecationWarning = function(methodName, displayName) {
     try {
       Object.defineProperty(ReactComponent.prototype, methodName, {
         get: function() {
           ("production" !== "development" ? warning(
             false,
-            '%s(...) is deprecated in plain JavaScript React classes. %s',
-            info[0],
-            info[1]
+            '%s(...) is deprecated in plain JavaScript React classes.',
+            displayName
           ) : null);
           return undefined;
         }
@@ -25056,14 +25146,6 @@ var ReactCompositeComponentMixin = {
         this.getName() || 'a component'
       ) : null);
       ("production" !== "development" ? warning(
-        !inst.getDefaultProps ||
-        inst.getDefaultProps.isReactClassApproved,
-        'getDefaultProps was defined on %s, a plain JavaScript class. ' +
-        'This is only supported for classes created using React.createClass. ' +
-        'Use a static property to define defaultProps instead.',
-        this.getName() || 'a component'
-      ) : null);
-      ("production" !== "development" ? warning(
         !inst.propTypes,
         'propTypes was defined as an instance property on %s. Use a static ' +
         'property to define propTypes instead.',
@@ -25099,7 +25181,6 @@ var ReactCompositeComponentMixin = {
     this._pendingReplaceState = false;
     this._pendingForceUpdate = false;
 
-    var childContext;
     var renderedElement;
 
     var previouslyMounting = ReactLifeCycle.currentlyMountingInstance;
@@ -25114,8 +25195,7 @@ var ReactCompositeComponentMixin = {
         }
       }
 
-      childContext = this._getValidatedChildContext(context);
-      renderedElement = this._renderValidatedComponent(childContext);
+      renderedElement = this._renderValidatedComponent();
     } finally {
       ReactLifeCycle.currentlyMountingInstance = previouslyMounting;
     }
@@ -25129,7 +25209,7 @@ var ReactCompositeComponentMixin = {
       this._renderedComponent,
       rootID,
       transaction,
-      this._mergeChildContext(context, childContext)
+      this._processChildContext(context)
     );
     if (inst.componentDidMount) {
       transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);
@@ -25259,7 +25339,7 @@ var ReactCompositeComponentMixin = {
    * @return {object}
    * @private
    */
-  _getValidatedChildContext: function(currentContext) {
+  _processChildContext: function(currentContext) {
     var inst = this._instance;
     var childContext = inst.getChildContext && inst.getChildContext();
     if (childContext) {
@@ -25284,13 +25364,6 @@ var ReactCompositeComponentMixin = {
           name
         ) : invariant(name in inst.constructor.childContextTypes));
       }
-      return childContext;
-    }
-    return null;
-  },
-
-  _mergeChildContext: function(currentContext, childContext) {
-    if (childContext) {
       return assign({}, currentContext, childContext);
     }
     return currentContext;
@@ -25550,10 +25623,6 @@ var ReactCompositeComponentMixin = {
       return inst.state;
     }
 
-    if (replace && queue.length === 1) {
-      return queue[0];
-    }
-
     var nextState = assign({}, replace ? queue[0] : inst.state);
     for (var i = replace ? 1 : 0; i < queue.length; i++) {
       var partial = queue[i];
@@ -25623,14 +25692,13 @@ var ReactCompositeComponentMixin = {
   _updateRenderedComponent: function(transaction, context) {
     var prevComponentInstance = this._renderedComponent;
     var prevRenderedElement = prevComponentInstance._currentElement;
-    var childContext = this._getValidatedChildContext();
-    var nextRenderedElement = this._renderValidatedComponent(childContext);
+    var nextRenderedElement = this._renderValidatedComponent();
     if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
       ReactReconciler.receiveComponent(
         prevComponentInstance,
         nextRenderedElement,
         transaction,
-        this._mergeChildContext(context, childContext)
+        this._processChildContext(context)
       );
     } else {
       // These two IDs are actually the same! But nothing should rely on that.
@@ -25646,7 +25714,7 @@ var ReactCompositeComponentMixin = {
         this._renderedComponent,
         thisID,
         transaction,
-        this._mergeChildContext(context, childContext)
+        context
       );
       this._replaceNodeWithMarkupByID(prevComponentID, nextMarkup);
     }
@@ -25684,12 +25752,11 @@ var ReactCompositeComponentMixin = {
   /**
    * @private
    */
-  _renderValidatedComponent: function(childContext) {
+  _renderValidatedComponent: function() {
     var renderedComponent;
     var previousContext = ReactContext.current;
-    ReactContext.current = this._mergeChildContext(
-      this._currentElement._context,
-      childContext
+    ReactContext.current = this._processChildContext(
+      this._currentElement._context
     );
     ReactCurrentOwner.current = this;
     try {
@@ -26060,7 +26127,6 @@ var ReactDOM = mapObject({
 
   // SVG
   circle: 'circle',
-  clipPath: 'clipPath',
   defs: 'defs',
   ellipse: 'ellipse',
   g: 'g',
@@ -26214,13 +26280,11 @@ function assertValidProps(props) {
       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.'
     ) : invariant(props.children == null));
     ("production" !== "development" ? invariant(
-      typeof props.dangerouslySetInnerHTML === 'object' &&
-      '__html' in props.dangerouslySetInnerHTML,
+      props.dangerouslySetInnerHTML.__html != null,
       '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
-      'Please visit https://fb.me/react-invariant-dangerously-set-inner-html ' +
+      'Please visit http://fb.me/react-invariant-dangerously-set-inner-html ' +
       'for more information.'
-    ) : invariant(typeof props.dangerouslySetInnerHTML === 'object' &&
-    '__html' in props.dangerouslySetInnerHTML));
+    ) : invariant(props.dangerouslySetInnerHTML.__html != null));
   }
   if ("production" !== "development") {
     ("production" !== "development" ? warning(
@@ -26528,8 +26592,6 @@ ReactDOMComponent.Mixin = {
       if (propKey === STYLE) {
         if (nextProp) {
           nextProp = this._previousStyleCopy = assign({}, nextProp);
-        } else {
-          this._previousStyleCopy = null;
         }
         if (lastProp) {
           // Unset styles on `lastProp` but not on `nextProp`.
@@ -29044,7 +29106,7 @@ function warnAndMonitorForKeyUse(message, element, parentType) {
 
   ("production" !== "development" ? warning(
     false,
-    message + '%s%s See https://fb.me/react-warning-keys for more information.',
+    message + '%s%s See http://fb.me/react-warning-keys for more information.',
     parentOrOwnerAddendum,
     childOwnerAddendum
   ) : null);
@@ -29168,9 +29230,9 @@ function warnForPropsMutation(propName, element) {
 
   ("production" !== "development" ? warning(
     false,
-    'Don\'t set .props.%s of the React component%s. Instead, specify the ' +
-    'correct value when initially creating the element or use ' +
-    'React.cloneElement to make a new element with updated props.%s',
+    'Don\'t set .props.%s of the React component%s. ' +
+    'Instead, specify the correct value when ' +
+    'initially creating the element.%s',
     propName,
     elementInfo,
     ownerInfo
@@ -33621,7 +33683,6 @@ var ReactUpdates = require("./ReactUpdates");
 var SyntheticEvent = require("./SyntheticEvent");
 
 var assign = require("./Object.assign");
-var emptyObject = require("./emptyObject");
 
 var topLevelTypes = EventConstants.topLevelTypes;
 
@@ -33963,9 +34024,6 @@ assign(
 );
 
 ReactShallowRenderer.prototype.render = function(element, context) {
-  if (!context) {
-    context = emptyObject;
-  }
   var transaction = ReactUpdates.ReactReconcileTransaction.getPooled();
   this._render(element, transaction, context);
   ReactUpdates.ReactReconcileTransaction.release(transaction);
@@ -34107,7 +34165,7 @@ for (eventType in topLevelTypes) {
 module.exports = ReactTestUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTestUtils.js","/node_modules/react/lib")
-},{"./EventConstants":153,"./EventPluginHub":155,"./EventPropagators":158,"./Object.assign":166,"./React":168,"./ReactBrowserEventEmitter":170,"./ReactCompositeComponent":180,"./ReactElement":200,"./ReactEmptyComponent":202,"./ReactInstanceHandles":209,"./ReactInstanceMap":210,"./ReactMount":214,"./ReactUpdates":237,"./SyntheticEvent":246,"./emptyObject":268,"_process":37,"buffer":33}],233:[function(require,module,exports){
+},{"./EventConstants":153,"./EventPluginHub":155,"./EventPropagators":158,"./Object.assign":166,"./React":168,"./ReactBrowserEventEmitter":170,"./ReactCompositeComponent":180,"./ReactElement":200,"./ReactEmptyComponent":202,"./ReactInstanceHandles":209,"./ReactInstanceMap":210,"./ReactMount":214,"./ReactUpdates":237,"./SyntheticEvent":246,"_process":37,"buffer":33}],233:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35219,7 +35277,6 @@ var MUST_USE_ATTRIBUTE = DOMProperty.injection.MUST_USE_ATTRIBUTE;
 
 var SVGDOMPropertyConfig = {
   Properties: {
-    clipPath: MUST_USE_ATTRIBUTE,
     cx: MUST_USE_ATTRIBUTE,
     cy: MUST_USE_ATTRIBUTE,
     d: MUST_USE_ATTRIBUTE,
@@ -35265,7 +35322,6 @@ var SVGDOMPropertyConfig = {
     y: MUST_USE_ATTRIBUTE
   },
   DOMAttributeNames: {
-    clipPath: 'clip-path',
     fillOpacity: 'fill-opacity',
     fontFamily: 'font-family',
     fontSize: 'font-size',
@@ -38254,7 +38310,6 @@ var shouldWrap = {
   // Force wrapping for SVG elements because if they get created inside a <div>,
   // they will be initialized in the wrong namespace (and will not display).
   'circle': true,
-  'clipPath': true,
   'defs': true,
   'ellipse': true,
   'g': true,
@@ -38297,7 +38352,6 @@ var markupWrap = {
   'th': trWrap,
 
   'circle': svgWrap,
-  'clipPath': svgWrap,
   'defs': svgWrap,
   'ellipse': svgWrap,
   'g': svgWrap,
@@ -38657,7 +38711,6 @@ assign(
 function isInternalComponentType(type) {
   return (
     typeof type === 'function' &&
-    typeof type.prototype !== 'undefined' &&
     typeof type.prototype.mountComponent === 'function' &&
     typeof type.prototype.receiveComponent === 'function'
   );
@@ -39955,14 +40008,11 @@ module.exports = traverseAllChildren;
  * @providesModule update
  */
 
- /* global hasOwnProperty:true */
-
 'use strict';
 
 var assign = require("./Object.assign");
 var keyOf = require("./keyOf");
 var invariant = require("./invariant");
-var hasOwnProperty = {}.hasOwnProperty;
 
 function shallowCopy(x) {
   if (Array.isArray(x)) {
@@ -40022,7 +40072,7 @@ function update(value, spec) {
     COMMAND_SET
   ) : invariant(typeof spec === 'object'));
 
-  if (hasOwnProperty.call(spec, COMMAND_SET)) {
+  if (spec.hasOwnProperty(COMMAND_SET)) {
     ("production" !== "development" ? invariant(
       Object.keys(spec).length === 1,
       'Cannot have more than one key in an object with %s',
@@ -40034,7 +40084,7 @@ function update(value, spec) {
 
   var nextValue = shallowCopy(value);
 
-  if (hasOwnProperty.call(spec, COMMAND_MERGE)) {
+  if (spec.hasOwnProperty(COMMAND_MERGE)) {
     var mergeObj = spec[COMMAND_MERGE];
     ("production" !== "development" ? invariant(
       mergeObj && typeof mergeObj === 'object',
@@ -40051,21 +40101,21 @@ function update(value, spec) {
     assign(nextValue, spec[COMMAND_MERGE]);
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_PUSH)) {
+  if (spec.hasOwnProperty(COMMAND_PUSH)) {
     invariantArrayCase(value, spec, COMMAND_PUSH);
     spec[COMMAND_PUSH].forEach(function(item) {
       nextValue.push(item);
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_UNSHIFT)) {
+  if (spec.hasOwnProperty(COMMAND_UNSHIFT)) {
     invariantArrayCase(value, spec, COMMAND_UNSHIFT);
     spec[COMMAND_UNSHIFT].forEach(function(item) {
       nextValue.unshift(item);
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_SPLICE)) {
+  if (spec.hasOwnProperty(COMMAND_SPLICE)) {
     ("production" !== "development" ? invariant(
       Array.isArray(value),
       'Expected %s target to be an array; got %s',
@@ -40091,7 +40141,7 @@ function update(value, spec) {
     });
   }
 
-  if (hasOwnProperty.call(spec, COMMAND_APPLY)) {
+  if (spec.hasOwnProperty(COMMAND_APPLY)) {
     ("production" !== "development" ? invariant(
       typeof spec[COMMAND_APPLY] === 'function',
       'update(): expected spec of %s to be a function; got %s.',

@@ -8,10 +8,10 @@ var get = {
     grades: 'oo3g5h2',
     data: {
       biologics: 'oij9tdp',
-      // hydroxycholoroquine: 'oozzuoc',
+      hydroxycholoroquine: 'oozzuoc',
       etanercept: 'oogh8lu',
       methotrexate: 'oa4uchu',
-      // finraco: 'oclozwl'
+      finraco: 'oclozwl'
     },
     tagDescriptions: 'o2pd8py'
   },
@@ -594,12 +594,15 @@ var get = {
     // Filter entries to only those in which the intervention included one of the
     // enabled medications.
     var filteredEntries = _.filter(entries, function(entry) {
-      if (entry.intervention) {
+      if (entry.intervention && entry.intervention.parts) {
         var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames);
         return intersection.length > 0;
       }
+      else if (entry.intervention) {
+        var intersection = _.intersection(entry.intervention, enabledMedicationNames);
+        return intersection.length > 0;
+      }
     });
-
     return filteredEntries;
   }
 

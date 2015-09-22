@@ -62,25 +62,25 @@ var Navigator = React.createClass({
         },
         'generic_available': {
           'key': 'generic_available',
-          'name': 'Generic available',
+          'name': 'Generic available (less expensive)',
           'type': 'boolean',
           'description': 'A cheaper, generic version is available'
         },
         'liver_disease': {
           'key': 'liver_disease',
-          'name': 'Liver disease',
+          'name': 'Safer for liver disease',
           'type': 'boolean',
           'description': 'if you have liver disease'
         },
         'pregnancy': {
           'key': 'pregnancy',
-          'name': 'Pregnancy',
+          'name': 'Safer for pregnancy',
           'type': 'boolean',
           'description': 'if you’re pregnant or considering it'
         },
         'tb': {
           'key': 'tb',
-          'name': 'Tuberculosis',
+          'name': 'Safer for tuberculosis',
           'type': 'boolean',
           'description': 'if you have or might be exposed to tuberculosis'
         }
@@ -172,17 +172,14 @@ var Navigator = React.createClass({
       // Query spreadsheets
       this.getData()
       .done(function(data) {
-        console.log('thinks promise is done')
         if (instance.isMounted) {
-          console.log('setting data in state', data)
           instance.setState({data: data})
-
           if (data.tags['improvement'] && data.measures['acr_50'] && data.grades && data.data != {}) {
             instance.setState({
-              // selectedMeasure: 'acr_50',
-              // selectedTag: 'improvement'
-              selectedMeasure: 'ae',
-              selectedTag: 'adverse event'
+              selectedMeasure: 'acr_50',
+              selectedTag: 'improvement',
+              // selectedMeasure: 'ae',
+              // selectedTag: 'adverse event'
             });
           }
         }
@@ -191,8 +188,6 @@ var Navigator = React.createClass({
   },
 
   getData: function() {
-    console.log('getting data')
-
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
     var urlMeasures = get.getSheetUrl(get.sheets.measures);
     var urlMetrics = get.getSheetUrl(get.sheets.metrics);
@@ -200,7 +195,6 @@ var Navigator = React.createClass({
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
 
     var allData = {};
-
     var deferred = new $.Deferred;
 
     $.when(
@@ -238,7 +232,6 @@ var Navigator = React.createClass({
         return true;
       })
     ).done(function() {
-      console.log('done getting data')
       deferred.resolve(allData);
     });
 
@@ -812,7 +805,7 @@ var Navigator = React.createClass({
     });
 
     var detailsClasses = cx({
-      'details outcome-timeline': true,
+      'details': true,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
     });
@@ -849,7 +842,7 @@ var Navigator = React.createClass({
               {this.renderMeasure(selectedTag, selectedMeasure)}
 
               <section>
-                Source data in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
+                See the individual data items in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
               </section>
            	</section>
           </div>

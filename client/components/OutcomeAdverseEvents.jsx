@@ -16,6 +16,8 @@ var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.js
 var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
 var Source = require('./visualizations/Source.jsx');
 
+var ProgressBar = require('react-bootstrap').ProgressBar;
+
 // Outcome adverse events
 
 var OutcomeAdverseEvents = React.createClass({
@@ -111,8 +113,6 @@ var OutcomeAdverseEvents = React.createClass({
       var disabledMedications = this.props.disabledMedications;
       var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications);
 
-      console.log('OutcomeAdverseEvents ENTRIES', entries);
-
       return (
         <div key={measure}>
           {renderRiskRelativeToBaselineComparison(entries, measure)}
@@ -121,6 +121,8 @@ var OutcomeAdverseEvents = React.createClass({
     }
   },
 
+
+
   render: function() {
     var cx = React.addons.classSet;
     var classes = cx({
@@ -128,32 +130,97 @@ var OutcomeAdverseEvents = React.createClass({
       'results': true
     });
 
+    var data                = this.props.data;
+    var medications         = this.props.medications;
     var selectedMeasure     = this.props.selectedMeasure;
     var selectedTag         = this.props.selectedTag;
     var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data;
     var disabledMedications = this.props.disabledMedications;
 
     if (measureData) {
+      // return (
+      //   <AbsoluteRiskComparison />
+      // );
+
+      measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
+
+      console.log(measureData);
+      
+      var groupedMeasureData = _.groupBy(measureData, function (entry) {
+        return entry.comparison + entry.intervention;
+      });
+
       return (
-        <AbsoluteRiskComparison />
+        <section className={classes}>
+          {_.map(groupedMeasureData, function (group) {
+            var firstEntry = group[0];
+            var comparison = firstEntry.comparison.join(' + ');
+            var intervention = firstEntry.intervention.join(' + ');
+            
+            var groupedByDetail = _.chain(group)
+                                  .groupBy(function (entry) {
+                                    return entry.measure_detail;
+                                  })
+                                  .sortBy(function (clump) {
+                                    return _.max(clump, function (part) {
+                                      return part.value.value;
+                                    });
+                                  })
+                                  .value();
+
+            return (
+              <div key={group}>
+                <h4>
+                  When <strong>{intervention}</strong> was compared with <strong>{comparison}</strong> for people with RA<br />
+                  <span className='light'>these were the most common side effects</span>
+                </h4>
+                <Source source={firstEntry.source} kind={firstEntry.kind} />
+                <GradeQuality grade={firstEntry.quality} gradeMap={data.grades} />
+
+                {groupedByDetail.map(function (clump, i) {
+                  var name              = clump[0].measure_detail;
+                  var comparisonValue   = _.chain(clump)
+                                           .findWhere({'which': 'comparison'})
+                                           .value()
+                                           .value.value;
+                  var interventionValue = _.chain(clump)
+                                           .findWhere({'which': 'intervention'})
+                                           .value()
+                                           .value.value;
+
+                  console.log(name, comparisonValue, interventionValue)
+
+                  if (interventionValue < comparisonValue) {
+                    var stackedValue = comparisonValue - interventionValue;
+                    return (
+                      <div key={i}>
+                        <strong>{name}</strong> <span className='light'>less common with <strong>{intervention}</strong></span>
+                        <ProgressBar>
+                          <ProgressBar bsSize="xsmall" className='better' label={"%(percent)s% taking " + intervention} now={interventionValue} key={1} />
+                          <ProgressBar bsSize="xsmall" label={comparisonValue + '% on ' + comparison} now={stackedValue} key={2} />
+                        </ProgressBar>
+                      </div>
+                    );
+                  }
+                  else {
+                    var stackedValue = interventionValue - comparisonValue;
+                    return (
+                      <div key={i}>
+                        <strong>{name}</strong> <span className='light'>as or more common with <strong>{intervention}</strong></span>
+                        <ProgressBar>
+                          <ProgressBar bsSize="xsmall" label={"%(percent)s% on " + comparison} now={comparisonValue} key={1} />
+                          <ProgressBar bsSize="xsmall" className='worse' label={interventionValue + '% on ' + intervention} now={stackedValue} key={2} />
+                          
+                        </ProgressBar>
+                      </div>
+                    );
+                  }
+                })}
+              </div>
+            );
+          })}
+        </section>
       );
-      // return (
-      //   <div className={classes}>
-      //     {measureData.map(function (entry, i) {
-      //       console.log(entry)
-      //       return (
-      //         <div key={i}>
-      //           <strong>{entry.measure_detail}</strong><br />
-      //           {entry.which == 'comparison' && <span>{entry.comparison.join(' + ')} - {entry.value}%</span>}
-      //           {entry.which == 'intervention' && <span>{entry.intervention.join(' + ')} - {entry.value}%</span>}
-      //         </div>
-      //       );
-      //     })}
-      //   </div>
-      // );
-      // return (
-      //   <div>{JSON.stringify(measureData)}</div>
-      // );
     }
     return (<noscript />);
   }
