@@ -35,7 +35,7 @@ app.use(function (err, req, res, next) {
   res.send('<pre>' + err.stack + '</pre>');
 });
 
-app.use(require('connect-livereload')({
+env == 'development' && app.use(require('connect-livereload')({
   port: 18828
 }));
 
