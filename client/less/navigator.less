@@ -30,6 +30,11 @@
 		padding-bottom: 1em;
 		margin-bottom: 1em;
 		border-bottom: 15px solid @color-grey-xxxl;
+
+		@media (max-width: @screen-sm-max) {
+			padding-top: 2em;
+			border-bottom: none;
+		}
 	}
 
 	.filter-controls {
@@ -46,6 +51,7 @@
 
 			@media (max-width: @screen-sm-max) {
 				display: inline-block;
+				vertical-align: text-top;
 
 				+ section {
 					margin-top: 0;
@@ -108,10 +114,14 @@
 
 				@media (max-width: @screen-sm-max) {
 					display: inline-block;
+					vertical-align: text-top;
+					margin: .25em !important;
 
-					+ li {
-						margin-top: 0;
-						margin-left: 5px;
+					&:first-of-type {
+						margin-left: 0;
+					}
+					&:last-of-type {
+						margin-right: 0;
 					}
 				}
 			}
@@ -183,5 +193,10 @@
 
 	.results {
 		padding: 3em 0;
+	}
+	.adverse-events {
+		> div + div {
+			margin-top: 5em;
+		}
 	}
 }

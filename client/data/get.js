@@ -531,9 +531,9 @@ var get = {
       // If we encounter a row whose 'which' == 'comparison', we know that we have a full on intervention-comparison case,
       // and can mark this 'finding group' as such.
       //
-      if (entry.which == 'comparison' || entry.which == 'population') {
-        reprojected[key]['which'] = entry.which;
-      }
+      // Actually we always want to do that.
+      //
+      reprojected[key]['which'] = entry.which;
 
       // Details of the comparison, intervention, or population
       //
@@ -544,6 +544,15 @@ var get = {
       reprojected[key][entry.which]['parts']                = entry[entry.which];       // Array    // = entry.comparison.join(' + ');
       reprojected[key][entry.which]['dosage']               = entry.dosage;
       reprojected[key][entry.which]['notes']                = entry.notes;
+
+      // If there is a comparison listed for the entry, but there are no
+      // comparison data (such as dosage, details, and so forth), we must
+      // at least capture the basic comparison parts. This check ensures that
+      // we do so.
+      if (entry['comparison'][0].length > 0 && !reprojected[key]['comparison']) {
+        reprojected[key]['comparison'] = {};
+        reprojected[key]['comparison']['parts']             = entry['comparison'];
+      }
 
 
       // Metrics and values

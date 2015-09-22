@@ -100,6 +100,8 @@ var Intervention = React.createClass({
 
     var intervention = this.props.intervention;
 
+    console.log(this.props)
+
     if (this.props.dosage) {
       return (
         <div className={visualizationClasses}>

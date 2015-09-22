@@ -360,11 +360,11 @@ var OutcomeTimeline = React.createClass({
 			      	<section>
 			      		<div className='moment'>
 			      			<section>
-			        			<div className='title'>Start</div>
+			        			<div className='title'></div>
 			        			<div className='line'>
 			        				<div className='bar'></div>
 			        			</div>
-			        			<div className='description'>Comparison.</div>
+			        			<div className='description'>Treatment</div>
 			        		</section>
 			      		</div>
 			      		<div className='moment-data'>
@@ -374,7 +374,6 @@ var OutcomeTimeline = React.createClass({
 
 						        	return entries.map(function (entry, i) {
 						      			if (entry.intervention) {
-						      				{/*TODO: Find out why some entries are being reprojected without the comparison parts. */}
 						      				return (
 								         		<div key={i}>
                               <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
@@ -384,6 +383,8 @@ var OutcomeTimeline = React.createClass({
                               		{entry.comparison.parts.join(' + ')}
                               	</div>
                               }
+                              <Source source={entry.source} kind={entry.kind} />
+                              <GradeQuality grade={entry.quality} gradeMap={grades} />
                             </div>
 								         	);
 								        }
@@ -419,8 +420,6 @@ var OutcomeTimeline = React.createClass({
 										         		<div key={i}>
 										         			{/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
                                   {renderValue(entry.intervention)}
-										         			<Source source={entry.source} kind={entry.kind} />
-                                  <GradeQuality grade={entry.quality} gradeMap={grades} />
 										         		</div>
 										         	);
 										        }

@@ -585,8 +585,6 @@ var Navigator = React.createClass({
     var tags = this.state.data.tags;
     var dataByTag = JSON.parse(JSON.stringify(tags));
 
-    console.log('dataByTag', dataByTag)
-
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
       // Each source (sheet of data)
@@ -680,7 +678,7 @@ var Navigator = React.createClass({
           <div><strong>{tagDescriptions[selectedTag].name_friendly}</strong> research is done using lots of different measures. Click each one to see examples of findings.</div>
           <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
             {Object.keys(tagMeasures).map(function (measure, i) {
-              return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_short : measure}</NavItem>);
+              return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_friendly : measure}</NavItem>);
             })}
           </Nav>
         </div>
@@ -782,37 +780,30 @@ var Navigator = React.createClass({
 
   render: function() {
     var cx = React.addons.classSet;
-
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var risks = this.props.risks;
-    var risksFriendly = this.props.risksFriendly;
-
-    console.log(this.state)
-
-    var disabledMedications = this.state.disabledMedications;
-
     var navigatorClasses = cx({
       'navigator': true,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
     });
-
     var drugPickerClasses = cx({
       'drug-picker': true,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
     });
-
     var detailsClasses = cx({
       'details': true,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
     });
 
-    var data            = this.state.data;
-    var selectedMeasure = this.state.selectedMeasure;
-    var selectedTag     = this.state.selectedTag;
+    var medications         = this.props.medications;
+    var preferences         = this.props.preferences;
+    var risks               = this.props.risks;
+    var risksFriendly       = this.props.risksFriendly;
+    var disabledMedications = this.state.disabledMedications;
+    var data                = this.state.data;
+    var selectedMeasure     = this.state.selectedMeasure;
+    var selectedTag         = this.state.selectedTag;
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       // return (

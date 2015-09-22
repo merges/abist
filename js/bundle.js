@@ -726,8 +726,6 @@ var Navigator = React.createClass({displayName: "Navigator",
     var tags = this.state.data.tags;
     var dataByTag = JSON.parse(JSON.stringify(tags));
 
-    console.log('dataByTag', dataByTag)
-
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
       // Each source (sheet of data)
@@ -821,7 +819,7 @@ var Navigator = React.createClass({displayName: "Navigator",
           React.createElement("div", null, React.createElement("strong", null, tagDescriptions[selectedTag].name_friendly), " research is done using lots of different measures. Click each one to see examples of findings."), 
           React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
             Object.keys(tagMeasures).map(function (measure, i) {
-              return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_short : measure));
+              return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_friendly : measure));
             })
           )
         )
@@ -923,37 +921,30 @@ var Navigator = React.createClass({displayName: "Navigator",
 
   render: function() {
     var cx = React.addons.classSet;
-
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var risks = this.props.risks;
-    var risksFriendly = this.props.risksFriendly;
-
-    console.log(this.state)
-
-    var disabledMedications = this.state.disabledMedications;
-
     var navigatorClasses = cx({
       'navigator': true,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
     });
-
     var drugPickerClasses = cx({
       'drug-picker': true,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
     });
-
     var detailsClasses = cx({
       'details': true,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
     });
 
-    var data            = this.state.data;
-    var selectedMeasure = this.state.selectedMeasure;
-    var selectedTag     = this.state.selectedTag;
+    var medications         = this.props.medications;
+    var preferences         = this.props.preferences;
+    var risks               = this.props.risks;
+    var risksFriendly       = this.props.risksFriendly;
+    var disabledMedications = this.state.disabledMedications;
+    var data                = this.state.data;
+    var selectedMeasure     = this.state.selectedMeasure;
+    var selectedTag         = this.state.selectedTag;
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       // return (
@@ -1144,8 +1135,6 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       // );
 
       measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
-
-      console.log(measureData);
       
       var groupedMeasureData = _.groupBy(measureData, function (entry) {
         return entry.comparison + entry.intervention;
@@ -1189,13 +1178,12 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
                                            .value()
                                            .value.value;
 
-                  console.log(name, comparisonValue, interventionValue)
-
                   if (interventionValue < comparisonValue) {
                     var stackedValue = comparisonValue - interventionValue;
                     return (
                       React.createElement("div", {key: i}, 
-                        React.createElement("strong", null, name), " ", React.createElement("span", {className: "light"}, "less common with ", React.createElement("strong", null, intervention)), 
+                        React.createElement("strong", null, name), React.createElement("br", null), 
+                        React.createElement("span", {className: "light"}, "less common with ", React.createElement("strong", null, intervention)), 
                         React.createElement(ProgressBar, null, 
                           React.createElement(ProgressBar, {bsSize: "xsmall", className: "better", label: "%(percent)s% taking " + intervention, now: interventionValue, key: 1}), 
                           React.createElement(ProgressBar, {bsSize: "xsmall", label: comparisonValue + '% on ' + comparison, now: stackedValue, key: 2})
@@ -1207,7 +1195,8 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
                     var stackedValue = interventionValue - comparisonValue;
                     return (
                       React.createElement("div", {key: i}, 
-                        React.createElement("strong", null, name), " ", React.createElement("span", {className: "light"}, "as or more common with ", React.createElement("strong", null, intervention)), 
+                        React.createElement("strong", null, name), React.createElement("br", null), 
+                        React.createElement("span", {className: "light"}, "as or more common with ", React.createElement("strong", null, intervention)), 
                         React.createElement(ProgressBar, null, 
                           React.createElement(ProgressBar, {bsSize: "xsmall", label: "%(percent)s% on " + comparison, now: comparisonValue, key: 1}), 
                           React.createElement(ProgressBar, {bsSize: "xsmall", className: "worse", label: interventionValue + '% on ' + intervention, now: stackedValue, key: 2})
@@ -1966,11 +1955,11 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 			      	React.createElement("section", null, 
 			      		React.createElement("div", {className: "moment"}, 
 			      			React.createElement("section", null, 
-			        			React.createElement("div", {className: "title"}, "Start"), 
+			        			React.createElement("div", {className: "title"}), 
 			        			React.createElement("div", {className: "line"}, 
 			        				React.createElement("div", {className: "bar"})
 			        			), 
-			        			React.createElement("div", {className: "description"}, "Comparison.")
+			        			React.createElement("div", {className: "description"}, "Treatment")
 			        		)
 			      		), 
 			      		React.createElement("div", {className: "moment-data"}, 
@@ -1980,7 +1969,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
 						        	return entries.map(function (entry, i) {
 						      			if (entry.intervention) {
-						      				{/*TODO: Find out why some entries are being reprojected without the comparison parts. */}
 						      				return (
 								         		React.createElement("div", {key: i}, 
                               React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
@@ -1988,8 +1976,10 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                               	React.createElement("div", {className: "light"}, 
                               		"vs.", React.createElement("br", null), 
                               		entry.comparison.parts.join(' + ')
-                              	)
+                              	), 
                               
+                              React.createElement(Source, {source: entry.source, kind: entry.kind}), 
+                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                             )
 								         	);
 								        }
@@ -2024,9 +2014,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 									      			return (
 										         		React.createElement("div", {key: i}, 
 										         			/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
-                                  renderValue(entry.intervention), 
-										         			React.createElement(Source, {source: entry.source, kind: entry.kind}), 
-                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                                  renderValue(entry.intervention)
 										         		)
 										         	);
 										        }
@@ -5859,6 +5847,8 @@ var Intervention = React.createClass({displayName: "Intervention",
 
     var intervention = this.props.intervention;
 
+    console.log(this.props)
+
     if (this.props.dosage) {
       return (
         React.createElement("div", {className: visualizationClasses}, 
@@ -7337,9 +7327,9 @@ var get = {
       // If we encounter a row whose 'which' == 'comparison', we know that we have a full on intervention-comparison case,
       // and can mark this 'finding group' as such.
       //
-      if (entry.which == 'comparison' || entry.which == 'population') {
-        reprojected[key]['which'] = entry.which;
-      }
+      // Actually we always want to do that.
+      //
+      reprojected[key]['which'] = entry.which;
 
       // Details of the comparison, intervention, or population
       //
@@ -7350,6 +7340,15 @@ var get = {
       reprojected[key][entry.which]['parts']                = entry[entry.which];       // Array    // = entry.comparison.join(' + ');
       reprojected[key][entry.which]['dosage']               = entry.dosage;
       reprojected[key][entry.which]['notes']                = entry.notes;
+
+      // If there is a comparison listed for the entry, but there are no
+      // comparison data (such as dosage, details, and so forth), we must
+      // at least capture the basic comparison parts. This check ensures that
+      // we do so.
+      if (entry['comparison'][0].length > 0 && !reprojected[key]['comparison']) {
+        reprojected[key]['comparison'] = {};
+        reprojected[key]['comparison']['parts']             = entry['comparison'];
+      }
 
 
       // Metrics and values

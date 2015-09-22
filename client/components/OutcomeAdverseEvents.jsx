@@ -143,8 +143,6 @@ var OutcomeAdverseEvents = React.createClass({
       // );
 
       measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
-
-      console.log(measureData);
       
       var groupedMeasureData = _.groupBy(measureData, function (entry) {
         return entry.comparison + entry.intervention;
@@ -188,13 +186,12 @@ var OutcomeAdverseEvents = React.createClass({
                                            .value()
                                            .value.value;
 
-                  console.log(name, comparisonValue, interventionValue)
-
                   if (interventionValue < comparisonValue) {
                     var stackedValue = comparisonValue - interventionValue;
                     return (
                       <div key={i}>
-                        <strong>{name}</strong> <span className='light'>less common with <strong>{intervention}</strong></span>
+                        <strong>{name}</strong><br />
+                        <span className='light'>less common with <strong>{intervention}</strong></span>
                         <ProgressBar>
                           <ProgressBar bsSize="xsmall" className='better' label={"%(percent)s% taking " + intervention} now={interventionValue} key={1} />
                           <ProgressBar bsSize="xsmall" label={comparisonValue + '% on ' + comparison} now={stackedValue} key={2} />
@@ -206,7 +203,8 @@ var OutcomeAdverseEvents = React.createClass({
                     var stackedValue = interventionValue - comparisonValue;
                     return (
                       <div key={i}>
-                        <strong>{name}</strong> <span className='light'>as or more common with <strong>{intervention}</strong></span>
+                        <strong>{name}</strong><br />
+                        <span className='light'>as or more common with <strong>{intervention}</strong></span>
                         <ProgressBar>
                           <ProgressBar bsSize="xsmall" label={"%(percent)s% on " + comparison} now={comparisonValue} key={1} />
                           <ProgressBar bsSize="xsmall" className='worse' label={interventionValue + '% on ' + intervention} now={stackedValue} key={2} />
