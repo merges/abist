@@ -138,8 +138,6 @@ var RelativeRiskComparison = React.createClass({
   },
 
   render: function() {
-    console.log('RelativeRiskComparison')
-
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization relative-risk-comparison': true
@@ -185,7 +183,7 @@ var RelativeRiskComparison = React.createClass({
 
       // No previous position
       if (!previousValue) {
-        console.log('first')
+        // console.log('first')
         position = getPosition(value);
         groups[position] = [];
 
@@ -196,14 +194,14 @@ var RelativeRiskComparison = React.createClass({
       }
       // Very close (within threshold range)
       else if (previousValue && ((value - previousValue) < threshold)) {
-        console.log('value below threshold', value, previousValue)
+        // console.log('value below threshold', value, previousValue)
         pill = makePill(item);
         groups[position].push(pill);
         previousValue = value;
       }
       // Significantly different
       else {
-        console.log('significantly different', value)
+        // console.log('significantly different', value)
         position = getPosition(value);
         groups[position] = [];
         pill = makePill(item);

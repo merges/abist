@@ -8,12 +8,14 @@
 		.make-md-column(2);
 		.make-lg-column(1);
 		font-size: @font-small;
+		border-right: 5px solid @color-grey-xxxxl;
 	}
 	
 	.details {
 		.make-md-column(8);
 		.make-lg-column(10);
 		transition: opacity .2s ease-out;
+		border-right: 5px solid @color-grey-xxxxl;
 
 		&.open {
 			opacity: 1;
@@ -30,16 +32,22 @@
 		padding-bottom: 1em;
 		margin-bottom: 1em;
 		border-bottom: 15px solid @color-grey-xxxl;
+		line-height: 1.25;
 
 		@media (max-width: @screen-sm-max) {
 			padding-top: 2em;
 			border-bottom: none;
 		}
+
+		a {
+			font-weight: normal;
+			color: @color-orange;
+		}
 	}
 
 	.filter-controls {
 		padding-bottom: 1em;
-		border-bottom: 15px solid @color-grey-xxxl;
+		border-bottom: 1px solid @color-grey-l;
 
 		> section {
 			display: bock;
@@ -72,7 +80,7 @@
 
 	.medication-cards {
 		padding-bottom: 1em;
-		border-bottom: 15px solid @color-grey-xxxl;
+		border-bottom: 1px solid @color-grey-l;
 
 		> ul {
 			list-style-type: none;
@@ -130,7 +138,6 @@
 
 	.panel {
 		padding: 5em 0 0 0;
-		border-bottom: 1px solid @color-grey-l;
 	}
 
 	.tag-description {

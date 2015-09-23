@@ -531,9 +531,9 @@ var get = {
       // If we encounter a row whose 'which' == 'comparison', we know that we have a full on intervention-comparison case,
       // and can mark this 'finding group' as such.
       //
-      // Actually we always want to do that.
-      //
-      reprojected[key]['which'] = entry.which;
+      if (entry.which == 'comparison' || entry.which == 'population') {
+        reprojected[key]['which'] = entry.which;
+      }
 
       // Details of the comparison, intervention, or population
       //

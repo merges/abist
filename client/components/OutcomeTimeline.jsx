@@ -413,7 +413,6 @@ var OutcomeTimeline = React.createClass({
 								      <section>
 						      			{Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
-
 							        		return entries.map(function (entry, i) {
 								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
 									      			return (

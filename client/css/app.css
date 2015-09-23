@@ -11443,6 +11443,7 @@ html:hover [class^="ss-"] {
   padding-left: 15px;
   padding-right: 15px;
   font-size: 11px;
+  border-right: 5px solid #eeeeee;
 }
 @media (min-width: 992px) {
   .navigator .drug-picker,
@@ -11464,6 +11465,7 @@ html:hover [class^="ss-"] {
   padding-left: 15px;
   padding-right: 15px;
   transition: opacity 0.2s ease-out;
+  border-right: 5px solid #eeeeee;
 }
 @media (min-width: 992px) {
   .navigator .details {
@@ -11490,6 +11492,7 @@ html:hover [class^="ss-"] {
   padding-bottom: 1em;
   margin-bottom: 1em;
   border-bottom: 15px solid #e8e8e8;
+  line-height: 1.25;
 }
 @media (max-width: 991px) {
   .navigator .brief-header {
@@ -11497,9 +11500,13 @@ html:hover [class^="ss-"] {
     border-bottom: none;
   }
 }
+.navigator .brief-header a {
+  font-weight: normal;
+  color: #fe6939;
+}
 .navigator .filter-controls {
   padding-bottom: 1em;
-  border-bottom: 15px solid #e8e8e8;
+  border-bottom: 1px solid #999999;
 }
 .navigator .filter-controls > section {
   display: bock;
@@ -11529,7 +11536,7 @@ html:hover [class^="ss-"] {
 }
 .navigator .medication-cards {
   padding-bottom: 1em;
-  border-bottom: 15px solid #e8e8e8;
+  border-bottom: 1px solid #999999;
 }
 .navigator .medication-cards > ul {
   list-style-type: none;
@@ -11575,7 +11582,6 @@ html:hover [class^="ss-"] {
 }
 .navigator .panel {
   padding: 5em 0 0 0;
-  border-bottom: 1px solid #999999;
 }
 .navigator .tag-description {
   font-size: 1.5em;

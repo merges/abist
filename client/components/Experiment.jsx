@@ -10,14 +10,6 @@ var Experiment = React.createClass({
     }
   },
 
-  componentWillMount: function() {
-    var processData = this.processData;
-
-    // $.getJSON('/itemsData', function(itemsDataJson) {
-    //   processData(itemsDataJson);
-    // });
-  },
-
   toggleDetail: function() {
     this.setState({
       showDetail: true
@@ -68,6 +60,10 @@ var Experiment = React.createClass({
 
         <nav>
           <h2><a href='http://abist.tumblr.com/'>Progress reports (blog)</a></h2>
+          <h2>
+            <a href='/navigator'>Interactive medication navigator and evidence display</a>
+            <p>This demo combines something like a medication decision aid (filter medications by preferences) with display of various kinds of evidence—improvement outcomes, adverse effects, etc.</p>
+          </h2>
           <h2>
             <a href='/processing'>Data live from a Google Spreadsheet</a>
             <p>This is a demo, in a style similar to the GRADE and Cochrane summary of findings tables, of data from multiple sources being displayed side by side in a UI. The data live in an editable Google spreadsheet. This also demonstrates a very preliminary, and simplistic, harmonization: Instead of organizing data by study, or by drug, or some other typical scheme, they are organized according to high-level concepts like <em>work</em> and <em>improvement</em>. Any appropriate measures are thus grouped and presented under those concepts. The demo also features the first few reusable components I hope to make (such as widgets for displaying absolute risk frequency and for showing intervention details like dosage).</p>

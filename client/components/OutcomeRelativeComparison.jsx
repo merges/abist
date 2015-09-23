@@ -358,7 +358,7 @@ var OutcomeRelativeComparison = React.createClass({
     });
 
     var selectedMeasure = this.props.selectedMeasure;
-
+    
     return (
       <div className={classes}>
         {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}

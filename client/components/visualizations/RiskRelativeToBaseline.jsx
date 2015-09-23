@@ -281,7 +281,6 @@ var RiskRelativeToBaseline = React.createClass({
   },
 
   render: function() {
-    console.log('RiskRelativeToBaseline')
     
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
@@ -332,7 +331,7 @@ var RiskRelativeToBaseline = React.createClass({
 
       // No previous position      
       if (!previousPosition) {
-        console.log('first')
+        // console.log('first')
         groups[position] = [];
         pill = makePill(item, baselineFrequency);
         groups[position].push(pill);
@@ -340,13 +339,13 @@ var RiskRelativeToBaseline = React.createClass({
       }
       // Very close (within threshold range) to previous position
       else if (previousPosition && ((position - previousPosition) <= threshold)) {
-        console.log('value below threshold', position, previousPosition)
+        // console.log('value below threshold', position, previousPosition)
         pill = makePill(item, baselineFrequency);
         groups[previousPosition].push(pill);
       }
       // Significantly different
       else {
-        console.log('significantly different', position)
+        // console.log('significantly different', position)
         groups[position] = [];
         pill = makePill(item, baselineFrequency);
         groups[position].push(pill);
@@ -383,7 +382,8 @@ var RiskRelativeToBaseline = React.createClass({
         {this.props.showTitle &&
           <div className='title'>
             <h3>
-              Estimated risk (compared to {comparison.parts}) of <strong>{measures[measure].name_short}:</strong> {measures[measure].name_friendly}
+              Estimated risk of <strong>{measures[measure].name_short} - {measures[measure].name_friendly}</strong><br />
+              (compared with {comparison.parts})     
             </h3>
             <p>{measures[measure].description}</p>
             <p>RR of intervention * baseline of comparison ({comparison.parts})</p>

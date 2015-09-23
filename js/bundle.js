@@ -50,14 +50,6 @@ var Experiment = React.createClass({displayName: "Experiment",
     }
   },
 
-  componentWillMount: function() {
-    var processData = this.processData;
-
-    // $.getJSON('/itemsData', function(itemsDataJson) {
-    //   processData(itemsDataJson);
-    // });
-  },
-
   toggleDetail: function() {
     this.setState({
       showDetail: true
@@ -108,6 +100,10 @@ var Experiment = React.createClass({displayName: "Experiment",
 
         React.createElement("nav", null, 
           React.createElement("h2", null, React.createElement("a", {href: "http://abist.tumblr.com/"}, "Progress reports (blog)")), 
+          React.createElement("h2", null, 
+            React.createElement("a", {href: "/navigator"}, "Interactive medication navigator and evidence display"), 
+            React.createElement("p", null, "This demo combines something like a medication decision aid (filter medications by preferences) with display of various kinds of evidence—improvement outcomes, adverse effects, etc.")
+          ), 
           React.createElement("h2", null, 
             React.createElement("a", {href: "/processing"}, "Data live from a Google Spreadsheet"), 
             React.createElement("p", null, "This is a demo, in a style similar to the GRADE and Cochrane summary of findings tables, of data from multiple sources being displayed side by side in a UI. The data live in an editable Google spreadsheet. This also demonstrates a very preliminary, and simplistic, harmonization: Instead of organizing data by study, or by drug, or some other typical scheme, they are organized according to high-level concepts like ", React.createElement("em", null, "work"), " and ", React.createElement("em", null, "improvement"), ". Any appropriate measures are thus grouped and presented under those concepts. The demo also features the first few reusable components I hope to make (such as widgets for displaying absolute risk frequency and for showing intervention details like dosage).")
@@ -816,7 +812,7 @@ var Navigator = React.createClass({displayName: "Navigator",
       var tagMeasures = tags[selectedTag];
       return (
         React.createElement("div", null, 
-          React.createElement("div", null, React.createElement("strong", null, tagDescriptions[selectedTag].name_friendly), " research is done using lots of different measures. Click each one to see examples of findings."), 
+          React.createElement("div", null, "Click one of these measures to see ", React.createElement("strong", null, tagDescriptions[selectedTag].name_friendly.toLowerCase()), " research findings."), 
           React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
             Object.keys(tagMeasures).map(function (measure, i) {
               return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_friendly : measure));
@@ -887,7 +883,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     var data = this.state.data;
     var disabledMedications = this.state.disabledMedications;
 
-    if (selectedMeasure == 'discontinued_ae') {
+    if (selectedMeasure == 'discontinued_ae' || selectedMeasure == 'acr_50') {
       return (
         React.createElement(OutcomeRelativeComparison, {
           data: data, 
@@ -917,6 +913,13 @@ var Navigator = React.createClass({displayName: "Navigator",
         selectedTag: selectedTag, 
         selectedMeasure: selectedMeasure})
     );
+  },
+
+  handleShortcutClick: function(tag, measure) {
+    this.setState({
+      selectedTag: tag,
+      selectedMeasure: measure,
+    });
   },
 
   render: function() {
@@ -966,7 +969,11 @@ var Navigator = React.createClass({displayName: "Navigator",
             ), 
 
             React.createElement("section", {className: detailsClasses}, 
-              React.createElement("h3", {className: "brief-header"}, "Look at evidence about the selected medications, in various categories"), 
+              React.createElement("h3", {className: "brief-header"}, 
+                "Look at evidence about the selected medications, in various categories.", React.createElement("br", null), 
+                "e.g. ", 
+                React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}, "ACR50 from multiple sources"), " - ", React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}, "Withdrawl due to AE (RR comparison)"), " - ", React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'adverse event', 'ae')}, "Side effects (etanercept only)")
+              ), 
 
               this.renderTagBar(selectedTag), 
               this.renderTagDescription(selectedTag), 
@@ -1580,7 +1587,7 @@ var OutcomeRelativeComparison = React.createClass({displayName: "OutcomeRelative
     });
 
     var selectedMeasure = this.props.selectedMeasure;
-
+    
     return (
       React.createElement("div", {className: classes}, 
         selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)
@@ -1979,7 +1986,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                               	), 
                               
                               React.createElement(Source, {source: entry.source, kind: entry.kind}), 
-                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                              React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                             )
 								         	);
 								        }
@@ -2008,7 +2015,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 								      React.createElement("section", null, 
 						      			Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
-
 							        		return entries.map(function (entry, i) {
 								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
 									      			return (
@@ -5847,8 +5853,6 @@ var Intervention = React.createClass({displayName: "Intervention",
 
     var intervention = this.props.intervention;
 
-    console.log(this.props)
-
     if (this.props.dosage) {
       return (
         React.createElement("div", {className: visualizationClasses}, 
@@ -6065,8 +6069,6 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
   },
 
   render: function() {
-    console.log('RelativeRiskComparison')
-
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization relative-risk-comparison': true
@@ -6112,7 +6114,7 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
 
       // No previous position
       if (!previousValue) {
-        console.log('first')
+        // console.log('first')
         position = getPosition(value);
         groups[position] = [];
 
@@ -6123,14 +6125,14 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
       }
       // Very close (within threshold range)
       else if (previousValue && ((value - previousValue) < threshold)) {
-        console.log('value below threshold', value, previousValue)
+        // console.log('value below threshold', value, previousValue)
         pill = makePill(item);
         groups[position].push(pill);
         previousValue = value;
       }
       // Significantly different
       else {
-        console.log('significantly different', value)
+        // console.log('significantly different', value)
         position = getPosition(value);
         groups[position] = [];
         pill = makePill(item);
@@ -6460,7 +6462,6 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
   },
 
   render: function() {
-    console.log('RiskRelativeToBaseline')
     
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
@@ -6511,7 +6512,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 
       // No previous position      
       if (!previousPosition) {
-        console.log('first')
+        // console.log('first')
         groups[position] = [];
         pill = makePill(item, baselineFrequency);
         groups[position].push(pill);
@@ -6519,13 +6520,13 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       }
       // Very close (within threshold range) to previous position
       else if (previousPosition && ((position - previousPosition) <= threshold)) {
-        console.log('value below threshold', position, previousPosition)
+        // console.log('value below threshold', position, previousPosition)
         pill = makePill(item, baselineFrequency);
         groups[previousPosition].push(pill);
       }
       // Significantly different
       else {
-        console.log('significantly different', position)
+        // console.log('significantly different', position)
         groups[position] = [];
         pill = makePill(item, baselineFrequency);
         groups[position].push(pill);
@@ -6562,7 +6563,8 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
         this.props.showTitle &&
           React.createElement("div", {className: "title"}, 
             React.createElement("h3", null, 
-              "Estimated risk (compared to ", comparison.parts, ") of ", React.createElement("strong", null, measures[measure].name_short, ":"), " ", measures[measure].name_friendly
+              "Estimated risk of ", React.createElement("strong", null, measures[measure].name_short, " - ", measures[measure].name_friendly), React.createElement("br", null), 
+              "(compared with ", comparison.parts, ")"     
             ), 
             React.createElement("p", null, measures[measure].description), 
             React.createElement("p", null, "RR of intervention * baseline of comparison (", comparison.parts, ")")
@@ -7327,9 +7329,9 @@ var get = {
       // If we encounter a row whose 'which' == 'comparison', we know that we have a full on intervention-comparison case,
       // and can mark this 'finding group' as such.
       //
-      // Actually we always want to do that.
-      //
-      reprojected[key]['which'] = entry.which;
+      if (entry.which == 'comparison' || entry.which == 'population') {
+        reprojected[key]['which'] = entry.which;
+      }
 
       // Details of the comparison, intervention, or population
       //

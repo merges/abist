@@ -675,7 +675,7 @@ var Navigator = React.createClass({
       var tagMeasures = tags[selectedTag];
       return (
         <div>
-          <div><strong>{tagDescriptions[selectedTag].name_friendly}</strong> research is done using lots of different measures. Click each one to see examples of findings.</div>
+          <div>Click one of these measures to see <strong>{tagDescriptions[selectedTag].name_friendly.toLowerCase()}</strong> research findings.</div>
           <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
             {Object.keys(tagMeasures).map(function (measure, i) {
               return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_friendly : measure}</NavItem>);
@@ -746,7 +746,7 @@ var Navigator = React.createClass({
     var data = this.state.data;
     var disabledMedications = this.state.disabledMedications;
 
-    if (selectedMeasure == 'discontinued_ae') {
+    if (selectedMeasure == 'discontinued_ae' || selectedMeasure == 'acr_50') {
       return (
         <OutcomeRelativeComparison
           data={data}
@@ -776,6 +776,13 @@ var Navigator = React.createClass({
         selectedTag={selectedTag}
         selectedMeasure={selectedMeasure} />
     );
+  },
+
+  handleShortcutClick: function(tag, measure) {
+    this.setState({
+      selectedTag: tag,
+      selectedMeasure: measure,
+    });
   },
 
   render: function() {
@@ -825,7 +832,11 @@ var Navigator = React.createClass({
             </section>
 
             <section className={detailsClasses}>
-              <h3 className='brief-header'>Look at evidence about the selected medications, in various categories</h3>
+              <h3 className='brief-header'>
+                Look at evidence about the selected medications, in various categories.<br />
+                e.g.&nbsp;
+                <a onClick={this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}>ACR50 from multiple sources</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}>Withdrawl due to AE (RR comparison)</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'ae')}>Side effects (etanercept only)</a>
+              </h3>
 
               {this.renderTagBar(selectedTag)}
               {this.renderTagDescription(selectedTag)}
