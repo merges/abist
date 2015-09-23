@@ -746,7 +746,7 @@ var Navigator = React.createClass({
     var data = this.state.data;
     var disabledMedications = this.state.disabledMedications;
 
-    if (selectedMeasure == 'discontinued_ae' || selectedMeasure == 'acr_50') {
+    if (selectedMeasure == 'discontinued_ae') {
       return (
         <OutcomeRelativeComparison
           data={data}
