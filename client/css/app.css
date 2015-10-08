@@ -5874,8 +5874,6 @@ button.close {
 .panel-body:after,
 .modal-footer:before,
 .modal-footer:after,
-.navigator:before,
-.navigator:after,
 .processing:before,
 .processing:after,
 .processing > section:before,
@@ -5918,7 +5916,6 @@ button.close {
 .pager:after,
 .panel-body:after,
 .modal-footer:after,
-.navigator:after,
 .processing:after,
 .processing > section:after,
 .processing > section > ul > li:after,
@@ -11432,60 +11429,29 @@ html:hover [class^="ss-"] {
   width: 1px;
   background: #bbbbbb;
 }
-.navigator {
-  margin-left: -15px;
-  margin-right: -15px;
+@media (min-width: 768px) {
+  .full-screen {
+    min-height: 101vh;
+    text-align: center;
+    border-bottom: 1px solid white;
+  }
 }
-.navigator .drug-picker,
-.navigator .medication-list {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
+.dev .drug-picker,
+.dev .medication-list {
   font-size: 11px;
   border-right: 5px solid #eeeeee;
 }
-@media (min-width: 992px) {
-  .navigator .drug-picker,
-  .navigator .medication-list {
-    float: left;
-    width: 16.66666667%;
-  }
-}
-@media (min-width: 1200px) {
-  .navigator .drug-picker,
-  .navigator .medication-list {
-    float: left;
-    width: 8.33333333%;
-  }
-}
-.navigator .details {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
+.dev .details {
   transition: opacity 0.2s ease-out;
   border-right: 5px solid #eeeeee;
 }
-@media (min-width: 992px) {
-  .navigator .details {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-@media (min-width: 1200px) {
-  .navigator .details {
-    float: left;
-    width: 83.33333333%;
-  }
-}
-.navigator .details.open {
+.dev .details.open {
   opacity: 1;
 }
-.navigator .details.closed {
+.dev .details.closed {
   opacity: .4;
 }
-.navigator .brief-header {
+.brief-header {
   color: #bbbbbb;
   font-weight: bolder;
   font-size: 13px;
@@ -11495,61 +11461,61 @@ html:hover [class^="ss-"] {
   line-height: 1.25;
 }
 @media (max-width: 991px) {
-  .navigator .brief-header {
+  .brief-header {
     padding-top: 2em;
     border-bottom: none;
   }
 }
-.navigator .brief-header a {
+.brief-header a {
   font-weight: normal;
   color: #fe6939;
 }
-.navigator .filter-controls {
+.filter-controls {
   padding-bottom: 1em;
   border-bottom: 1px solid #999999;
 }
-.navigator .filter-controls > section {
+.filter-controls > section {
   display: bock;
   text-align: left;
 }
-.navigator .filter-controls > section + section {
+.filter-controls > section + section {
   margin-top: 5px;
 }
 @media (max-width: 991px) {
-  .navigator .filter-controls > section {
+  .filter-controls > section {
     display: inline-block;
     vertical-align: text-top;
   }
-  .navigator .filter-controls > section + section {
+  .filter-controls > section + section {
     margin-top: 0;
     margin-left: 5px;
   }
 }
-.navigator .filter-controls a.button {
+.filter-controls a.button {
   display: block;
 }
-.navigator .filter-controls .description {
+.filter-controls .description {
   display: block;
 }
-.navigator .filter-controls input {
+.filter-controls input {
   margin-right: .25em;
 }
-.navigator .medication-cards {
+.medication-cards {
   padding-bottom: 1em;
   border-bottom: 1px solid #999999;
 }
-.navigator .medication-cards > ul {
+.medication-cards > ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
-.navigator .medication-cards > ul > li {
+.medication-cards > ul > li {
   display: block;
 }
-.navigator .medication-cards > ul > li + li {
+.medication-cards > ul > li + li {
   margin-top: 1em;
 }
-.navigator .medication-cards > ul > li > a {
+.medication-cards > ul > li > a {
   color: white;
   display: block;
   border-radius: 2px;
@@ -11559,70 +11525,70 @@ html:hover [class^="ss-"] {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
   transition: box-shadow 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
-.navigator .medication-cards > ul > li > a:hover {
+.medication-cards > ul > li > a:hover {
   text-decoration: none;
 }
-.navigator .medication-cards > ul > li.disabled > a {
+.medication-cards > ul > li.disabled > a {
   color: #bbbbbb;
   background: none;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 @media (max-width: 991px) {
-  .navigator .medication-cards > ul > li {
+  .medication-cards > ul > li {
     display: inline-block;
     vertical-align: text-top;
     margin: .25em !important;
   }
-  .navigator .medication-cards > ul > li:first-of-type {
+  .medication-cards > ul > li:first-of-type {
     margin-left: 0;
   }
-  .navigator .medication-cards > ul > li:last-of-type {
+  .medication-cards > ul > li:last-of-type {
     margin-right: 0;
   }
 }
-.navigator .panel {
+.panel {
   padding: 5em 0 0 0;
 }
-.navigator .tag-description {
+.tag-description {
   font-size: 1.5em;
   margin: 0;
   padding-right: 20%;
   color: #999999;
   line-height: 1.2;
 }
-.navigator .tag-description strong {
+.tag-description strong {
   color: #666666;
 }
-.navigator nav.tag-navigation > ul {
+nav.tag-navigation > ul {
   padding-top: 1em;
   padding-bottom: 1em;
 }
-.navigator nav.tag-navigation > ul > li > a {
+nav.tag-navigation > ul > li > a {
   padding: .5em 2.5em 1.5em .5em;
   border-radius: 2px;
   text-decoration: none;
   background: #f6f6f6;
   transition: color .1s ease,
-											border .1s ease,
-											background .1s ease;
+										border .1s ease,
+										background .1s ease;
 }
-.navigator nav.tag-navigation > ul > li > a:hover {
+nav.tag-navigation > ul > li > a:hover {
   border-color: #6699ff;
   color: #6699ff;
   background: #efefef;
 }
-.navigator nav.tag-navigation > ul > li.active > a {
+nav.tag-navigation > ul > li.active > a {
   color: white;
   background: #6699ff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 @media (max-width: 767px) {
-  .navigator nav.tag-navigation > ul > li {
+  nav.tag-navigation > ul > li {
     float: none;
     display: block;
     margin: 0;
   }
-  .navigator nav.tag-navigation > ul > li > a {
+  nav.tag-navigation > ul > li > a {
     display: block;
     padding: .1em 15px;
   }

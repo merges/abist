@@ -33,7 +33,6 @@ var Navigator = React.createClass({
 
   getDefaultProps: function () {
     return {
-      offline: false,
       medications: medications,
       preferences: {
         'alcohol': {
@@ -135,6 +134,8 @@ var Navigator = React.createClass({
 
     return {
       data: {},
+      dev: this.props.query.dev ? true : false,
+      offline: this.props.query.offline ? true : false,
 
       // Medication filtering-related
       disabledMedications: getDisabledMedications(medications),
@@ -157,10 +158,10 @@ var Navigator = React.createClass({
     }
   },
 
-  componentDidMount: function() {
+  componentDidMount: function () {
     var instance = this;
 
-    if (this.props.offline) {
+    if (this.state.offline) {
       // Use mock data
       this.setState({
         data: mockData,
@@ -187,7 +188,20 @@ var Navigator = React.createClass({
     }
   },
 
-  getData: function() {
+  scrollSmoothlyToElement: function (ref) {
+    // Use this by passing in a ref
+    // <a onClick={this.scrollSmoothlyToElement.bind(null, 'startSectionMission')} className='scroll-down white'>
+    //   <i className='ss-icon ss-navigatedown'></i>
+    // </a>
+
+    var element = this.refs[ref].getDOMNode();
+    var newScrollTop = Math.ceil($(element).offset().top);
+    $('html, body').animate({
+      scrollTop: newScrollTop
+    }, 450);
+  },
+
+  getData: function () {
     var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
     var urlMeasures = get.getSheetUrl(get.sheets.measures);
     var urlMetrics = get.getSheetUrl(get.sheets.metrics);
@@ -238,7 +252,7 @@ var Navigator = React.createClass({
     return deferred.promise();
   },
 
-  handleDrugFilterClick: function(key, selectedValue) {
+  handleDrugFilterClick: function (key, selectedValue) {
     var preferencesSelected = this.state.drugPreferencesSelected;
     if (selectedValue) {
       Object.keys(preferencesSelected[key]).forEach(function(pref) {
@@ -255,7 +269,7 @@ var Navigator = React.createClass({
     });
   },
 
-  filterDrugs: function(drugs, preferencesSelected) {
+  filterDrugs: function (drugs, preferencesSelected) {
     var disabledDrugs = {};
 
     drugs.forEach(function(drug, i) {
@@ -306,19 +320,19 @@ var Navigator = React.createClass({
     }
   },
 
-  togglePreferenceControlsOpen: function() {
+  togglePreferenceControlsOpen: function () {
     this.setState({
       menuOpen: true
     });
   },
 
-  togglePreferenceControlsClose: function() {
+  togglePreferenceControlsClose: function () {
     this.setState({
       menuOpen: false
     });
   },
 
-  renderPreferenceControls: function(preferences) {
+  renderPreferenceControls: function (preferences) {
     var filterPreference = this.filterPreference;
     var toggleOpen = this.togglePreferenceControlsOpen;
     var toggleClose = this.togglePreferenceControlsClose;
@@ -580,7 +594,7 @@ var Navigator = React.createClass({
     });
   },
 
-  getDataByTag: function(selectedTag) {
+  getDataByTag: function (selectedTag) {
     var data = this.state.data.data;
     var tags = this.state.data.tags;
     var dataByTag = JSON.parse(JSON.stringify(tags));
@@ -607,7 +621,7 @@ var Navigator = React.createClass({
     return dataByTag;
   },
 
-  handleMedicationClick: function(key) {
+  handleMedicationClick: function (key) {
     var disabledMedications = this.state.disabledMedications;
     disabledMedications[key] = !disabledMedications[key];
     this.setState({
@@ -615,7 +629,7 @@ var Navigator = React.createClass({
     });
   },
 
-  renderPreferredMedicationName: function(medication) {
+  renderPreferredMedicationName: function (medication) {
     if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
       return (
         <span>
@@ -633,7 +647,7 @@ var Navigator = React.createClass({
     }
   },
 
-  renderMedicationBar: function(medications) {
+  renderMedicationBar: function (medications) {
   	var disabledMedications = this.state.disabledMedications;
     var handleMedicationClick = this.handleMedicationClick;
     var renderPreferredMedicationName = this.renderPreferredMedicationName;
@@ -660,13 +674,13 @@ var Navigator = React.createClass({
     }
   },
 
-  handleMeasureSelect: function(key) {
+  handleMeasureSelect: function (key) {
     this.setState({
       selectedMeasure: key
     });
   },
 
-  renderMeasureBar: function(selectedTag, selectedMeasure) {
+  renderMeasureBar: function (selectedTag, selectedMeasure) {
     var tags = this.state.data.tags;
     var tagDescriptions = this.state.data.tagDescriptions;
     var measures = this.state.data.measures;
@@ -686,14 +700,14 @@ var Navigator = React.createClass({
     }
   },
 
-  handleTagSelect: function(key) {
+  handleTagSelect: function (key) {
     this.setState({
       selectedTag: key,
       selectedMeasure: null
     });
   },
 
-  renderTagBar: function(selectedTag) {
+  renderTagBar: function (selectedTag) {
     var tags = this.state.data.tags;
     var tagDescriptions = this.state.data.tagDescriptions;
 
@@ -708,7 +722,7 @@ var Navigator = React.createClass({
     }
   },
 
-  renderTagDescription: function(selectedTag) {
+  renderTagDescription: function (selectedTag) {
     var tagDescriptions = this.state.data.tagDescriptions;
 
     if (selectedTag && tagDescriptions) {
@@ -723,7 +737,7 @@ var Navigator = React.createClass({
     }
   },
 
-  renderDataToJSON: function(data) {
+  renderDataToJSON: function (data) {
     return (
       <div>
         <div>grades: {JSON.stringify(data.grades)}</div>
@@ -741,7 +755,7 @@ var Navigator = React.createClass({
     );
   },
 
-  renderMeasure: function(selectedTag, selectedMeasure) {
+  renderMeasure: function (selectedTag, selectedMeasure) {
     var medications = this.props.medications;
     var data = this.state.data;
     var disabledMedications = this.state.disabledMedications;
@@ -778,27 +792,36 @@ var Navigator = React.createClass({
     );
   },
 
-  handleShortcutClick: function(tag, measure) {
+  handleShortcutClick: function (tag, measure) {
     this.setState({
       selectedTag: tag,
       selectedMeasure: measure,
     });
   },
 
-  render: function() {
+  render: function () {
+    console.log(this.state.dev, this.props.query)
+
     var cx = React.addons.classSet;
     var navigatorClasses = cx({
       'navigator': true,
+      'dev row': this.state.dev,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
     });
     var drugPickerClasses = cx({
       'drug-picker': true,
+      'col-md-2 col-lg-1': this.state.dev,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
     });
+    var medicationListClasses = cx({
+      'medication-list': true,
+      'col-md-2 col-lg-1': this.state.dev
+    });
     var detailsClasses = cx({
       'details': true,
+      'col-md-9 col-lg-10': this.state.dev,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
     });
@@ -820,36 +843,56 @@ var Navigator = React.createClass({
       //     </div>
       //   </div>
       // );
-      return (
-        <div className='container-fluid'>
-          <div className={navigatorClasses}>
-          	<section className={drugPickerClasses}>
-          		{this.renderPreferenceControls(preferences)}
-          	</section>
+      if (this.state.dev) {
+        return (
+          <div className='container-fluid'>
+            <div className={navigatorClasses}>
+            	<section className={drugPickerClasses}>
+            		{this.renderPreferenceControls(preferences)}
+            	</section>
 
-            <section className='medication-list'>
+              <section className={medicationListClasses}>
+                {this.renderMedicationBar(medications)}
+              </section>
+
+              <section className={detailsClasses}>
+                <h3 className='brief-header'>
+                  Look at evidence about the selected medications, in various categories.<br />
+                  e.g.&nbsp;
+                  <a onClick={this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}>ACR50 from multiple sources</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}>Withdrawl due to AE (RR comparison)</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'ae')}>Side effects (etanercept only)</a>
+                </h3>
+
+                {this.renderTagBar(selectedTag)}
+                {this.renderTagDescription(selectedTag)}
+                {this.renderMeasureBar(selectedTag, selectedMeasure)}
+                {this.renderMeasure(selectedTag, selectedMeasure)}
+
+                <section>
+                  See the individual data items in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
+                </section>
+             	</section>
+            </div>
+          </div>
+        );
+      }
+      else {
+        return (
+          <div className={navigatorClasses}>
+            <section className='full-screen' ref='first'>
+              {this.renderPreferenceControls(preferences)}
+              <a onClick={this.scrollSmoothlyToElement.bind(null, 'second')} className='scroll-down'>
+                <i className='ss-icon ss-navigatedown'></i>
+              </a>
+            </section>
+
+            <section className={medicationListClasses} ref='second'>
               {this.renderMedicationBar(medications)}
             </section>
 
-            <section className={detailsClasses}>
-              <h3 className='brief-header'>
-                Look at evidence about the selected medications, in various categories.<br />
-                e.g.&nbsp;
-                <a onClick={this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}>ACR50 from multiple sources</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}>Withdrawl due to AE (RR comparison)</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'ae')}>Side effects (etanercept only)</a>
-              </h3>
 
-              {this.renderTagBar(selectedTag)}
-              {this.renderTagDescription(selectedTag)}
-              {this.renderMeasureBar(selectedTag, selectedMeasure)}
-              {this.renderMeasure(selectedTag, selectedMeasure)}
-
-              <section>
-                See the individual data items in <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/' target='_top'>this Google Spreadsheet</a>
-              </section>
-           	</section>
           </div>
-        </div>
-      );
+        );
+      }
     }
     return (<div><h1>Loading</h1></div>);
   }

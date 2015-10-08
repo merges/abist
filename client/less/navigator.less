@@ -1,19 +1,22 @@
 // Navigator
 
-.navigator {
-	.make-row();
+.full-screen {
+	@media ( min-width: @screen-sm-min ) {
+		min-height: 101vh;
+	  text-align: center;
+	  border-bottom: 1px solid white;
+	}
+}
 
+
+.dev {
 	.drug-picker,
 	.medication-list {
-		.make-md-column(2);
-		.make-lg-column(1);
 		font-size: @font-small;
 		border-right: 5px solid @color-grey-xxxxl;
 	}
-	
+
 	.details {
-		.make-md-column(8);
-		.make-lg-column(10);
 		transition: opacity .2s ease-out;
 		border-right: 5px solid @color-grey-xxxxl;
 
@@ -24,179 +27,186 @@
 			opacity: .4;
 		}
 	}
+}
 
-	.brief-header {
-		color: @color-grey-xl;
-		font-weight: bolder;
-		font-size: 13px;
-		padding-bottom: 1em;
-		margin-bottom: 1em;
-		border-bottom: 15px solid @color-grey-xxxl;
-		line-height: 1.25;
 
-		@media (max-width: @screen-sm-max) {
-			padding-top: 2em;
-			border-bottom: none;
-		}
 
-		a {
-			font-weight: normal;
-			color: @color-orange;
-		}
+.brief-header {
+	color: @color-grey-xl;
+	font-weight: bolder;
+	font-size: 13px;
+	padding-bottom: 1em;
+	margin-bottom: 1em;
+	border-bottom: 15px solid @color-grey-xxxl;
+	line-height: 1.25;
+
+	@media (max-width: @screen-sm-max) {
+		padding-top: 2em;
+		border-bottom: none;
 	}
 
-	.filter-controls {
-		padding-bottom: 1em;
-		border-bottom: 1px solid @color-grey-l;
+	a {
+		font-weight: normal;
+		color: @color-orange;
+	}
+}
 
-		> section {
-			display: bock;
-			text-align: left;
+.filter-controls {
+	padding-bottom: 1em;
+	border-bottom: 1px solid @color-grey-l;
+
+	> section {
+		display: bock;
+		text-align: left;
+
+		+ section {
+			margin-top: 5px;
+		}
+
+		@media (max-width: @screen-sm-max) {
+			display: inline-block;
+			vertical-align: text-top;
 
 			+ section {
-				margin-top: 5px;
+				margin-top: 0;
+				margin-left: 5px;
+			}
+		}
+	}
+	a.button {
+		display: block;
+	}
+	.description {
+		display: block;
+	}
+	input {
+		margin-right: .25em;
+	}
+}
+
+.medication-cards {
+	padding-bottom: 1em;
+	border-bottom: 1px solid @color-grey-l;
+
+	> ul {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+
+		> li {
+			display: block;
+
+			+ li {
+				margin-top: 1em;
+			}
+
+			> a {
+				color: white;
+				display: block;
+				border-radius: 2px;
+				padding: .5em .5em 1.5em .5em;
+				background: @color-blue;
+				word-wrap: break-word;
+				.shadow-l;
+
+				transition: box-shadow .15s ease,
+										color .15s ease,
+										background .15s ease;
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+
+			&.disabled {
+				> a {
+					color: @color-grey-xl;
+					background: none;
+					.shadow-xl;
+				}
 			}
 
 			@media (max-width: @screen-sm-max) {
 				display: inline-block;
 				vertical-align: text-top;
+				margin: .25em !important;
 
-				+ section {
-					margin-top: 0;
-					margin-left: 5px;
+				&:first-of-type {
+					margin-left: 0;
+				}
+				&:last-of-type {
+					margin-right: 0;
 				}
 			}
 		}
-		a.button {
-			display: block;
-		}
-		.description {
-			display: block;
-		}
-		input {
-			margin-right: .25em;
-		}
 	}
+}
 
-	.medication-cards {
+.panel {
+	padding: 5em 0 0 0;
+}
+
+.tag-description {
+	font-size: 1.5em;
+	margin: 0;
+	padding-right: 20%;
+	color: @color-grey-l;
+	line-height: 1.2;
+
+	strong {
+		color: @color-grey-d;
+	}
+}
+
+nav.tag-navigation {
+
+	> ul {
+		padding-top: 1em;
 		padding-bottom: 1em;
-		border-bottom: 1px solid @color-grey-l;
 
-		> ul {
-			list-style-type: none;
-			margin: 0;
-			padding: 0;
+		> li {
+			> a {
+				padding: .5em 2.5em 1.5em .5em;
+			  border-radius: 2px;
+			  text-decoration: none;
+			  background: #f6f6f6;
+				transition: color .1s ease,
+										border .1s ease,
+										background .1s ease;
 
-			> li {
-				display: block;
-
-				+ li {
-					margin-top: 1em;
+				&:hover {
+					border-color: @color-blue;
+					color: @color-blue;
+					background: #efefef;
 				}
-
+			}
+			&.active {
 				> a {
 					color: white;
-					display: block;
-					border-radius: 2px;
-					padding: .5em .5em 1.5em .5em;
-					background: @color-blue;
-					word-wrap: break-word;
-					.shadow-l;
-
-					transition: box-shadow .15s ease,
-											color .15s ease,
-											background .15s ease;
-
-					&:hover {
-						text-decoration: none;
-					}
-				}
-
-				&.disabled {
-					> a {
-						color: @color-grey-xl;
-						background: none;
-						.shadow-xl;
-					}
-				}
-
-				@media (max-width: @screen-sm-max) {
-					display: inline-block;
-					vertical-align: text-top;
-					margin: .25em !important;
-
-					&:first-of-type {
-						margin-left: 0;
-					}
-					&:last-of-type {
-						margin-right: 0;
-					}
+			    background: @color-blue;
+			    .shadow-l;
 				}
 			}
 		}
-	}
 
-	.panel {
-		padding: 5em 0 0 0;
-	}
-
-	.tag-description {
-		font-size: 1.5em;
-		margin: 0;
-		padding-right: 20%;
-		color: @color-grey-l;
-		line-height: 1.2;
-
-		strong {
-			color: @color-grey-d;
-		}
-	}
-
-	nav.tag-navigation {
-
-		> ul {
-			padding-top: 1em;
-			padding-bottom: 1em;
-
+		@media (max-width: @screen-xs-max) {
 			> li {
+				float: none;
+				display: block;
+				margin: 0;
+
 				> a {
-					padding: .5em 2.5em 1.5em .5em;
-				  border-radius: 2px;
-				  text-decoration: none;
-				  background: #f6f6f6;
-					transition: color .1s ease,
-											border .1s ease,
-											background .1s ease;
-					
-					&:hover {
-						border-color: @color-blue;
-						color: @color-blue;
-						background: #efefef;
-					}
-				}
-				&.active {
-					> a {
-						color: white;
-				    background: @color-blue;
-				    .shadow-l;
-					}
-				}
-			}
-
-			@media (max-width: @screen-xs-max) {
-				> li {
-					float: none;
 					display: block;
-					margin: 0;
-
-					> a {
-						display: block;
-						padding: .1em 15px;
-					}
+					padding: .1em 15px;
 				}
 			}
 		}
 	}
+}
+
+
+.navigator {
+	// .make-row();
 
 	.results {
 		padding: 3em 0;
