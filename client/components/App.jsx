@@ -20,12 +20,14 @@ var App = React.createClass({
     	<div>
 				<RouteHandler {...this.props} />
 
+	      {/*
 	      <nav className='site-wide-nav'>
 	      	<a href='/'>
 	    			<span className="fa fa-home fa-fw"></span>
 	    			Adam Baker IS thesis project website
 	    		</a>
 	      </nav>
+	    	*/}
 	    </div>
     );
   }

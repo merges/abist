@@ -11,6 +11,8 @@ var mockData = require('../data/mock.js');
 var Nav = require('react-bootstrap').Nav;
 var NavItem = require('react-bootstrap').NavItem;
 
+var Sticky = require('react-sticky');
+
 var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx');
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
 var OutcomeTimeline = require('./OutcomeTimeline.jsx');
@@ -26,6 +28,23 @@ var PtdaSideEffects = require('./ptda/PtdaSideEffects');
 String.prototype.capitalizeFirstletter = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
+
+var ScrollTo = React.createClass({
+
+  propTypes: {
+    to: React.PropTypes.string.isRequired,
+    onClick: React.PropTypes.func.isRequired
+  },
+
+  render: function() {
+    return (
+      <a onClick={this.props.onClick.bind(null, this.props.to)} className='scroll-down'>
+        <i className='ss-icon ss-navigatedown'></i>
+      </a>
+    );
+  }
+
+});
 
 // Navigator experiment
 
@@ -188,14 +207,21 @@ var Navigator = React.createClass({
     }
   },
 
+  getOffsetTop: function (ref) {
+    if (this.refs[ref]) {
+      var element = this.refs[ref].getDOMNode();
+      return Math.ceil($(element).offset().top);
+    }
+    return null;
+  },
+
   scrollSmoothlyToElement: function (ref) {
     // Use this by passing in a ref
     // <a onClick={this.scrollSmoothlyToElement.bind(null, 'startSectionMission')} className='scroll-down white'>
     //   <i className='ss-icon ss-navigatedown'></i>
     // </a>
 
-    var element = this.refs[ref].getDOMNode();
-    var newScrollTop = Math.ceil($(element).offset().top);
+    var newScrollTop = this.getOffsetTop(ref);
     $('html, body').animate({
       scrollTop: newScrollTop
     }, 450);
@@ -358,7 +384,7 @@ var Navigator = React.createClass({
                 'active': preferencesSelected[key]
               });
               return (
-                <section>
+                <section key={preference.name}>
                   <a className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
                     {preference.name}
                   </a>
@@ -632,15 +658,15 @@ var Navigator = React.createClass({
   renderPreferredMedicationName: function (medication) {
     if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
       return (
-        <span>
+        <span className='medication-name'>
           <strong>{medication.name_generic.toLowerCase()}</strong>
         </span>
       );
     }
     else {
       return (
-        <span>
-          {medication.name_common}<br />
+        <span className='medication-name'>
+          <span className='brand'>{medication.name_common} — brand name of</span><br />
           <strong>{medication.name_generic}</strong>
         </span>
       );
@@ -655,7 +681,6 @@ var Navigator = React.createClass({
     if (medications) {
       return (
         <div className='medication-cards'>
-          <h3 className='brief-header'>Medications that match the selected preferences and needs</h3>
           <ul>
             {Object.keys(medications).map(function (medication, i) {
             	var medication = medications[medication];
@@ -800,8 +825,6 @@ var Navigator = React.createClass({
   },
 
   render: function () {
-    console.log(this.state.dev, this.props.query)
-
     var cx = React.addons.classSet;
     var navigatorClasses = cx({
       'navigator': true,
@@ -875,21 +898,69 @@ var Navigator = React.createClass({
           </div>
         );
       }
+
       else {
+        var selectedPreferenceItems = [];
+        _.each(this.state.preferencesSelected, function(value, key) {
+          value == true && selectedPreferenceItems.push(key);
+        });
+
         return (
-          <div className={navigatorClasses}>
-            <section className='full-screen' ref='first'>
+          <div className='navigator'>
+            <section className='full-screen' ref='intro'>
+              <div className='spread'>
+                <div>
+                  <h1>This app shows you results from medical research about medications for rheumatoid arthritis</h1>
+                </div>
+              </div>
+              <ScrollTo to='controls' onClick={this.scrollSmoothlyToElement} />
+            </section>
+
+            <section className='full-screen' ref='controls'>
               {this.renderPreferenceControls(preferences)}
-              <a onClick={this.scrollSmoothlyToElement.bind(null, 'second')} className='scroll-down'>
-                <i className='ss-icon ss-navigatedown'></i>
-              </a>
+              <ScrollTo to='medications' onClick={this.scrollSmoothlyToElement} />
             </section>
 
-            <section className={medicationListClasses} ref='second'>
-              {this.renderMedicationBar(medications)}
+            <section className='full-screen' ref='medications'>
+              <div className='spread'>
+                <div>
+                  <h1>These medications match your needs and preferences</h1>
+                  {selectedPreferenceItems}
+                  <section className={medicationListClasses}>
+                    {this.renderMedicationBar(medications)}
+                  </section>
+                </div>
+              </div>
+              <ScrollTo to='results' onClick={this.scrollSmoothlyToElement} />
             </section>
 
+            <section className='full-screen' ref='results'>
+              <section className={detailsClasses}>
+                {this.renderTagBar(selectedTag)}
+                {this.renderTagDescription(selectedTag)}
+                {this.renderMeasureBar(selectedTag, selectedMeasure)}
+                {this.renderMeasure(selectedTag, selectedMeasure)}
+              </section>
+            </section>
 
+            <div className='sticky-holder'>
+              <Sticky
+                className='sticky-filter-controls'
+                onStickyStateChange={this.handleStickyStateChange}
+                stickyClass='stuck'
+                stickyStyle={{position: 'relative'}}
+                topOffset={this.getOffsetTop('medications')}>
+                  {this.renderPreferenceControls(preferences)}
+              </Sticky>
+              <Sticky
+                className='sticky-medications'
+                onStickyStateChange={this.handleStickyStateChange}
+                stickyClass='stuck'
+                stickyStyle={{position: 'relative'}}
+                topOffset={this.getOffsetTop('results')}>
+                  {this.renderMedicationBar(medications)}
+              </Sticky>
+            </div>
           </div>
         );
       }
