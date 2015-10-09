@@ -46,6 +46,101 @@ var ScrollTo = React.createClass({
 
 });
 
+var DosageForm = React.createClass({
+
+  propTypes: {
+    form: React.PropTypes.string.isRequired
+  },
+
+  checkForSubstring: function(form, canonical) {
+    return form.toLowerCase().indexOf(canonical) >= 0;
+  },
+
+  render: function() {
+    var form = this.props.form;
+
+    var cx = React.addons.classSet;
+    var classes = cx({
+      'ss-icon': true,
+      'ss-hospital': this.checkForSubstring(form, 'infusion'),
+      'ss-syringe': this.checkForSubstring(form, 'injection'),
+      'ss-pill': this.checkForSubstring(form, 'tablet')
+    });
+
+    return (
+      <div className='dosage-form'>
+        <span className={classes}></span>
+        <span className='form-name'>{form}</span>
+      </div>
+    );
+  }
+
+});
+
+var MedicationCard = React.createClass({
+
+  propTypes: {
+    medication: React.PropTypes.object.isRequired
+  },
+
+  renderPreferredMedicationName: function (medication) {
+    if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
+      return (
+        <span className='medication-name'>
+          <strong>{medication.name_generic.toLowerCase()}</strong>
+        </span>
+      );
+    }
+    else {
+      return (
+        <span className='medication-name'>
+          <strong>{medication.name_generic}</strong><br />
+          <span className='brand'>{medication.name_common}</span>         
+        </span>
+      );
+    }
+  },
+
+  render: function() {
+    var medication = this.props.medication;
+    // debugger;
+
+    return (
+      <div>
+        <div className='dosage-forms'>
+          {medication.forms.map(function (form, i) {
+            return (
+              <DosageForm key={i} form={form.name} />
+            );
+          })}
+        </div>
+        {this.renderPreferredMedicationName(medication)}
+
+        <div className='cost'>
+          Monthly cost is about<br />
+          {medication.ptda.cost.min != medication.ptda.cost.max ?
+            <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
+            <span>${medication.ptda.cost.max}</span>
+          }
+        </div>
+
+        <div className='frequency'>
+          {medication.ptda.frequency.dose &&
+            <span>
+              {medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+              {medication.ptda.frequency.multiple > 1 ?
+                <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
+                <span>a {medication.ptda.frequency.unit}</span>
+              }
+            </span>
+          }
+        </div>
+      </div>
+    );
+  }
+
+});
+
 // Navigator experiment
 
 var Navigator = React.createClass({
@@ -372,8 +467,6 @@ var Navigator = React.createClass({
       <div className='filter-controls'
         onMouseEnter={toggleOpen}
         onMouseLeave={toggleClose}>
-          <h3 className='brief-header'>Filter medications to match your preferences and needs</h3>
-
           {Object.keys(preferences).map(function(key) {
             var preference = preferences[key];
 
@@ -406,20 +499,25 @@ var Navigator = React.createClass({
 
                   {options.map(function(option, i) {
                     var optionClasses = cx({
-                      'option': true,
+                      'button option': true,
                       'active': !preferencesSelected[key][option]
                     });
+                    // return (
+                    //   <div>
+                    //     <input type='checkbox'
+                    //       className={optionClasses}
+                    //       key={option}
+                    //       value={option}
+                    //       checked={!preferencesSelected[key][option]}
+                    //       onChange={filterPreference.bind(null, key, option)}>
+                    //         {option}
+                    //     </input>
+                    //   </div>
+                    // );
                     return (
-                      <div>
-                        <input type='checkbox'
-                          className={optionClasses}
-                          key={option}
-                          value={option}
-                          checked={!preferencesSelected[key][option]}
-                          onChange={filterPreference.bind(null, key, option)}>
-                            {option}
-                        </input>
-                      </div>
+                      <a className={optionClasses} key={option} onClick={filterPreference.bind(null, key, option)}>
+                        <DosageForm form={option} />
+                      </a>
                     );
                   })}
                 </section>
@@ -655,24 +753,6 @@ var Navigator = React.createClass({
     });
   },
 
-  renderPreferredMedicationName: function (medication) {
-    if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
-      return (
-        <span className='medication-name'>
-          <strong>{medication.name_generic.toLowerCase()}</strong>
-        </span>
-      );
-    }
-    else {
-      return (
-        <span className='medication-name'>
-          <span className='brand'>{medication.name_common}</span><br />
-          <strong>{medication.name_generic}</strong>
-        </span>
-      );
-    }
-  },
-
   renderMedicationBar: function (medications) {
   	var disabledMedications = this.state.disabledMedications;
     var handleMedicationClick = this.handleMedicationClick;
@@ -688,7 +768,7 @@ var Navigator = React.createClass({
                 <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
                   <a
                     onClick={handleMedicationClick.bind(null, medication.name)}>
-                      {renderPreferredMedicationName(medication)}
+                      <MedicationCard medication={medication} />
                   </a>
                 </li>
               );
@@ -907,25 +987,32 @@ var Navigator = React.createClass({
 
         return (
           <div className='navigator'>
-            <section className='full-screen' ref='intro'>
+            <section className='full-screen intro' ref='intro'>
               <div className='spread'>
                 <div>
-                  <h1>This app shows you results from medical research about medications for rheumatoid arthritis</h1>
+                  <h1>This app shows you results from medical research about medications for rheumatoid arthritis.</h1>
+                  <h2>They work differently for different people, are taken on different schedules, and vary in cost and side effects.</h2>
                 </div>
               </div>
               <ScrollTo to='controls' onClick={this.scrollSmoothlyToElement} />
             </section>
 
-            <section className='full-screen' ref='controls'>
-              {this.renderPreferenceControls(preferences)}
+            <section className='full-screen controls' ref='controls'>
+              <div className='spread'>
+                <div>
+                  <h1>A lot of medications treat RA, but only some might match your needs.</h1>
+                  <h2>Choose a few preferences, and move on to see medications that work out.</h2>
+                  {this.renderPreferenceControls(preferences)}
+                </div>
+              </div>
               <ScrollTo to='medications' onClick={this.scrollSmoothlyToElement} />
             </section>
 
-            <section className='full-screen' ref='medications'>
+            <section className='full-screen medications' ref='medications'>
               <div className='spread'>
                 <div>
                   <h1>These medications match your needs and preferences</h1>
-                  {selectedPreferenceItems}
+                  <h2>&nbsp; {selectedPreferenceItems}</h2>
                   <section className={medicationListClasses}>
                     {this.renderMedicationBar(medications)}
                   </section>
@@ -934,7 +1021,7 @@ var Navigator = React.createClass({
               <ScrollTo to='results' onClick={this.scrollSmoothlyToElement} />
             </section>
 
-            <section className='full-screen' ref='results'>
+            <section className='full-screen results' ref='results'>
               <section className={detailsClasses}>
                 {this.renderTagBar(selectedTag)}
                 {this.renderTagDescription(selectedTag)}

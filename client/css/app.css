@@ -11429,14 +11429,21 @@ html:hover [class^="ss-"] {
   width: 1px;
   background: #bbb;
 }
-.navigator h1 {
-  margin: 0;
+.navigator h1,
+.navigator h2 {
+  margin: 0 0 .51em 0;
   max-width: 50vw;
   text-align: left;
-  color: #bbb;
   font-weight: lighter;
   letter-spacing: -0.01em;
   line-height: 1.2;
+}
+.navigator h1 {
+  color: #bbb;
+}
+.navigator h2 {
+  font-size: 21px;
+  color: white;
 }
 .sticky-holder {
   z-index: 5;
@@ -11492,9 +11499,13 @@ html:hover [class^="ss-"] {
 }
 .sticky-medications.stuck .medication-cards ul > li {
   flex: 1;
-  max-width: 120px;
+  min-width: 120px;
   max-height: 80px;
   margin: .25em;
+}
+.sticky-medications.stuck .medication-cards .dosage-forms,
+.sticky-medications.stuck .medication-cards .cost {
+  display: none;
 }
 .spread {
   display: table;
@@ -11507,16 +11518,20 @@ html:hover [class^="ss-"] {
 }
 .full-screen {
   background: #f8fcfa;
+  position: relative;
+  padding-bottom: 60px;
 }
 @media (min-width: 768px) {
   .full-screen {
     min-height: 100vh;
-    position: relative;
   }
 }
 .full-screen > div {
   padding-left: 10em;
   padding-right: 10em;
+}
+.full-screen h1 {
+  color: white;
 }
 .scroll-down {
   color: white;
@@ -11526,10 +11541,26 @@ html:hover [class^="ss-"] {
   bottom: 0;
   display: block;
   width: 100%;
+  text-align: center;
+}
+.scroll-down .ss-icon {
+  font-size: 1.3em;
 }
 .scroll-down:hover {
   text-decoration: none;
   color: white;
+}
+.intro {
+  background: #64606A;
+}
+.controls {
+  background: #8C8496;
+}
+.medications {
+  background: #64606A;
+}
+.results {
+  background: #E0DFDE;
 }
 .dev .drug-picker,
 .dev .medication-list {
@@ -11579,36 +11610,81 @@ html:hover [class^="ss-"] {
 .filter-controls a.button {
   display: block;
 }
+.filter-controls a.button.option {
+  display: inline-block;
+}
+.filter-controls a.button.option + .option {
+  margin-left: 5px;
+}
 .filter-controls .description {
   display: block;
 }
 .filter-controls input {
   margin-right: .25em;
 }
+.filter-controls .dosage-form > .ss-icon {
+  margin-right: 5px;
+  vertical-align: text-top;
+}
+.dosage-forms {
+  float: right;
+  position: relative;
+}
+.dosage-forms > .dosage-form {
+  text-align: center;
+  display: inline-block;
+  width: 48px;
+  vertical-align: text-top;
+  font-size: 120%;
+}
+.dosage-forms > .dosage-form > span {
+  display: block;
+}
+.dosage-forms > .dosage-form .form-name {
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1.2;
+}
+.dosage-forms > .dosage-form + .dosage-form {
+  margin-left: 5px;
+}
 .medication-cards {
   padding-bottom: 1em;
 }
 .medication-cards > ul {
-  list-style-type: none;
-  display: flex;
-  align-items: stretch;
-  flex-flow: row wrap;
   margin: 0;
   padding: 0;
+  list-style-type: none;
+  display: flex;
+  flex-flow: row wrap;
 }
 .medication-cards > ul > li {
+  display: block;
+  margin: auto;
+  padding: 10px;
   flex: auto;
-  margin: 5px;
+  flex-basis: 33%;
+  align-self: stretch;
+}
+@media (max-width: 767px) {
+  .medication-cards > ul > li {
+    flex-basis: 100%;
+  }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .medication-cards > ul > li {
+    flex-basis: 50%;
+  }
 }
 .medication-cards > ul > li > a {
-  width: 33%;
+  position: relative;
+  line-height: 1.2;
   color: white;
   display: block;
   border-radius: 2px;
-  padding: .5em .5em 1.5em .5em;
+  padding: 8px 8px 24px 8px;
   background: #6699ff;
   word-wrap: break-word;
-  width: 400px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
   transition: box-shadow 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
@@ -11619,6 +11695,10 @@ html:hover [class^="ss-"] {
   color: #bbb;
   background: none;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+.medication-cards > ul > li .cost,
+.medication-cards > ul > li .frequency {
+  padding: 4px 0;
 }
 .medication-name .brand {
   opacity: .7;
