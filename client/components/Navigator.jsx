@@ -212,7 +212,7 @@ var Navigator = React.createClass({
       var element = this.refs[ref].getDOMNode();
       return Math.ceil($(element).offset().top);
     }
-    return null;
+    return 99999;
   },
 
   scrollSmoothlyToElement: function (ref) {
@@ -666,7 +666,7 @@ var Navigator = React.createClass({
     else {
       return (
         <span className='medication-name'>
-          <span className='brand'>{medication.name_common} — brand name of</span><br />
+          <span className='brand'>{medication.name_common}</span><br />
           <strong>{medication.name_generic}</strong>
         </span>
       );

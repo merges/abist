@@ -11601,6 +11601,7 @@ html:hover [class^="ss-"] {
   margin: 5px;
 }
 .medication-cards > ul > li > a {
+  width: 33%;
   color: white;
   display: block;
   border-radius: 2px;
