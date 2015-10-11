@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 var React = require('react/addons');
-var _ = require('underscore');
+var _ = require('lodash');
 
 // Data
 var get = require('../data/get.js');
@@ -80,7 +80,9 @@ var DosageForm = React.createClass({
 var MedicationCard = React.createClass({
 
   propTypes: {
-    medication: React.PropTypes.object.isRequired
+    medication: React.PropTypes.object.isRequired,
+    preferences: React.PropTypes.object,
+    preferencesSelected: React.PropTypes.object
   },
 
   renderPreferredMedicationName: function (medication) {
@@ -95,15 +97,57 @@ var MedicationCard = React.createClass({
       return (
         <span className='medication-name'>
           <strong>{medication.name_generic}</strong><br />
-          <span className='brand'>{medication.name_common}</span>         
+          <span className='light'>{medication.name_common}</span>         
         </span>
+      );
+    }
+  },
+
+  renderPreferences: function (preferences, preferencesSelected) {
+    if (preferences && preferencesSelected) {
+      var medication = this.props.medication;
+      return (
+        <div className='preferences'>
+          {_.map(preferencesSelected, function (value, key) {
+            // Check medication for this key, to see if it has a hit
+            // e.g. medication[risks.alcohol] = 0 (ok), 1 (unsure), 2 (bad)
+            // e.g. medication[generic_available]
+            // e.g. medication[preferences[key]]
+            // e.g. methotrexate[risks.alcohol]
+
+            // Is a the preference true or non-empty?
+            if (value) {
+              // Does the preference exist in our preferences object, and is there a function to look for a match?
+              if (preferences[key] && preferences[key].isMatch) {
+                var isMatch = preferences[key].isMatch;
+                var lookupKey = preferences[key].key;
+                var match = isMatch(_.get(medication, lookupKey), value);
+              }
+            }
+
+            // If we get an "unsafe"
+            if (match == 'unsafe') {
+              return (<p key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</p>);
+            }
+            // If we get an "unknown"
+            if (match == 'unknown') {
+              return (<p key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</p>);
+            }
+            // If we get a "false" i.e. for a boolean, it's not true
+            if (match === false) {
+              return (<p key={medication.name + key}>No {preferences[key].name.toLowerCase()}</p>);
+            }
+            // TODO handle dosage form properly
+          })}
+        </div>
       );
     }
   },
 
   render: function() {
     var medication = this.props.medication;
-    // debugger;
+    var preferences = this.props.preferences;
+    var preferencesSelected = this.props.preferencesSelected;
 
     return (
       <div>
@@ -117,7 +161,7 @@ var MedicationCard = React.createClass({
         {this.renderPreferredMedicationName(medication)}
 
         <div className='cost'>
-          Monthly cost is about<br />
+          <span className='light'>Monthly cost is about</span><br />
           {medication.ptda.cost.min != medication.ptda.cost.max ?
             <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
             <span>${medication.ptda.cost.max}</span>
@@ -126,8 +170,9 @@ var MedicationCard = React.createClass({
 
         <div className='frequency'>
           {medication.ptda.frequency.dose &&
-            <span>
-              {medication.ptda.frequency.dose == 1 ? 'Once ' : 'Twice '}
+            <span> 
+              <span className='ss-icon ss-calendar inline-block space-r'></span>
+              {medication.ptda.frequency.dose == 1 ? 'once ' : 'twice '}
               {medication.ptda.frequency.multiple > 1 ?
                 <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
                 <span>a {medication.ptda.frequency.unit}</span>
@@ -135,6 +180,8 @@ var MedicationCard = React.createClass({
             </span>
           }
         </div>
+
+        {this.renderPreferences(preferences, preferencesSelected)}
       </div>
     );
   }
@@ -150,10 +197,44 @@ var Navigator = React.createClass({
       medications: medications,
       preferences: {
         'alcohol': {
-          'key': 'key',
+          'key': 'risks.alcohol',
           'name': 'Alcohol-friendly',
           'type': 'boolean',
-          'description': 'If you drink alcohol'
+          'description': 'If you drink alcohol',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
+        },
+        'cancer_treatment': {
+          'key': 'risks.cancer_treatment',
+          'name': 'Safer while in cancer treatment',
+          'type': 'boolean',
+          'description': 'If you’re undergoing cancer treatment with surgery, chemotherapy, or radiation therapy',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
         },
         // 'cost': {
         //   'key': 'cost',
@@ -171,31 +252,114 @@ var Navigator = React.createClass({
           'key': 'forms',
           'name': 'Dosage form',
           'type': 'list',
-          'description': 'preferred way of taking your medicine'
+          'description': 'preferred way of taking your medicine',
+          isMatch: function(drugForms, selectedForms) {
+            // console.log('DRUG FORMS FORMS', drugForms);
+            // console.log('SELECTED FORMS', selectedForms);
+
+            if (drugForms) {
+              _.each(drugForms, function(form) {
+                if (selectedForms[form.name] == true) {
+                  return false;
+                }
+              })
+            }
+            return true;
+          },
         },
         'generic_available': {
           'key': 'generic_available',
           'name': 'Generic available (less expensive)',
           'type': 'boolean',
-          'description': 'A cheaper, generic version is available'
+          'description': 'A cheaper, generic version is available',
+          isMatch: function(genericAvailable) {
+            if (genericAvailable === true) {
+              return true;
+            }
+            if (genericAvailable === false) {
+              return false;
+            }
+          }
+        },
+        'heart_failure': {
+          'key': 'risks.heart_failure',
+          'name': 'Safer for people with heart failure',
+          'type': 'boolean',
+          'description': 'if you have level III or IV heart failure',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
         },
         'liver_disease': {
-          'key': 'liver_disease',
+          'key': 'risks.liver_disease',
           'name': 'Safer for liver disease',
           'type': 'boolean',
-          'description': 'if you have liver disease'
+          'description': 'if you have liver disease',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
         },
         'pregnancy': {
-          'key': 'pregnancy',
+          'key': 'risks.pregnancy',
           'name': 'Safer for pregnancy',
           'type': 'boolean',
-          'description': 'if you’re pregnant or considering it'
+          'description': 'if you’re pregnant or considering it',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
         },
         'tb': {
-          'key': 'tb',
+          'key': 'risks.tb',
           'name': 'Safer for tuberculosis',
           'type': 'boolean',
-          'description': 'if you have or might be exposed to tuberculosis'
+          'description': 'if you have or might be exposed to tuberculosis',
+          isMatch: function(object) {
+            if (object) {
+              if (object.risk == 2) {
+                return 'unsafe';
+              }
+              if (object.risk == 1) {
+                return 'possibly unsafe';
+              }
+              if (object.risk == 0) {
+                return 'safe';
+              }
+            }
+            return 'unknown';
+          }
         }
       },
       risks: {
@@ -257,10 +421,12 @@ var Navigator = React.createClass({
       preferences: this.props.preferences,
       preferencesSelected: {
         alcohol: false,
+        cancer_treatment: false,
         class: getClasses(this.props.medications),
         cost: null,
         forms: getDosageForms(this.props.medications),
         generic_available: false,
+        heart_failure: false,
         liver_disease: false,
         pregnancy: false,
         tb: false
@@ -464,9 +630,7 @@ var Navigator = React.createClass({
     var cx = React.addons.classSet;
 
     return (
-      <div className='filter-controls'
-        onMouseEnter={toggleOpen}
-        onMouseLeave={toggleClose}>
+      <div className='filter-controls'>
           {Object.keys(preferences).map(function(key) {
             var preference = preferences[key];
 
@@ -543,6 +707,7 @@ var Navigator = React.createClass({
 
     var disabledMedications = {};
     var medications = this.props.medications;
+    var preferences = this.props.preferences;
     var preferencesSelected = this.state.preferencesSelected;
 
     // Toggle the preference. If there's an 'option' provided, the preference is a list type,
@@ -585,10 +750,15 @@ var Navigator = React.createClass({
             }
             // Not a key in medication object, so check ptda.risks
             else {
-              for (var risk in medication.ptda.risks) {
-                if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
+              // Look for key in right place
+              if (preferences[preference] && preferences[preference].isMatch) {
+                var isMatch = preferences[preference].isMatch;
+                var lookupKey = preferences[preference].key;
+                var result = _.get(medication, lookupKey);
+                var match = isMatch(_.get(medication, lookupKey));
+                
+                if (match == 'unsafe') {
                   medicationMatchingPreferences[preference] = true;
-                  // disabledMedications[medication.name] = true;
                 }
               }
             }
@@ -757,6 +927,8 @@ var Navigator = React.createClass({
   	var disabledMedications = this.state.disabledMedications;
     var handleMedicationClick = this.handleMedicationClick;
     var renderPreferredMedicationName = this.renderPreferredMedicationName;
+    var preferences = this.props.preferences;
+    var preferencesSelected = this.state.preferencesSelected;
 
     if (medications) {
       return (
@@ -768,7 +940,7 @@ var Navigator = React.createClass({
                 <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
                   <a
                     onClick={handleMedicationClick.bind(null, medication.name)}>
-                      <MedicationCard medication={medication} />
+                      <MedicationCard medication={medication} preferences={preferences} preferencesSelected={preferencesSelected} />
                   </a>
                 </li>
               );
@@ -990,7 +1162,7 @@ var Navigator = React.createClass({
             <section className='full-screen intro' ref='intro'>
               <div className='spread'>
                 <div>
-                  <h1>This app shows you results from medical research about medications for rheumatoid arthritis.</h1>
+                  <h1>This app shows you findings from medical research about rheumatoid arthritis treatments.</h1>
                   <h2>They work differently for different people, are taken on different schedules, and vary in cost and side effects.</h2>
                 </div>
               </div>
@@ -1012,7 +1184,6 @@ var Navigator = React.createClass({
               <div className='spread'>
                 <div>
                   <h1>These medications match your needs and preferences</h1>
-                  <h2>&nbsp; {selectedPreferenceItems}</h2>
                   <section className={medicationListClasses}>
                     {this.renderMedicationBar(medications)}
                   </section>

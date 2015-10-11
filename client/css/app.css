@@ -11016,6 +11016,18 @@ html:hover [class^="ss-"] {
 .light {
   opacity: .6;
 }
+.space-t {
+  margin-top: 0.4em;
+}
+.space-r {
+  margin-right: 0.4em;
+}
+.space-b {
+  margin-bottom: 0.4em;
+}
+.space-l {
+  margin-left: 0.4em;
+}
 .shadow-l {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
@@ -11445,6 +11457,13 @@ html:hover [class^="ss-"] {
   font-size: 21px;
   color: white;
 }
+.navigator .results {
+  padding: 3em 0;
+  min-height: 100vh;
+}
+.navigator .adverse-events > div + div {
+  margin-top: 5em;
+}
 .sticky-holder {
   z-index: 5;
   position: fixed;
@@ -11504,7 +11523,9 @@ html:hover [class^="ss-"] {
   margin: .25em;
 }
 .sticky-medications.stuck .medication-cards .dosage-forms,
-.sticky-medications.stuck .medication-cards .cost {
+.sticky-medications.stuck .medication-cards .cost,
+.sticky-medications.stuck .medication-cards .frequency,
+.sticky-medications.stuck .medication-cards .preferences {
   display: none;
 }
 .spread {
@@ -11521,17 +11542,21 @@ html:hover [class^="ss-"] {
   position: relative;
   padding-bottom: 60px;
 }
-@media (min-width: 768px) {
-  .full-screen {
-    min-height: 100vh;
-  }
-}
 .full-screen > div {
-  padding-left: 10em;
-  padding-right: 10em;
+  padding-left: 2em;
+  padding-right: 2em;
 }
 .full-screen h1 {
   color: white;
+}
+@media (min-width: 992px) {
+  .full-screen {
+    min-height: 100vh;
+  }
+  .full-screen > div {
+    padding-left: 10em;
+    padding-right: 10em;
+  }
 }
 .scroll-down {
   color: white;
@@ -11629,6 +11654,7 @@ html:hover [class^="ss-"] {
 .dosage-forms {
   float: right;
   position: relative;
+  margin-left: 1em;
 }
 .dosage-forms > .dosage-form {
   text-align: center;
@@ -11678,7 +11704,7 @@ html:hover [class^="ss-"] {
 }
 .medication-cards > ul > li > a {
   position: relative;
-  line-height: 1.2;
+  line-height: 1.25;
   color: white;
   display: block;
   border-radius: 2px;
@@ -11697,11 +11723,12 @@ html:hover [class^="ss-"] {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 .medication-cards > ul > li .cost,
-.medication-cards > ul > li .frequency {
+.medication-cards > ul > li .frequency,
+.medication-cards > ul > li .preferences {
   padding: 4px 0;
 }
-.medication-name .brand {
-  opacity: .7;
+.medication-cards > ul > li .preferences p {
+  margin: 0;
 }
 .panel {
   padding: 5em 0 0 0;
@@ -11749,12 +11776,6 @@ nav.tag-navigation > ul > li.active > a {
     display: block;
     padding: .1em 15px;
   }
-}
-.navigator .results {
-  padding: 3em 0;
-}
-.navigator .adverse-events > div + div {
-  margin-top: 5em;
 }
 .processing {
   margin-right: auto;

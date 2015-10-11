@@ -17,6 +17,15 @@
 		font-size: 21px;
 		color: white;
 	}
+	.results {
+		padding: 3em 0;
+		min-height: 100vh;
+	}
+	.adverse-events {
+		> div + div {
+			margin-top: 5em;
+		}
+	}
 }
 
 .sticky-holder {
@@ -88,7 +97,9 @@
 			}
 
 			.dosage-forms,
-			.cost {
+			.cost,
+			.frequency,
+			.preferences {
 				display: none;
 			}
 		}
@@ -111,17 +122,21 @@
 	position: relative;
 	padding-bottom: 60px;
 
-	@media ( min-width: @screen-sm-min ) {
-		min-height: 100vh;
-	}
-
 	> div {
-		padding-left: 	10em;
-		padding-right: 	10em;
+		padding-left: 	2em;
+		padding-right: 	2em;
 	}
-
 	h1 {
 		color: white;
+	}
+
+	@media ( min-width: @screen-md-min ) {
+		min-height: 100vh;
+
+		> div {
+			padding-left: 	10em;
+			padding-right: 	10em;
+		}
 	}
 }
 
@@ -241,6 +256,7 @@
 .dosage-forms {
 	float: right;
 	position: relative;
+	margin-left: 1em;
 
 	> .dosage-form {
 		text-align: center;
@@ -295,7 +311,7 @@
 
 			> a {
 				position: relative;
-				line-height: 1.2;
+				line-height: 1.25;
 				color: white;
 				display: block;
 				border-radius: 2px;
@@ -322,8 +338,12 @@
 			}
 
 			.cost,
-			.frequency {
+			.frequency,
+			.preferences {
 				padding: 4px 0;
+			}
+			.preferences p {
+				margin: 0;
 			}
 
 			// @media (max-width: @screen-sm-max) {
@@ -341,11 +361,7 @@
 		}
 	}
 }
-.medication-name {
-	.brand {
-		opacity: .7;
-	}
-}
+
 
 .panel {
 	padding: 5em 0 0 0;
@@ -405,20 +421,6 @@ nav.tag-navigation {
 					padding: .1em 15px;
 				}
 			}
-		}
-	}
-}
-
-
-.navigator {
-	// .make-row();
-
-	.results {
-		padding: 3em 0;
-	}
-	.adverse-events {
-		> div + div {
-			margin-top: 5em;
 		}
 	}
 }

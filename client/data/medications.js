@@ -70,6 +70,23 @@ var drugs = [
         }
       ]
     },
+    "risks": {
+      "tb": {
+        "risk": 0
+      },
+      "pregnancy": {
+        "risk": 2
+      },
+      "alcohol": {
+        "risk": 2
+      },
+      "liver_disease": {
+        "risk": 2
+      },
+      "heart_failure": {
+        "risk": 0
+      }
+    },
     "spl": [
       {
         "name": "Trexall tablet",
@@ -150,6 +167,23 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 0
+      },
+      "pregnancy": {
+        "risk": 0
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 0
+      }
     }
   },
   {
@@ -217,6 +251,23 @@ var drugs = [
           "risk": 2
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 0
+      },
+      "pregnancy": {
+        "risk": 2
+      },
+      "alcohol": {
+        "risk": 2
+      },
+      "liver_disease": {
+        "risk": 2
+      },
+      "heart_failure": {
+        "risk": 0
+      }
     }
   },
   {
@@ -284,6 +335,23 @@ var drugs = [
           "risk": 2
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 0
+      },
+      "pregnancy": {
+        "risk": 0
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 0
+      }
     }
   },
   {
@@ -352,6 +420,23 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      }
     }
   },
   {
@@ -421,6 +506,26 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      },
+      "cancer_treatment": {
+        "risk": 2
+      }
     }
   },
   {
@@ -489,6 +594,26 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      },
+      "cancer_treatment": {
+        "risk": 2
+      }
     }
   },
   {
@@ -562,6 +687,26 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      },
+      "cancer_treatment": {
+        "risk": 2
+      }
     }
   },
   {
@@ -595,8 +740,8 @@ var drugs = [
       },
       "frequency": {
         "unit": "week",
-        "dose": 2,
-        "multiple": 2
+        "dose": 1,
+        "multiple": 1
       },
       "side_effects": {
         "common": [
@@ -631,6 +776,26 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      },
+      "cancer_treatment": {
+        "risk": 2
+      }
     }
   },
   {
@@ -700,6 +865,26 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      },
+      "heart_failure": {
+        "risk": 2
+      },
+      "cancer_treatment": {
+        "risk": 2
+      }
     }
   },
   {
@@ -769,6 +954,20 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      }
     }
   },
   {
@@ -839,8 +1038,105 @@ var drugs = [
           "risk": 0
         }
       ]
+    },
+    "risks": {
+      "tb": {
+        "risk": 2
+      },
+      "pregnancy": {
+        "risk": 1
+      },
+      "alcohol": {
+        "risk": 0
+      },
+      "liver_disease": {
+        "risk": 0
+      }
     }
   }
+  // ,{
+  //   "name": "Kineret",
+  //   "name_generic": "anakinra",
+  //   "name_common": "Kineret",
+  //   "name_phonetic": "kin-ur-EHT",
+  //   "name_generic_phonetic": "ana-KIN-rah",
+  //   "class": [
+  //     "Biologic",
+  //     "IL1 inhibitor"
+  //   ],
+  //   "generic_available": false,
+  //   "names_brand": [
+  //     "Actemra"
+  //   ],
+  //   "forms": [
+  //     {
+  //       "name": "infusion (by vein at clinic)"
+  //     }
+  //   ],
+  //   "ptda": {
+  //     "cost": {
+  //       "min": 1115,
+  //       "max": 2230
+  //     },
+  //     "onset": {
+  //       "unit": "week",
+  //       "min": 2,
+  //       "max": 4
+  //     },
+  //     "frequency": {
+  //       "unit": "month",
+  //       "dose": 1,
+  //       "multiple": 1
+  //     },
+  //     "side_effects": {
+  //       "common": [
+  //         "reaction to infusion",
+  //         "upset stomach",
+  //         "headache",
+  //         "dizziness",
+  //         "high blood pressure"
+  //       ],
+  //       "rare": [
+  //         "reactivation of tuberculosis",
+  //         "serious infection that needs antibiotic by vein in hospital",
+  //         "cancer (most often skin or blood, like lymphoma",
+  //         "severe infusion reaction"
+  //       ]
+  //     },
+  //     "risks": [
+  //       {
+  //         "name": "tb",
+  //         "risk": 2
+  //       },
+  //       {
+  //         "name": "pregnancy",
+  //         "risk": 1
+  //       },
+  //       {
+  //         "name": "alcohol",
+  //         "risk": 0
+  //       },
+  //       {
+  //         "name": "liver_disease",
+  //         "risk": 0
+  //       }
+  //     ]
+  //   },
+  //   "risks": {
+  //     "tb": {
+  //       "risk": 2
+  //     },
+  //     "pregnancy": {
+  //       "risk": 1
+  //     },
+  //     "alcohol": {
+  //       "risk": 0
+  //     },
+  //     "liver_disease": {
+  //       "risk": 0
+  //     }
+  //   }
+  // }
 ];
 
 module.exports = drugs;
