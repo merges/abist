@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 var React = require('react/addons');
-var _ = require('underscore');
+var _ = require('lodash');
 
 // Data
 var get = require('../data/get.js');
