@@ -34,6 +34,7 @@
 	top: 0;
 	left: 0;
 	right: 0;
+	display: none;
 	// background: white;
 	// .shadow-l;
 }
@@ -42,7 +43,7 @@
 	display: none;
 	opacity: 0;
 	transition: opacity 1s ease;
-	background: white;
+	background: #8C8496;
 
 	&.stuck {
 		display: block;
@@ -50,18 +51,16 @@
 
 		.filter-controls {
 			font-size: 11px;
+			padding: 10px;
 
 			h3 {
 				display: none;
 			}
 			> section {
-				display: inline-block;
-				text-align: left;
-
-				+ section {
-					margin-top: 0;
-					margin-left: 5px;
-				}
+				flex: 1;
+				min-width: 120px;
+				max-height: 80px;
+				overflow: hidden;
 			}
 		}
 	}
@@ -71,7 +70,7 @@
 	display: none;
 	opacity: 0;
 	transition: opacity 1s ease;
-	background: white;
+	background: #64606A;
 
 	&.stuck {
 		display: block;
@@ -79,6 +78,7 @@
 
 		.medication-cards {
 			font-size: 11px;
+			padding: 10px;
 
 			h3 {
 				display: none;
@@ -92,7 +92,6 @@
 					flex: 1;
 					min-width: 120px;
 					max-height: 80px;
-					margin: .25em;
 				}
 			}
 
@@ -103,17 +102,6 @@
 				display: none;
 			}
 		}
-	}
-}
-
-.spread {
-	display: table;
-	width: 100%;
-	height: 90vh;
-
-	> div {
-		display: table-cell;
-		vertical-align: middle;
 	}
 }
 
@@ -138,38 +126,74 @@
 			padding-right: 	10em;
 		}
 	}
+	&.intro {
+		background: #64606A;
+	}
+	&.controls {
+		background: #8C8496;
+	}
+	&.medications {
+		background: #64606A;
+	}
+	&.results {
+		background: white;
+
+		h1 {
+			color: @color-grey-l;
+		}
+	}
 }
+
+.spread {
+	display: table;
+	width: 100%;
+	height: 90vh;
+
+	> div {
+		padding: 6em 0;
+		display: table-cell;
+		vertical-align: middle;
+	}
+}
+
+// .scroll-down {
+// 	color: white;
+// 	padding: 1em 0;
+// 	background: @color-blue;
+// 	position: absolute;
+// 	bottom: 0;
+// 	display: block;
+// 	width: 100%;
+// 	text-align: center;
+
+// 	.ss-icon {
+// 		font-size: 1.3em;
+// 	}
+// 	&:hover {
+// 		text-decoration: none;
+// 		color: white;
+// 	}
+// }
 
 .scroll-down {
 	color: white;
-	padding: 1em 0;
-	background: @color-blue;
-	position: absolute;
-	bottom: 0;
-	display: block;
-	width: 100%;
+	padding: 0.5em 6em;
+	margin-top: 2em;
+	background: @color-orange;
+	display: inline-block;
+	margin: 1em 0 0 0;
 	text-align: center;
+	border-radius: 32px;
+	.shadow-l;
 
 	.ss-icon {
+		display: block;
 		font-size: 1.3em;
 	}
 	&:hover {
 		text-decoration: none;
 		color: white;
 	}
-}
-
-.intro {
-	background: #64606A;
-}
-.controls {
-	background: #8C8496;
-}
-.medications {
-	background: #64606A;
-}
-.results {
-	background: #E0DFDE;
 }
 
 
@@ -216,16 +240,34 @@
 	}
 }
 
+.flex-container {
+	display: flex;
+
+	> a,
+	> div,
+	> span {
+		flex: auto;
+		align-items: stretch;
+	}
+}
+
 .filter-controls {
-	padding-bottom: 1em;
-	border-bottom: 1px solid @color-grey-l;
+	display: flex;
+	flex-flow: row wrap;
+	margin: -5px;
 
 	> section {
 		display: block;
-		text-align: left;
+		flex: auto;
+		flex-basis: 33%;
+		align-self: stretch;
+		padding: 5px;
 
-		+ section {
-			margin-top: 5px;
+		@media (max-width: @screen-xs-max) {
+			flex-basis: 100%;
+		}
+		@media (min-width: @screen-sm-min) and (max-width: @screen-md-max) {
+			flex-basis: 50%;
 		}
 	}
 	a.button {
@@ -235,7 +277,7 @@
 			display: inline-block;
 
 			+.option {
-				margin-left: 5px;
+				margin-left: 10px;
 			}
 		}
 	}
@@ -247,8 +289,7 @@
 	}
 	.dosage-form {
 		> .ss-icon {
-			margin-right: 5px;
-			vertical-align: text-top;
+			display: block;
 		}
 	}
 }
@@ -285,22 +326,19 @@
 	padding-bottom: 1em;
 
 	> ul {
-		margin: 0;
+		margin: -5px;
 		padding: 0;
 		list-style-type: none;
 		display: flex;
 		flex-flow: row wrap;
-		// align-items: stretch;
+		align-items: stretch;
 		// justify-content: space-between;
 
 		> li {
-			display: block;
-			margin: auto;
-			padding: 10px;
-			
+			// display: block;
+			padding: 5px;
 			flex: auto;
 			flex-basis: 33%;
-			align-self: stretch;
 			
 			@media (max-width: @screen-xs-max) {
 				flex-basis: 100%;
@@ -317,6 +355,7 @@
 				border-radius: 2px;
 				padding: 8px 8px 24px 8px;
 				background: @color-blue;
+				border: 1px solid @color-blue;
 				word-wrap: break-word;
 				.shadow-l;
 
@@ -331,7 +370,8 @@
 
 			&.disabled {
 				> a {
-					color: @color-grey-xl;
+					border: 1px dotted @color-grey-l; 
+					color: @color-grey-l;
 					background: none;
 					.shadow-xl;
 				}

@@ -85,6 +85,9 @@ var drugs = [
       },
       "heart_failure": {
         "risk": 0
+      },
+      "kidney_disease": {
+        "risk": 2
       }
     },
     "spl": [
@@ -436,6 +439,12 @@ var drugs = [
       },
       "heart_failure": {
         "risk": 2
+      },
+      "cancer": {
+        "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -525,6 +534,9 @@ var drugs = [
       },
       "cancer_treatment": {
         "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -613,6 +625,9 @@ var drugs = [
       },
       "cancer_treatment": {
         "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -706,6 +721,9 @@ var drugs = [
       },
       "cancer_treatment": {
         "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -716,6 +734,7 @@ var drugs = [
     "name_phonetic": "rye-TUX-an",
     "name_generic_phonetic": "rye-TUX-ih-mab",
     "class": [
+      "Anti-CD20",
       "DMARD",
       "Biologic"
     ],
@@ -795,6 +814,9 @@ var drugs = [
       },
       "cancer_treatment": {
         "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -884,6 +906,9 @@ var drugs = [
       },
       "cancer_treatment": {
         "risk": 2
+      },
+      "kidney_disease": {
+        "risk": 0
       }
     }
   },
@@ -894,6 +919,7 @@ var drugs = [
     "name_phonetic": "or-EN-see-uh",
     "name_generic_phonetic": "a-BAH-tuh-sept",
     "class": [
+      "Anti-CTLA4",
       "DMARD",
       "Biologic"
     ],
@@ -966,6 +992,9 @@ var drugs = [
         "risk": 0
       },
       "liver_disease": {
+        "risk": 0
+      },
+      "kidney_disease": {
         "risk": 0
       }
     }
@@ -1050,6 +1079,9 @@ var drugs = [
         "risk": 0
       },
       "liver_disease": {
+        "risk": 0
+      },
+      "kidney_disease": {
         "risk": 0
       }
     }

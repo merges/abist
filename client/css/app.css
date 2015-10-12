@@ -11470,12 +11470,13 @@ html:hover [class^="ss-"] {
   top: 0;
   left: 0;
   right: 0;
+  display: none;
 }
 .sticky-filter-controls {
   display: none;
   opacity: 0;
   transition: opacity 1s ease;
-  background: white;
+  background: #8C8496;
 }
 .sticky-filter-controls.stuck {
   display: block;
@@ -11483,23 +11484,22 @@ html:hover [class^="ss-"] {
 }
 .sticky-filter-controls.stuck .filter-controls {
   font-size: 11px;
+  padding: 10px;
 }
 .sticky-filter-controls.stuck .filter-controls h3 {
   display: none;
 }
 .sticky-filter-controls.stuck .filter-controls > section {
-  display: inline-block;
-  text-align: left;
-}
-.sticky-filter-controls.stuck .filter-controls > section + section {
-  margin-top: 0;
-  margin-left: 5px;
+  flex: 1;
+  min-width: 120px;
+  max-height: 80px;
+  overflow: hidden;
 }
 .sticky-medications {
   display: none;
   opacity: 0;
   transition: opacity 1s ease;
-  background: white;
+  background: #64606A;
 }
 .sticky-medications.stuck {
   display: block;
@@ -11507,6 +11507,7 @@ html:hover [class^="ss-"] {
 }
 .sticky-medications.stuck .medication-cards {
   font-size: 11px;
+  padding: 10px;
 }
 .sticky-medications.stuck .medication-cards h3 {
   display: none;
@@ -11520,22 +11521,12 @@ html:hover [class^="ss-"] {
   flex: 1;
   min-width: 120px;
   max-height: 80px;
-  margin: .25em;
 }
 .sticky-medications.stuck .medication-cards .dosage-forms,
 .sticky-medications.stuck .medication-cards .cost,
 .sticky-medications.stuck .medication-cards .frequency,
 .sticky-medications.stuck .medication-cards .preferences {
   display: none;
-}
-.spread {
-  display: table;
-  width: 100%;
-  height: 90vh;
-}
-.spread > div {
-  display: table-cell;
-  vertical-align: middle;
 }
 .full-screen {
   background: #f8fcfa;
@@ -11558,34 +11549,49 @@ html:hover [class^="ss-"] {
     padding-right: 10em;
   }
 }
+.full-screen.intro {
+  background: #64606A;
+}
+.full-screen.controls {
+  background: #8C8496;
+}
+.full-screen.medications {
+  background: #64606A;
+}
+.full-screen.results {
+  background: white;
+}
+.full-screen.results h1 {
+  color: #999;
+}
+.spread {
+  display: table;
+  width: 100%;
+  height: 90vh;
+}
+.spread > div {
+  padding: 6em 0;
+  display: table-cell;
+  vertical-align: middle;
+}
 .scroll-down {
   color: white;
-  padding: 1em 0;
-  background: #6699ff;
-  position: absolute;
-  bottom: 0;
-  display: block;
-  width: 100%;
+  padding: 0.5em 6em;
+  margin-top: 2em;
+  background: #fe6939;
+  display: inline-block;
+  margin: 1em 0 0 0;
   text-align: center;
+  border-radius: 32px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 }
 .scroll-down .ss-icon {
+  display: block;
   font-size: 1.3em;
 }
 .scroll-down:hover {
   text-decoration: none;
   color: white;
-}
-.intro {
-  background: #64606A;
-}
-.controls {
-  background: #8C8496;
-}
-.medications {
-  background: #64606A;
-}
-.results {
-  background: #E0DFDE;
 }
 .dev .drug-picker,
 .dev .medication-list {
@@ -11621,16 +11627,36 @@ html:hover [class^="ss-"] {
   font-weight: normal;
   color: #fe6939;
 }
+.flex-container {
+  display: flex;
+}
+.flex-container > a,
+.flex-container > div,
+.flex-container > span {
+  flex: auto;
+  align-items: stretch;
+}
 .filter-controls {
-  padding-bottom: 1em;
-  border-bottom: 1px solid #999;
+  display: flex;
+  flex-flow: row wrap;
+  margin: -5px;
 }
 .filter-controls > section {
   display: block;
-  text-align: left;
+  flex: auto;
+  flex-basis: 33%;
+  align-self: stretch;
+  padding: 5px;
 }
-.filter-controls > section + section {
-  margin-top: 5px;
+@media (max-width: 767px) {
+  .filter-controls > section {
+    flex-basis: 100%;
+  }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .filter-controls > section {
+    flex-basis: 50%;
+  }
 }
 .filter-controls a.button {
   display: block;
@@ -11639,7 +11665,7 @@ html:hover [class^="ss-"] {
   display: inline-block;
 }
 .filter-controls a.button.option + .option {
-  margin-left: 5px;
+  margin-left: 10px;
 }
 .filter-controls .description {
   display: block;
@@ -11648,8 +11674,7 @@ html:hover [class^="ss-"] {
   margin-right: .25em;
 }
 .filter-controls .dosage-form > .ss-icon {
-  margin-right: 5px;
-  vertical-align: text-top;
+  display: block;
 }
 .dosage-forms {
   float: right;
@@ -11678,19 +11703,17 @@ html:hover [class^="ss-"] {
   padding-bottom: 1em;
 }
 .medication-cards > ul {
-  margin: 0;
+  margin: -5px;
   padding: 0;
   list-style-type: none;
   display: flex;
   flex-flow: row wrap;
+  align-items: stretch;
 }
 .medication-cards > ul > li {
-  display: block;
-  margin: auto;
-  padding: 10px;
+  padding: 5px;
   flex: auto;
   flex-basis: 33%;
-  align-self: stretch;
 }
 @media (max-width: 767px) {
   .medication-cards > ul > li {
@@ -11710,6 +11733,7 @@ html:hover [class^="ss-"] {
   border-radius: 2px;
   padding: 8px 8px 24px 8px;
   background: #6699ff;
+  border: 1px solid #6699ff;
   word-wrap: break-word;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
   transition: box-shadow 0.15s ease, color 0.15s ease, background 0.15s ease;
@@ -11718,7 +11742,8 @@ html:hover [class^="ss-"] {
   text-decoration: none;
 }
 .medication-cards > ul > li.disabled > a {
-  color: #bbb;
+  border: 1px dotted #999;
+  color: #999;
   background: none;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }

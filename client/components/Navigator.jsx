@@ -6,6 +6,7 @@ var _ = require('lodash');
 // Data
 var get = require('../data/get.js');
 var medications = require('../data/medications.js');
+var preferences = require('../data/preferences.js');
 var mockData = require('../data/mock.js');
 
 var Nav = require('react-bootstrap').Nav;
@@ -195,185 +196,7 @@ var Navigator = React.createClass({
   getDefaultProps: function () {
     return {
       medications: medications,
-      preferences: {
-        'alcohol': {
-          'key': 'risks.alcohol',
-          'name': 'Alcohol-friendly',
-          'type': 'boolean',
-          'description': 'If you drink alcohol',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        },
-        'cancer_treatment': {
-          'key': 'risks.cancer_treatment',
-          'name': 'Safer while in cancer treatment',
-          'type': 'boolean',
-          'description': 'If you’re undergoing cancer treatment with surgery, chemotherapy, or radiation therapy',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        },
-        // 'cost': {
-        //   'key': 'cost',
-        //   'name': 'Cost',
-        //   'type': 'number',
-        //   'description': 'average cost per month'
-        // },
-        // 'class': {
-        //   'key': 'class',
-        //   'name': 'Drug class',
-        //   'type': 'list',
-        //   'description': 'Drug classes'
-        // },
-        'forms': {
-          'key': 'forms',
-          'name': 'Dosage form',
-          'type': 'list',
-          'description': 'preferred way of taking your medicine',
-          isMatch: function(drugForms, selectedForms) {
-            // console.log('DRUG FORMS FORMS', drugForms);
-            // console.log('SELECTED FORMS', selectedForms);
-
-            if (drugForms) {
-              _.each(drugForms, function(form) {
-                if (selectedForms[form.name] == true) {
-                  return false;
-                }
-              })
-            }
-            return true;
-          },
-        },
-        'generic_available': {
-          'key': 'generic_available',
-          'name': 'Generic available (less expensive)',
-          'type': 'boolean',
-          'description': 'A cheaper, generic version is available',
-          isMatch: function(genericAvailable) {
-            if (genericAvailable === true) {
-              return true;
-            }
-            if (genericAvailable === false) {
-              return false;
-            }
-          }
-        },
-        'heart_failure': {
-          'key': 'risks.heart_failure',
-          'name': 'Safer for people with heart failure',
-          'type': 'boolean',
-          'description': 'if you have level III or IV heart failure',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        },
-        'liver_disease': {
-          'key': 'risks.liver_disease',
-          'name': 'Safer for liver disease',
-          'type': 'boolean',
-          'description': 'if you have liver disease',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        },
-        'pregnancy': {
-          'key': 'risks.pregnancy',
-          'name': 'Safer for pregnancy',
-          'type': 'boolean',
-          'description': 'if you’re pregnant or considering it',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        },
-        'tb': {
-          'key': 'risks.tb',
-          'name': 'Safer for tuberculosis',
-          'type': 'boolean',
-          'description': 'if you have or might be exposed to tuberculosis',
-          isMatch: function(object) {
-            if (object) {
-              if (object.risk == 2) {
-                return 'unsafe';
-              }
-              if (object.risk == 1) {
-                return 'possibly unsafe';
-              }
-              if (object.risk == 0) {
-                return 'safe';
-              }
-            }
-            return 'unknown';
-          }
-        }
-      },
-      risks: {
-        "tb": "if you have or might be exposed to tuberculosis",
-        "pregnancy": "if you’re pregnant or considering it",
-        "liver_disease": "if you have liver disease",
-        "alcohol": "if you drink alcohol"
-      },
-      risksFriendly: {
-        "tb": "Tuberculosis",
-        "pregnancy": "Pregnancy",
-        "liver_disease": "Liver disease",
-        "alcohol": "Alcohol"
-      }
+      preferences: preferences
     };
   },
 
@@ -410,6 +233,8 @@ var Navigator = React.createClass({
       return disabled;
     };
 
+
+
     return {
       data: {},
       dev: this.props.query.dev ? true : false,
@@ -427,14 +252,20 @@ var Navigator = React.createClass({
         forms: getDosageForms(this.props.medications),
         generic_available: false,
         heart_failure: false,
+        kdieny_disease: false,
         liver_disease: false,
         pregnancy: false,
         tb: false
       },
 
       // User interaction-related
+      offsets: {
+        medications: 99999,
+        results: 99999
+      },
       selectedTag: null,
-      selectedMeasure: null
+      selectedMeasure: null,
+      stickyHolderHeight: 0
     }
   },
 
@@ -468,6 +299,40 @@ var Navigator = React.createClass({
     }
   },
 
+  handleStickyStateChange: function() {
+    this.setStickyHeaderOffsets();
+  },
+
+  setStickyHeaderOffsets: function() {
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+    var offsets = {
+      medications: this.getOffsetTop('medications') - stickyHolderHeight,
+      results: this.getOffsetTop('results') - stickyHolderHeight
+    };
+    this.setState({
+      offsets: offsets
+    });
+  },
+
+  // setStickyHolderHeight: function() {
+  //   var heights = {
+  //     filterControls: this.refs['stickyFilterControls'].getDOMNode().offsetHeight,
+  //     medications: this.refs['stickyMedications'].getDOMNode().offsetHeight
+  //   };
+
+  //   if (heights.filterControls > 0 || heights.medications > 0) {
+  //     var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+  //     console.log('stickyHolderHeight', stickyHolderHeight)
+  //     this.setState({
+  //       stickyHolderHeight: stickyHolderHeight
+  //     });
+  //   }
+  // },
+
+  // getOffsetTopPlusStickyHeader: function (ref) {
+  //   return this.getOffsetTop() + this.state.stickyHolderHeight;
+  // },
+
   getOffsetTop: function (ref) {
     if (this.refs[ref]) {
       var element = this.refs[ref].getDOMNode();
@@ -477,12 +342,8 @@ var Navigator = React.createClass({
   },
 
   scrollSmoothlyToElement: function (ref) {
-    // Use this by passing in a ref
-    // <a onClick={this.scrollSmoothlyToElement.bind(null, 'startSectionMission')} className='scroll-down white'>
-    //   <i className='ss-icon ss-navigatedown'></i>
-    // </a>
-
-    var newScrollTop = this.getOffsetTop(ref);
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+    var newScrollTop = this.getOffsetTop(ref) - stickyHolderHeight;
     $('html, body').animate({
       scrollTop: newScrollTop
     }, 450);
@@ -658,32 +519,31 @@ var Navigator = React.createClass({
 
               return (
                 <section key={key}>
-                  {preference.name}
-                  {/*<span className='description'>{preference.description}</span>*/}
-
-                  {options.map(function(option, i) {
-                    var optionClasses = cx({
-                      'button option': true,
-                      'active': !preferencesSelected[key][option]
-                    });
-                    // return (
-                    //   <div>
-                    //     <input type='checkbox'
-                    //       className={optionClasses}
-                    //       key={option}
-                    //       value={option}
-                    //       checked={!preferencesSelected[key][option]}
-                    //       onChange={filterPreference.bind(null, key, option)}>
-                    //         {option}
-                    //     </input>
-                    //   </div>
-                    // );
-                    return (
-                      <a className={optionClasses} key={option} onClick={filterPreference.bind(null, key, option)}>
-                        <DosageForm form={option} />
-                      </a>
-                    );
-                  })}
+                  <div className='flex-container'>
+                    {options.map(function(option, i) {
+                      var optionClasses = cx({
+                        'button option': true,
+                        'active': !preferencesSelected[key][option]
+                      });
+                      // return (
+                      //   <div>
+                      //     <input type='checkbox'
+                      //       className={optionClasses}
+                      //       key={option}
+                      //       value={option}
+                      //       checked={!preferencesSelected[key][option]}
+                      //       onChange={filterPreference.bind(null, key, option)}>
+                      //         {option}
+                      //     </input>
+                      //   </div>
+                      // );
+                      return (
+                        <a className={optionClasses} key={option} onClick={filterPreference.bind(null, key, option)}>
+                          <DosageForm form={option} />
+                        </a>
+                      );
+                    })}
+                  </div>
                 </section>
               );
             }
@@ -966,7 +826,6 @@ var Navigator = React.createClass({
       var tagMeasures = tags[selectedTag];
       return (
         <div>
-          <div>Click one of these measures to see <strong>{tagDescriptions[selectedTag].name_friendly.toLowerCase()}</strong> research findings.</div>
           <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
             {Object.keys(tagMeasures).map(function (measure, i) {
               return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_friendly : measure}</NavItem>);
@@ -1103,8 +962,6 @@ var Navigator = React.createClass({
 
     var medications         = this.props.medications;
     var preferences         = this.props.preferences;
-    var risks               = this.props.risks;
-    var risksFriendly       = this.props.risksFriendly;
     var disabledMedications = this.state.disabledMedications;
     var data                = this.state.data;
     var selectedMeasure     = this.state.selectedMeasure;
@@ -1164,9 +1021,9 @@ var Navigator = React.createClass({
                 <div>
                   <h1>This app shows you findings from medical research about rheumatoid arthritis treatments.</h1>
                   <h2>They work differently for different people, are taken on different schedules, and vary in cost and side effects.</h2>
+                  <ScrollTo to='controls' onClick={this.scrollSmoothlyToElement} />
                 </div>
               </div>
-              <ScrollTo to='controls' onClick={this.scrollSmoothlyToElement} />
             </section>
 
             <section className='full-screen controls' ref='controls'>
@@ -1175,9 +1032,9 @@ var Navigator = React.createClass({
                   <h1>A lot of medications treat RA, but only some might match your needs.</h1>
                   <h2>Choose a few preferences, and move on to see medications that work out.</h2>
                   {this.renderPreferenceControls(preferences)}
+                  <ScrollTo to='medications' onClick={this.scrollSmoothlyToElement} />
                 </div>
-              </div>
-              <ScrollTo to='medications' onClick={this.scrollSmoothlyToElement} />
+              </div>   
             </section>
 
             <section className='full-screen medications' ref='medications'>
@@ -1187,35 +1044,42 @@ var Navigator = React.createClass({
                   <section className={medicationListClasses}>
                     {this.renderMedicationBar(medications)}
                   </section>
+                  <ScrollTo to='results' onClick={this.scrollSmoothlyToElement} />
                 </div>
               </div>
-              <ScrollTo to='results' onClick={this.scrollSmoothlyToElement} />
             </section>
 
             <section className='full-screen results' ref='results'>
-              <section className={detailsClasses}>
-                {this.renderTagBar(selectedTag)}
-                {this.renderTagDescription(selectedTag)}
-                {this.renderMeasureBar(selectedTag, selectedMeasure)}
-                {this.renderMeasure(selectedTag, selectedMeasure)}
-              </section>
+              <div className='spread'>
+                <div>
+                  <h1>Here’s information about those medications, broken down into categories.</h1>
+                  <section className={detailsClasses}>
+                    {this.renderTagBar(selectedTag)}
+                    {/*this.renderTagDescription(selectedTag)*/}
+                    {this.renderMeasureBar(selectedTag, selectedMeasure)}
+                    {this.renderMeasure(selectedTag, selectedMeasure)}
+                  </section>
+                </div>
+              </div>
             </section>
 
-            <div className='sticky-holder'>
+            <div className='sticky-holder' ref='stickyHolder'>
               <Sticky
+                ref='stickyFilterControls'
                 className='sticky-filter-controls'
                 onStickyStateChange={this.handleStickyStateChange}
                 stickyClass='stuck'
                 stickyStyle={{position: 'relative'}}
-                topOffset={this.getOffsetTop('medications')}>
+                topOffset={this.state.offsets['medications']}>
                   {this.renderPreferenceControls(preferences)}
               </Sticky>
               <Sticky
+                ref='stickyMedications'
                 className='sticky-medications'
                 onStickyStateChange={this.handleStickyStateChange}
                 stickyClass='stuck'
                 stickyStyle={{position: 'relative'}}
-                topOffset={this.getOffsetTop('results')}>
+                topOffset={this.state.offsets['results']}>
                   {this.renderMedicationBar(medications)}
               </Sticky>
             </div>
