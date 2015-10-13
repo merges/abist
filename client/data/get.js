@@ -8,10 +8,11 @@ var get = {
     grades: 'oo3g5h2',
     data: {
       biologics: 'oij9tdp',
-      hydroxycholoroquine: 'oozzuoc',
       etanercept: 'oogh8lu',
+      finraco: 'oclozwl',
+      hydroxycholoroquine: 'oozzuoc',
       methotrexate: 'oa4uchu',
-      finraco: 'oclozwl'
+      tocilizumab: 'ociwrxy'
     },
     tagDescriptions: 'o2pd8py'
   },
