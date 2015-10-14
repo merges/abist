@@ -361,31 +361,31 @@ var Navigator = React.createClass({
 
     $.when(
       // Get GRADE
-      $.getJSON(urlGrades).done(function (data) {
+      $.getJSON(urlGrades + '&callback=?').done(function (data) {
         allData['grades'] = get.processGrades(data);
       }),
 
       // Get measures & tags
-      $.getJSON(urlMeasures).done(function (data) {
+      $.getJSON(urlMeasures + '&callback=?').done(function (data) {
         // var newStateItems = get.processMeasures(data);
         allData['measures'] = get.processMeasures(data).measures;
         allData['tags'] = get.processMeasures(data).tags;
       }),
 
       // Get metrics
-      $.getJSON(urlMetrics).done(function (data) {
+      $.getJSON(urlMetrics + '&callback=?').done(function (data) {
         allData['metrics'] = get.processMetrics(data);
       }),
 
       // Get tag descriptions
-      $.getJSON(urlTagDescriptions).done(function (data) {
+      $.getJSON(urlTagDescriptions + '&callback=?').done(function (data) {
         allData['tagDescriptions'] = get.processTagDescriptions(data);
       }),
 
       // Get data
       $.when(Object.keys(get.sheets.data).forEach(function (source) {
         var url = get.getSheetUrl(get.sheets.data[source]);
-        $.getJSON(url).done(function (data) {
+        $.getJSON(url + '&callback=?').done(function (data) {
           !allData['data'] && (allData['data'] = {});
           allData['data'][source] = get.processData(data);
         });
@@ -393,7 +393,8 @@ var Navigator = React.createClass({
       ).done(function() {
         return true;
       })
-    ).done(function() {
+    )
+    .done(function() {
       deferred.resolve(allData);
     });
 
@@ -1087,7 +1088,17 @@ var Navigator = React.createClass({
         );
       }
     }
-    return (<div><h1>Loading</h1></div>);
+    return (
+      <div className='navigator'>
+        <section className='full-screen intro' ref='intro'>
+          <div className='spread'>
+            <div>
+              <h1>Loading</h1>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
   }
 
 });

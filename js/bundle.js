@@ -500,31 +500,31 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     $.when(
       // Get GRADE
-      $.getJSON(urlGrades).done(function (data) {
+      $.getJSON(urlGrades + '&callback=?').done(function (data) {
         allData['grades'] = get.processGrades(data);
       }),
 
       // Get measures & tags
-      $.getJSON(urlMeasures).done(function (data) {
+      $.getJSON(urlMeasures + '&callback=?').done(function (data) {
         // var newStateItems = get.processMeasures(data);
         allData['measures'] = get.processMeasures(data).measures;
         allData['tags'] = get.processMeasures(data).tags;
       }),
 
       // Get metrics
-      $.getJSON(urlMetrics).done(function (data) {
+      $.getJSON(urlMetrics + '&callback=?').done(function (data) {
         allData['metrics'] = get.processMetrics(data);
       }),
 
       // Get tag descriptions
-      $.getJSON(urlTagDescriptions).done(function (data) {
+      $.getJSON(urlTagDescriptions + '&callback=?').done(function (data) {
         allData['tagDescriptions'] = get.processTagDescriptions(data);
       }),
 
       // Get data
       $.when(Object.keys(get.sheets.data).forEach(function (source) {
         var url = get.getSheetUrl(get.sheets.data[source]);
-        $.getJSON(url).done(function (data) {
+        $.getJSON(url + '&callback=?').done(function (data) {
           !allData['data'] && (allData['data'] = {});
           allData['data'][source] = get.processData(data);
         });
@@ -532,7 +532,8 @@ var Navigator = React.createClass({displayName: "Navigator",
       ).done(function() {
         return true;
       })
-    ).done(function() {
+    )
+    .done(function() {
       deferred.resolve(allData);
     });
 
@@ -1226,7 +1227,17 @@ var Navigator = React.createClass({displayName: "Navigator",
         );
       }
     }
-    return (React.createElement("div", null, React.createElement("h1", null, "Loading")));
+    return (
+      React.createElement("div", {className: "navigator"}, 
+        React.createElement("section", {className: "full-screen intro", ref: "intro"}, 
+          React.createElement("div", {className: "spread"}, 
+            React.createElement("div", null, 
+              React.createElement("h1", null, "Loading")
+            )
+          )
+        )
+      )
+    );
   }
 
 });
@@ -9094,6 +9105,7 @@ module.exports = routes;
  * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
+/* eslint-disable no-proto */
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
@@ -9104,7 +9116,6 @@ exports.SlowBuffer = SlowBuffer
 exports.INSPECT_MAX_BYTES = 50
 Buffer.poolSize = 8192 // not used by this implementation
 
-var kMaxLength = 0x3fffffff
 var rootParent = {}
 
 /**
@@ -9115,32 +9126,47 @@ var rootParent = {}
  * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
  * Opera 11.6+, iOS 4.2+.
  *
+ * Due to various browser bugs, sometimes the Object implementation will be used even
+ * when the browser supports typed arrays.
+ *
  * Note:
  *
- * - Implementation must support adding new properties to `Uint8Array` instances.
- *   Firefox 4-29 lacked support, fixed in Firefox 30+.
- *   See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
+ *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
  *
- *  - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *   - Safari 5-7 lacks support for changing the `Object.prototype.constructor` property
+ *     on objects.
  *
- *  - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *    incorrect length in some situations.
+ *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
  *
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they will
- * get the Object implementation, which is slower but will work correctly.
+ *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *     incorrect length in some situations.
+
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
+ * get the Object implementation, which is slower but behaves correctly.
  */
-Buffer.TYPED_ARRAY_SUPPORT = (function () {
-  try {
-    var buf = new ArrayBuffer(0)
-    var arr = new Uint8Array(buf)
-    arr.foo = function () { return 42 }
-    return arr.foo() === 42 && // typed array instances can be augmented
-        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-        new Uint8Array(1).subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-  } catch (e) {
-    return false
-  }
-})()
+Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
+  ? global.TYPED_ARRAY_SUPPORT
+  : (function () {
+      function Bar () {}
+      try {
+        var arr = new Uint8Array(1)
+        arr.foo = function () { return 42 }
+        arr.constructor = Bar
+        return arr.foo() === 42 && // typed array instances can be augmented
+            arr.constructor === Bar && // constructor can be set
+            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+      } catch (e) {
+        return false
+      }
+    })()
+
+function kMaxLength () {
+  return Buffer.TYPED_ARRAY_SUPPORT
+    ? 0x7fffffff
+    : 0x3fffffff
+}
 
 /**
  * Class: Buffer
@@ -9154,68 +9180,172 @@ Buffer.TYPED_ARRAY_SUPPORT = (function () {
  * By augmenting the instances, we can avoid modifying the `Uint8Array`
  * prototype.
  */
-function Buffer (subject, encoding) {
-  var self = this
-  if (!(self instanceof Buffer)) return new Buffer(subject, encoding)
+function Buffer (arg) {
+  if (!(this instanceof Buffer)) {
+    // Avoid going through an ArgumentsAdaptorTrampoline in the common case.
+    if (arguments.length > 1) return new Buffer(arg, arguments[1])
+    return new Buffer(arg)
+  }
 
-  var type = typeof subject
-  var length
+  this.length = 0
+  this.parent = undefined
 
-  if (type === 'number') {
-    length = +subject
-  } else if (type === 'string') {
-    length = Buffer.byteLength(subject, encoding)
-  } else if (type === 'object' && subject !== null) {
-    // assume object is array-like
-    if (subject.type === 'Buffer' && isArray(subject.data)) subject = subject.data
-    length = +subject.length
-  } else {
+  // Common case.
+  if (typeof arg === 'number') {
+    return fromNumber(this, arg)
+  }
+
+  // Slightly less common case.
+  if (typeof arg === 'string') {
+    return fromString(this, arg, arguments.length > 1 ? arguments[1] : 'utf8')
+  }
+
+  // Unusual.
+  return fromObject(this, arg)
+}
+
+function fromNumber (that, length) {
+  that = allocate(that, length < 0 ? 0 : checked(length) | 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < length; i++) {
+      that[i] = 0
+    }
+  }
+  return that
+}
+
+function fromString (that, string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') encoding = 'utf8'
+
+  // Assumption: byteLength() return value is always < kMaxLength.
+  var length = byteLength(string, encoding) | 0
+  that = allocate(that, length)
+
+  that.write(string, encoding)
+  return that
+}
+
+function fromObject (that, object) {
+  if (Buffer.isBuffer(object)) return fromBuffer(that, object)
+
+  if (isArray(object)) return fromArray(that, object)
+
+  if (object == null) {
     throw new TypeError('must start with number, buffer, array or string')
   }
 
-  if (length > kMaxLength) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum size: 0x' +
-      kMaxLength.toString(16) + ' bytes')
+  if (typeof ArrayBuffer !== 'undefined') {
+    if (object.buffer instanceof ArrayBuffer) {
+      return fromTypedArray(that, object)
+    }
+    if (object instanceof ArrayBuffer) {
+      return fromArrayBuffer(that, object)
+    }
   }
 
-  if (length < 0) length = 0
-  else length >>>= 0 // coerce to uint32
+  if (object.length) return fromArrayLike(that, object)
 
+  return fromJsonObject(that, object)
+}
+
+function fromBuffer (that, buffer) {
+  var length = checked(buffer.length) | 0
+  that = allocate(that, length)
+  buffer.copy(that, 0, 0, length)
+  return that
+}
+
+function fromArray (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+// Duplicate of fromArray() to keep fromArray() monomorphic.
+function fromTypedArray (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  // Truncating the elements is probably not what people expect from typed
+  // arrays with BYTES_PER_ELEMENT > 1 but it's compatible with the behavior
+  // of the old Buffer constructor.
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+function fromArrayBuffer (that, array) {
   if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Preferred: Return an augmented `Uint8Array` instance for best performance
-    self = Buffer._augment(new Uint8Array(length)) // eslint-disable-line consistent-this
+    // Return an augmented `Uint8Array` instance, for best performance
+    array.byteLength
+    that = Buffer._augment(new Uint8Array(array))
   } else {
-    // Fallback: Return THIS instance of Buffer (created by `new`)
-    self.length = length
-    self._isBuffer = true
+    // Fallback: Return an object instance of the Buffer class
+    that = fromTypedArray(that, new Uint8Array(array))
+  }
+  return that
+}
+
+function fromArrayLike (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+// Deserialize { type: 'Buffer', data: [1,2,3,...] } into a Buffer object.
+// Returns a zero-length buffer for inputs that don't conform to the spec.
+function fromJsonObject (that, object) {
+  var array
+  var length = 0
+
+  if (object.type === 'Buffer' && isArray(object.data)) {
+    array = object.data
+    length = checked(array.length) | 0
+  }
+  that = allocate(that, length)
+
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype
+  Buffer.__proto__ = Uint8Array
+}
+
+function allocate (that, length) {
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = Buffer._augment(new Uint8Array(length))
+    that.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that.length = length
+    that._isBuffer = true
   }
 
-  var i
-  if (Buffer.TYPED_ARRAY_SUPPORT && typeof subject.byteLength === 'number') {
-    // Speed optimization -- use set if we're copying from a typed array
-    self._set(subject)
-  } else if (isArrayish(subject)) {
-    // Treat array-ish objects as a byte array
-    if (Buffer.isBuffer(subject)) {
-      for (i = 0; i < length; i++) {
-        self[i] = subject.readUInt8(i)
-      }
-    } else {
-      for (i = 0; i < length; i++) {
-        self[i] = ((subject[i] % 256) + 256) % 256
-      }
-    }
-  } else if (type === 'string') {
-    self.write(subject, 0, encoding)
-  } else if (type === 'number' && !Buffer.TYPED_ARRAY_SUPPORT) {
-    for (i = 0; i < length; i++) {
-      self[i] = 0
-    }
+  var fromPool = length !== 0 && length <= Buffer.poolSize >>> 1
+  if (fromPool) that.parent = rootParent
+
+  return that
+}
+
+function checked (length) {
+  // Note: cannot use `length < kMaxLength` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= kMaxLength()) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
   }
-
-  if (length > 0 && length <= Buffer.poolSize) self.parent = rootParent
-
-  return self
+  return length | 0
 }
 
 function SlowBuffer (subject, encoding) {
@@ -9239,11 +9369,20 @@ Buffer.compare = function compare (a, b) {
 
   var x = a.length
   var y = b.length
-  for (var i = 0, len = Math.min(x, y); i < len && a[i] === b[i]; i++) {}
+
+  var i = 0
+  var len = Math.min(x, y)
+  while (i < len) {
+    if (a[i] !== b[i]) break
+
+    ++i
+  }
+
   if (i !== len) {
     x = a[i]
     y = b[i]
   }
+
   if (x < y) return -1
   if (y < x) return 1
   return 0
@@ -9268,24 +9407,22 @@ Buffer.isEncoding = function isEncoding (encoding) {
   }
 }
 
-Buffer.concat = function concat (list, totalLength) {
+Buffer.concat = function concat (list, length) {
   if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
 
   if (list.length === 0) {
     return new Buffer(0)
-  } else if (list.length === 1) {
-    return list[0]
   }
 
   var i
-  if (totalLength === undefined) {
-    totalLength = 0
+  if (length === undefined) {
+    length = 0
     for (i = 0; i < list.length; i++) {
-      totalLength += list[i].length
+      length += list[i].length
     }
   }
 
-  var buf = new Buffer(totalLength)
+  var buf = new Buffer(length)
   var pos = 0
   for (i = 0; i < list.length; i++) {
     var item = list[i]
@@ -9295,47 +9432,52 @@ Buffer.concat = function concat (list, totalLength) {
   return buf
 }
 
-Buffer.byteLength = function byteLength (str, encoding) {
-  var ret
-  str = str + ''
-  switch (encoding || 'utf8') {
-    case 'ascii':
-    case 'binary':
-    case 'raw':
-      ret = str.length
-      break
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      ret = str.length * 2
-      break
-    case 'hex':
-      ret = str.length >>> 1
-      break
-    case 'utf8':
-    case 'utf-8':
-      ret = utf8ToBytes(str).length
-      break
-    case 'base64':
-      ret = base64ToBytes(str).length
-      break
-    default:
-      ret = str.length
+function byteLength (string, encoding) {
+  if (typeof string !== 'string') string = '' + string
+
+  var len = string.length
+  if (len === 0) return 0
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'binary':
+      // Deprecated
+      case 'raw':
+      case 'raws':
+        return len
+      case 'utf8':
+      case 'utf-8':
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) return utf8ToBytes(string).length // assume utf8
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
   }
-  return ret
 }
+Buffer.byteLength = byteLength
 
 // pre-set for values that may exist in the future
 Buffer.prototype.length = undefined
 Buffer.prototype.parent = undefined
 
-// toString(encoding, start=0, end=buffer.length)
-Buffer.prototype.toString = function toString (encoding, start, end) {
+function slowToString (encoding, start, end) {
   var loweredCase = false
 
-  start = start >>> 0
-  end = end === undefined || end === Infinity ? this.length : end >>> 0
+  start = start | 0
+  end = end === undefined || end === Infinity ? this.length : end | 0
 
   if (!encoding) encoding = 'utf8'
   if (start < 0) start = 0
@@ -9372,6 +9514,13 @@ Buffer.prototype.toString = function toString (encoding, start, end) {
         loweredCase = true
     }
   }
+}
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length | 0
+  if (length === 0) return ''
+  if (arguments.length === 0) return utf8Slice(this, 0, length)
+  return slowToString.apply(this, arguments)
 }
 
 Buffer.prototype.equals = function equals (b) {
@@ -9437,13 +9586,13 @@ Buffer.prototype.indexOf = function indexOf (val, byteOffset) {
   throw new TypeError('val must be string, number or Buffer')
 }
 
-// `get` will be removed in Node 0.13+
+// `get` is deprecated
 Buffer.prototype.get = function get (offset) {
   console.log('.get() is deprecated. Access using array indexes instead.')
   return this.readUInt8(offset)
 }
 
-// `set` will be removed in Node 0.13+
+// `set` is deprecated
 Buffer.prototype.set = function set (v, offset) {
   console.log('.set() is deprecated. Access using array indexes instead.')
   return this.writeUInt8(v, offset)
@@ -9477,13 +9626,11 @@ function hexWrite (buf, string, offset, length) {
 }
 
 function utf8Write (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
-  return charsWritten
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
 }
 
 function asciiWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(asciiToBytes(string), buf, offset, length)
-  return charsWritten
+  return blitBuffer(asciiToBytes(string), buf, offset, length)
 }
 
 function binaryWrite (buf, string, offset, length) {
@@ -9491,75 +9638,83 @@ function binaryWrite (buf, string, offset, length) {
 }
 
 function base64Write (buf, string, offset, length) {
-  var charsWritten = blitBuffer(base64ToBytes(string), buf, offset, length)
-  return charsWritten
+  return blitBuffer(base64ToBytes(string), buf, offset, length)
 }
 
-function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
-  return charsWritten
+function ucs2Write (buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
 }
 
 Buffer.prototype.write = function write (string, offset, length, encoding) {
-  // Support both (string, offset, length, encoding)
-  // and the legacy (string, encoding, offset, length)
-  if (isFinite(offset)) {
-    if (!isFinite(length)) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8'
+    length = this.length
+    offset = 0
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset
+    length = this.length
+    offset = 0
+  // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset | 0
+    if (isFinite(length)) {
+      length = length | 0
+      if (encoding === undefined) encoding = 'utf8'
+    } else {
       encoding = length
       length = undefined
     }
-  } else {  // legacy
+  // legacy write(string, encoding, offset, length) - remove in v0.13
+  } else {
     var swap = encoding
     encoding = offset
-    offset = length
+    offset = length | 0
     length = swap
   }
 
-  offset = Number(offset) || 0
+  var remaining = this.length - offset
+  if (length === undefined || length > remaining) length = remaining
 
-  if (length < 0 || offset < 0 || offset > this.length) {
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
     throw new RangeError('attempt to write outside buffer bounds')
   }
 
-  var remaining = this.length - offset
-  if (!length) {
-    length = remaining
-  } else {
-    length = Number(length)
-    if (length > remaining) {
-      length = remaining
+  if (!encoding) encoding = 'utf8'
+
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length)
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length)
+
+      case 'binary':
+        return binaryWrite(this, string, offset, length)
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
     }
   }
-  encoding = String(encoding || 'utf8').toLowerCase()
-
-  var ret
-  switch (encoding) {
-    case 'hex':
-      ret = hexWrite(this, string, offset, length)
-      break
-    case 'utf8':
-    case 'utf-8':
-      ret = utf8Write(this, string, offset, length)
-      break
-    case 'ascii':
-      ret = asciiWrite(this, string, offset, length)
-      break
-    case 'binary':
-      ret = binaryWrite(this, string, offset, length)
-      break
-    case 'base64':
-      ret = base64Write(this, string, offset, length)
-      break
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      ret = utf16leWrite(this, string, offset, length)
-      break
-    default:
-      throw new TypeError('Unknown encoding: ' + encoding)
-  }
-  return ret
 }
 
 Buffer.prototype.toJSON = function toJSON () {
@@ -9578,20 +9733,99 @@ function base64Slice (buf, start, end) {
 }
 
 function utf8Slice (buf, start, end) {
-  var res = ''
-  var tmp = ''
   end = Math.min(buf.length, end)
+  var res = []
 
-  for (var i = start; i < end; i++) {
-    if (buf[i] <= 0x7F) {
-      res += decodeUtf8Char(tmp) + String.fromCharCode(buf[i])
-      tmp = ''
-    } else {
-      tmp += '%' + buf[i].toString(16)
+  var i = start
+  while (i < end) {
+    var firstByte = buf[i]
+    var codePoint = null
+    var bytesPerSequence = (firstByte > 0xEF) ? 4
+      : (firstByte > 0xDF) ? 3
+      : (firstByte > 0xBF) ? 2
+      : 1
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte
+          }
+          break
+        case 2:
+          secondByte = buf[i + 1]
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 3:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 4:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          fourthByte = buf[i + 3]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint
+            }
+          }
+      }
     }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD
+      bytesPerSequence = 1
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
+      codePoint = 0xDC00 | codePoint & 0x3FF
+    }
+
+    res.push(codePoint)
+    i += bytesPerSequence
   }
 
-  return res + decodeUtf8Char(tmp)
+  return decodeCodePointsArray(res)
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000
+
+function decodeCodePointsArray (codePoints) {
+  var len = codePoints.length
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = ''
+  var i = 0
+  while (i < len) {
+    res += String.fromCharCode.apply(
+      String,
+      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+    )
+  }
+  return res
 }
 
 function asciiSlice (buf, start, end) {
@@ -9682,8 +9916,8 @@ function checkOffset (offset, ext, length) {
 }
 
 Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
@@ -9697,8 +9931,8 @@ Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert)
 }
 
 Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) {
     checkOffset(offset, byteLength, this.length)
   }
@@ -9746,8 +9980,8 @@ Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
 }
 
 Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
@@ -9764,8 +9998,8 @@ Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
 }
 
 Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var i = byteLength
@@ -9845,15 +10079,15 @@ function checkInt (buf, value, offset, ext, max, min) {
 
 Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var mul = 1
   var i = 0
   this[offset] = value & 0xFF
   while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) >>> 0 & 0xFF
+    this[offset + i] = (value / mul) & 0xFF
   }
 
   return offset + byteLength
@@ -9861,15 +10095,15 @@ Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, 
 
 Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset >>> 0
-  byteLength = byteLength >>> 0
+  offset = offset | 0
+  byteLength = byteLength | 0
   if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
 
   var i = byteLength - 1
   var mul = 1
   this[offset + i] = value & 0xFF
   while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) >>> 0 & 0xFF
+    this[offset + i] = (value / mul) & 0xFF
   }
 
   return offset + byteLength
@@ -9877,7 +10111,7 @@ Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, 
 
 Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   this[offset] = value
@@ -9894,7 +10128,7 @@ function objectWriteUInt16 (buf, value, offset, littleEndian) {
 
 Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
@@ -9907,7 +10141,7 @@ Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert
 
 Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
@@ -9927,7 +10161,7 @@ function objectWriteUInt32 (buf, value, offset, littleEndian) {
 
 Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset + 3] = (value >>> 24)
@@ -9942,7 +10176,7 @@ Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert
 
 Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 24)
@@ -9957,13 +10191,11 @@ Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert
 
 Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) {
-    checkInt(
-      this, value, offset, byteLength,
-      Math.pow(2, 8 * byteLength - 1) - 1,
-      -Math.pow(2, 8 * byteLength - 1)
-    )
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
   }
 
   var i = 0
@@ -9979,13 +10211,11 @@ Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, no
 
 Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) {
-    checkInt(
-      this, value, offset, byteLength,
-      Math.pow(2, 8 * byteLength - 1) - 1,
-      -Math.pow(2, 8 * byteLength - 1)
-    )
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
   }
 
   var i = byteLength - 1
@@ -10001,7 +10231,7 @@ Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, no
 
 Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
   if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
@@ -10011,7 +10241,7 @@ Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
 
 Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
@@ -10024,7 +10254,7 @@ Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) 
 
 Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = (value >>> 8)
@@ -10037,7 +10267,7 @@ Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) 
 
 Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     this[offset] = value
@@ -10052,7 +10282,7 @@ Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) 
 
 Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
   value = +value
-  offset = offset >>> 0
+  offset = offset | 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (value < 0) value = 0xffffffff + value + 1
   if (Buffer.TYPED_ARRAY_SUPPORT) {
@@ -10105,11 +10335,11 @@ Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert
 }
 
 // copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function copy (target, target_start, start, end) {
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
   if (!start) start = 0
   if (!end && end !== 0) end = this.length
-  if (target_start >= target.length) target_start = target.length
-  if (!target_start) target_start = 0
+  if (targetStart >= target.length) targetStart = target.length
+  if (!targetStart) targetStart = 0
   if (end > 0 && end < start) end = start
 
   // Copy 0 bytes; we're done
@@ -10117,7 +10347,7 @@ Buffer.prototype.copy = function copy (target, target_start, start, end) {
   if (target.length === 0 || this.length === 0) return 0
 
   // Fatal error conditions
-  if (target_start < 0) {
+  if (targetStart < 0) {
     throw new RangeError('targetStart out of bounds')
   }
   if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
@@ -10125,18 +10355,25 @@ Buffer.prototype.copy = function copy (target, target_start, start, end) {
 
   // Are we oob?
   if (end > this.length) end = this.length
-  if (target.length - target_start < end - start) {
-    end = target.length - target_start + start
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start
   }
 
   var len = end - start
+  var i
 
-  if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < len; i++) {
-      target[i + target_start] = this[i + start]
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; i--) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; i++) {
+      target[i + targetStart] = this[i + start]
     }
   } else {
-    target._set(this.subarray(start, start + len), target_start)
+    target._set(this.subarray(start, start + len), targetStart)
   }
 
   return len
@@ -10208,7 +10445,7 @@ Buffer._augment = function _augment (arr) {
   // save reference to original Uint8Array set method before overwriting
   arr._set = arr.set
 
-  // deprecated, will be removed in node 0.13+
+  // deprecated
   arr.get = BP.get
   arr.set = BP.set
 
@@ -10264,7 +10501,7 @@ Buffer._augment = function _augment (arr) {
   return arr
 }
 
-var INVALID_BASE64_RE = /[^+\/0-9A-z\-]/g
+var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g
 
 function base64clean (str) {
   // Node strips out invalid characters like \n and \t from the string, base64-js does not
@@ -10283,12 +10520,6 @@ function stringtrim (str) {
   return str.replace(/^\s+|\s+$/g, '')
 }
 
-function isArrayish (subject) {
-  return isArray(subject) || Buffer.isBuffer(subject) ||
-      subject && typeof subject === 'object' &&
-      typeof subject.length === 'number'
-}
-
 function toHex (n) {
   if (n < 16) return '0' + n.toString(16)
   return n.toString(16)
@@ -10300,28 +10531,15 @@ function utf8ToBytes (string, units) {
   var length = string.length
   var leadSurrogate = null
   var bytes = []
-  var i = 0
 
-  for (; i < length; i++) {
+  for (var i = 0; i < length; i++) {
     codePoint = string.charCodeAt(i)
 
     // is surrogate component
     if (codePoint > 0xD7FF && codePoint < 0xE000) {
       // last char was a lead
-      if (leadSurrogate) {
-        // 2 leads in a row
-        if (codePoint < 0xDC00) {
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-          leadSurrogate = codePoint
-          continue
-        } else {
-          // valid surrogate pair
-          codePoint = leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00 | 0x10000
-          leadSurrogate = null
-        }
-      } else {
+      if (!leadSurrogate) {
         // no lead yet
-
         if (codePoint > 0xDBFF) {
           // unexpected trail
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
@@ -10330,17 +10548,29 @@ function utf8ToBytes (string, units) {
           // unpaired lead
           if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
           continue
-        } else {
-          // valid lead
-          leadSurrogate = codePoint
-          continue
         }
+
+        // valid lead
+        leadSurrogate = codePoint
+
+        continue
       }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+        leadSurrogate = codePoint
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00 | 0x10000
     } else if (leadSurrogate) {
       // valid bmp char, but last char was a lead
       if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-      leadSurrogate = null
     }
+
+    leadSurrogate = null
 
     // encode utf8
     if (codePoint < 0x80) {
@@ -10359,7 +10589,7 @@ function utf8ToBytes (string, units) {
         codePoint >> 0x6 & 0x3F | 0x80,
         codePoint & 0x3F | 0x80
       )
-    } else if (codePoint < 0x200000) {
+    } else if (codePoint < 0x110000) {
       if ((units -= 4) < 0) break
       bytes.push(
         codePoint >> 0x12 | 0xF0,
@@ -10410,14 +10640,6 @@ function blitBuffer (src, dst, offset, length) {
     dst[i + offset] = src[i]
   }
   return i
-}
-
-function decodeUtf8Char (str) {
-  try {
-    return decodeURIComponent(str)
-  } catch (err) {
-    return String.fromCharCode(0xFFFD) // UTF 8 invalid char
-  }
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/index.js","/node_modules/browserify/node_modules/buffer")
@@ -10551,90 +10773,90 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib/b64.js","/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib")
 },{"_process":38,"buffer":34}],36:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-exports.read = function(buffer, offset, isLE, mLen, nBytes) {
-  var e, m,
-      eLen = nBytes * 8 - mLen - 1,
-      eMax = (1 << eLen) - 1,
-      eBias = eMax >> 1,
-      nBits = -7,
-      i = isLE ? (nBytes - 1) : 0,
-      d = isLE ? -1 : 1,
-      s = buffer[offset + i];
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
 
-  i += d;
+  i += d
 
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
   if (e === 0) {
-    e = 1 - eBias;
+    e = 1 - eBias
   } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity);
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
   } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
   }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-};
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
 
-exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c,
-      eLen = nBytes * 8 - mLen - 1,
-      eMax = (1 << eLen) - 1,
-      eBias = eMax >> 1,
-      rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0),
-      i = isLE ? 0 : (nBytes - 1),
-      d = isLE ? 1 : -1,
-      s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
 
-  value = Math.abs(value);
+  value = Math.abs(value)
 
   if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
+    m = isNaN(value) ? 1 : 0
+    e = eMax
   } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
+    e = Math.floor(Math.log(value) / Math.LN2)
     if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
+      e--
+      c *= 2
     }
     if (e + eBias >= 1) {
-      value += rt / c;
+      value += rt / c
     } else {
-      value += rt * Math.pow(2, 1 - eBias);
+      value += rt * Math.pow(2, 1 - eBias)
     }
     if (value * c >= 2) {
-      e++;
-      c /= 2;
+      e++
+      c /= 2
     }
 
     if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
+      m = 0
+      e = eMax
     } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
     } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
     }
   }
 
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
 
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
 
-  buffer[offset + i - d] |= s * 128;
-};
+  buffer[offset + i - d] |= s * 128
+}
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/browserify/node_modules/buffer/node_modules/ieee754/index.js","/node_modules/browserify/node_modules/buffer/node_modules/ieee754")
 },{"_process":38,"buffer":34}],37:[function(require,module,exports){
@@ -10767,7 +10989,7 @@ process.chdir = function (dir) {
 },{"_process":38,"buffer":34}],39:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
- * isMobile.js v0.3.5
+ * isMobile.js v0.3.9
  *
  * A simple library to detect Apple phones and tablets,
  * Android phones and tablets, other mobile devices (like blackberry, mini-opera and windows phone),
@@ -10784,11 +11006,14 @@ process.chdir = function (dir) {
         apple_tablet        = /iPad/i,
         android_phone       = /(?=.*\bAndroid\b)(?=.*\bMobile\b)/i, // Match 'Android' AND 'Mobile'
         android_tablet      = /Android/i,
+        amazon_phone        = /(?=.*\bAndroid\b)(?=.*\bSD4930UR\b)/i,
+        amazon_tablet       = /(?=.*\bAndroid\b)(?=.*\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\b)/i,
         windows_phone       = /IEMobile/i,
         windows_tablet      = /(?=.*\bWindows\b)(?=.*\bARM\b)/i, // Match 'Windows' AND 'ARM'
         other_blackberry    = /BlackBerry/i,
         other_blackberry_10 = /BB10/i,
         other_opera         = /Opera Mini/i,
+        other_chrome        = /(CriOS|Chrome)(?=.*\bMobile\b)/i,
         other_firefox       = /(?=.*\bFirefox\b)(?=.*\bMobile\b)/i, // Match 'Firefox' AND 'Mobile'
         seven_inch = new RegExp(
             '(?:' +         // Non-capturing group
@@ -10821,17 +11046,28 @@ process.chdir = function (dir) {
 
     var IsMobileClass = function(userAgent) {
         var ua = userAgent || navigator.userAgent;
+        // Facebook mobile app's integrated browser adds a bunch of strings that
+        // match everything. Strip it out if it exists.
+        var tmp = ua.split('[FBAN');
+        if (typeof tmp[1] !== 'undefined') {
+            ua = tmp[0];
+        }
 
         this.apple = {
             phone:  match(apple_phone, ua),
             ipod:   match(apple_ipod, ua),
-            tablet: match(apple_tablet, ua),
+            tablet: !match(apple_phone, ua) && match(apple_tablet, ua),
             device: match(apple_phone, ua) || match(apple_ipod, ua) || match(apple_tablet, ua)
         };
+        this.amazon = {
+            phone:  match(amazon_phone, ua),
+            tablet: !match(amazon_phone, ua) && match(amazon_tablet, ua),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua)
+        };
         this.android = {
-            phone:  match(android_phone, ua),
-            tablet: !match(android_phone, ua) && match(android_tablet, ua),
-            device: match(android_phone, ua) || match(android_tablet, ua)
+            phone:  match(amazon_phone, ua) || match(android_phone, ua),
+            tablet: !match(amazon_phone, ua) && !match(android_phone, ua) && (match(amazon_tablet, ua) || match(android_tablet, ua)),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua) || match(android_phone, ua) || match(android_tablet, ua)
         };
         this.windows = {
             phone:  match(windows_phone, ua),
@@ -10843,7 +11079,8 @@ process.chdir = function (dir) {
             blackberry10: match(other_blackberry_10, ua),
             opera:        match(other_opera, ua),
             firefox:      match(other_firefox, ua),
-            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua)
+            chrome:       match(other_chrome, ua),
+            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua) || match(other_chrome, ua)
         };
         this.seven_inch = match(seven_inch, ua);
         this.any = this.apple.device || this.android.device || this.windows.device || this.other.device || this.seven_inch;
@@ -10871,7 +11108,7 @@ process.chdir = function (dir) {
         module.exports = instantiate();
     } else if (typeof define === 'function' && define.amd) {
         //AMD
-        define(global.isMobile = instantiate());
+        define('isMobile', [], global.isMobile = instantiate());
     } else {
         global.isMobile = instantiate();
     }
@@ -28418,13 +28655,13 @@ module.exports = History;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/History.js","/node_modules/react-router/lib")
 },{"_process":38,"buffer":34,"react/lib/ExecutionEnvironment":162,"react/lib/invariant":291}],103:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/* jshint -W084 */
 'use strict';
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
+/* jshint -W084 */
 var PathUtils = require('./PathUtils');
 
 function deepSearch(route, pathname, query) {
@@ -28447,20 +28684,29 @@ function deepSearch(route, pathname, query) {
 
   // No child routes matched; try the default route.
   var defaultRoute = route.defaultRoute;
-  if (defaultRoute && (params = PathUtils.extractParams(defaultRoute.path, pathname))) return new Match(pathname, params, query, [route, defaultRoute]);
-
-  // Does the "not found" route match?
+  if (defaultRoute && (params = PathUtils.extractParams(defaultRoute.path, pathname))) {
+    return new Match(pathname, params, query, [route, defaultRoute]);
+  } // Does the "not found" route match?
   var notFoundRoute = route.notFoundRoute;
-  if (notFoundRoute && (params = PathUtils.extractParams(notFoundRoute.path, pathname))) return new Match(pathname, params, query, [route, notFoundRoute]);
-
-  // Last attempt: check this route.
+  if (notFoundRoute && (params = PathUtils.extractParams(notFoundRoute.path, pathname))) {
+    return new Match(pathname, params, query, [route, notFoundRoute]);
+  } // Last attempt: check this route.
   var params = PathUtils.extractParams(route.path, pathname);
-  if (params) return new Match(pathname, params, query, [route]);
-
-  return null;
+  if (params) {
+    return new Match(pathname, params, query, [route]);
+  }return null;
 }
 
 var Match = (function () {
+  function Match(pathname, params, query, routes) {
+    _classCallCheck(this, Match);
+
+    this.pathname = pathname;
+    this.params = params;
+    this.query = query;
+    this.routes = routes;
+  }
+
   _createClass(Match, null, [{
     key: 'findMatch',
 
@@ -28479,15 +28725,6 @@ var Match = (function () {
       return match;
     }
   }]);
-
-  function Match(pathname, params, query, routes) {
-    _classCallCheck(this, Match);
-
-    this.pathname = pathname;
-    this.params = params;
-    this.query = query;
-    this.routes = routes;
-  }
 
   return Match;
 })();
@@ -28577,7 +28814,7 @@ var qs = require('qs');
 
 var paramCompileMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$]*)|[*.()\[\]\\+|{}^$]/g;
 var paramInjectMatcher = /:([a-zA-Z_$][a-zA-Z0-9_$?]*[?]?)|[*]/g;
-var paramInjectTrailingSlashMatcher = /\/\/\?|\/\?\/|\/\?(?![^\/=]+=.*$)/g;
+var paramInjectTrailingSlashMatcher = /\/\/\?|\/\?\/|\/\?/g;
 var queryMatcher = /\?(.*)$/;
 
 var _compiledPatterns = {};
@@ -28642,9 +28879,9 @@ var PathUtils = {
 
     var match = path.match(matcher);
 
-    if (!match) return null;
-
-    var params = {};
+    if (!match) {
+      return null;
+    }var params = {};
 
     paramNames.forEach(function (paramName, index) {
       params[paramName] = match[index + 1];
@@ -28714,9 +28951,9 @@ var PathUtils = {
 
     var queryString = qs.stringify(query, { arrayFormat: 'brackets' });
 
-    if (queryString) return PathUtils.withoutQuery(path) + '?' + queryString;
-
-    return PathUtils.withoutQuery(path);
+    if (queryString) {
+      return PathUtils.withoutQuery(path) + '?' + queryString;
+    }return PathUtils.withoutQuery(path);
   }
 
 };
@@ -28737,7 +28974,9 @@ var PropTypes = assign({}, ReactPropTypes, {
    * Indicates that a prop should be falsy.
    */
   falsy: function falsy(props, propName, componentName) {
-    if (props[propName]) return new Error('<' + componentName + '> should not have a "' + propName + '" prop');
+    if (props[propName]) {
+      return new Error('<' + componentName + '> should not have a "' + propName + '" prop');
+    }
   },
 
   /**
@@ -28774,9 +29013,9 @@ module.exports = Redirect;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var assign = require('react/lib/Object.assign');
 var invariant = require('react/lib/invariant');
@@ -28786,7 +29025,45 @@ var PathUtils = require('./PathUtils');
 var _currentRoute;
 
 var Route = (function () {
-  _createClass(Route, null, [{
+  function Route(name, path, ignoreScrollBehavior, isDefault, isNotFound, onEnter, onLeave, handler) {
+    _classCallCheck(this, Route);
+
+    this.name = name;
+    this.path = path;
+    this.paramNames = PathUtils.extractParamNames(this.path);
+    this.ignoreScrollBehavior = !!ignoreScrollBehavior;
+    this.isDefault = !!isDefault;
+    this.isNotFound = !!isNotFound;
+    this.onEnter = onEnter;
+    this.onLeave = onLeave;
+    this.handler = handler;
+  }
+
+  _createClass(Route, [{
+    key: 'appendChild',
+
+    /**
+     * Appends the given route to this route's child routes.
+     */
+    value: function appendChild(route) {
+      invariant(route instanceof Route, 'route.appendChild must use a valid Route');
+
+      if (!this.childRoutes) this.childRoutes = [];
+
+      this.childRoutes.push(route);
+    }
+  }, {
+    key: 'toString',
+    value: function toString() {
+      var string = '<Route';
+
+      if (this.name) string += ' name="' + this.name + '"';
+
+      string += ' path="' + this.path + '">';
+
+      return string;
+    }
+  }], [{
     key: 'createRoute',
 
     /**
@@ -28885,26 +29162,28 @@ var Route = (function () {
 
       return route;
     }
+  }, {
+    key: 'createDefaultRoute',
 
     /**
      * Creates and returns a route that is rendered when its parent matches
      * the current URL.
      */
-  }, {
-    key: 'createDefaultRoute',
     value: function createDefaultRoute(options) {
       return Route.createRoute(assign({}, options, { isDefault: true }));
     }
+  }, {
+    key: 'createNotFoundRoute',
 
     /**
      * Creates and returns a route that is rendered when its parent matches
      * the current URL but none of its siblings do.
      */
-  }, {
-    key: 'createNotFoundRoute',
     value: function createNotFoundRoute(options) {
       return Route.createRoute(assign({}, options, { isNotFound: true }));
     }
+  }, {
+    key: 'createRedirect',
 
     /**
      * Creates and returns a route that automatically redirects the transition
@@ -28918,8 +29197,6 @@ var Route = (function () {
      * - query        The query to use in the redirect URL. Defaults
      *                to using the current query
      */
-  }, {
-    key: 'createRedirect',
     value: function createRedirect(options) {
       return Route.createRoute(assign({}, options, {
         path: options.path || options.from || '*',
@@ -28927,46 +29204,6 @@ var Route = (function () {
           transition.redirect(options.to, options.params || params, options.query || query);
         }
       }));
-    }
-  }]);
-
-  function Route(name, path, ignoreScrollBehavior, isDefault, isNotFound, onEnter, onLeave, handler) {
-    _classCallCheck(this, Route);
-
-    this.name = name;
-    this.path = path;
-    this.paramNames = PathUtils.extractParamNames(this.path);
-    this.ignoreScrollBehavior = !!ignoreScrollBehavior;
-    this.isDefault = !!isDefault;
-    this.isNotFound = !!isNotFound;
-    this.onEnter = onEnter;
-    this.onLeave = onLeave;
-    this.handler = handler;
-  }
-
-  /**
-   * Appends the given route to this route's child routes.
-   */
-
-  _createClass(Route, [{
-    key: 'appendChild',
-    value: function appendChild(route) {
-      invariant(route instanceof Route, 'route.appendChild must use a valid Route');
-
-      if (!this.childRoutes) this.childRoutes = [];
-
-      this.childRoutes.push(route);
-    }
-  }, {
-    key: 'toString',
-    value: function toString() {
-      var string = '<Route';
-
-      if (this.name) string += ' name="' + this.name + '"';
-
-      string += ' path="' + this.path + '">';
-
-      return string;
     }
   }]);
 
@@ -28984,12 +29221,12 @@ var canUseDOM = require('react/lib/ExecutionEnvironment').canUseDOM;
 var getWindowScrollPosition = require('./getWindowScrollPosition');
 
 function shouldUpdateScroll(state, prevState) {
-  if (!prevState) return true;
-
-  // Don't update scroll position when only the query has changed.
-  if (state.pathname === prevState.pathname) return false;
-
-  var routes = state.routes;
+  if (!prevState) {
+    return true;
+  } // Don't update scroll position when only the query has changed.
+  if (state.pathname === prevState.pathname) {
+    return false;
+  }var routes = state.routes;
   var prevRoutes = prevState.routes;
 
   var sharedAncestorRoutes = routes.filter(function (route) {
@@ -29042,9 +29279,9 @@ var ScrollHistory = {
   },
 
   _updateScroll: function _updateScroll(prevState) {
-    if (!shouldUpdateScroll(this.state, prevState)) return;
-
-    var scrollBehavior = this.constructor.getScrollBehavior();
+    if (!shouldUpdateScroll(this.state, prevState)) {
+      return;
+    }var scrollBehavior = this.constructor.getScrollBehavior();
 
     if (scrollBehavior) scrollBehavior.updateScrollPosition(this.constructor.getScrollPosition(this.state.path), this.state.action);
   }
@@ -29288,32 +29525,32 @@ module.exports = ScrollToTopBehavior;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react-router/lib/behaviors/ScrollToTopBehavior.js","/node_modules/react-router/lib/behaviors")
 },{"_process":38,"buffer":34}],115:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+'use strict';
+
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+
 /**
  * This component is necessary to get around a context warning
  * present in React 0.13.0. It sovles this by providing a separation
  * between the "owner" and "parent" contexts.
  */
 
-'use strict';
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
 var React = require('react');
 
 var ContextWrapper = (function (_React$Component) {
-  _inherits(ContextWrapper, _React$Component);
-
   function ContextWrapper() {
     _classCallCheck(this, ContextWrapper);
 
-    _get(Object.getPrototypeOf(ContextWrapper.prototype), 'constructor', this).apply(this, arguments);
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
   }
+
+  _inherits(ContextWrapper, _React$Component);
 
   _createClass(ContextWrapper, [{
     key: 'render',
@@ -29331,11 +29568,9 @@ module.exports = ContextWrapper;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var PropTypes = require('../PropTypes');
 var RouteHandler = require('./RouteHandler');
@@ -29349,20 +29584,22 @@ var Route = require('./Route');
  */
 
 var DefaultRoute = (function (_Route) {
-  _inherits(DefaultRoute, _Route);
-
   function DefaultRoute() {
     _classCallCheck(this, DefaultRoute);
 
-    _get(Object.getPrototypeOf(DefaultRoute.prototype), 'constructor', this).apply(this, arguments);
+    if (_Route != null) {
+      _Route.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(DefaultRoute, _Route);
 
   return DefaultRoute;
 })(Route);
+
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
 
 DefaultRoute.propTypes = {
   name: PropTypes.string,
@@ -29381,13 +29618,11 @@ module.exports = DefaultRoute;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var React = require('react');
 var assign = require('react/lib/Object.assign');
@@ -29421,17 +29656,15 @@ function isModifiedEvent(event) {
  */
 
 var Link = (function (_React$Component) {
-  _inherits(Link, _React$Component);
-
   function Link() {
     _classCallCheck(this, Link);
 
-    _get(Object.getPrototypeOf(Link.prototype), 'constructor', this).apply(this, arguments);
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(Link, _React$Component);
 
   _createClass(Link, [{
     key: 'handleClick',
@@ -29441,30 +29674,30 @@ var Link = (function (_React$Component) {
 
       if (this.props.onClick) clickResult = this.props.onClick(event);
 
-      if (isModifiedEvent(event) || !isLeftClickEvent(event)) return;
-
-      if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
+      if (isModifiedEvent(event) || !isLeftClickEvent(event)) {
+        return;
+      }if (clickResult === false || event.defaultPrevented === true) allowTransition = false;
 
       event.preventDefault();
 
       if (allowTransition) this.context.router.transitionTo(this.props.to, this.props.params, this.props.query);
     }
+  }, {
+    key: 'getHref',
 
     /**
      * Returns the value of the "href" attribute to use on the DOM element.
      */
-  }, {
-    key: 'getHref',
     value: function getHref() {
       return this.context.router.makeHref(this.props.to, this.props.params, this.props.query);
     }
+  }, {
+    key: 'getClassName',
 
     /**
      * Returns the value of the "class" attribute to use on the DOM element, which contains
      * the value of the activeClassName property when this <Link> is active.
      */
-  }, {
-    key: 'getClassName',
     value: function getClassName() {
       var className = this.props.className;
 
@@ -29495,6 +29728,10 @@ var Link = (function (_React$Component) {
   return Link;
 })(React.Component);
 
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
+
 Link.contextTypes = {
   router: PropTypes.router.isRequired
 };
@@ -29519,11 +29756,9 @@ module.exports = Link;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var PropTypes = require('../PropTypes');
 var RouteHandler = require('./RouteHandler');
@@ -29538,20 +29773,22 @@ var Route = require('./Route');
  */
 
 var NotFoundRoute = (function (_Route) {
-  _inherits(NotFoundRoute, _Route);
-
   function NotFoundRoute() {
     _classCallCheck(this, NotFoundRoute);
 
-    _get(Object.getPrototypeOf(NotFoundRoute.prototype), 'constructor', this).apply(this, arguments);
+    if (_Route != null) {
+      _Route.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(NotFoundRoute, _Route);
 
   return NotFoundRoute;
 })(Route);
+
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
 
 NotFoundRoute.propTypes = {
   name: PropTypes.string,
@@ -29570,11 +29807,9 @@ module.exports = NotFoundRoute;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var PropTypes = require('../PropTypes');
 var Route = require('./Route');
@@ -29585,20 +29820,22 @@ var Route = require('./Route');
  */
 
 var Redirect = (function (_Route) {
-  _inherits(Redirect, _Route);
-
   function Redirect() {
     _classCallCheck(this, Redirect);
 
-    _get(Object.getPrototypeOf(Redirect.prototype), 'constructor', this).apply(this, arguments);
+    if (_Route != null) {
+      _Route.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(Redirect, _Route);
 
   return Redirect;
 })(Route);
+
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
 
 Redirect.propTypes = {
   path: PropTypes.string,
@@ -29616,13 +29853,11 @@ module.exports = Redirect;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var React = require('react');
 var invariant = require('react/lib/invariant');
@@ -29660,7 +29895,7 @@ var RouteHandler = require('./RouteHandler');
  *   var App = React.createClass({
  *     render: function () {
  *       return (
- *         <div className="application">
+ *         <div class="application">
  *           <RouteHandler/>
  *         </div>
  *       );
@@ -29671,17 +29906,15 @@ var RouteHandler = require('./RouteHandler');
  */
 
 var Route = (function (_React$Component) {
-  _inherits(Route, _React$Component);
-
   function Route() {
     _classCallCheck(this, Route);
 
-    _get(Object.getPrototypeOf(Route.prototype), 'constructor', this).apply(this, arguments);
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(Route, _React$Component);
 
   _createClass(Route, [{
     key: 'render',
@@ -29692,6 +29925,10 @@ var Route = (function (_React$Component) {
 
   return Route;
 })(React.Component);
+
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
 
 Route.propTypes = {
   name: PropTypes.string,
@@ -29710,13 +29947,11 @@ module.exports = Route;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _inherits = function (subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var React = require('react');
 var ContextWrapper = require('./ContextWrapper');
@@ -29731,17 +29966,15 @@ var REF_NAME = '__routeHandler__';
  */
 
 var RouteHandler = (function (_React$Component) {
-  _inherits(RouteHandler, _React$Component);
-
   function RouteHandler() {
     _classCallCheck(this, RouteHandler);
 
-    _get(Object.getPrototypeOf(RouteHandler.prototype), 'constructor', this).apply(this, arguments);
+    if (_React$Component != null) {
+      _React$Component.apply(this, arguments);
+    }
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
+  _inherits(RouteHandler, _React$Component);
 
   _createClass(RouteHandler, [{
     key: 'getChildContext',
@@ -29780,9 +30013,9 @@ var RouteHandler = (function (_React$Component) {
     value: function createChildRouteHandler(props) {
       var route = this.context.router.getRouteAtDepth(this.getRouteDepth());
 
-      if (route == null) return null;
-
-      var childProps = assign({}, props || this.props, {
+      if (route == null) {
+        return null;
+      }var childProps = assign({}, props || this.props, {
         ref: REF_NAME,
         params: this.context.router.getCurrentParams(),
         query: this.context.router.getCurrentQuery()
@@ -29805,6 +30038,10 @@ var RouteHandler = (function (_React$Component) {
 
   return RouteHandler;
 })(React.Component);
+
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
 
 RouteHandler.contextTypes = {
   routeDepth: PropTypes.number.isRequired,
@@ -29856,9 +30093,9 @@ var DEFAULT_LOCATION = canUseDOM ? HashLocation : '/';
 var DEFAULT_SCROLL_BEHAVIOR = canUseDOM ? ImitateBrowserBehavior : null;
 
 function hasProperties(object, properties) {
-  for (var propertyName in properties) if (properties.hasOwnProperty(propertyName) && object[propertyName] !== properties[propertyName]) return false;
-
-  return true;
+  for (var propertyName in properties) if (properties.hasOwnProperty(propertyName) && object[propertyName] !== properties[propertyName]) {
+    return false;
+  }return true;
 }
 
 function hasMatch(routes, route, prevParams, nextParams, prevQuery, nextQuery) {
@@ -29902,15 +30139,15 @@ function routeIsActive(activeRoutes, routeName) {
 }
 
 function paramsAreActive(activeParams, params) {
-  for (var property in params) if (String(activeParams[property]) !== String(params[property])) return false;
-
-  return true;
+  for (var property in params) if (String(activeParams[property]) !== String(params[property])) {
+    return false;
+  }return true;
 }
 
 function queryIsActive(activeQuery, query) {
-  for (var property in query) if (String(activeQuery[property]) !== String(query[property])) return false;
-
-  return true;
+  for (var property in query) if (String(activeQuery[property]) !== String(query[property])) {
+    return false;
+  }return true;
 }
 
 /**
@@ -30122,7 +30359,9 @@ function createRouter(options) {
         var prevPath = state.path;
         var isRefreshing = action == null;
 
-        if (prevPath === path && !isRefreshing) return; // Nothing to do!
+        if (prevPath === path && !isRefreshing) {
+          return;
+        } // Nothing to do!
 
         // Record the scroll position as early as possible to
         // get it before browsers try update it automatically.
@@ -30279,9 +30518,9 @@ function createRouter(options) {
        * Returns true if the given route, params, and query are active.
        */
       isActive: function isActive(to, params, query) {
-        if (PathUtils.isAbsolute(to)) return to === state.path;
-
-        return routeIsActive(state.routes, to) && paramsAreActive(state.params, params) && (query == null || queryIsActive(state.query, query));
+        if (PathUtils.isAbsolute(to)) {
+          return to === state.path;
+        }return routeIsActive(state.routes, to) && paramsAreActive(state.params, params) && (query == null || queryIsActive(state.query, query));
       }
 
     },
@@ -30370,20 +30609,20 @@ function createRouteOptions(props) {
 }
 
 function createRouteFromReactElement(element) {
-  if (!React.isValidElement(element)) return;
-
-  var type = element.type;
+  if (!React.isValidElement(element)) {
+    return;
+  }var type = element.type;
   var props = assign({}, type.defaultProps, element.props);
 
   if (type.propTypes) checkPropTypes(type.displayName, type.propTypes, props);
 
-  if (type === DefaultRoute) return Route.createDefaultRoute(createRouteOptions(props));
-
-  if (type === NotFoundRoute) return Route.createNotFoundRoute(createRouteOptions(props));
-
-  if (type === Redirect) return Route.createRedirect(createRouteOptions(props));
-
-  return Route.createRoute(createRouteOptions(props), function () {
+  if (type === DefaultRoute) {
+    return Route.createDefaultRoute(createRouteOptions(props));
+  }if (type === NotFoundRoute) {
+    return Route.createNotFoundRoute(createRouteOptions(props));
+  }if (type === Redirect) {
+    return Route.createRedirect(createRouteOptions(props));
+  }return Route.createRoute(createRouteOptions(props), function () {
     if (props.children) createRoutesFromReactChildren(props.children);
   });
 }
@@ -30514,9 +30753,9 @@ function notifyChange(type) {
 function ensureSlash() {
   var path = HashLocation.getCurrentPath();
 
-  if (path.charAt(0) === '/') return true;
-
-  HashLocation.replace('/' + path);
+  if (path.charAt(0) === '/') {
+    return true;
+  }HashLocation.replace('/' + path);
 
   return false;
 }
@@ -30623,7 +30862,9 @@ function notifyChange(type) {
 }
 
 function onPopState(event) {
-  if (event.state === undefined) return; // Ignore extraneous popstate events in WebKit.
+  if (event.state === undefined) {
+    return;
+  } // Ignore extraneous popstate events in WebKit.
 
   notifyChange(LocationActions.POP);
 }
@@ -30726,9 +30967,9 @@ module.exports = RefreshLocation;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var invariant = require('react/lib/invariant');
 
@@ -30749,10 +30990,6 @@ var StaticLocation = (function () {
     this.path = path;
   }
 
-  // TODO: Include these in the above class definition
-  // once we can use ES7 property initializers.
-  // https://github.com/babel/babel/issues/619
-
   _createClass(StaticLocation, [{
     key: 'getCurrentPath',
     value: function getCurrentPath() {
@@ -30768,6 +31005,10 @@ var StaticLocation = (function () {
   return StaticLocation;
 })();
 
+// TODO: Include these in the above class definition
+// once we can use ES7 property initializers.
+// https://github.com/babel/babel/issues/619
+
 StaticLocation.prototype.push = throwCannotModify;
 StaticLocation.prototype.replace = throwCannotModify;
 StaticLocation.prototype.pop = throwCannotModify;
@@ -30778,9 +31019,9 @@ module.exports = StaticLocation;
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var invariant = require('react/lib/invariant');
 var LocationActions = require('../actions/LocationActions');
@@ -30796,11 +31037,15 @@ var TestLocation = (function () {
 
     this.history = history || [];
     this.listeners = [];
-    this.needsDOM = false;
     this._updateHistoryLength();
   }
 
   _createClass(TestLocation, [{
+    key: 'needsDOM',
+    get: function () {
+      return false;
+    }
+  }, {
     key: '_updateHistoryLength',
     value: function _updateHistoryLength() {
       History.length = this.history.length;
@@ -32337,7 +32582,9 @@ var isUnitlessNumber = {
   columnCount: true,
   flex: true,
   flexGrow: true,
+  flexPositive: true,
   flexShrink: true,
+  flexNegative: true,
   fontWeight: true,
   lineClamp: true,
   lineHeight: true,
@@ -32350,7 +32597,9 @@ var isUnitlessNumber = {
 
   // SVG-related properties
   fillOpacity: true,
-  strokeOpacity: true
+  strokeDashoffset: true,
+  strokeOpacity: true,
+  strokeWidth: true
 };
 
 /**
@@ -35453,6 +35702,7 @@ var HTMLDOMPropertyConfig = {
     headers: null,
     height: MUST_USE_ATTRIBUTE,
     hidden: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
+    high: null,
     href: null,
     hrefLang: null,
     htmlFor: null,
@@ -35463,6 +35713,7 @@ var HTMLDOMPropertyConfig = {
     lang: null,
     list: MUST_USE_ATTRIBUTE,
     loop: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
+    low: null,
     manifest: MUST_USE_ATTRIBUTE,
     marginHeight: null,
     marginWidth: null,
@@ -35477,6 +35728,7 @@ var HTMLDOMPropertyConfig = {
     name: null,
     noValidate: HAS_BOOLEAN_VALUE,
     open: HAS_BOOLEAN_VALUE,
+    optimum: null,
     pattern: null,
     placeholder: null,
     poster: null,
@@ -35490,6 +35742,7 @@ var HTMLDOMPropertyConfig = {
     rowSpan: null,
     sandbox: null,
     scope: null,
+    scoped: HAS_BOOLEAN_VALUE,
     scrolling: null,
     seamless: MUST_USE_ATTRIBUTE | HAS_BOOLEAN_VALUE,
     selected: MUST_USE_PROPERTY | HAS_BOOLEAN_VALUE,
@@ -35531,7 +35784,9 @@ var HTMLDOMPropertyConfig = {
     itemID: MUST_USE_ATTRIBUTE,
     itemRef: MUST_USE_ATTRIBUTE,
     // property is supported for OpenGraph in meta tags.
-    property: null
+    property: null,
+    // IE-only attribute that controls focus behavior
+    unselectable: MUST_USE_ATTRIBUTE
   },
   DOMAttributeNames: {
     acceptCharset: 'accept-charset',
@@ -36154,7 +36409,7 @@ if ("production" !== "development") {
       if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ === 'undefined') {
         console.debug(
           'Download the React DevTools for a better development experience: ' +
-          'http://fb.me/react-devtools'
+          'https://fb.me/react-devtools'
         );
       }
     }
@@ -36181,7 +36436,7 @@ if ("production" !== "development") {
       if (!expectedFeatures[i]) {
         console.error(
           'One or more ES5 shim/shams expected by React are not available: ' +
-          'http://fb.me/react-warning-polyfills'
+          'https://fb.me/react-warning-polyfills'
         );
         break;
       }
@@ -36189,7 +36444,7 @@ if ("production" !== "development") {
   }
 }
 
-React.version = '0.13.1';
+React.version = '0.13.3';
 
 module.exports = React;
 
@@ -37922,7 +38177,7 @@ var ReactClass = {
         ("production" !== "development" ? warning(
           this instanceof Constructor,
           'Something is calling a React component directly. Use a factory or ' +
-          'JSX instead. See: http://fb.me/react-legacyfactory'
+          'JSX instead. See: https://fb.me/react-legacyfactory'
         ) : null);
       }
 
@@ -38134,20 +38389,38 @@ ReactComponent.prototype.forceUpdate = function(callback) {
  */
 if ("production" !== "development") {
   var deprecatedAPIs = {
-    getDOMNode: 'getDOMNode',
-    isMounted: 'isMounted',
-    replaceProps: 'replaceProps',
-    replaceState: 'replaceState',
-    setProps: 'setProps'
+    getDOMNode: [
+      'getDOMNode',
+      'Use React.findDOMNode(component) instead.'
+    ],
+    isMounted: [
+      'isMounted',
+      'Instead, make sure to clean up subscriptions and pending requests in ' +
+      'componentWillUnmount to prevent memory leaks.'
+    ],
+    replaceProps: [
+      'replaceProps',
+      'Instead, call React.render again at the top level.'
+    ],
+    replaceState: [
+      'replaceState',
+      'Refactor your code to use setState instead (see ' +
+      'https://github.com/facebook/react/issues/3236).'
+    ],
+    setProps: [
+      'setProps',
+      'Instead, call React.render again at the top level.'
+    ]
   };
-  var defineDeprecationWarning = function(methodName, displayName) {
+  var defineDeprecationWarning = function(methodName, info) {
     try {
       Object.defineProperty(ReactComponent.prototype, methodName, {
         get: function() {
           ("production" !== "development" ? warning(
             false,
-            '%s(...) is deprecated in plain JavaScript React classes.',
-            displayName
+            '%s(...) is deprecated in plain JavaScript React classes. %s',
+            info[0],
+            info[1]
           ) : null);
           return undefined;
         }
@@ -38506,6 +38779,14 @@ var ReactCompositeComponentMixin = {
         this.getName() || 'a component'
       ) : null);
       ("production" !== "development" ? warning(
+        !inst.getDefaultProps ||
+        inst.getDefaultProps.isReactClassApproved,
+        'getDefaultProps was defined on %s, a plain JavaScript class. ' +
+        'This is only supported for classes created using React.createClass. ' +
+        'Use a static property to define defaultProps instead.',
+        this.getName() || 'a component'
+      ) : null);
+      ("production" !== "development" ? warning(
         !inst.propTypes,
         'propTypes was defined as an instance property on %s. Use a static ' +
         'property to define propTypes instead.',
@@ -38541,6 +38822,7 @@ var ReactCompositeComponentMixin = {
     this._pendingReplaceState = false;
     this._pendingForceUpdate = false;
 
+    var childContext;
     var renderedElement;
 
     var previouslyMounting = ReactLifeCycle.currentlyMountingInstance;
@@ -38555,7 +38837,8 @@ var ReactCompositeComponentMixin = {
         }
       }
 
-      renderedElement = this._renderValidatedComponent();
+      childContext = this._getValidatedChildContext(context);
+      renderedElement = this._renderValidatedComponent(childContext);
     } finally {
       ReactLifeCycle.currentlyMountingInstance = previouslyMounting;
     }
@@ -38569,7 +38852,7 @@ var ReactCompositeComponentMixin = {
       this._renderedComponent,
       rootID,
       transaction,
-      this._processChildContext(context)
+      this._mergeChildContext(context, childContext)
     );
     if (inst.componentDidMount) {
       transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);
@@ -38699,7 +38982,7 @@ var ReactCompositeComponentMixin = {
    * @return {object}
    * @private
    */
-  _processChildContext: function(currentContext) {
+  _getValidatedChildContext: function(currentContext) {
     var inst = this._instance;
     var childContext = inst.getChildContext && inst.getChildContext();
     if (childContext) {
@@ -38724,6 +39007,13 @@ var ReactCompositeComponentMixin = {
           name
         ) : invariant(name in inst.constructor.childContextTypes));
       }
+      return childContext;
+    }
+    return null;
+  },
+
+  _mergeChildContext: function(currentContext, childContext) {
+    if (childContext) {
       return assign({}, currentContext, childContext);
     }
     return currentContext;
@@ -38983,6 +39273,10 @@ var ReactCompositeComponentMixin = {
       return inst.state;
     }
 
+    if (replace && queue.length === 1) {
+      return queue[0];
+    }
+
     var nextState = assign({}, replace ? queue[0] : inst.state);
     for (var i = replace ? 1 : 0; i < queue.length; i++) {
       var partial = queue[i];
@@ -39052,13 +39346,14 @@ var ReactCompositeComponentMixin = {
   _updateRenderedComponent: function(transaction, context) {
     var prevComponentInstance = this._renderedComponent;
     var prevRenderedElement = prevComponentInstance._currentElement;
-    var nextRenderedElement = this._renderValidatedComponent();
+    var childContext = this._getValidatedChildContext();
+    var nextRenderedElement = this._renderValidatedComponent(childContext);
     if (shouldUpdateReactComponent(prevRenderedElement, nextRenderedElement)) {
       ReactReconciler.receiveComponent(
         prevComponentInstance,
         nextRenderedElement,
         transaction,
-        this._processChildContext(context)
+        this._mergeChildContext(context, childContext)
       );
     } else {
       // These two IDs are actually the same! But nothing should rely on that.
@@ -39074,7 +39369,7 @@ var ReactCompositeComponentMixin = {
         this._renderedComponent,
         thisID,
         transaction,
-        context
+        this._mergeChildContext(context, childContext)
       );
       this._replaceNodeWithMarkupByID(prevComponentID, nextMarkup);
     }
@@ -39112,11 +39407,12 @@ var ReactCompositeComponentMixin = {
   /**
    * @private
    */
-  _renderValidatedComponent: function() {
+  _renderValidatedComponent: function(childContext) {
     var renderedComponent;
     var previousContext = ReactContext.current;
-    ReactContext.current = this._processChildContext(
-      this._currentElement._context
+    ReactContext.current = this._mergeChildContext(
+      this._currentElement._context,
+      childContext
     );
     ReactCurrentOwner.current = this;
     try {
@@ -39487,6 +39783,7 @@ var ReactDOM = mapObject({
 
   // SVG
   circle: 'circle',
+  clipPath: 'clipPath',
   defs: 'defs',
   ellipse: 'ellipse',
   g: 'g',
@@ -39640,11 +39937,13 @@ function assertValidProps(props) {
       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.'
     ) : invariant(props.children == null));
     ("production" !== "development" ? invariant(
-      props.dangerouslySetInnerHTML.__html != null,
+      typeof props.dangerouslySetInnerHTML === 'object' &&
+      '__html' in props.dangerouslySetInnerHTML,
       '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
-      'Please visit http://fb.me/react-invariant-dangerously-set-inner-html ' +
+      'Please visit https://fb.me/react-invariant-dangerously-set-inner-html ' +
       'for more information.'
-    ) : invariant(props.dangerouslySetInnerHTML.__html != null));
+    ) : invariant(typeof props.dangerouslySetInnerHTML === 'object' &&
+    '__html' in props.dangerouslySetInnerHTML));
   }
   if ("production" !== "development") {
     ("production" !== "development" ? warning(
@@ -39952,6 +40251,8 @@ ReactDOMComponent.Mixin = {
       if (propKey === STYLE) {
         if (nextProp) {
           nextProp = this._previousStyleCopy = assign({}, nextProp);
+        } else {
+          this._previousStyleCopy = null;
         }
         if (lastProp) {
           // Unset styles on `lastProp` but not on `nextProp`.
@@ -42466,7 +42767,7 @@ function warnAndMonitorForKeyUse(message, element, parentType) {
 
   ("production" !== "development" ? warning(
     false,
-    message + '%s%s See http://fb.me/react-warning-keys for more information.',
+    message + '%s%s See https://fb.me/react-warning-keys for more information.',
     parentOrOwnerAddendum,
     childOwnerAddendum
   ) : null);
@@ -42590,9 +42891,9 @@ function warnForPropsMutation(propName, element) {
 
   ("production" !== "development" ? warning(
     false,
-    'Don\'t set .props.%s of the React component%s. ' +
-    'Instead, specify the correct value when ' +
-    'initially creating the element.%s',
+    'Don\'t set .props.%s of the React component%s. Instead, specify the ' +
+    'correct value when initially creating the element or use ' +
+    'React.cloneElement to make a new element with updated props.%s',
     propName,
     elementInfo,
     ownerInfo
@@ -47043,6 +47344,7 @@ var ReactUpdates = require("./ReactUpdates");
 var SyntheticEvent = require("./SyntheticEvent");
 
 var assign = require("./Object.assign");
+var emptyObject = require("./emptyObject");
 
 var topLevelTypes = EventConstants.topLevelTypes;
 
@@ -47384,6 +47686,9 @@ assign(
 );
 
 ReactShallowRenderer.prototype.render = function(element, context) {
+  if (!context) {
+    context = emptyObject;
+  }
   var transaction = ReactUpdates.ReactReconcileTransaction.getPooled();
   this._render(element, transaction, context);
   ReactUpdates.ReactReconcileTransaction.release(transaction);
@@ -47525,7 +47830,7 @@ for (eventType in topLevelTypes) {
 module.exports = ReactTestUtils;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/node_modules/react/lib/ReactTestUtils.js","/node_modules/react/lib")
-},{"./EventConstants":156,"./EventPluginHub":158,"./EventPropagators":161,"./Object.assign":169,"./React":171,"./ReactBrowserEventEmitter":173,"./ReactCompositeComponent":183,"./ReactElement":203,"./ReactEmptyComponent":205,"./ReactInstanceHandles":212,"./ReactInstanceMap":213,"./ReactMount":217,"./ReactUpdates":240,"./SyntheticEvent":249,"_process":38,"buffer":34}],236:[function(require,module,exports){
+},{"./EventConstants":156,"./EventPluginHub":158,"./EventPropagators":161,"./Object.assign":169,"./React":171,"./ReactBrowserEventEmitter":173,"./ReactCompositeComponent":183,"./ReactElement":203,"./ReactEmptyComponent":205,"./ReactInstanceHandles":212,"./ReactInstanceMap":213,"./ReactMount":217,"./ReactUpdates":240,"./SyntheticEvent":249,"./emptyObject":271,"_process":38,"buffer":34}],236:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48637,6 +48942,7 @@ var MUST_USE_ATTRIBUTE = DOMProperty.injection.MUST_USE_ATTRIBUTE;
 
 var SVGDOMPropertyConfig = {
   Properties: {
+    clipPath: MUST_USE_ATTRIBUTE,
     cx: MUST_USE_ATTRIBUTE,
     cy: MUST_USE_ATTRIBUTE,
     d: MUST_USE_ATTRIBUTE,
@@ -48682,6 +48988,7 @@ var SVGDOMPropertyConfig = {
     y: MUST_USE_ATTRIBUTE
   },
   DOMAttributeNames: {
+    clipPath: 'clip-path',
     fillOpacity: 'fill-opacity',
     fontFamily: 'font-family',
     fontSize: 'font-size',
@@ -51670,6 +51977,7 @@ var shouldWrap = {
   // Force wrapping for SVG elements because if they get created inside a <div>,
   // they will be initialized in the wrong namespace (and will not display).
   'circle': true,
+  'clipPath': true,
   'defs': true,
   'ellipse': true,
   'g': true,
@@ -51712,6 +52020,7 @@ var markupWrap = {
   'th': trWrap,
 
   'circle': svgWrap,
+  'clipPath': svgWrap,
   'defs': svgWrap,
   'ellipse': svgWrap,
   'g': svgWrap,
@@ -52071,6 +52380,7 @@ assign(
 function isInternalComponentType(type) {
   return (
     typeof type === 'function' &&
+    typeof type.prototype !== 'undefined' &&
     typeof type.prototype.mountComponent === 'function' &&
     typeof type.prototype.receiveComponent === 'function'
   );
@@ -53368,11 +53678,14 @@ module.exports = traverseAllChildren;
  * @providesModule update
  */
 
+ /* global hasOwnProperty:true */
+
 'use strict';
 
 var assign = require("./Object.assign");
 var keyOf = require("./keyOf");
 var invariant = require("./invariant");
+var hasOwnProperty = {}.hasOwnProperty;
 
 function shallowCopy(x) {
   if (Array.isArray(x)) {
@@ -53432,7 +53745,7 @@ function update(value, spec) {
     COMMAND_SET
   ) : invariant(typeof spec === 'object'));
 
-  if (spec.hasOwnProperty(COMMAND_SET)) {
+  if (hasOwnProperty.call(spec, COMMAND_SET)) {
     ("production" !== "development" ? invariant(
       Object.keys(spec).length === 1,
       'Cannot have more than one key in an object with %s',
@@ -53444,7 +53757,7 @@ function update(value, spec) {
 
   var nextValue = shallowCopy(value);
 
-  if (spec.hasOwnProperty(COMMAND_MERGE)) {
+  if (hasOwnProperty.call(spec, COMMAND_MERGE)) {
     var mergeObj = spec[COMMAND_MERGE];
     ("production" !== "development" ? invariant(
       mergeObj && typeof mergeObj === 'object',
@@ -53461,21 +53774,21 @@ function update(value, spec) {
     assign(nextValue, spec[COMMAND_MERGE]);
   }
 
-  if (spec.hasOwnProperty(COMMAND_PUSH)) {
+  if (hasOwnProperty.call(spec, COMMAND_PUSH)) {
     invariantArrayCase(value, spec, COMMAND_PUSH);
     spec[COMMAND_PUSH].forEach(function(item) {
       nextValue.push(item);
     });
   }
 
-  if (spec.hasOwnProperty(COMMAND_UNSHIFT)) {
+  if (hasOwnProperty.call(spec, COMMAND_UNSHIFT)) {
     invariantArrayCase(value, spec, COMMAND_UNSHIFT);
     spec[COMMAND_UNSHIFT].forEach(function(item) {
       nextValue.unshift(item);
     });
   }
 
-  if (spec.hasOwnProperty(COMMAND_SPLICE)) {
+  if (hasOwnProperty.call(spec, COMMAND_SPLICE)) {
     ("production" !== "development" ? invariant(
       Array.isArray(value),
       'Expected %s target to be an array; got %s',
@@ -53501,7 +53814,7 @@ function update(value, spec) {
     });
   }
 
-  if (spec.hasOwnProperty(COMMAND_APPLY)) {
+  if (hasOwnProperty.call(spec, COMMAND_APPLY)) {
     ("production" !== "development" ? invariant(
       typeof spec[COMMAND_APPLY] === 'function',
       'update(): expected spec of %s to be a function; got %s.',
