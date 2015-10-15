@@ -18,14 +18,6 @@ var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx');
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
 var OutcomeTimeline = require('./OutcomeTimeline.jsx');
 
-var PtdaConsiderations = require('./ptda/PtdaConsiderations');
-var PtdaCost = require('./ptda/PtdaCost');
-var PtdaFrequency = require('./ptda/PtdaFrequency');
-var PtdaMedicationSquare = require('./ptda/PtdaMedicationSquare');
-var PtdaMini = require('./ptda/PtdaMini');
-var PtdaOnset = require('./ptda/PtdaOnset');
-var PtdaSideEffects = require('./ptda/PtdaSideEffects');
-
 String.prototype.capitalizeFirstletter = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
@@ -98,7 +90,7 @@ var MedicationCard = React.createClass({
       return (
         <span className='medication-name'>
           <strong>{medication.name_generic}</strong><br />
-          <span className='light'>{medication.name_common}</span>         
+          <span className='light'>{medication.name_common}</span>
         </span>
       );
     }
@@ -171,7 +163,7 @@ var MedicationCard = React.createClass({
 
         <div className='frequency'>
           {medication.ptda.frequency.dose &&
-            <span> 
+            <span>
               <span className='ss-icon ss-calendar inline-block space-r'></span>
               {medication.ptda.frequency.dose == 1 ? 'once ' : 'twice '}
               {medication.ptda.frequency.multiple > 1 ?
@@ -617,7 +609,7 @@ var Navigator = React.createClass({
                 var lookupKey = preferences[preference].key;
                 var result = _.get(medication, lookupKey);
                 var match = isMatch(_.get(medication, lookupKey));
-                
+
                 if (match == 'unsafe') {
                   medicationMatchingPreferences[preference] = true;
                 }
@@ -1035,7 +1027,7 @@ var Navigator = React.createClass({
                   {this.renderPreferenceControls(preferences)}
                   <ScrollTo to='medications' onClick={this.scrollSmoothlyToElement} />
                 </div>
-              </div>   
+              </div>
             </section>
 
             <section className='full-screen medications' ref='medications'>

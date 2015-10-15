@@ -12,6 +12,31 @@ var transform = require('vinyl-transform');
 var util = require('gulp-util');
 var yaml = require('gulp-yaml');
 
+gulp.task('externals', function () {
+  var browserified = transform(function(filename) {
+    var b = browserify(filename, {
+      // extensions: ['.jsx'],
+      // insertGlobals: true,
+    });
+    return b.require('react')
+            .require('react/addons')
+            .require('react-bootstrap')
+            .require('react-router')
+            .require('lodash')
+            .require('jquery')
+            .bundle();
+  });
+  return gulp.src(['client/js/dependencies.js'])
+    .pipe(browserified)
+    .on('error', function (err) {
+      var error = util.colors.red(err);
+      util.log(error);
+      this.emit('end');
+    })
+    .pipe(rename('external.js'))
+    .pipe(gulp.dest('js'));
+});
+
 gulp.task('browserify', function () {
   var browserified = transform(function(filename) {
     var b = browserify(filename, {
@@ -19,7 +44,13 @@ gulp.task('browserify', function () {
       insertGlobals: true,
     });
     b.transform(reactify);
-    return b.bundle();
+    return b.external('react')
+            .external('react/addons')
+            .external('react-bootstrap')
+            .external('react-router')
+            .external('lodash')
+            .external('jquery')
+            .bundle();
   });
   return gulp.src(['client/js/client.js'])
     .pipe(browserified)
