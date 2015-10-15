@@ -414,7 +414,7 @@ var OutcomeTimeline = React.createClass({
 						      			{Object.keys(durations).map(function (numberOfWeeks) {
 							        		var entries = durations[numberOfWeeks];
 							        		return entries.map(function (entry, i) {
-								        		if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
+                            if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
 									      			return (
 										         		<div key={i}>
 										         			{/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
@@ -437,19 +437,6 @@ var OutcomeTimeline = React.createClass({
 		    </div>
 		  );
 	  }
-  },
-
-  renderDataByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data);
-    var tagDescriptions = this.props.data.tagDescriptions;
-
-    return (
-      <section key={tag} className='data'>
-        <div>
-          {this.renderTimelineByMeasure(dataByTag[tag])}
-        </div>
-      </section>
-    );
   },
 
   renderTimelineByTag: function(data, tags, tag) {

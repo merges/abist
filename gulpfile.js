@@ -22,6 +22,7 @@ gulp.task('externals', function () {
             .require('react/addons')
             .require('react-bootstrap')
             .require('react-router')
+            .require('react-sticky')
             .require('lodash')
             .require('jquery')
             .bundle();
@@ -41,13 +42,16 @@ gulp.task('browserify', function () {
   var browserified = transform(function(filename) {
     var b = browserify(filename, {
       extensions: ['.jsx'],
-      insertGlobals: true,
+      // insertGlobals: true,
+      // insertGlobals: false,
+      detectGlobals: false
     });
     b.transform(reactify);
     return b.external('react')
             .external('react/addons')
             .external('react-bootstrap')
             .external('react-router')
+            .external('react-sticky')
             .external('lodash')
             .external('jquery')
             .bundle();
