@@ -2090,7 +2090,9 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   	return entriesByDuration;
   },
 
-  renderTimelineByMeasure: function(measures) {
+  renderTimelineByMeasure: function(measures, direction) {
+    !direction && (direction = 'horizontal')
+
     var measureMap = this.props.data.measures;
     var grades = this.props.data.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
@@ -2180,34 +2182,35 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var measure = this.props.selectedMeasure;
     var measureData = measure && measures[measure].data;
 
+    // Render a timeline
     if (measure && measureData) {
       var medications = this.props.medications;
       var disabledMedications = this.props.disabledMedications;
       var durations = groupEntriesByDuration(get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications));
 
-      return (
-      	React.createElement("div", null, 
-      		React.createElement("div", {key: measure}, 
-	        	React.createElement("section", {className: "outcome-timeline"}, 
-			      	React.createElement("section", null, 
-			      		React.createElement("div", {className: "moment"}, 
-			      			React.createElement("section", null, 
-			        			React.createElement("div", {className: "title"}), 
-			        			React.createElement("div", {className: "line"}, 
-			        				React.createElement("div", {className: "bar"})
-			        			), 
-			        			React.createElement("div", {className: "description"}, "Treatment")
-			        		)
-			      		), 
-			      		React.createElement("div", {className: "moment-data"}, 
-			      			React.createElement("section", null, 
-				      			Object.keys(durations).map(function (numberOfWeeks) {
-					        		var entries = durations[numberOfWeeks];
+      if (direction == 'vertical') {
+        return (
+        	React.createElement("div", {key: 'outcome-timeline' + measure}, 
+          	React.createElement("section", {className: "outcome-timeline"}, 
+  		      	React.createElement("section", null, 
+  		      		React.createElement("div", {className: "moment"}, 
+  		      			React.createElement("section", null, 
+  		        			React.createElement("div", {className: "title"}), 
+  		        			React.createElement("div", {className: "line"}, 
+  		        				React.createElement("div", {className: "bar"})
+  		        			), 
+  		        			React.createElement("div", {className: "description"}, "Treatment")
+  		        		)
+  		      		), 
+  		      		React.createElement("div", {className: "moment-data"}, 
+  		      			React.createElement("section", null, 
+  			      			Object.keys(durations).map(function (numberOfWeeks) {
+  				        		var entries = durations[numberOfWeeks];
 
-						        	return entries.map(function (entry, i) {
-						      			if (entry.intervention) {
-						      				return (
-								         		React.createElement("div", {key: i}, 
+  					        	return entries.map(function (entry, i) {
+  					      			if (entry.intervention) {
+  					      				return (
+  							         		React.createElement("div", {key: i}, 
                               React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
                               entry.comparison &&
                               	React.createElement("div", {className: "light"}, 
@@ -2218,56 +2221,127 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                               React.createElement(Source, {source: entry.source, kind: entry.kind}), 
                               React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                             )
-								         	);
-								        }
-							       	});
-										})
-									)
-				      	)
-				      ), 
+  							         	);
+  							        }
+  						       	});
+  									})
+  								)
+  			      	)
+  			      ), 
 
               Object.keys(durations).map(function (timepoint) {
-				      	return (
-				      		React.createElement("section", {key: measure + timepoint}, 
-					      		React.createElement("div", {className: "moment"}, 
-					      			React.createElement("section", null, 
-					        			React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
-					        			React.createElement("div", {className: "line"}, 
-					        				React.createElement("div", {className: "ball"})
-					        			), 
-					        			React.createElement("div", {className: "description"}, 
-					        				React.createElement("strong", null, measureMap[measure].name_short), " ", measureMap[measure].name_friendly, 
-						              measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
-					        			)
-					        		)
-					      		), 
-					      		React.createElement("div", {className: "moment-data"}, 
-								      React.createElement("section", null, 
-						      			Object.keys(durations).map(function (numberOfWeeks) {
-							        		var entries = durations[numberOfWeeks];
-							        		return entries.map(function (entry, i) {
+  			      	return (
+  			      		React.createElement("section", {key: measure + timepoint}, 
+  				      		React.createElement("div", {className: "moment"}, 
+  				      			React.createElement("section", null, 
+  				        			React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
+  				        			React.createElement("div", {className: "line"}, 
+  				        				React.createElement("div", {className: "ball"})
+  				        			), 
+  				        			React.createElement("div", {className: "description"}, 
+  				        				React.createElement("strong", null, measureMap[measure].name_short), " ", measureMap[measure].name_friendly, 
+  					              measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
+  				        			)
+  				        		)
+  				      		), 
+  				      		React.createElement("div", {className: "moment-data"}, 
+  							      React.createElement("section", null, 
+  					      			Object.keys(durations).map(function (numberOfWeeks) {
+  						        		var entries = durations[numberOfWeeks];
+  						        		return entries.map(function (entry, i) {
                             if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
-									      			return (
-										         		React.createElement("div", {key: i}, 
-										         			/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
+  								      			return (
+  									         		React.createElement("div", {key: i}, 
+  									         			/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
                                   renderValue(entry.intervention)
-										         		)
-										         	);
-										        }
-										        else if (entry.intervention) {
-										        	return (React.createElement("div", {key: i}));
-										        }
-										      });
-												})
-											)
-								    )
-					      	)
-					      );
-							})
-						)
-		      )
-		    )
-		  );
+  									         		)
+  									         	);
+  									        }
+  									        else if (entry.intervention) {
+  									        	return (React.createElement("div", {key: i}));
+  									        }
+  									      });
+  											})
+  										)
+  							    )
+  				      	)
+  				      );
+  						})
+  					)
+  		    )
+  		  );
+      }
+      debugger;
+      return (
+        React.createElement("div", {key: 'outcome-timeline' + measure}, 
+          React.createElement("section", {className: "outcome-timeline horizontal"}, 
+            React.createElement("section", null, 
+              React.createElement("div", {className: "moment"}, 
+                React.createElement("section", null, 
+                  React.createElement("div", {className: "title"}), 
+                  React.createElement("div", {className: "line"}, 
+                    React.createElement("div", {className: "bar"})
+                  ), 
+                  React.createElement("div", {className: "description"}, "Treatment")
+                )
+              ), 
+              Object.keys(durations).map(function (timepoint) {
+                return (
+                  React.createElement("div", {key: measure + timepoint, className: "moment"}, 
+                    React.createElement("section", null, 
+                      React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
+                      React.createElement("div", {className: "line"}, 
+                        React.createElement("div", {className: "ball"})
+                      ), 
+                      React.createElement("div", {className: "description"}, 
+                        React.createElement("strong", null, measureMap[measure].name_short), " ", measureMap[measure].name_friendly, 
+                        measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
+                      )
+                    )
+                  )
+                );
+              })
+            ), 
+            Object.keys(durations).map(function (numberOfWeeks) {
+              var entries = durations[numberOfWeeks];
+              return entries.map(function (entry, i) {
+                if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
+                  return (
+                    React.createElement("div", {key: i}, 
+                      /* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
+                      renderValue(entry.intervention)
+                    )
+                  );
+                }
+                else if (entry.intervention) {
+                  return (React.createElement("div", {key: i}));
+                }
+              });
+            }), 
+            Object.keys(durations).map(function (numberOfWeeks) {
+                var entries = durations[numberOfWeeks];
+
+                return entries.map(function (entry, i) {
+                  if (entry.intervention) {
+                    return (
+                      React.createElement("div", {key: i}, 
+                        React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
+                        entry.comparison &&
+                          React.createElement("div", {className: "light"}, 
+                            "vs.", React.createElement("br", null), 
+                            entry.comparison.parts.join(' + ')
+                          ), 
+                        
+                        React.createElement(Source, {source: entry.source, kind: entry.kind}), 
+                        React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                      )
+                    );
+                  }
+                });
+              })
+          )
+        )
+      );
 	  }
   },
 

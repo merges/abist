@@ -258,7 +258,9 @@ var OutcomeTimeline = React.createClass({
   	return entriesByDuration;
   },
 
-  renderTimelineByMeasure: function(measures) {
+  renderTimelineByMeasure: function(measures, direction) {
+    !direction && (direction = 'horizontal')
+
     var measureMap = this.props.data.measures;
     var grades = this.props.data.grades;
     var getDurationAsWeeks = this.getDurationAsWeeks;
@@ -348,34 +350,35 @@ var OutcomeTimeline = React.createClass({
     var measure = this.props.selectedMeasure;
     var measureData = measure && measures[measure].data;
 
+    // Render a timeline
     if (measure && measureData) {
       var medications = this.props.medications;
       var disabledMedications = this.props.disabledMedications;
       var durations = groupEntriesByDuration(get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications));
 
-      return (
-      	<div>
-      		<div key={measure}>
-	        	<section className='outcome-timeline'>
-			      	<section>
-			      		<div className='moment'>
-			      			<section>
-			        			<div className='title'></div>
-			        			<div className='line'>
-			        				<div className='bar'></div>
-			        			</div>
-			        			<div className='description'>Treatment</div>
-			        		</section>
-			      		</div>
-			      		<div className='moment-data'>
-			      			<section>
-				      			{Object.keys(durations).map(function (numberOfWeeks) {
-					        		var entries = durations[numberOfWeeks];
+      if (direction == 'vertical') {
+        return (
+        	<div key={'outcome-timeline' + measure}>
+          	<section className='outcome-timeline'>
+  		      	<section>
+  		      		<div className='moment'>
+  		      			<section>
+  		        			<div className='title'></div>
+  		        			<div className='line'>
+  		        				<div className='bar'></div>
+  		        			</div>
+  		        			<div className='description'>Treatment</div>
+  		        		</section>
+  		      		</div>
+  		      		<div className='moment-data'>
+  		      			<section>
+  			      			{Object.keys(durations).map(function (numberOfWeeks) {
+  				        		var entries = durations[numberOfWeeks];
 
-						        	return entries.map(function (entry, i) {
-						      			if (entry.intervention) {
-						      				return (
-								         		<div key={i}>
+  					        	return entries.map(function (entry, i) {
+  					      			if (entry.intervention) {
+  					      				return (
+  							         		<div key={i}>
                               <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
                               {entry.comparison &&
                               	<div className='light'>
@@ -386,56 +389,127 @@ var OutcomeTimeline = React.createClass({
                               <Source source={entry.source} kind={entry.kind} />
                               <GradeQuality grade={entry.quality} gradeMap={grades} />
                             </div>
-								         	);
-								        }
-							       	});
-										})}
-									</section>
-				      	</div>
-				      </section>
+  							         	);
+  							        }
+  						       	});
+  									})}
+  								</section>
+  			      	</div>
+  			      </section>
 
               {Object.keys(durations).map(function (timepoint) {
-				      	return (
-				      		<section key={measure + timepoint}>
-					      		<div className='moment'>
-					      			<section>
-					        			<div className='title'><strong>{timepoint} weeks</strong></div>
-					        			<div className='line'>
-					        				<div className='ball'></div>
-					        			</div>
-					        			<div className='description'>
-					        				<strong>{measureMap[measure].name_short}</strong> {measureMap[measure].name_friendly}
-						              {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
-					        			</div>
-					        		</section>
-					      		</div>
-					      		<div className='moment-data'>
-								      <section>
-						      			{Object.keys(durations).map(function (numberOfWeeks) {
-							        		var entries = durations[numberOfWeeks];
-							        		return entries.map(function (entry, i) {
+  			      	return (
+  			      		<section key={measure + timepoint}>
+  				      		<div className='moment'>
+  				      			<section>
+  				        			<div className='title'><strong>{timepoint} weeks</strong></div>
+  				        			<div className='line'>
+  				        				<div className='ball'></div>
+  				        			</div>
+  				        			<div className='description'>
+  				        				<strong>{measureMap[measure].name_short}</strong> {measureMap[measure].name_friendly}
+  					              {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
+  				        			</div>
+  				        		</section>
+  				      		</div>
+  				      		<div className='moment-data'>
+  							      <section>
+  					      			{Object.keys(durations).map(function (numberOfWeeks) {
+  						        		var entries = durations[numberOfWeeks];
+  						        		return entries.map(function (entry, i) {
                             if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
-									      			return (
-										         		<div key={i}>
-										         			{/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
+  								      			return (
+  									         		<div key={i}>
+  									         			{/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
                                   {renderValue(entry.intervention)}
-										         		</div>
-										         	);
-										        }
-										        else if (entry.intervention) {
-										        	return (<div key={i}></div>);
-										        }
-										      });
-												})}
-											</section>
-								    </div>
-					      	</section>
-					      );
-							})}
-						</section>
-		      </div>
-		    </div>
-		  );
+  									         		</div>
+  									         	);
+  									        }
+  									        else if (entry.intervention) {
+  									        	return (<div key={i}></div>);
+  									        }
+  									      });
+  											})}
+  										</section>
+  							    </div>
+  				      	</section>
+  				      );
+  						})}
+  					</section>
+  		    </div>
+  		  );
+      }
+      debugger;
+      return (
+        <div key={'outcome-timeline' + measure}>
+          <section className='outcome-timeline horizontal'>
+            <section>
+              <div className='moment'>
+                <section>
+                  <div className='title'></div>
+                  <div className='line'>
+                    <div className='bar'></div>
+                  </div>
+                  <div className='description'>Treatment</div>
+                </section>
+              </div>
+              {Object.keys(durations).map(function (timepoint) {
+                return (
+                  <div key={measure + timepoint}  className='moment'>
+                    <section>
+                      <div className='title'><strong>{timepoint} weeks</strong></div>
+                      <div className='line'>
+                        <div className='ball'></div>
+                      </div>
+                      <div className='description'>
+                        <strong>{measureMap[measure].name_short}</strong> {measureMap[measure].name_friendly}
+                        {measureMap[measure].description && <p>{measureMap[measure].description}</p>}
+                      </div>
+                    </section>
+                  </div>
+                );
+              })}
+            </section>
+            {Object.keys(durations).map(function (numberOfWeeks) {
+              var entries = durations[numberOfWeeks];
+              return entries.map(function (entry, i) {
+                if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
+                  return (
+                    <div key={i}>
+                      {/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */}
+                      {renderValue(entry.intervention)}
+                    </div>
+                  );
+                }
+                else if (entry.intervention) {
+                  return (<div key={i}></div>);
+                }
+              });
+            })}
+            {Object.keys(durations).map(function (numberOfWeeks) {
+                var entries = durations[numberOfWeeks];
+
+                return entries.map(function (entry, i) {
+                  if (entry.intervention) {
+                    return (
+                      <div key={i}>
+                        <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
+                        {entry.comparison &&
+                          <div className='light'>
+                            vs.<br />
+                            {entry.comparison.parts.join(' + ')}
+                          </div>
+                        }
+                        <Source source={entry.source} kind={entry.kind} />
+                        <GradeQuality grade={entry.quality} gradeMap={grades} />
+                      </div>
+                    );
+                  }
+                });
+              })}
+          </section>
+        </div>
+      );
 	  }
   },
 
