@@ -134,27 +134,27 @@ module.exports = Experiment;
 },{"react/addons":"react/addons"}],3:[function(require,module,exports){
 /** @jsx React.DOM */
 
-var React = require('react/addons');
-var _ = require('lodash');
+var React = require('react/addons')
+var _ = require('lodash')
 
 // Data
-var get = require('../data/get.js');
-var medications = require('../data/medications.js');
-var preferences = require('../data/preferences.js');
-var mockData = require('../data/mock.js');
+var get = require('../data/get.js')
+var medications = require('../data/medications.js')
+var preferences = require('../data/preferences.js')
+var mockData = require('../data/mock.js')
 
-var Nav = require('react-bootstrap').Nav;
-var NavItem = require('react-bootstrap').NavItem;
+var Nav = require('react-bootstrap').Nav
+var NavItem = require('react-bootstrap').NavItem
 
-var Sticky = require('react-sticky');
+var Sticky = require('react-sticky')
 
-var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx');
-var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
-var OutcomeTimeline = require('./OutcomeTimeline.jsx');
+var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
+var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
+var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
 String.prototype.capitalizeFirstletter = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};
+  return this.charAt(0).toUpperCase() + this.slice(1)
+}
 
 var ScrollTo = React.createClass({displayName: "ScrollTo",
 
@@ -168,10 +168,10 @@ var ScrollTo = React.createClass({displayName: "ScrollTo",
       React.createElement("a", {onClick: this.props.onClick.bind(null, this.props.to), className: "scroll-down"}, 
         React.createElement("i", {className: "ss-icon ss-navigatedown"})
       )
-    );
+    )
   }
 
-});
+})
 
 var DosageForm = React.createClass({displayName: "DosageForm",
 
@@ -180,29 +180,29 @@ var DosageForm = React.createClass({displayName: "DosageForm",
   },
 
   checkForSubstring: function(form, canonical) {
-    return form.toLowerCase().indexOf(canonical) >= 0;
+    return form.toLowerCase().indexOf(canonical) >= 0
   },
 
   render: function() {
-    var form = this.props.form;
+    var form = this.props.form
 
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
     var classes = cx({
       'ss-icon': true,
       'ss-hospital': this.checkForSubstring(form, 'infusion'),
       'ss-syringe': this.checkForSubstring(form, 'injection'),
       'ss-pill': this.checkForSubstring(form, 'tablet')
-    });
+    })
 
     return (
       React.createElement("div", {className: "dosage-form"}, 
         React.createElement("span", {className: classes}), 
         React.createElement("span", {className: "form-name"}, form)
       )
-    );
+    )
   }
 
-});
+})
 
 var MedicationCard = React.createClass({displayName: "MedicationCard",
 
@@ -218,7 +218,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
         React.createElement("span", {className: "medication-name"}, 
           React.createElement("strong", null, medication.name_generic.toLowerCase())
         )
-      );
+      )
     }
     else {
       return (
@@ -226,13 +226,13 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
           React.createElement("strong", null, medication.name_generic), React.createElement("br", null), 
           React.createElement("span", {className: "light"}, medication.name_common)
         )
-      );
+      )
     }
   },
 
   renderPreferences: function (preferences, preferencesSelected) {
     if (preferences && preferencesSelected) {
-      var medication = this.props.medication;
+      var medication = this.props.medication
       return (
         React.createElement("div", {className: "preferences"}, 
           _.map(preferencesSelected, function (value, key) {
@@ -246,35 +246,35 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
             if (value) {
               // Does the preference exist in our preferences object, and is there a function to look for a match?
               if (preferences[key] && preferences[key].isMatch) {
-                var isMatch = preferences[key].isMatch;
-                var lookupKey = preferences[key].key;
-                var match = isMatch(_.get(medication, lookupKey), value);
+                var isMatch = preferences[key].isMatch
+                var lookupKey = preferences[key].key
+                var match = isMatch(_.get(medication, lookupKey), value)
               }
             }
 
             // If we get an "unsafe"
             if (match == 'unsafe') {
-              return (React.createElement("p", {key: medication.name + key}, "Not ", preferences[key].name.toLowerCase()));
+              return (React.createElement("p", {key: medication.name + key}, "Not ", preferences[key].name.toLowerCase()))
             }
             // If we get an "unknown"
             if (match == 'unknown') {
-              return (React.createElement("p", {key: medication.name + key}, "No information about whether ", preferences[key].name.toLowerCase()));
+              return (React.createElement("p", {key: medication.name + key}, "No information about whether ", preferences[key].name.toLowerCase()))
             }
             // If we get a "false" i.e. for a boolean, it's not true
             if (match === false) {
-              return (React.createElement("p", {key: medication.name + key}, "No ", preferences[key].name.toLowerCase()));
+              return (React.createElement("p", {key: medication.name + key}, "No ", preferences[key].name.toLowerCase()))
             }
             // TODO handle dosage form properly
           })
         )
-      );
+      )
     }
   },
 
   render: function() {
-    var medication = this.props.medication;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.props.preferencesSelected;
+    var medication = this.props.medication
+    var preferences = this.props.preferences
+    var preferencesSelected = this.props.preferencesSelected
 
     return (
       React.createElement("div", null, 
@@ -282,7 +282,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
           medication.forms.map(function (form, i) {
             return (
               React.createElement(DosageForm, {key: i, form: form.name})
-            );
+            )
           })
         ), 
         this.renderPreferredMedicationName(medication), 
@@ -310,10 +310,10 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
 
         this.renderPreferences(preferences, preferencesSelected)
       )
-    );
+    )
   }
 
-});
+})
 
 // Navigator experiment
 
@@ -323,41 +323,41 @@ var Navigator = React.createClass({displayName: "Navigator",
     return {
       medications: medications,
       preferences: preferences
-    };
+    }
   },
 
   getInitialState: function () {
     var getDosageForms = function(medications) {
-      var dosageForms = {};
+      var dosageForms = {}
       medications.map(function(medication) {
         if (medication.forms) {
           medication.forms.forEach(function(form) {
-            dosageForms[form.name] = false;
-          });
+            dosageForms[form.name] = false
+          })
         }
-      });
-      return dosageForms;
-    };
+      })
+      return dosageForms
+    }
 
     var getClasses = function(medications) {
-      var classes = {};
+      var classes = {}
       medications.map(function(medication) {
         if (medication.class) {
           medication.class.forEach(function(name) {
-            classes[name] = false;
-          });
+            classes[name] = false
+          })
         }
-      });
-      return classes;
-    };
+      })
+      return classes
+    }
 
     var getDisabledMedications = function(medications) {
-      var disabled = {};
+      var disabled = {}
       medications.forEach(function(medication) {
-        disabled[medication.name] = false;
-      });
-      return disabled;
-    };
+        disabled[medication.name] = false
+      })
+      return disabled
+    }
 
 
 
@@ -396,7 +396,7 @@ var Navigator = React.createClass({displayName: "Navigator",
   },
 
   componentDidMount: function () {
-    var instance = this;
+    var instance = this
 
     if (this.state.offline) {
       // Use mock data
@@ -404,7 +404,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         data: mockData,
         selectedMeasure: 'acr_50',
         selectedTag: 'improvement'
-      });
+      })
     }
     else {
       // Query spreadsheets
@@ -418,216 +418,216 @@ var Navigator = React.createClass({displayName: "Navigator",
               selectedTag: 'improvement',
               // selectedMeasure: 'ae',
               // selectedTag: 'adverse event'
-            });
+            })
           }
         }
-      });
+      })
     }
   },
 
   handleStickyStateChange: function() {
-    this.setStickyHeaderOffsets();
+    this.setStickyHeaderOffsets()
   },
 
   setStickyHeaderOffsets: function() {
-    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
     var offsets = {
       medications: this.getOffsetTop('medications') - stickyHolderHeight,
       results: this.getOffsetTop('results') - stickyHolderHeight
-    };
+    }
     this.setState({
       offsets: offsets
-    });
+    })
   },
 
   // setStickyHolderHeight: function() {
   //   var heights = {
   //     filterControls: this.refs['stickyFilterControls'].getDOMNode().offsetHeight,
   //     medications: this.refs['stickyMedications'].getDOMNode().offsetHeight
-  //   };
+  //   }
 
   //   if (heights.filterControls > 0 || heights.medications > 0) {
-  //     var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+  //     var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
   //     console.log('stickyHolderHeight', stickyHolderHeight)
   //     this.setState({
   //       stickyHolderHeight: stickyHolderHeight
-  //     });
+  //     })
   //   }
   // },
 
   // getOffsetTopPlusStickyHeader: function (ref) {
-  //   return this.getOffsetTop() + this.state.stickyHolderHeight;
+  //   return this.getOffsetTop() + this.state.stickyHolderHeight
   // },
 
   getOffsetTop: function (ref) {
     if (this.refs[ref]) {
-      var element = this.refs[ref].getDOMNode();
-      return Math.ceil($(element).offset().top);
+      var element = this.refs[ref].getDOMNode()
+      return Math.ceil($(element).offset().top)
     }
-    return 99999;
+    return 99999
   },
 
   scrollSmoothlyToElement: function (ref) {
-    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
-    var newScrollTop = this.getOffsetTop(ref) - stickyHolderHeight;
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
+    var newScrollTop = this.getOffsetTop(ref) - stickyHolderHeight
     $('html, body').animate({
       scrollTop: newScrollTop
-    }, 450);
+    }, 450)
   },
 
   getData: function () {
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-    var urlMeasures = get.getSheetUrl(get.sheets.measures);
-    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
-    var urlGrades = get.getSheetUrl(get.sheets.grades);
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
+    var urlMeasures = get.getSheetUrl(get.sheets.measures)
+    var urlMetrics = get.getSheetUrl(get.sheets.metrics)
+    var urlGrades = get.getSheetUrl(get.sheets.grades)
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
 
-    var allData = {};
-    var deferred = new $.Deferred;
+    var allData = {}
+    var deferred = new $.Deferred
 
     $.when(
       // Get GRADE
       $.getJSON(urlGrades + '&callback=?').done(function (data) {
-        allData['grades'] = get.processGrades(data);
+        allData['grades'] = get.processGrades(data)
       }),
 
       // Get measures & tags
       $.getJSON(urlMeasures + '&callback=?').done(function (data) {
-        // var newStateItems = get.processMeasures(data);
-        allData['measures'] = get.processMeasures(data).measures;
-        allData['tags'] = get.processMeasures(data).tags;
+        // var newStateItems = get.processMeasures(data)
+        allData['measures'] = get.processMeasures(data).measures
+        allData['tags'] = get.processMeasures(data).tags
       }),
 
       // Get metrics
       $.getJSON(urlMetrics + '&callback=?').done(function (data) {
-        allData['metrics'] = get.processMetrics(data);
+        allData['metrics'] = get.processMetrics(data)
       }),
 
       // Get tag descriptions
       $.getJSON(urlTagDescriptions + '&callback=?').done(function (data) {
-        allData['tagDescriptions'] = get.processTagDescriptions(data);
+        allData['tagDescriptions'] = get.processTagDescriptions(data)
       }),
 
       // Get data
       $.when(Object.keys(get.sheets.data).forEach(function (source) {
-        var url = get.getSheetUrl(get.sheets.data[source]);
+        var url = get.getSheetUrl(get.sheets.data[source])
         $.getJSON(url + '&callback=?').done(function (data) {
-          !allData['data'] && (allData['data'] = {});
-          allData['data'][source] = get.processData(data);
-        });
+          !allData['data'] && (allData['data'] = {})
+          allData['data'][source] = get.processData(data)
+        })
       })
       ).done(function() {
-        return true;
+        return true
       })
     )
     .done(function() {
-      deferred.resolve(allData);
-    });
+      deferred.resolve(allData)
+    })
 
-    return deferred.promise();
+    return deferred.promise()
   },
 
   handleDrugFilterClick: function (key, selectedValue) {
-    var preferencesSelected = this.state.drugPreferencesSelected;
+    var preferencesSelected = this.state.drugPreferencesSelected
     if (selectedValue) {
       Object.keys(preferencesSelected[key]).forEach(function(pref) {
-        preferencesSelected[key][pref] = false;
-      });
-      preferencesSelected[key][selectedValue] = true;
+        preferencesSelected[key][pref] = false
+      })
+      preferencesSelected[key][selectedValue] = true
     }
     else {
-      preferencesSelected[key] = !preferencesSelected[key];
+      preferencesSelected[key] = !preferencesSelected[key]
     }
     this.setState({
       userHasFiltered: true,
       preferencesSelected: preferencesSelected
-    });
+    })
   },
 
   filterDrugs: function (drugs, preferencesSelected) {
-    var disabledDrugs = {};
+    var disabledDrugs = {}
 
     drugs.forEach(function(drug, i) {
-      var drugFeatures = {};
+      var drugFeatures = {}
 
       // 1. Examine all the preferences for a match
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] && preferencesSelected[preference] != null) {
-          var filter = drugFilters[preference];
-          var options = preferencesSelected[preference];
-          drugFeatures[preference] = filter.isMatch(drug, options);
+          var filter = drugFilters[preference]
+          var options = preferencesSelected[preference]
+          drugFeatures[preference] = filter.isMatch(drug, options)
         }
       }
 
       // 2. Check if the drug should be disabled
-      var keepDrug = true;
+      var keepDrug = true
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] != null) {
           for (var feature in drugFeatures) {
             if (preferencesSelected[preference] && !drugFeatures[preference]) {
-              keepDrug = false;
+              keepDrug = false
             }
           }
         }
       }
-      disabledDrugs[drug.name] = !keepDrug;
-    });
+      disabledDrugs[drug.name] = !keepDrug
+    })
 
-    return disabledDrugs;
+    return disabledDrugs
   },
 
   togglePreferenceControls: function (direction) {
-    // var isOpen = this.state.menuOpen;
-    // isOpen = !isOpen;
+    // var isOpen = this.state.menuOpen
+    // isOpen = !isOpen
     // this.setState({
     //   menuOpen: isOpen
-    // });
+    // })
 
     if (direction == 'open') {
       this.setState({
         menuOpen: true
-      });
+      })
     }
     if (direction == 'close') {
       this.setState({
         menuOpen: false
-      });
+      })
     }
   },
 
   togglePreferenceControlsOpen: function () {
     this.setState({
       menuOpen: true
-    });
+    })
   },
 
   togglePreferenceControlsClose: function () {
     this.setState({
       menuOpen: false
-    });
+    })
   },
 
   renderPreferenceControls: function (preferences) {
-    var filterPreference = this.filterPreference;
-    var toggleOpen = this.togglePreferenceControlsOpen;
-    var toggleClose = this.togglePreferenceControlsClose;
+    var filterPreference = this.filterPreference
+    var toggleOpen = this.togglePreferenceControlsOpen
+    var toggleClose = this.togglePreferenceControlsClose
 
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
 
     return (
       React.createElement("div", {className: "filter-controls"}, 
           Object.keys(preferences).map(function(key) {
-            var preference = preferences[key];
+            var preference = preferences[key]
 
             // Boolean preferences become a push button
             if (preference.type == 'boolean') {
               var preferenceClasses = cx({
                 'button': true,
                 'active': preferencesSelected[key]
-              });
+              })
               return (
                 React.createElement("section", {key: preference.name}, 
                   React.createElement("a", {className: preferenceClasses, key: key, onClick: filterPreference.bind(null, key, false)}, 
@@ -635,14 +635,14 @@ var Navigator = React.createClass({displayName: "Navigator",
                   )
                   /*<span className='description'>{preference.description}</span>*/
                 )
-              );
+              )
             }
             // List preferences become a list
             else if (preference.type == 'list') {
               // Get the possible options for this preference from this.state.preferencesSelected.
               // There is a function in getInitialState() that iterates through the provided medications,
               // collecting the "options" they provide for vis à vis this preference.
-              var options = Object.keys(preferencesSelected[key]);
+              var options = Object.keys(preferencesSelected[key])
 
               return (
                 React.createElement("section", {key: key}, 
@@ -651,7 +651,7 @@ var Navigator = React.createClass({displayName: "Navigator",
                       var optionClasses = cx({
                         'button option': true,
                         'active': !preferencesSelected[key][option]
-                      });
+                      })
                       // return (
                       //   <div>
                       //     <input type='checkbox'
@@ -663,16 +663,16 @@ var Navigator = React.createClass({displayName: "Navigator",
                       //         {option}
                       //     </input>
                       //   </div>
-                      // );
+                      // )
                       return (
                         React.createElement("a", {className: optionClasses, key: option, onClick: filterPreference.bind(null, key, option)}, 
                           React.createElement(DosageForm, {form: option})
                         )
-                      );
+                      )
                     })
                   )
                 )
-              );
+              )
             }
             else {
               return (
@@ -680,22 +680,22 @@ var Navigator = React.createClass({displayName: "Navigator",
                   preference.name, 
                   React.createElement("span", {className: "description"}, preference.description)
                 )
-              );
+              )
             }
           })
       )
-    );
+    )
   },
 
   filterPreference: function (preferenceKey, optionKey, event) {
     if (this.state.menuOpen) {
-      event.stopPropagation();
+      event.stopPropagation()
     }
 
-    var disabledMedications = {};
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+    var disabledMedications = {}
+    var medications = this.props.medications
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
     // Toggle the preference. If there's an 'option' provided, the preference is a list type,
     // for example dosage form. So we use the 'preference' to access the dosage forms object,
@@ -709,17 +709,17 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     // TOGGLE PREFERENCES
     if (optionKey) {
-      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey]
     }
     else {
-      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey]
     }
 
     // Check each medication against the selected preferences and options,
     // disabling any that doesn't satisfy.
     //
     medications.forEach(function(medication, i) {
-      var medicationMatchingPreferences = {};
+      var medicationMatchingPreferences = {}
 
       // 1. Examine all the preferences for a match.
       //
@@ -732,20 +732,20 @@ var Navigator = React.createClass({displayName: "Navigator",
             // Look for a matching key in the medication object
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
-              medicationMatchingPreferences[preference] = true;
-              // disabledMedications[medication.name] = true;
+              medicationMatchingPreferences[preference] = true
+              // disabledMedications[medication.name] = true
             }
             // Not a key in medication object, so check ptda.risks
             else {
               // Look for key in right place
               if (preferences[preference] && preferences[preference].isMatch) {
-                var isMatch = preferences[preference].isMatch;
-                var lookupKey = preferences[preference].key;
-                var result = _.get(medication, lookupKey);
-                var match = isMatch(_.get(medication, lookupKey));
+                var isMatch = preferences[preference].isMatch
+                var lookupKey = preferences[preference].key
+                var result = _.get(medication, lookupKey)
+                var match = isMatch(_.get(medication, lookupKey))
 
                 if (match == 'unsafe') {
-                  medicationMatchingPreferences[preference] = true;
+                  medicationMatchingPreferences[preference] = true
                 }
               }
             }
@@ -756,15 +756,15 @@ var Navigator = React.createClass({displayName: "Navigator",
 
             // The user chose one or more options (to avoid), so the medication must match
             // each option in order to get disabled.
-            var selectedOptions = {};
-            var medicationMatchingOptions = {};
+            var selectedOptions = {}
+            var medicationMatchingOptions = {}
 
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
               // Option is selected
               if (preferencesSelected[preference][option]) {
-                selectedOptions[option] = true;
+                selectedOptions[option] = true
 
                 // Look for a matching key in the medication object
                 if (medication[preference]) {
@@ -774,26 +774,26 @@ var Navigator = React.createClass({displayName: "Navigator",
 
                     // Array
                     if (Array.isArray(medication[preference])) {
-                      var list = medication[preference];
+                      var list = medication[preference]
 
                       // Check for our option in the list
                       for (var item in list) {
                         // Straight up list item?
                         if (typeof list[item] === 'string') {
                           if (list[item].toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].toLowerCase()] = true
                           }
                         }
                         // Object? Look for a 'name' that we'll check against
                         else if (list[item].hasOwnProperty('name')) {
                           if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true
                           }
                         }
                       }
@@ -802,15 +802,15 @@ var Navigator = React.createClass({displayName: "Navigator",
                     else {
                       for (var item in Object.keys(medication[preference])) {
                         if (list[item].toLowerCase() == option.toLowerCase()) {
-                          medicationMatchingOptions[option] = true;
+                          medicationMatchingOptions[option] = true
                         }
                         else {
-                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                          medicationMatchingOptions[list[item].toLowerCase()] = true
                         }
                       }
                       // // Check for our option in the object
                       // if (medication[preference][optionKey]) {
-                      //   medicationMatchingOptions[option] = true;
+                      //   medicationMatchingOptions[option] = true
                       // }
                     }
                   }
@@ -824,14 +824,14 @@ var Navigator = React.createClass({displayName: "Navigator",
               for (var selected in selectedOptions) {
                 for (var option in medicationMatchingOptions) {
                   if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    medicationMatchingPreferences[preference] = true;
+                    medicationMatchingPreferences[preference] = true
                   }
                 }
               }
               // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
               for (var option in medicationMatchingOptions) {
                 if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  medicationMatchingPreferences[preference] = false;
+                  medicationMatchingPreferences[preference] = false
                 }
               }
             }
@@ -842,43 +842,43 @@ var Navigator = React.createClass({displayName: "Navigator",
       // 2. Check if the drug should be disabled.
       //
       if (Object.keys(preferencesSelected).length > 0) {
-        var disableMedication = false;
+        var disableMedication = false
 
         // Disabled options present in the drug? Disable it.
         for (var selected in preferencesSelected) {
           for (var preference in medicationMatchingPreferences) {
             if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
-              disableMedication = true;
+              disableMedication = true
             }
           }
         }
         // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
         for (var preference in medicationMatchingPreferences) {
           if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
-            disableMedication = false;
+            disableMedication = false
           }
         }
 
         // Add the medication to disabledMedications.
         if (disableMedication) {
-          disabledMedications[medication.name] = true;
+          disabledMedications[medication.name] = true
         }
         else {
-          disabledMedications[medication.name] = false;
+          disabledMedications[medication.name] = false
         }
       }
-    });
+    })
 
     this.setState({
       disabledMedications: disabledMedications,
       preferencesSelected: preferencesSelected
-    });
+    })
   },
 
   getDataByTag: function (selectedTag) {
-    var data = this.state.data.data;
-    var tags = this.state.data.tags;
-    var dataByTag = JSON.parse(JSON.stringify(tags));
+    var data = this.state.data.data
+    var tags = this.state.data.tags
+    var dataByTag = JSON.parse(JSON.stringify(tags))
 
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
@@ -890,39 +890,39 @@ var Navigator = React.createClass({displayName: "Navigator",
           // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
           if (tags[tag][entry.measure]) {
             // Create a place for data about each measure
-            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {})
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = [])
 
-            dataByTag[tag][entry.measure]['data'].push(entry);
+            dataByTag[tag][entry.measure]['data'].push(entry)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    return dataByTag;
+    return dataByTag
   },
 
   handleMedicationClick: function (key) {
-    var disabledMedications = this.state.disabledMedications;
-    disabledMedications[key] = !disabledMedications[key];
+    var disabledMedications = this.state.disabledMedications
+    disabledMedications[key] = !disabledMedications[key]
     this.setState({
       disabledMedications: disabledMedications
-    });
+    })
   },
 
   renderMedicationBar: function (medications) {
-  	var disabledMedications = this.state.disabledMedications;
-    var handleMedicationClick = this.handleMedicationClick;
-    var renderPreferredMedicationName = this.renderPreferredMedicationName;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+  	var disabledMedications = this.state.disabledMedications
+    var handleMedicationClick = this.handleMedicationClick
+    var renderPreferredMedicationName = this.renderPreferredMedicationName
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
     if (medications) {
       return (
         React.createElement("div", {className: "medication-cards"}, 
           React.createElement("ul", null, 
             Object.keys(medications).map(function (medication, i) {
-            	var medication = medications[medication];
+            	var medication = medications[medication]
               return (
                 React.createElement("li", {key: i, className: (disabledMedications[medication.name] === true) && 'disabled'}, 
                   React.createElement("a", {
@@ -930,36 +930,36 @@ var Navigator = React.createClass({displayName: "Navigator",
                       React.createElement(MedicationCard, {medication: medication, preferences: preferences, preferencesSelected: preferencesSelected})
                   )
                 )
-              );
+              )
             })
           )
         )
-      );
+      )
     }
   },
 
   handleMeasureSelect: function (key) {
     this.setState({
       selectedMeasure: key
-    });
+    })
   },
 
   renderMeasureBar: function (selectedTag, selectedMeasure) {
-    var tags = this.state.data.tags;
-    var tagDescriptions = this.state.data.tagDescriptions;
-    var measures = this.state.data.measures;
+    var tags = this.state.data.tags
+    var tagDescriptions = this.state.data.tagDescriptions
+    var measures = this.state.data.measures
 
     if (selectedTag) {
-      var tagMeasures = tags[selectedTag];
+      var tagMeasures = tags[selectedTag]
       return (
         React.createElement("div", null, 
           React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
             Object.keys(tagMeasures).map(function (measure, i) {
-              return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_friendly : measure));
+              return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_friendly : measure))
             })
           )
         )
-      );
+      )
     }
   },
 
@@ -967,26 +967,26 @@ var Navigator = React.createClass({displayName: "Navigator",
     this.setState({
       selectedTag: key,
       selectedMeasure: null
-    });
+    })
   },
 
   renderTagBar: function (selectedTag) {
-    var tags = this.state.data.tags;
-    var tagDescriptions = this.state.data.tagDescriptions;
+    var tags = this.state.data.tags
+    var tagDescriptions = this.state.data.tagDescriptions
 
     if (tags && tagDescriptions) {
       return (
         React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedTag && selectedTag, onSelect: this.handleTagSelect}, 
           Object.keys(tags).map(function (tag, i) {
-            return (React.createElement(NavItem, {key: i, eventKey: tag}, tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag));
+            return (React.createElement(NavItem, {key: i, eventKey: tag}, tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag))
           })
         )
-      );
+      )
     }
   },
 
   renderTagDescription: function (selectedTag) {
-    var tagDescriptions = this.state.data.tagDescriptions;
+    var tagDescriptions = this.state.data.tagDescriptions
 
     if (selectedTag && tagDescriptions) {
       return (
@@ -996,7 +996,7 @@ var Navigator = React.createClass({displayName: "Navigator",
             tagDescriptions[selectedTag] && React.createElement("p", null, tagDescriptions[selectedTag].description)
           )
         )
-      );
+      )
     }
   },
 
@@ -1015,13 +1015,13 @@ var Navigator = React.createClass({displayName: "Navigator",
         React.createElement("hr", null), 
         React.createElement("div", null, "data: ", JSON.stringify(data.data))
       )
-    );
+    )
   },
 
   renderMeasure: function (selectedTag, selectedMeasure) {
-    var medications = this.props.medications;
-    var data = this.state.data;
-    var disabledMedications = this.state.disabledMedications;
+    var medications = this.props.medications
+    var data = this.state.data
+    var disabledMedications = this.state.disabledMedications
 
     if (selectedMeasure == 'discontinued_ae') {
       return (
@@ -1032,7 +1032,7 @@ var Navigator = React.createClass({displayName: "Navigator",
           disabledMedications: disabledMedications, 
           selectedTag: selectedTag, 
           selectedMeasure: selectedMeasure})
-      );
+      )
     }
     else if (selectedMeasure == 'ae') {
       return (
@@ -1043,7 +1043,7 @@ var Navigator = React.createClass({displayName: "Navigator",
           disabledMedications: disabledMedications, 
           selectedTag: selectedTag, 
           selectedMeasure: selectedMeasure})
-      );
+      )
     }
     return(
       React.createElement(OutcomeTimeline, {
@@ -1052,47 +1052,47 @@ var Navigator = React.createClass({displayName: "Navigator",
         disabledMedications: disabledMedications, 
         selectedTag: selectedTag, 
         selectedMeasure: selectedMeasure})
-    );
+    )
   },
 
   handleShortcutClick: function (tag, measure) {
     this.setState({
       selectedTag: tag,
       selectedMeasure: measure,
-    });
+    })
   },
 
   render: function () {
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
     var navigatorClasses = cx({
       'navigator': true,
       'dev row': this.state.dev,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
-    });
+    })
     var drugPickerClasses = cx({
       'drug-picker': true,
       'col-md-2 col-lg-1': this.state.dev,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
-    });
+    })
     var medicationListClasses = cx({
       'medication-list': true,
       'col-md-2 col-lg-1': this.state.dev
-    });
+    })
     var detailsClasses = cx({
       'details': true,
       'col-md-9 col-lg-10': this.state.dev,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
-    });
+    })
 
-    var medications         = this.props.medications;
-    var preferences         = this.props.preferences;
-    var disabledMedications = this.state.disabledMedications;
-    var data                = this.state.data;
-    var selectedMeasure     = this.state.selectedMeasure;
-    var selectedTag         = this.state.selectedTag;
+    var medications         = this.props.medications
+    var preferences         = this.props.preferences
+    var disabledMedications = this.state.disabledMedications
+    var data                = this.state.data
+    var selectedMeasure     = this.state.selectedMeasure
+    var selectedTag         = this.state.selectedTag
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       // return (
@@ -1101,7 +1101,7 @@ var Navigator = React.createClass({displayName: "Navigator",
       //       {this.renderDataToJSON(data)}
       //     </div>
       //   </div>
-      // );
+      // )
       if (this.state.dev) {
         return (
           React.createElement("div", {className: "container-fluid"}, 
@@ -1117,7 +1117,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               React.createElement("section", {className: detailsClasses}, 
                 React.createElement("h3", {className: "brief-header"}, 
                   "Look at evidence about the selected medications, in various categories.", React.createElement("br", null), 
-                  "e.g. ", 
+                  "e.g.&nbsp", 
                   React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}, "ACR50 from multiple sources"), " - ", React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}, "Withdrawl due to AE (RR comparison)"), " - ", React.createElement("a", {onClick: this.handleShortcutClick.bind(null, 'adverse event', 'ae')}, "Side effects (etanercept only)")
                 ), 
 
@@ -1132,14 +1132,14 @@ var Navigator = React.createClass({displayName: "Navigator",
              	)
             )
           )
-        );
+        )
       }
 
       else {
-        var selectedPreferenceItems = [];
+        var selectedPreferenceItems = []
         _.each(this.state.preferencesSelected, function(value, key) {
-          value == true && selectedPreferenceItems.push(key);
-        });
+          value == true && selectedPreferenceItems.push(key)
+        })
 
         return (
           React.createElement("div", {className: "navigator"}, 
@@ -1211,7 +1211,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               )
             )
           )
-        );
+        )
       }
     }
     return (
@@ -1224,12 +1224,12 @@ var Navigator = React.createClass({displayName: "Navigator",
           )
         )
       )
-    );
+    )
   }
 
-});
+})
 
-module.exports = Navigator;
+module.exports = Navigator
 },{"../data/get.js":28,"../data/medications.js":29,"../data/mock.js":30,"../data/preferences.js":31,"./OutcomeAdverseEvents.jsx":4,"./OutcomeRelativeComparison.jsx":5,"./OutcomeTimeline.jsx":6,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -1832,20 +1832,20 @@ module.exports = OutcomeRelativeComparison;
 },{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"lodash":"lodash","react/addons":"react/addons"}],6:[function(require,module,exports){
 /** @jsx React.DOM */
 
-var React = require('react/addons');
-var _ = require('lodash');
+var React = require('react/addons')
+var _ = require('lodash')
 
 // Data
-var get = require('../data/get.js');
+var get = require('../data/get.js')
 
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
-var Difference = require('./visualizations/Difference.jsx');
-var GradeQuality = require('./visualizations/GradeQuality.jsx');
-var Intervention = require('./visualizations/Intervention.jsx');
-var Population = require('./visualizations/Population.jsx');
-var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx');
-var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx');
-var Source = require('./visualizations/Source.jsx');
+var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx')
+var Difference = require('./visualizations/Difference.jsx')
+var GradeQuality = require('./visualizations/GradeQuality.jsx')
+var Intervention = require('./visualizations/Intervention.jsx')
+var Population = require('./visualizations/Population.jsx')
+var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.jsx')
+var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx')
+var Source = require('./visualizations/Source.jsx')
 
 // Outcome timeline test
 
@@ -1875,36 +1875,36 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                             React.createElement("small", null, key), 
                             entry[key]
                           )
-                        );
+                        )
                       })
                     )
                   )
                 )
-              );
+              )
             })
           )
         )
-      );
-    });
+      )
+    })
   },
 
   renderFollowUpTime: function(duration, measure) {
-    var low = duration.low;
-    var high = duration.high;
-    var interval = duration.interval;
+    var low = duration.low
+    var high = duration.high
+    var interval = duration.interval
 
-    (low && !high) && (high = low);
-    (!low && high) && (low = high);
+    (low && !high) && (high = low)
+    (!low && high) && (low = high)
 
-    var durationString = low == high ? low : low + ' to ' + high;
-    var intervalString = low > 1 ? interval + 's' : interval;
+    var durationString = low == high ? low : low + ' to ' + high
+    var intervalString = low > 1 ? interval + 's' : interval
 
     return (
       React.createElement("div", null, 
         React.createElement("strong", null, durationString, " ", intervalString), React.createElement("br", null), 
         React.createElement("span", {className: "light"}, "Researchers looked at ", measure ? measure : 'this', " ", durationString, " ", intervalString, " after people started treatment.")
       )
-    );
+    )
   },
 
   renderValue: function(results, metric, comparisonResults) {
@@ -1913,37 +1913,37 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     // comparisonResults = a pair dataset used for relative comparisons, i.e. the "comparison" to an intervention
     // preferredKind = what kind of value to show — a difference/comparison…
 
-    var grades = this.props.data.grades;
-    var measures = this.props.data.measures;
-    var metrics = this.props.data.metrics;
-    var tags = this.props.data.tags;
-    var selectedTag = this.props.data.selectedTag;
+    var grades = this.props.data.grades
+    var measures = this.props.data.measures
+    var metrics = this.props.data.metrics
+    var tags = this.props.data.tags
+    var selectedTag = this.props.data.selectedTag
 
-    var renderAbsoluteRisk = this.renderAbsoluteRisk;
-    var renderDifference = this.renderDifference;
-    var renderPercentage = this.renderPercentage;
-    var renderNumber = this.renderNumber;
+    var renderAbsoluteRisk = this.renderAbsoluteRisk
+    var renderDifference = this.renderDifference
+    var renderPercentage = this.renderPercentage
+    var renderNumber = this.renderNumber
 
     var renderAppropriateVisualization = function(results, metric, measure) {
       if (metrics[metric]) {
         if (metrics[metric].presentation == 'frequency') {
-          return renderAbsoluteRisk(results, metric, measure, comparisonResults);
+          return renderAbsoluteRisk(results, metric, measure, comparisonResults)
         }
         if (metrics[metric].presentation == 'percentage') {
-          return renderPercentage(results, metric, measure);
+          // return renderPercentage(results, metric, measure)
         }
         if (metrics[metric].presentation == 'difference') {
-          return renderDifference(results, metric, measure);
+          // return renderDifference(results, metric, measure)
         }
         else {
-          return renderNumber(results, metric, measure);
+          // return renderNumber(results, metric, measure)
         }
       }
-    };
+    }
 
     if (metric) {
     	if (results[metric]) {
-        return renderAppropriateVisualization(results, metric, results[metric].measure);
+        return renderAppropriateVisualization(results, metric, results[metric].measure)
       }
     }
     else {
@@ -1954,20 +1954,20 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           // For now, only render absolute-kind of metrics
           if (!comparisonResults) {
           	if (metrics[metric].kind == 'absolute') {
-          		return renderAppropriateVisualization(results, metric, results[metric].measure);
+          		return renderAppropriateVisualization(results, metric, results[metric].measure)
             }
             else if (metrics[metric].kind == 'relative') {
-            	return renderAppropriateVisualization(results, metric, results[metric].measure);
+            	return renderAppropriateVisualization(results, metric, results[metric].measure)
             }
           }
         }
-      });
+      })
     }
   },
 
   renderNumber: function(results, metric, measure) {
-    var metrics = this.props.data.metrics;
-    var data = results[metric];
+    var metrics = this.props.data.metrics
+    var data = results[metric]
 
     return (
       React.createElement("div", null, 
@@ -1977,12 +1977,12 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           React.createElement("span", null, "(", data.value.value_ci_low, " to ", data.value.value_ci_high, ")")
         
       )
-    );
+    )
   },
 
   renderPercentage: function(results, metric, measure) {
-    var metrics = this.props.data.metrics;
-    var data = results[metric];
+    var metrics = this.props.data.metrics
+    var data = results[metric]
 
     return (
       React.createElement("div", null, 
@@ -1993,31 +1993,31 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           React.createElement("span", null, "(", Math.round(data.value.value_ci_low * 100) + '%', " to ", Math.round(data.value.value_ci_high * 100) + '%', ")")
         
       )
-    );
+    )
   },
 
   renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
-    var measures = this.props.data.measures;
+    var measures = this.props.data.measures
 
-    var measure = results[metric].measure;
-    var data = results[metric].value;
+    var measure = results[metric].measure
+    var data = results[metric].value
 
-    var baseline = comparisonResults ? comparisonResults[metric].value.value : null;
+    var baseline = comparisonResults ? comparisonResults[metric].value.value : null
 
     return (
       React.createElement("div", null, 
         React.createElement("strong", null, data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value)), " ", React.createElement("span", {className: "light"}, "of 100 people"), 
         React.createElement(AbsoluteFrequency, {frequency: data.value, metric: metric, denominator: 100, breakpoint: 10, baseline: baseline})
       )
-    );
+    )
   },
 
   renderDifference: function(results, metric, measure) {
-    var measures = this.props.data.measures;
-    var metrics = this.props.data.metrics;
+    var measures = this.props.data.measures
+    var metrics = this.props.data.metrics
 
-    var measure = results[metric].measure;
-    var data = results[metric].value;
+    var measure = results[metric].measure
+    var data = results[metric].value
 
     return (
       React.createElement("div", null, 
@@ -2029,11 +2029,11 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           React.createElement("span", null, "(", data.value_ci_low, " to ", data.value_ci_high, ")")
         
       )
-    );
+    )
   },
 
   getDataByTag: function(tags, data) {
-    var dataByTag = JSON.parse(JSON.stringify(tags));
+    var dataByTag = JSON.parse(JSON.stringify(tags))
 
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
@@ -2045,80 +2045,145 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
           if (tags[tag][entry.measure]) {
             // Create a place for data about each measure
-            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {})
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = [])
 
-            dataByTag[tag][entry.measure]['data'].push(entry);
+            dataByTag[tag][entry.measure]['data'].push(entry)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    return dataByTag;
+    return dataByTag
   },
 
   getDurationAsWeeks: function(duration) {
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
 
-		if (duration.interval == 'month') {
-			return duration.low * 4;
-		}
-		else if (duration.interval == 'week') {
-			return duration.low;
-		}
+    if (duration.low) {
+  		if (duration.interval == 'month') {
+  			return duration.low * 4
+  		}
+  		else if (duration.interval == 'week') {
+  			return duration.low
+  		}
+    }
+    else if (duration.high) {
+      if (duration.interval == 'month') {
+        return duration.high * 4
+      }
+      else if (duration.interval == 'week') {
+        return duration.high
+      }
+    }
 	},
 
-  groupEntriesByDuration: function(entries, boundary) {
-  	var getDurationAsWeeks = this.getDurationAsWeeks;
-
-  	var entriesByDuration = {};
-
-  	Object.keys(entries).forEach(function (entry) {
-  		var currentEntry = entries[entry];
-
-  		if (currentEntry.duration.low) {
-  			var numberOfWeeks = getDurationAsWeeks(currentEntry.duration);
-
-  			if (!entriesByDuration[numberOfWeeks]) {
-  				entriesByDuration[numberOfWeeks] = [];
-  			}
-  			entriesByDuration[numberOfWeeks].push(currentEntry);
-  		}
-  	});
-
-  	return entriesByDuration;
+  getDurationsFromEntries: function(entries) {
+    var getDurationAsWeeks = this.getDurationAsWeeks
+    var durations = {}
+    _.each(entries, function (entry) {
+      if (entry.duration) {
+        var numberOfWeeks = getDurationAsWeeks(entry.duration)
+        durations[numberOfWeeks] = true
+      }
+    })
+    return _.keys(durations)
   },
 
-  renderTimelineByMeasure: function(measures, direction) {
-    !direction && (direction = 'horizontal')
+  getInterventionAsString: function(entry) {
+    if (entry.intervention) {
+      return entry.intervention.parts.join(' + ')
+    }
+  },
 
-    var measureMap = this.props.data.measures;
-    var grades = this.props.data.grades;
-    var getDurationAsWeeks = this.getDurationAsWeeks;
-    var groupEntriesByDuration = this.groupEntriesByDuration;
-    var renderEntry = this.renderEntry;
-    var renderValue = this.renderValue;
+  getInterventionsFromEntries: function(entries) {
+    var getInterventionAsString = this.getInterventionAsString
+    var interventions = {}
+    _.each(entries, function (entry) {
+      if (entry.intervention) {
+        interventions[getInterventionAsString(entry)] = entry
+      }
+    })
+    return interventions
+  },
+
+  groupEntriesByIntervention: function(entries) {
+    var getInterventionAsString = this.getInterventionAsString
+    return _.groupBy(entries, function (entry) {
+      return getInterventionAsString(entry)
+    })
+  },
+
+  groupEntriesByDuration: function(entries) {
+    var getDurationAsWeeks = this.getDurationAsWeeks
+    return _.groupBy(entries, function (entry) {
+      return getDurationAsWeeks(entry.duration)
+    })
+  },
+
+  groupEntriesByInterventionAndDuration: function(entries) {
+    var groupEntriesByDuration = this.groupEntriesByDuration
+    var groupEntriesByIntervention = this.groupEntriesByIntervention
+  
+    var entriesByInterventionAndDuration = {}
+    var entriesByIntervention = groupEntriesByIntervention(entries)
+    _.each(entriesByIntervention, function (val, key) {
+      var byDuration = groupEntriesByDuration(val)
+      entriesByInterventionAndDuration[key] = byDuration
+    })
+
+    return entriesByInterventionAndDuration
+  },
+
+  // groupEntriesByDuration: function(entries, boundary) {
+  // 	var getDurationAsWeeks = this.getDurationAsWeeks
+
+  // 	var entriesByDuration = {}
+
+  // 	Object.keys(entries).forEach(function (entry) {
+  // 		var currentEntry = entries[entry]
+
+  // 		if (currentEntry.duration) {
+  // 			var numberOfWeeks = getDurationAsWeeks(currentEntry.duration)
+
+  // 			if (!entriesByDuration[numberOfWeeks]) {
+  // 				entriesByDuration[numberOfWeeks] = []
+  // 			}
+  // 			entriesByDuration[numberOfWeeks].push(currentEntry)
+  // 		}
+  // 	})
+  // 	return entriesByDuration
+  // },
+
+  renderTimelineByMeasure: function(measures, direction) {
+    var measureMap = this.props.data.measures
+    var grades = this.props.data.grades
+    var getInterventionAsString = this.getInterventionAsString
+    var getDurationAsWeeks = this.getDurationAsWeeks
+    var groupEntriesByDuration = this.groupEntriesByDuration
+    var renderEntry = this.renderEntry
+    var renderValue = this.renderValue
 
     var renderRelativeRiskComparison = function(entries, measure) {
-      var sources = {};
+      var sources = {}
 
       Object.keys(entries).map(function (key) {
-        var entry = entries[key];
+        var entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
-            sources[entry.comparison.parts] = {};
-            sources[entry.comparison.parts]['items'] = [];
+            sources[entry.comparison.parts] = {}
+            sources[entry.comparison.parts]['items'] = []
           }
-          sources[entry.comparison.parts]['baseline'] = entry.comparison;
+          sources[entry.comparison.parts]['baseline'] = entry.comparison
 
           // Check to see that we have relative risk
           if (entry.intervention.rr) {
-            sources[entry.comparison.parts].items.push(entry.intervention);
+            sources[entry.comparison.parts].items.push(entry.intervention)
           }
         }
-      });
+      })
 
       return Object.keys(sources).map(function (comparison) {
         if (sources[comparison].items.length > 1) {
@@ -2134,30 +2199,30 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                   measure: measure})
               )
             )
-          );
+          )
         }
       })
-    };
+    }
 
     var renderRiskRelativeToBaselineComparison = function(entries, measure) {
-      var sources = {};
+      var sources = {}
 
       Object.keys(entries).map(function (key) {
-        var entry = entries[key];
+        var entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
-            sources[entry.comparison.parts] = {};
-            sources[entry.comparison.parts]['items'] = [];
+            sources[entry.comparison.parts] = {}
+            sources[entry.comparison.parts]['items'] = []
           }
-          sources[entry.comparison.parts]['comparison'] = entry.comparison;
+          sources[entry.comparison.parts]['comparison'] = entry.comparison
 
           // Check to see that we have relative risk
           if (entry.intervention.rr) {
-            sources[entry.comparison.parts].items.push(entry.intervention);
+            sources[entry.comparison.parts].items.push(entry.intervention)
           }
         }
-      });
+      })
 
       return Object.keys(sources).map(function (comparison) {
         if (sources[comparison].items.length > 1) {
@@ -2174,21 +2239,24 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                   measures: measureMap})
               )
             )
-          );
+          )
         }
       })
-    };
+    }
 
-    var measure = this.props.selectedMeasure;
-    var measureData = measure && measures[measure].data;
+    var measure = this.props.selectedMeasure
+    var measureData = measure && measures[measure].data
+    !direction && (direction = 'horizontal')
 
     // Render a timeline
     if (measure && measureData) {
-      var medications = this.props.medications;
-      var disabledMedications = this.props.disabledMedications;
-      var durations = groupEntriesByDuration(get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications));
+      var medications = this.props.medications
+      var disabledMedications = this.props.disabledMedications
 
+      // Vertical
       if (direction == 'vertical') {
+        var durations = groupEntriesByDuration(get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications))
+
         return (
         	React.createElement("div", {key: 'outcome-timeline' + measure}, 
           	React.createElement("section", {className: "outcome-timeline"}, 
@@ -2205,7 +2273,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   		      		React.createElement("div", {className: "moment-data"}, 
   		      			React.createElement("section", null, 
   			      			Object.keys(durations).map(function (numberOfWeeks) {
-  				        		var entries = durations[numberOfWeeks];
+  				        		var entries = durations[numberOfWeeks]
 
   					        	return entries.map(function (entry, i) {
   					      			if (entry.intervention) {
@@ -2221,9 +2289,9 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                               React.createElement(Source, {source: entry.source, kind: entry.kind}), 
                               React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                             )
-  							         	);
+  							         	)
   							        }
-  						       	});
+  						       	})
   									})
   								)
   			      	)
@@ -2247,7 +2315,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   				      		React.createElement("div", {className: "moment-data"}, 
   							      React.createElement("section", null, 
   					      			Object.keys(durations).map(function (numberOfWeeks) {
-  						        		var entries = durations[numberOfWeeks];
+  						        		var entries = durations[numberOfWeeks]
   						        		return entries.map(function (entry, i) {
                             if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
   								      			return (
@@ -2255,28 +2323,42 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   									         			/* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
                                   renderValue(entry.intervention)
   									         		)
-  									         	);
+  									         	)
   									        }
   									        else if (entry.intervention) {
-  									        	return (React.createElement("div", {key: i}));
+  									        	return (React.createElement("div", {key: i}))
   									        }
-  									      });
+  									      })
   											})
   										)
   							    )
   				      	)
-  				      );
+  				      )
   						})
   					)
   		    )
-  		  );
+  		  )
       }
-      debugger;
+      
+      
+      // Horizontal
+
+      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications)
+      var entriesByDuration = groupEntriesByDuration(entries)
+      var entriesByIntervention = this.groupEntriesByIntervention(entries)
+      var durations = this.getDurationsFromEntries(entries)
+      var interventions = this.getInterventionsFromEntries(entries)
+
+      var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
+
+
+      // debugger;
+
       return (
         React.createElement("div", {key: 'outcome-timeline' + measure}, 
           React.createElement("section", {className: "outcome-timeline horizontal"}, 
-            React.createElement("section", null, 
-              React.createElement("div", {className: "moment"}, 
+            React.createElement("section", {className: "t-row timeline-header"}, 
+              React.createElement("div", {className: "t-cell moment"}, 
                 React.createElement("section", null, 
                   React.createElement("div", {className: "title"}), 
                   React.createElement("div", {className: "line"}, 
@@ -2285,9 +2367,9 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                   React.createElement("div", {className: "description"}, "Treatment")
                 )
               ), 
-              Object.keys(durations).map(function (timepoint) {
+              durations.map(function (timepoint) {
                 return (
-                  React.createElement("div", {key: measure + timepoint, className: "moment"}, 
+                  React.createElement("div", {key: measure + timepoint, className: "t-cell moment"}, 
                     React.createElement("section", null, 
                       React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
                       React.createElement("div", {className: "line"}, 
@@ -2299,97 +2381,95 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                       )
                     )
                   )
-                );
+                )
               })
             ), 
-            Object.keys(durations).map(function (numberOfWeeks) {
-              var entries = durations[numberOfWeeks];
-              return entries.map(function (entry, i) {
-                if (entry.intervention && (getDurationAsWeeks(entry.duration) == timepoint)) {
-                  return (
-                    React.createElement("div", {key: i}, 
-                      /* entry.intervention.ar_1000 ? renderValue(entry.intervention, 'ar_1000') : renderValue(entry.intervention, 'ar_100') */
-                      renderValue(entry.intervention)
-                    )
-                  );
-                }
-                else if (entry.intervention) {
-                  return (React.createElement("div", {key: i}));
-                }
-              });
-            }), 
-            Object.keys(durations).map(function (numberOfWeeks) {
-                var entries = durations[numberOfWeeks];
-
-                return entries.map(function (entry, i) {
-                  if (entry.intervention) {
-                    return (
-                      React.createElement("div", {key: i}, 
-                        React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
-                        entry.comparison &&
-                          React.createElement("div", {className: "light"}, 
-                            "vs.", React.createElement("br", null), 
-                            entry.comparison.parts.join(' + ')
-                          ), 
-                        
-                        React.createElement(Source, {source: entry.source, kind: entry.kind}), 
-                        React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+            _.map(interventions, function (val, key) {
+              var entry = val;
+              return (
+                React.createElement("section", {key: key, className: "t-row"}, 
+                  React.createElement("div", {className: "t-cell"}, 
+                    React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
+                    entry.comparison &&
+                      React.createElement("div", {className: "light"}, 
+                        "vs.", React.createElement("br", null), 
+                        entry.comparison.parts.join(' + ')
+                      ), 
+                    
+                    React.createElement(Source, {source: entry.source, kind: entry.kind}), 
+                    React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                  ), 
+                  durations.map(function (timepoint, i) {
+                    if (entriesByInterventionAndDuration[key][timepoint]) {
+                      var entry = entriesByInterventionAndDuration[key][timepoint][0]
+                      if (entry.intervention) {
+                        return (
+                          React.createElement("div", {key: key + timepoint, className: "t-cell moment-data"}, 
+                            renderValue(entry.intervention)
+                          )
+                        )
+                      }
+                    }
+                    else {
+                      return (
+                        React.createElement("div", {key: key + timepoint}, " ")
                       )
-                    );
-                  }
-                });
-              })
+                    }
+                  })
+                )
+              )
+            })
           )
         )
-      );
+      )
 	  }
   },
 
   renderTimelineByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data);
-    var tagDescriptions = this.props.data.tagDescriptions;
+    var dataByTag = this.getDataByTag(tags, data)
+    var tagDescriptions = this.props.data.tagDescriptions
 
     return (
 			React.createElement("div", null, 
 				this.renderTimelineByMeasure(dataByTag[tag])
 	    )
-		);
+		)
   },
 
   render: function() {
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
 
     // Medication filtering-related
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var risks = this.props.risks;
-    var risksFriendly = this.props.risksFriendly;
-    var disabledMedications = this.props.disabledMedications;
+    var medications = this.props.medications
+    var preferences = this.props.preferences
+    var risks = this.props.risks
+    var risksFriendly = this.props.risksFriendly
+    var disabledMedications = this.props.disabledMedications
 
     var classes = cx({
       'processing': true,
       'results': true
-    });
+    })
 
     // Data
-    var grades          = this.props.data.grades;
-    var measures        = this.props.data.measures;
-    var metrics         = this.props.data.metrics;
-    var tags            = this.props.data.tags;
-    var tagDescriptions = this.props.data.tagDescriptions;
-    var data            = this.props.data.data;
+    var grades          = this.props.data.grades
+    var measures        = this.props.data.measures
+    var metrics         = this.props.data.metrics
+    var tags            = this.props.data.tags
+    var tagDescriptions = this.props.data.tagDescriptions
+    var data            = this.props.data.data
 
-    var selectedTag     = this.props.selectedTag;
+    var selectedTag     = this.props.selectedTag
 
     return (
       React.createElement("div", {className: classes}, 
         selectedTag !== null && this.renderTimelineByTag(data, tags, selectedTag)
       )
-    );
+    )
   }
-});
+})
 
-module.exports = OutcomeTimeline;
+module.exports = OutcomeTimeline
 },{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
 /** @jsx React.DOM */
 

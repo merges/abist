@@ -239,117 +239,141 @@
 
 // Outcome timeline
 
-.outcome-timeline {
-  display: table;
-  table-layout: fixed;
-  margin-bottom: 5em;
+// .outcome-timeline {
+//   display: table;
+//   table-layout: fixed;
+//   margin-bottom: 5em;
 
-  > section {
-    display: table-row;
+//   > section {
+//     display: table-row;
 
-    > div {
-      display: table-cell;
-      height: 300px;
+//     > div {
+//       display: table-cell;
+//       height: 300px;
 
-      &.moment {
-        width: 300px;
+//       &.moment {
+//         width: 300px;
 
-        > section {
-          display: table;
-          table-layout: fixed;
-          width: 100%;
-          height: 100%;
+//         > section {
+//           display: table;
+//           table-layout: fixed;
+//           width: 100%;
+//           height: 100%;
 
-          > div {
-            display: table-cell;
-            height: 100%;
+//           > div {
+//             display: table-cell;
+//             height: 100%;
 
-            &.line {
-              width: 41px;
-              position: relative;
+//             &.line {
+//               width: 41px;
+//               position: relative;
 
-              &:before {
-                content: '';
-                position: absolute;
-                left: 20px;
-                height: 100%;
-                width: 1px;
-                background: @color-grey-xl;
-              }
+//               &:before {
+//                 content: '';
+//                 position: absolute;
+//                 left: 20px;
+//                 height: 100%;
+//                 width: 1px;
+//                 background: @color-grey-xl;
+//               }
 
-              .bar {
-                position: relative;
-                width: 31px;
-                margin: 0 auto;
+//               .bar {
+//                 position: relative;
+//                 width: 31px;
+//                 margin: 0 auto;
 
-                &:before {
-                  content: '';
-                  position: absolute;
-                  background: @color-grey-xl;
-                  width: 31px;
-                  height: 1px;
-                }
-              }
-              .ball {
-                position: relative;
-                margin: 0 auto;
-                width: 17px;
+//                 &:before {
+//                   content: '';
+//                   position: absolute;
+//                   background: @color-grey-xl;
+//                   width: 31px;
+//                   height: 1px;
+//                 }
+//               }
+//               .ball {
+//                 position: relative;
+//                 margin: 0 auto;
+//                 width: 17px;
 
-                &:before {
-                  content: '';
-                  position: absolute;
-                  background: @color-grey-xl;
-                  width: 17px;
-                  height: 17px;
-                  top: 2px;
-                  border-radius: 9.5px;
-                }
-              }
-            }
-            &.title,
-            &.description {
-              padding: 0 5px;
-            }
-            &.title {
-              text-align: right;
-            }
-            &.description {
-              color: @color-grey-l;
-            }
-          }
-        }
-      }
-      &.moment-data {
+//                 &:before {
+//                   content: '';
+//                   position: absolute;
+//                   background: @color-grey-xl;
+//                   width: 17px;
+//                   height: 17px;
+//                   top: 2px;
+//                   border-radius: 9.5px;
+//                 }
+//               }
+//             }
+//             &.title,
+//             &.description {
+//               padding: 0 5px;
+//             }
+//             &.title {
+//               text-align: right;
+//             }
+//             &.description {
+//               color: @color-grey-l;
+//             }
+//           }
+//         }
+//       }
+//       &.moment-data {
         
-        > section {
-          display: table;
-          table-layout: fixed;
-          width: 100%;
-          height: 100%;
+//         > section {
+//           display: table;
+//           table-layout: fixed;
+//           width: 100%;
+//           height: 100%;
 
-          > div {
-            display: table-cell;
-            height: 100%;
-            padding: 0 1em;
-            word-wrap: break-word;
+//           > div {
+//             display: table-cell;
+//             height: 100%;
+//             padding: 0 1em;
+//             word-wrap: break-word;
             
-            + div {
-              border-left: 1px solid @color-grey-xxxxxl;
-            }
-          }
-        }
-      }
-    }
+//             + div {
+//               border-left: 1px solid @color-grey-xxxxxl;
+//             }
+//           }
+//         }
+//       }
+//     }
 
-    &:last-of-type {
-      .moment .line:after {
-        content: '';
-        position: absolute;
-        left: 20px;
-        height: 100%;
-        width: 1px;
-        background: @color-grey-xl;
-      }
+//     &:last-of-type {
+//       .moment .line:after {
+//         content: '';
+//         position: absolute;
+//         left: 20px;
+//         height: 100%;
+//         width: 1px;
+//         background: @color-grey-xl;
+//       }
+//     }
+//   }
+// }
+
+.outcome-timeline.horizontal {
+  display: table;
+  border-collapse: collapse;
+
+  .t-row {
+    display: table-row;
+    border-top: 1px solid @color-grey-xxl;
+
+    .t-cell {
+      min-width: 300px;
+      width: 300px;
+      padding: 5px 0 15px 0;
+      display: table-cell;
+    }
+  }
+  .timeline-header {
+    background: @color-grey-xxxxxxl;
+
+    .t-cell {
+      color: @color-grey-l;
     }
   }
 }

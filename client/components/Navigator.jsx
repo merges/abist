@@ -1,26 +1,26 @@
 /** @jsx React.DOM */
 
-var React = require('react/addons');
-var _ = require('lodash');
+var React = require('react/addons')
+var _ = require('lodash')
 
 // Data
-var get = require('../data/get.js');
-var medications = require('../data/medications.js');
-var preferences = require('../data/preferences.js');
-var mockData = require('../data/mock.js');
+var get = require('../data/get.js')
+var medications = require('../data/medications.js')
+var preferences = require('../data/preferences.js')
+var mockData = require('../data/mock.js')
 
-var Nav = require('react-bootstrap').Nav;
-var NavItem = require('react-bootstrap').NavItem;
+var Nav = require('react-bootstrap').Nav
+var NavItem = require('react-bootstrap').NavItem
 
-var Sticky = require('react-sticky');
+var Sticky = require('react-sticky')
 
-var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx');
-var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx');
-var OutcomeTimeline = require('./OutcomeTimeline.jsx');
+var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
+var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
+var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
 String.prototype.capitalizeFirstletter = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};
+  return this.charAt(0).toUpperCase() + this.slice(1)
+}
 
 var ScrollTo = React.createClass({
 
@@ -34,10 +34,10 @@ var ScrollTo = React.createClass({
       <a onClick={this.props.onClick.bind(null, this.props.to)} className='scroll-down'>
         <i className='ss-icon ss-navigatedown'></i>
       </a>
-    );
+    )
   }
 
-});
+})
 
 var DosageForm = React.createClass({
 
@@ -46,29 +46,29 @@ var DosageForm = React.createClass({
   },
 
   checkForSubstring: function(form, canonical) {
-    return form.toLowerCase().indexOf(canonical) >= 0;
+    return form.toLowerCase().indexOf(canonical) >= 0
   },
 
   render: function() {
-    var form = this.props.form;
+    var form = this.props.form
 
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
     var classes = cx({
       'ss-icon': true,
       'ss-hospital': this.checkForSubstring(form, 'infusion'),
       'ss-syringe': this.checkForSubstring(form, 'injection'),
       'ss-pill': this.checkForSubstring(form, 'tablet')
-    });
+    })
 
     return (
       <div className='dosage-form'>
         <span className={classes}></span>
         <span className='form-name'>{form}</span>
       </div>
-    );
+    )
   }
 
-});
+})
 
 var MedicationCard = React.createClass({
 
@@ -84,7 +84,7 @@ var MedicationCard = React.createClass({
         <span className='medication-name'>
           <strong>{medication.name_generic.toLowerCase()}</strong>
         </span>
-      );
+      )
     }
     else {
       return (
@@ -92,13 +92,13 @@ var MedicationCard = React.createClass({
           <strong>{medication.name_generic}</strong><br />
           <span className='light'>{medication.name_common}</span>
         </span>
-      );
+      )
     }
   },
 
   renderPreferences: function (preferences, preferencesSelected) {
     if (preferences && preferencesSelected) {
-      var medication = this.props.medication;
+      var medication = this.props.medication
       return (
         <div className='preferences'>
           {_.map(preferencesSelected, function (value, key) {
@@ -112,35 +112,35 @@ var MedicationCard = React.createClass({
             if (value) {
               // Does the preference exist in our preferences object, and is there a function to look for a match?
               if (preferences[key] && preferences[key].isMatch) {
-                var isMatch = preferences[key].isMatch;
-                var lookupKey = preferences[key].key;
-                var match = isMatch(_.get(medication, lookupKey), value);
+                var isMatch = preferences[key].isMatch
+                var lookupKey = preferences[key].key
+                var match = isMatch(_.get(medication, lookupKey), value)
               }
             }
 
             // If we get an "unsafe"
             if (match == 'unsafe') {
-              return (<p key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</p>);
+              return (<p key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</p>)
             }
             // If we get an "unknown"
             if (match == 'unknown') {
-              return (<p key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</p>);
+              return (<p key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</p>)
             }
             // If we get a "false" i.e. for a boolean, it's not true
             if (match === false) {
-              return (<p key={medication.name + key}>No {preferences[key].name.toLowerCase()}</p>);
+              return (<p key={medication.name + key}>No {preferences[key].name.toLowerCase()}</p>)
             }
             // TODO handle dosage form properly
           })}
         </div>
-      );
+      )
     }
   },
 
   render: function() {
-    var medication = this.props.medication;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.props.preferencesSelected;
+    var medication = this.props.medication
+    var preferences = this.props.preferences
+    var preferencesSelected = this.props.preferencesSelected
 
     return (
       <div>
@@ -148,7 +148,7 @@ var MedicationCard = React.createClass({
           {medication.forms.map(function (form, i) {
             return (
               <DosageForm key={i} form={form.name} />
-            );
+            )
           })}
         </div>
         {this.renderPreferredMedicationName(medication)}
@@ -176,10 +176,10 @@ var MedicationCard = React.createClass({
 
         {this.renderPreferences(preferences, preferencesSelected)}
       </div>
-    );
+    )
   }
 
-});
+})
 
 // Navigator experiment
 
@@ -189,41 +189,41 @@ var Navigator = React.createClass({
     return {
       medications: medications,
       preferences: preferences
-    };
+    }
   },
 
   getInitialState: function () {
     var getDosageForms = function(medications) {
-      var dosageForms = {};
+      var dosageForms = {}
       medications.map(function(medication) {
         if (medication.forms) {
           medication.forms.forEach(function(form) {
-            dosageForms[form.name] = false;
-          });
+            dosageForms[form.name] = false
+          })
         }
-      });
-      return dosageForms;
-    };
+      })
+      return dosageForms
+    }
 
     var getClasses = function(medications) {
-      var classes = {};
+      var classes = {}
       medications.map(function(medication) {
         if (medication.class) {
           medication.class.forEach(function(name) {
-            classes[name] = false;
-          });
+            classes[name] = false
+          })
         }
-      });
-      return classes;
-    };
+      })
+      return classes
+    }
 
     var getDisabledMedications = function(medications) {
-      var disabled = {};
+      var disabled = {}
       medications.forEach(function(medication) {
-        disabled[medication.name] = false;
-      });
-      return disabled;
-    };
+        disabled[medication.name] = false
+      })
+      return disabled
+    }
 
 
 
@@ -262,7 +262,7 @@ var Navigator = React.createClass({
   },
 
   componentDidMount: function () {
-    var instance = this;
+    var instance = this
 
     if (this.state.offline) {
       // Use mock data
@@ -270,7 +270,7 @@ var Navigator = React.createClass({
         data: mockData,
         selectedMeasure: 'acr_50',
         selectedTag: 'improvement'
-      });
+      })
     }
     else {
       // Query spreadsheets
@@ -284,216 +284,216 @@ var Navigator = React.createClass({
               selectedTag: 'improvement',
               // selectedMeasure: 'ae',
               // selectedTag: 'adverse event'
-            });
+            })
           }
         }
-      });
+      })
     }
   },
 
   handleStickyStateChange: function() {
-    this.setStickyHeaderOffsets();
+    this.setStickyHeaderOffsets()
   },
 
   setStickyHeaderOffsets: function() {
-    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
     var offsets = {
       medications: this.getOffsetTop('medications') - stickyHolderHeight,
       results: this.getOffsetTop('results') - stickyHolderHeight
-    };
+    }
     this.setState({
       offsets: offsets
-    });
+    })
   },
 
   // setStickyHolderHeight: function() {
   //   var heights = {
   //     filterControls: this.refs['stickyFilterControls'].getDOMNode().offsetHeight,
   //     medications: this.refs['stickyMedications'].getDOMNode().offsetHeight
-  //   };
+  //   }
 
   //   if (heights.filterControls > 0 || heights.medications > 0) {
-  //     var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
+  //     var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
   //     console.log('stickyHolderHeight', stickyHolderHeight)
   //     this.setState({
   //       stickyHolderHeight: stickyHolderHeight
-  //     });
+  //     })
   //   }
   // },
 
   // getOffsetTopPlusStickyHeader: function (ref) {
-  //   return this.getOffsetTop() + this.state.stickyHolderHeight;
+  //   return this.getOffsetTop() + this.state.stickyHolderHeight
   // },
 
   getOffsetTop: function (ref) {
     if (this.refs[ref]) {
-      var element = this.refs[ref].getDOMNode();
-      return Math.ceil($(element).offset().top);
+      var element = this.refs[ref].getDOMNode()
+      return Math.ceil($(element).offset().top)
     }
-    return 99999;
+    return 99999
   },
 
   scrollSmoothlyToElement: function (ref) {
-    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight;
-    var newScrollTop = this.getOffsetTop(ref) - stickyHolderHeight;
+    var stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight
+    var newScrollTop = this.getOffsetTop(ref) - stickyHolderHeight
     $('html, body').animate({
       scrollTop: newScrollTop
-    }, 450);
+    }, 450)
   },
 
   getData: function () {
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
-    var urlMeasures = get.getSheetUrl(get.sheets.measures);
-    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
-    var urlGrades = get.getSheetUrl(get.sheets.grades);
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
+    var urlMeasures = get.getSheetUrl(get.sheets.measures)
+    var urlMetrics = get.getSheetUrl(get.sheets.metrics)
+    var urlGrades = get.getSheetUrl(get.sheets.grades)
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
 
-    var allData = {};
-    var deferred = new $.Deferred;
+    var allData = {}
+    var deferred = new $.Deferred
 
     $.when(
       // Get GRADE
       $.getJSON(urlGrades + '&callback=?').done(function (data) {
-        allData['grades'] = get.processGrades(data);
+        allData['grades'] = get.processGrades(data)
       }),
 
       // Get measures & tags
       $.getJSON(urlMeasures + '&callback=?').done(function (data) {
-        // var newStateItems = get.processMeasures(data);
-        allData['measures'] = get.processMeasures(data).measures;
-        allData['tags'] = get.processMeasures(data).tags;
+        // var newStateItems = get.processMeasures(data)
+        allData['measures'] = get.processMeasures(data).measures
+        allData['tags'] = get.processMeasures(data).tags
       }),
 
       // Get metrics
       $.getJSON(urlMetrics + '&callback=?').done(function (data) {
-        allData['metrics'] = get.processMetrics(data);
+        allData['metrics'] = get.processMetrics(data)
       }),
 
       // Get tag descriptions
       $.getJSON(urlTagDescriptions + '&callback=?').done(function (data) {
-        allData['tagDescriptions'] = get.processTagDescriptions(data);
+        allData['tagDescriptions'] = get.processTagDescriptions(data)
       }),
 
       // Get data
       $.when(Object.keys(get.sheets.data).forEach(function (source) {
-        var url = get.getSheetUrl(get.sheets.data[source]);
+        var url = get.getSheetUrl(get.sheets.data[source])
         $.getJSON(url + '&callback=?').done(function (data) {
-          !allData['data'] && (allData['data'] = {});
-          allData['data'][source] = get.processData(data);
-        });
+          !allData['data'] && (allData['data'] = {})
+          allData['data'][source] = get.processData(data)
+        })
       })
       ).done(function() {
-        return true;
+        return true
       })
     )
     .done(function() {
-      deferred.resolve(allData);
-    });
+      deferred.resolve(allData)
+    })
 
-    return deferred.promise();
+    return deferred.promise()
   },
 
   handleDrugFilterClick: function (key, selectedValue) {
-    var preferencesSelected = this.state.drugPreferencesSelected;
+    var preferencesSelected = this.state.drugPreferencesSelected
     if (selectedValue) {
       Object.keys(preferencesSelected[key]).forEach(function(pref) {
-        preferencesSelected[key][pref] = false;
-      });
-      preferencesSelected[key][selectedValue] = true;
+        preferencesSelected[key][pref] = false
+      })
+      preferencesSelected[key][selectedValue] = true
     }
     else {
-      preferencesSelected[key] = !preferencesSelected[key];
+      preferencesSelected[key] = !preferencesSelected[key]
     }
     this.setState({
       userHasFiltered: true,
       preferencesSelected: preferencesSelected
-    });
+    })
   },
 
   filterDrugs: function (drugs, preferencesSelected) {
-    var disabledDrugs = {};
+    var disabledDrugs = {}
 
     drugs.forEach(function(drug, i) {
-      var drugFeatures = {};
+      var drugFeatures = {}
 
       // 1. Examine all the preferences for a match
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] && preferencesSelected[preference] != null) {
-          var filter = drugFilters[preference];
-          var options = preferencesSelected[preference];
-          drugFeatures[preference] = filter.isMatch(drug, options);
+          var filter = drugFilters[preference]
+          var options = preferencesSelected[preference]
+          drugFeatures[preference] = filter.isMatch(drug, options)
         }
       }
 
       // 2. Check if the drug should be disabled
-      var keepDrug = true;
+      var keepDrug = true
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] != null) {
           for (var feature in drugFeatures) {
             if (preferencesSelected[preference] && !drugFeatures[preference]) {
-              keepDrug = false;
+              keepDrug = false
             }
           }
         }
       }
-      disabledDrugs[drug.name] = !keepDrug;
-    });
+      disabledDrugs[drug.name] = !keepDrug
+    })
 
-    return disabledDrugs;
+    return disabledDrugs
   },
 
   togglePreferenceControls: function (direction) {
-    // var isOpen = this.state.menuOpen;
-    // isOpen = !isOpen;
+    // var isOpen = this.state.menuOpen
+    // isOpen = !isOpen
     // this.setState({
     //   menuOpen: isOpen
-    // });
+    // })
 
     if (direction == 'open') {
       this.setState({
         menuOpen: true
-      });
+      })
     }
     if (direction == 'close') {
       this.setState({
         menuOpen: false
-      });
+      })
     }
   },
 
   togglePreferenceControlsOpen: function () {
     this.setState({
       menuOpen: true
-    });
+    })
   },
 
   togglePreferenceControlsClose: function () {
     this.setState({
       menuOpen: false
-    });
+    })
   },
 
   renderPreferenceControls: function (preferences) {
-    var filterPreference = this.filterPreference;
-    var toggleOpen = this.togglePreferenceControlsOpen;
-    var toggleClose = this.togglePreferenceControlsClose;
+    var filterPreference = this.filterPreference
+    var toggleOpen = this.togglePreferenceControlsOpen
+    var toggleClose = this.togglePreferenceControlsClose
 
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
 
     return (
       <div className='filter-controls'>
           {Object.keys(preferences).map(function(key) {
-            var preference = preferences[key];
+            var preference = preferences[key]
 
             // Boolean preferences become a push button
             if (preference.type == 'boolean') {
               var preferenceClasses = cx({
                 'button': true,
                 'active': preferencesSelected[key]
-              });
+              })
               return (
                 <section key={preference.name}>
                   <a className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
@@ -501,14 +501,14 @@ var Navigator = React.createClass({
                   </a>
                   {/*<span className='description'>{preference.description}</span>*/}
                 </section>
-              );
+              )
             }
             // List preferences become a list
             else if (preference.type == 'list') {
               // Get the possible options for this preference from this.state.preferencesSelected.
               // There is a function in getInitialState() that iterates through the provided medications,
               // collecting the "options" they provide for vis à vis this preference.
-              var options = Object.keys(preferencesSelected[key]);
+              var options = Object.keys(preferencesSelected[key])
 
               return (
                 <section key={key}>
@@ -517,7 +517,7 @@ var Navigator = React.createClass({
                       var optionClasses = cx({
                         'button option': true,
                         'active': !preferencesSelected[key][option]
-                      });
+                      })
                       // return (
                       //   <div>
                       //     <input type='checkbox'
@@ -529,16 +529,16 @@ var Navigator = React.createClass({
                       //         {option}
                       //     </input>
                       //   </div>
-                      // );
+                      // )
                       return (
                         <a className={optionClasses} key={option} onClick={filterPreference.bind(null, key, option)}>
                           <DosageForm form={option} />
                         </a>
-                      );
+                      )
                     })}
                   </div>
                 </section>
-              );
+              )
             }
             else {
               return (
@@ -546,22 +546,22 @@ var Navigator = React.createClass({
                   {preference.name}
                   <span className='description'>{preference.description}</span>
                 </section>
-              );
+              )
             }
           })}
       </div>
-    );
+    )
   },
 
   filterPreference: function (preferenceKey, optionKey, event) {
     if (this.state.menuOpen) {
-      event.stopPropagation();
+      event.stopPropagation()
     }
 
-    var disabledMedications = {};
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+    var disabledMedications = {}
+    var medications = this.props.medications
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
     // Toggle the preference. If there's an 'option' provided, the preference is a list type,
     // for example dosage form. So we use the 'preference' to access the dosage forms object,
@@ -575,17 +575,17 @@ var Navigator = React.createClass({
 
     // TOGGLE PREFERENCES
     if (optionKey) {
-      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey]
     }
     else {
-      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey]
     }
 
     // Check each medication against the selected preferences and options,
     // disabling any that doesn't satisfy.
     //
     medications.forEach(function(medication, i) {
-      var medicationMatchingPreferences = {};
+      var medicationMatchingPreferences = {}
 
       // 1. Examine all the preferences for a match.
       //
@@ -598,20 +598,20 @@ var Navigator = React.createClass({
             // Look for a matching key in the medication object
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
-              medicationMatchingPreferences[preference] = true;
-              // disabledMedications[medication.name] = true;
+              medicationMatchingPreferences[preference] = true
+              // disabledMedications[medication.name] = true
             }
             // Not a key in medication object, so check ptda.risks
             else {
               // Look for key in right place
               if (preferences[preference] && preferences[preference].isMatch) {
-                var isMatch = preferences[preference].isMatch;
-                var lookupKey = preferences[preference].key;
-                var result = _.get(medication, lookupKey);
-                var match = isMatch(_.get(medication, lookupKey));
+                var isMatch = preferences[preference].isMatch
+                var lookupKey = preferences[preference].key
+                var result = _.get(medication, lookupKey)
+                var match = isMatch(_.get(medication, lookupKey))
 
                 if (match == 'unsafe') {
-                  medicationMatchingPreferences[preference] = true;
+                  medicationMatchingPreferences[preference] = true
                 }
               }
             }
@@ -622,15 +622,15 @@ var Navigator = React.createClass({
 
             // The user chose one or more options (to avoid), so the medication must match
             // each option in order to get disabled.
-            var selectedOptions = {};
-            var medicationMatchingOptions = {};
+            var selectedOptions = {}
+            var medicationMatchingOptions = {}
 
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
               // Option is selected
               if (preferencesSelected[preference][option]) {
-                selectedOptions[option] = true;
+                selectedOptions[option] = true
 
                 // Look for a matching key in the medication object
                 if (medication[preference]) {
@@ -640,26 +640,26 @@ var Navigator = React.createClass({
 
                     // Array
                     if (Array.isArray(medication[preference])) {
-                      var list = medication[preference];
+                      var list = medication[preference]
 
                       // Check for our option in the list
                       for (var item in list) {
                         // Straight up list item?
                         if (typeof list[item] === 'string') {
                           if (list[item].toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].toLowerCase()] = true
                           }
                         }
                         // Object? Look for a 'name' that we'll check against
                         else if (list[item].hasOwnProperty('name')) {
                           if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true
                           }
                         }
                       }
@@ -668,15 +668,15 @@ var Navigator = React.createClass({
                     else {
                       for (var item in Object.keys(medication[preference])) {
                         if (list[item].toLowerCase() == option.toLowerCase()) {
-                          medicationMatchingOptions[option] = true;
+                          medicationMatchingOptions[option] = true
                         }
                         else {
-                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                          medicationMatchingOptions[list[item].toLowerCase()] = true
                         }
                       }
                       // // Check for our option in the object
                       // if (medication[preference][optionKey]) {
-                      //   medicationMatchingOptions[option] = true;
+                      //   medicationMatchingOptions[option] = true
                       // }
                     }
                   }
@@ -690,14 +690,14 @@ var Navigator = React.createClass({
               for (var selected in selectedOptions) {
                 for (var option in medicationMatchingOptions) {
                   if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    medicationMatchingPreferences[preference] = true;
+                    medicationMatchingPreferences[preference] = true
                   }
                 }
               }
               // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
               for (var option in medicationMatchingOptions) {
                 if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  medicationMatchingPreferences[preference] = false;
+                  medicationMatchingPreferences[preference] = false
                 }
               }
             }
@@ -708,43 +708,43 @@ var Navigator = React.createClass({
       // 2. Check if the drug should be disabled.
       //
       if (Object.keys(preferencesSelected).length > 0) {
-        var disableMedication = false;
+        var disableMedication = false
 
         // Disabled options present in the drug? Disable it.
         for (var selected in preferencesSelected) {
           for (var preference in medicationMatchingPreferences) {
             if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
-              disableMedication = true;
+              disableMedication = true
             }
           }
         }
         // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
         for (var preference in medicationMatchingPreferences) {
           if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
-            disableMedication = false;
+            disableMedication = false
           }
         }
 
         // Add the medication to disabledMedications.
         if (disableMedication) {
-          disabledMedications[medication.name] = true;
+          disabledMedications[medication.name] = true
         }
         else {
-          disabledMedications[medication.name] = false;
+          disabledMedications[medication.name] = false
         }
       }
-    });
+    })
 
     this.setState({
       disabledMedications: disabledMedications,
       preferencesSelected: preferencesSelected
-    });
+    })
   },
 
   getDataByTag: function (selectedTag) {
-    var data = this.state.data.data;
-    var tags = this.state.data.tags;
-    var dataByTag = JSON.parse(JSON.stringify(tags));
+    var data = this.state.data.data
+    var tags = this.state.data.tags
+    var dataByTag = JSON.parse(JSON.stringify(tags))
 
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
@@ -756,39 +756,39 @@ var Navigator = React.createClass({
           // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
           if (tags[tag][entry.measure]) {
             // Create a place for data about each measure
-            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {})
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = [])
 
-            dataByTag[tag][entry.measure]['data'].push(entry);
+            dataByTag[tag][entry.measure]['data'].push(entry)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    return dataByTag;
+    return dataByTag
   },
 
   handleMedicationClick: function (key) {
-    var disabledMedications = this.state.disabledMedications;
-    disabledMedications[key] = !disabledMedications[key];
+    var disabledMedications = this.state.disabledMedications
+    disabledMedications[key] = !disabledMedications[key]
     this.setState({
       disabledMedications: disabledMedications
-    });
+    })
   },
 
   renderMedicationBar: function (medications) {
-  	var disabledMedications = this.state.disabledMedications;
-    var handleMedicationClick = this.handleMedicationClick;
-    var renderPreferredMedicationName = this.renderPreferredMedicationName;
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+  	var disabledMedications = this.state.disabledMedications
+    var handleMedicationClick = this.handleMedicationClick
+    var renderPreferredMedicationName = this.renderPreferredMedicationName
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
     if (medications) {
       return (
         <div className='medication-cards'>
           <ul>
             {Object.keys(medications).map(function (medication, i) {
-            	var medication = medications[medication];
+            	var medication = medications[medication]
               return (
                 <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
                   <a
@@ -796,36 +796,36 @@ var Navigator = React.createClass({
                       <MedicationCard medication={medication} preferences={preferences} preferencesSelected={preferencesSelected} />
                   </a>
                 </li>
-              );
+              )
             })}
           </ul>
         </div>
-      );
+      )
     }
   },
 
   handleMeasureSelect: function (key) {
     this.setState({
       selectedMeasure: key
-    });
+    })
   },
 
   renderMeasureBar: function (selectedTag, selectedMeasure) {
-    var tags = this.state.data.tags;
-    var tagDescriptions = this.state.data.tagDescriptions;
-    var measures = this.state.data.measures;
+    var tags = this.state.data.tags
+    var tagDescriptions = this.state.data.tagDescriptions
+    var measures = this.state.data.measures
 
     if (selectedTag) {
-      var tagMeasures = tags[selectedTag];
+      var tagMeasures = tags[selectedTag]
       return (
         <div>
           <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedMeasure && selectedMeasure} onSelect={this.handleMeasureSelect}>
             {Object.keys(tagMeasures).map(function (measure, i) {
-              return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_friendly : measure}</NavItem>);
+              return (<NavItem key={i} eventKey={measure}>{measures[measure] ? measures[measure].name_friendly : measure}</NavItem>)
             })}
           </Nav>
         </div>
-      );
+      )
     }
   },
 
@@ -833,26 +833,26 @@ var Navigator = React.createClass({
     this.setState({
       selectedTag: key,
       selectedMeasure: null
-    });
+    })
   },
 
   renderTagBar: function (selectedTag) {
-    var tags = this.state.data.tags;
-    var tagDescriptions = this.state.data.tagDescriptions;
+    var tags = this.state.data.tags
+    var tagDescriptions = this.state.data.tagDescriptions
 
     if (tags && tagDescriptions) {
       return (
         <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedTag && selectedTag} onSelect={this.handleTagSelect}>
           {Object.keys(tags).map(function (tag, i) {
-            return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>);
+            return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>)
           })}
         </Nav>
-      );
+      )
     }
   },
 
   renderTagDescription: function (selectedTag) {
-    var tagDescriptions = this.state.data.tagDescriptions;
+    var tagDescriptions = this.state.data.tagDescriptions
 
     if (selectedTag && tagDescriptions) {
       return (
@@ -862,7 +862,7 @@ var Navigator = React.createClass({
             {tagDescriptions[selectedTag] && <p>{tagDescriptions[selectedTag].description}</p>}
           </h2>
         </div>
-      );
+      )
     }
   },
 
@@ -881,13 +881,13 @@ var Navigator = React.createClass({
         <hr />
         <div>data: {JSON.stringify(data.data)}</div>
       </div>
-    );
+    )
   },
 
   renderMeasure: function (selectedTag, selectedMeasure) {
-    var medications = this.props.medications;
-    var data = this.state.data;
-    var disabledMedications = this.state.disabledMedications;
+    var medications = this.props.medications
+    var data = this.state.data
+    var disabledMedications = this.state.disabledMedications
 
     if (selectedMeasure == 'discontinued_ae') {
       return (
@@ -898,7 +898,7 @@ var Navigator = React.createClass({
           disabledMedications={disabledMedications}
           selectedTag={selectedTag}
           selectedMeasure={selectedMeasure} />
-      );
+      )
     }
     else if (selectedMeasure == 'ae') {
       return (
@@ -909,7 +909,7 @@ var Navigator = React.createClass({
           disabledMedications={disabledMedications}
           selectedTag={selectedTag}
           selectedMeasure={selectedMeasure} />
-      );
+      )
     }
     return(
       <OutcomeTimeline
@@ -918,47 +918,47 @@ var Navigator = React.createClass({
         disabledMedications={disabledMedications}
         selectedTag={selectedTag}
         selectedMeasure={selectedMeasure} />
-    );
+    )
   },
 
   handleShortcutClick: function (tag, measure) {
     this.setState({
       selectedTag: tag,
       selectedMeasure: measure,
-    });
+    })
   },
 
   render: function () {
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
     var navigatorClasses = cx({
       'navigator': true,
       'dev row': this.state.dev,
       'mobile': this.state.mobile,
       'no-scroll': this.state.mobile && this.state.menuOpen
-    });
+    })
     var drugPickerClasses = cx({
       'drug-picker': true,
       'col-md-2 col-lg-1': this.state.dev,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
-    });
+    })
     var medicationListClasses = cx({
       'medication-list': true,
       'col-md-2 col-lg-1': this.state.dev
-    });
+    })
     var detailsClasses = cx({
       'details': true,
       'col-md-9 col-lg-10': this.state.dev,
       'closed': this.state.menuOpen == true,
       'open': this.state.menuOpen == false
-    });
+    })
 
-    var medications         = this.props.medications;
-    var preferences         = this.props.preferences;
-    var disabledMedications = this.state.disabledMedications;
-    var data                = this.state.data;
-    var selectedMeasure     = this.state.selectedMeasure;
-    var selectedTag         = this.state.selectedTag;
+    var medications         = this.props.medications
+    var preferences         = this.props.preferences
+    var disabledMedications = this.state.disabledMedications
+    var data                = this.state.data
+    var selectedMeasure     = this.state.selectedMeasure
+    var selectedTag         = this.state.selectedTag
 
     if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
       // return (
@@ -967,7 +967,7 @@ var Navigator = React.createClass({
       //       {this.renderDataToJSON(data)}
       //     </div>
       //   </div>
-      // );
+      // )
       if (this.state.dev) {
         return (
           <div className='container-fluid'>
@@ -983,7 +983,7 @@ var Navigator = React.createClass({
               <section className={detailsClasses}>
                 <h3 className='brief-header'>
                   Look at evidence about the selected medications, in various categories.<br />
-                  e.g.&nbsp;
+                  e.g.&nbsp
                   <a onClick={this.handleShortcutClick.bind(null, 'improvement', 'acr_50')}>ACR50 from multiple sources</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'discontinued_ae')}>Withdrawl due to AE (RR comparison)</a> - <a onClick={this.handleShortcutClick.bind(null, 'adverse event', 'ae')}>Side effects (etanercept only)</a>
                 </h3>
 
@@ -998,14 +998,14 @@ var Navigator = React.createClass({
              	</section>
             </div>
           </div>
-        );
+        )
       }
 
       else {
-        var selectedPreferenceItems = [];
+        var selectedPreferenceItems = []
         _.each(this.state.preferencesSelected, function(value, key) {
-          value == true && selectedPreferenceItems.push(key);
-        });
+          value == true && selectedPreferenceItems.push(key)
+        })
 
         return (
           <div className='navigator'>
@@ -1077,7 +1077,7 @@ var Navigator = React.createClass({
               </Sticky>
             </div>
           </div>
-        );
+        )
       }
     }
     return (
@@ -1090,9 +1090,9 @@ var Navigator = React.createClass({
           </div>
         </section>
       </div>
-    );
+    )
   }
 
-});
+})
 
-module.exports = Navigator;
+module.exports = Navigator
