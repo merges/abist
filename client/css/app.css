@@ -11016,6 +11016,9 @@ html:hover [class^="ss-"] {
 .light {
   opacity: .6;
 }
+.strong {
+  font-weight: bolder;
+}
 .space-t {
   margin-top: 0.4em;
 }
@@ -11027,6 +11030,20 @@ html:hover [class^="ss-"] {
 }
 .space-l {
   margin-left: 0.4em;
+}
+.tiny-title {
+  color: #999;
+}
+.pull-tab {
+  border-radius: 2px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding: 0 0 0 3px;
+  font-size: 10px;
+  margin: .5em 0;
+  display: inline-block;
+  overflow-x: hidden;
+  cursor: pointer;
 }
 .shadow-l {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
@@ -11106,7 +11123,7 @@ html:hover [class^="ss-"] {
   margin-right: 0;
 }
 .visualization .highlight {
-  color: #999;
+  color: #888;
 }
 .visualization.absolute {
   cursor: pointer;
@@ -11129,15 +11146,6 @@ html:hover [class^="ss-"] {
 }
 .visualization.absolute .ss-icon {
   transition: color 0.12s ease, text-shadow 0.12s ease;
-}
-.visualization.grade-quality {
-  color: #e8e8e8;
-  font-size: 1.3em;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.visualization.grade-quality .ss-help {
-  font-size: 1.2em;
 }
 .visualization.difference .ss-icon {
   vertical-align: middle;
@@ -11298,27 +11306,47 @@ html:hover [class^="ss-"] {
   opacity: 1;
   display: block;
 }
-.source {
+.grade-quality {
+  border-radius: 2px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding: 0 0 0 3px;
   font-size: 10px;
-  color: white;
-  padding: .2em 1em .25em 0;
-  transition: opacity .2s ease;
-  border-radius: 1px;
-  border-top: 2px solid #6699ff;
-  margin: 1em 0 0 0;
+  margin: .5em 0;
   display: inline-block;
   overflow-x: hidden;
-  line-height: 1.1;
+  cursor: pointer;
+  color: #bbb;
+  border-color: #bbb;
+  white-space: nowrap;
+}
+.grade-quality .ss-icon {
+  display: inline-block;
+  margin-top: 5px;
+  letter-spacing: -0.15em;
+  font-size: 13px;
+}
+.grade-quality .ss-help {
+  font-size: 1.2em;
+}
+.source {
+  border-radius: 2px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding: 0 0 0 3px;
+  font-size: 10px;
+  margin: .5em 0;
+  display: inline-block;
+  overflow-x: hidden;
+  cursor: pointer;
   color: #6699ff;
+  border-color: #6699ff;
 }
 .source:hover {
   text-decoration: none;
 }
 .intervention .name {
   font-weight: bolder;
-}
-.grade-quality {
-  font-size: 1em !important;
 }
 .population {
   cursor: pointer;
@@ -11345,25 +11373,154 @@ html:hover [class^="ss-"] {
 .progress-bar.worse {
   background: #999;
 }
+.outcome-timeline.vertical {
+  display: table;
+  table-layout: fixed;
+  margin-bottom: 5em;
+}
+.outcome-timeline.vertical > section {
+  display: table-row;
+}
+.outcome-timeline.vertical > section > div {
+  display: table-cell;
+  height: 300px;
+}
+.outcome-timeline.vertical > section > div.moment {
+  width: 300px;
+}
+.outcome-timeline.vertical > section > div.moment > section {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  height: 100%;
+}
+.outcome-timeline.vertical > section > div.moment > section > div {
+  display: table-cell;
+  height: 100%;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line {
+  width: 41px;
+  position: relative;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line:before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  height: 100%;
+  width: 1px;
+  background: #bbb;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line .bar {
+  position: relative;
+  width: 31px;
+  margin: 0 auto;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line .bar:before {
+  content: '';
+  position: absolute;
+  background: #bbb;
+  width: 31px;
+  height: 1px;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line .ball {
+  position: relative;
+  margin: 0 auto;
+  width: 17px;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.line .ball:before {
+  content: '';
+  position: absolute;
+  background: #bbb;
+  width: 17px;
+  height: 17px;
+  top: 2px;
+  border-radius: 9.5px;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.title,
+.outcome-timeline.vertical > section > div.moment > section > div.description {
+  padding: 0 5px;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.title {
+  text-align: right;
+}
+.outcome-timeline.vertical > section > div.moment > section > div.description {
+  color: #999;
+}
+.outcome-timeline.vertical > section > div.moment-data > section {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  height: 100%;
+}
+.outcome-timeline.vertical > section > div.moment-data > section > div {
+  display: table-cell;
+  height: 100%;
+  padding: 0 1em;
+  word-wrap: break-word;
+}
+.outcome-timeline.vertical > section > div.moment-data > section > div + div {
+  border-left: 1px solid #f3f3f3;
+}
+.outcome-timeline.vertical > section:last-of-type .moment .line:after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  height: 100%;
+  width: 1px;
+  background: #bbb;
+}
 .outcome-timeline.horizontal {
   display: table;
   border-collapse: collapse;
+  min-width: 100%;
 }
 .outcome-timeline.horizontal .t-row {
   display: table-row;
-  border-top: 1px solid #ddd;
+  background: #fafafa;
 }
 .outcome-timeline.horizontal .t-row .t-cell {
   min-width: 300px;
   width: 300px;
-  padding: 5px 0 15px 0;
+  padding: 15px;
   display: table-cell;
+  vertical-align: top;
 }
-.outcome-timeline.horizontal .timeline-header {
-  background: #f7f7f7;
+.outcome-timeline.horizontal .t-row .t-cell + .t-cell.moment-data {
+  border-left: 1px dotted #C0A38B;
+}
+.outcome-timeline.horizontal .t-row:nth-child(even) {
+  background: #f3f3f3;
 }
 .outcome-timeline.horizontal .timeline-header .t-cell {
+  background: white;
+  padding-top: 0;
+  padding-bottom: 60px;
+}
+.outcome-timeline.horizontal .timeline-header .t-cell + .t-cell {
+  border-left: 1px dotted #C0A38B;
+}
+.outcome-timeline.horizontal .timeline-header .t-cell .title {
+  font-size: 16px;
+  color: #A18269;
+}
+.outcome-timeline.horizontal .timeline-header .t-cell .description {
+  font-size: 11.5px;
   color: #999;
+}
+.outcome-timeline.horizontal .subject {
+  line-height: 1.15;
+}
+.outcome-timeline.horizontal .intervention .name {
+  color: #666;
+  display: inline-block;
+  margin-bottom: .25em;
+  font-size: 16px;
+}
+.outcome-timeline.horizontal .intervention .dosage {
+  display: block;
+  font-size: 11.5px;
+  color: #999;
+  margin-bottom: 1em;
 }
 .navigator h1,
 .navigator h2 {
@@ -11519,7 +11676,7 @@ html:hover [class^="ss-"] {
 }
 .dev .drug-picker,
 .dev .medication-list {
-  font-size: 11px;
+  font-size: 11.5px;
   border-right: 5px solid #eee;
 }
 .dev .details {
@@ -11692,39 +11849,72 @@ html:hover [class^="ss-"] {
 .tag-description strong {
   color: #666;
 }
-nav.tag-navigation > ul {
+.tag-navigation > ul {
   padding-top: 1em;
   padding-bottom: 1em;
 }
-nav.tag-navigation > ul > li > a {
-  padding: .5em 2.5em 1.5em .5em;
-  border-radius: 2px;
+.tag-navigation > ul > li > a {
+  color: #999;
+  background: white !important;
+  text-align: center;
+  padding: 1.5em 15px 5px 15px;
+  border-radius: 0;
+  border-bottom: 5px solid #eee;
   text-decoration: none;
   background: #f6f6f6;
   transition: color .1s ease,
 										border .1s ease,
 										background .1s ease;
 }
-nav.tag-navigation > ul > li > a:hover {
-  border-color: #6699ff;
+.tag-navigation > ul > li > a:hover {
   color: #6699ff;
   background: #efefef;
 }
-nav.tag-navigation > ul > li.active > a {
-  color: white;
-  background: #6699ff;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+.tag-navigation > ul > li.active > a {
+  color: #6699ff !important;
+  border-color: #6699ff;
+  background: #fafafa;
+}
+.tag-navigation > ul > li.active > a:hover {
+  background: #fafafa;
+  border-color: #6699ff;
 }
 @media (max-width: 767px) {
-  nav.tag-navigation > ul > li {
+  .tag-navigation > ul > li {
     float: none;
     display: block;
     margin: 0;
   }
-  nav.tag-navigation > ul > li > a {
+  .tag-navigation > ul > li > a {
     display: block;
     padding: .1em 15px;
   }
+}
+.tag-navigation.large > ul > li > a {
+  font-weight: bold;
+}
+.measure-description {
+  padding: 15px 15px 15px 15px;
+}
+.measure-description h3,
+.measure-description h4,
+.measure-description h5 {
+  margin: 0 0 5px 0;
+  line-height: 1.25;
+}
+.measure-description h3 {
+  color: #6699ff;
+}
+.measure-description h4 {
+  font-weight: lighter;
+  color: #6699ff;
+}
+.measure-description h5 {
+  font-size: 11.5px;
+  color: #A18269;
+  margin: 15px -15px;
+  padding: 5px 15px;
+  background: #fafafa;
 }
 .processing {
   margin-right: auto;

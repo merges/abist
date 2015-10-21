@@ -842,7 +842,7 @@ var Navigator = React.createClass({
 
     if (tags && tagDescriptions) {
       return (
-        <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedTag && selectedTag} onSelect={this.handleTagSelect}>
+        <Nav className='tag-navigation large' bsStyle="pills" activeKey={selectedTag && selectedTag} onSelect={this.handleTagSelect}>
           {Object.keys(tags).map(function (tag, i) {
             return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>)
           })}
@@ -1045,7 +1045,6 @@ var Navigator = React.createClass({
             <section className='full-screen results' ref='results'>
               <div className='spread'>
                 <div>
-                  <h1>Here’s information about those medications, broken down into categories.</h1>
                   <section className={detailsClasses}>
                     {this.renderTagBar(selectedTag)}
                     {/*this.renderTagDescription(selectedTag)*/}

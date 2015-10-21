@@ -406,7 +406,7 @@
 	}
 }
 
-nav.tag-navigation {
+.tag-navigation {
 
 	> ul {
 		padding-top: 1em;
@@ -414,8 +414,12 @@ nav.tag-navigation {
 
 		> li {
 			> a {
-				padding: .5em 2.5em 1.5em .5em;
-			  border-radius: 2px;
+				color: @color-grey-l;
+				background: white !important;
+				text-align: center;
+				padding: 1.5em 15px 5px 15px;
+				border-radius: 0;
+				border-bottom: 5px solid @color-grey-xxxxl;
 			  text-decoration: none;
 			  background: #f6f6f6;
 				transition: color .1s ease,
@@ -423,16 +427,20 @@ nav.tag-navigation {
 										background .1s ease;
 
 				&:hover {
-					border-color: @color-blue;
 					color: @color-blue;
 					background: #efefef;
 				}
 			}
 			&.active {
 				> a {
-					color: white;
-			    background: @color-blue;
-			    .shadow-l;
+					color: @color-blue !important;
+					border-color: @color-blue;
+					background: @color-grey-xxxxxxxl;
+					
+					&:hover {
+						background: @color-grey-xxxxxxxl;
+						border-color: @color-blue;
+					}
 				}
 			}
 		}
@@ -449,5 +457,36 @@ nav.tag-navigation {
 				}
 			}
 		}
+	}
+
+	&.large {
+		> ul > li > a {
+			font-weight: bold;
+		}
+	}
+}
+
+.measure-description {
+	padding: 15px 15px 15px 15px;
+
+	h3,
+	h4,
+	h5 {
+		margin: 0 0 5px 0;
+		line-height: 1.25;
+	}
+	h3 {
+		color: @color-blue;
+	}
+	h4 {
+		font-weight: lighter;
+		color: @color-blue;
+	}
+	h5 {
+		font-size: @font-s;
+		color: @color-ui;
+		margin: 15px -15px;
+		padding: 5px 15px;
+		background: @color-grey-xxxxxxxl;
 	}
 }

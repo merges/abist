@@ -614,6 +614,16 @@ var get = {
       }
     });
     return filteredEntries;
+  },
+
+  filterEntriesToPopulationOnly: function(entries) {
+    // Filter entries to only those which are about populations.
+    var filteredEntries = _.filter(entries, function(entry) {
+      if (entry.which == 'population' && entry.population) {
+        return true
+      }
+    })
+    return filteredEntries;
   }
 
 };

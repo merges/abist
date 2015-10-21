@@ -976,7 +976,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     if (tags && tagDescriptions) {
       return (
-        React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedTag && selectedTag, onSelect: this.handleTagSelect}, 
+        React.createElement(Nav, {className: "tag-navigation large", bsStyle: "pills", activeKey: selectedTag && selectedTag, onSelect: this.handleTagSelect}, 
           Object.keys(tags).map(function (tag, i) {
             return (React.createElement(NavItem, {key: i, eventKey: tag}, tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag))
           })
@@ -1179,7 +1179,6 @@ var Navigator = React.createClass({displayName: "Navigator",
             React.createElement("section", {className: "full-screen results", ref: "results"}, 
               React.createElement("div", {className: "spread"}, 
                 React.createElement("div", null, 
-                  React.createElement("h1", null, "Here’s information about those medications, broken down into categories."), 
                   React.createElement("section", {className: detailsClasses}, 
                     this.renderTagBar(selectedTag), 
                     /*this.renderTagDescription(selectedTag)*/
@@ -1930,13 +1929,13 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
           return renderAbsoluteRisk(results, metric, measure, comparisonResults)
         }
         if (metrics[metric].presentation == 'percentage') {
-          // return renderPercentage(results, metric, measure)
+          return renderPercentage(results, metric, measure)
         }
         if (metrics[metric].presentation == 'difference') {
-          // return renderDifference(results, metric, measure)
+          return renderDifference(results, metric, measure)
         }
         else {
-          // return renderNumber(results, metric, measure)
+          return renderNumber(results, metric, measure)
         }
       }
     }
@@ -1947,8 +1946,16 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       }
     }
     else {
-    	// Iterate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
+      // Prefer an ar_100/ar_1000, but don't render other things
+      if (results['ar_100']) {
+        return renderAppropriateVisualization(results, 'ar_100', results['ar_100'].measure)
+      }
+      if (results['ar_1000']) {
+        return renderAppropriateVisualization(results, 'ar_1000', results['ar_1000'].measure)
+      }
+    	// Otherwise terate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
+        console.log('looping')
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
@@ -2061,22 +2068,31 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
 
+    console.log(duration)
+
     if (duration.low) {
-  		if (duration.interval == 'month') {
+  		if (duration.interval == 'year') {
+        return duration.low * 52
+      }
+      if (duration.interval == 'month') {
   			return duration.low * 4
   		}
-  		else if (duration.interval == 'week') {
+  		if (duration.interval == 'week') {
   			return duration.low
   		}
     }
-    else if (duration.high) {
+    if (duration.high) {
+      if (duration.interval == 'year') {
+        return duration.high * 52
+      }
       if (duration.interval == 'month') {
         return duration.high * 4
       }
-      else if (duration.interval == 'week') {
+      if (duration.interval == 'week') {
         return duration.high
       }
     }
+    return ('an unknown number of')
 	},
 
   getDurationsFromEntries: function(entries) {
@@ -2108,10 +2124,69 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     return interventions
   },
 
+  getWhichesFromEntries: function(entries) {
+    var getPopulationAsString = this.getPopulationAsString
+    var getInterventionAsString = this.getInterventionAsString
+
+    var whiches = {}
+    _.each(entries, function (entry) {
+      if (entry.which == 'population' && entry.population) {
+        whiches[getPopulationAsString(entry)] = entry
+      }
+      if (entry.which == 'intervention' && entry.intervention) {
+        whiches[getInterventionAsString(entry)] = entry
+      }
+    })
+    return whiches
+  },
+
   groupEntriesByIntervention: function(entries) {
     var getInterventionAsString = this.getInterventionAsString
     return _.groupBy(entries, function (entry) {
       return getInterventionAsString(entry)
+    })
+  },
+
+  getPopulationsFromEntries: function(entries) {
+    var getPopulationAsString = this.getPopulationAsString
+    var populations = {}
+    _.each(entries, function (entry) {
+      if (entry.population) {
+        populations[getPopulationAsString(entry)] = entry
+      }
+    })
+    return populations
+  },
+
+  getPopulationAsString: function(entry) {
+    if (entry.population) {
+      return entry.population.parts.join(' + ')
+    }
+  },
+
+  groupEntriesByPopulation: function(entries) {
+    var getPopulationAsString = this.getPopulationAsString
+    return _.groupBy(entries, function (entry) {
+      return getPopulationAsString(entry)
+    })
+  },
+
+  getWhichAsString: function(entry) {
+    var getPopulationAsString = this.getPopulationAsString
+    var getInterventionAsString = this.getInterventionAsString
+
+    if (entry.which == 'population' || entry.population) {
+      return getPopulationAsString(entry)
+    }
+    if (entry.which == 'intervention' || entry.intervention) {
+      return getInterventionAsString(entry)
+    }
+  },
+
+  groupEntriesByWhich: function(entries) {
+    var getWhichAsString = this.getWhichAsString
+    return _.groupBy(entries, function (entry) {
+      return getWhichAsString(entry)
     })
   },
 
@@ -2134,6 +2209,20 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     })
 
     return entriesByInterventionAndDuration
+  },
+
+  groupEntriesByWhichAndDuration: function(entries) {
+    var groupEntriesByDuration = this.groupEntriesByDuration
+    var groupEntriesByWhich = this.groupEntriesByWhich
+  
+    var entriesByWhichAndDuration = {}
+    var entriesByWhich = groupEntriesByWhich(entries)
+    _.each(entriesByWhich, function (val, key) {
+      var byDuration = groupEntriesByDuration(val)
+      entriesByWhichAndDuration[key] = byDuration
+    })
+
+    return entriesByWhichAndDuration
   },
 
   // groupEntriesByDuration: function(entries, boundary) {
@@ -2248,8 +2337,12 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var measureData = measure && measures[measure].data
     !direction && (direction = 'horizontal')
 
+    console.log('about to render something')
+
     // Render a timeline
     if (measure && measureData) {
+      console.log('rendering a timeline')
+
       var medications = this.props.medications
       var disabledMedications = this.props.disabledMedications
 
@@ -2302,7 +2395,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   			      		React.createElement("section", {key: measure + timepoint}, 
   				      		React.createElement("div", {className: "moment"}, 
   				      			React.createElement("section", null, 
-  				        			React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
+  				        			React.createElement("div", {className: "title"}, React.createElement("strong", null, "at ", timepoint, " weeks")), 
   				        			React.createElement("div", {className: "line"}, 
   				        				React.createElement("div", {className: "ball"})
   				        			), 
@@ -2340,79 +2433,122 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   		  )
       }
       
-      
       // Horizontal
-
       var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications)
-      var entriesByDuration = groupEntriesByDuration(entries)
-      var entriesByIntervention = this.groupEntriesByIntervention(entries)
-      var durations = this.getDurationsFromEntries(entries)
-      var interventions = this.getInterventionsFromEntries(entries)
+      var populationEntries = get.filterEntriesToPopulationOnly(get.getEntriesForMeasure(measureData))
 
-      var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
+      if (entries.length == 0) {
+        entries = populationEntries
+        var entriesByDuration = groupEntriesByDuration(entries)
+        var entriesByIntervention = this.groupEntriesByWhich(entries)
+        var durations = this.getDurationsFromEntries(entries)
+        var interventions = this.getWhichesFromEntries(entries)
+        var interventionsSorted = _.keys(interventions).sort()
+        var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
+      }
+      else {
+        var entriesByDuration = groupEntriesByDuration(entries)
+        var entriesByIntervention = this.groupEntriesByWhich(entries)
+        var durations = this.getDurationsFromEntries(entries)
+        var interventions = this.getInterventionsFromEntries(entries)
+        var interventionsSorted = _.keys(interventions).sort()
+        var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
+      }
+      
 
+      
 
-      // debugger;
+      // console.log('------------GROUPED ENTRIES------------')
+      // _.each(entriesByInterventionAndDuration, function(val, key) {
+      //   _.each(val, function(val, key) {
+      //     console.log(val[0].intervention.parts.join(' + '), val[0].duration)
+      //   })
+      // })
+
+      // console.log('------------ORIGINAL ENTRIES-------------')
+      // _.each(entries, function(val, key) {
+      //   console.log(val.intervention.parts.join(' + '), val.duration)
+      // })
+
+      // console.log('------------DURATIONS------------')
+      // console.log(durations)
+
+      // console.log(entriesByInterventionAndDuration)
+
+      console.log(interventionsSorted)
 
       return (
         React.createElement("div", {key: 'outcome-timeline' + measure}, 
+          React.createElement("section", {className: "measure-description"}, 
+            React.createElement("h3", null, measureMap[measure].name_long), 
+            React.createElement("h4", null, "Researchers measure this and call it ", React.createElement("strong", null, measureMap[measure].name_short), ": ", measureMap[measure].description && measureMap[measure].description), 
+            React.createElement("h5", null, 
+              React.createElement("strong", null, "About this timeline."), React.createElement("br", null), 
+              "When researchers study RA medications, they look at how people are doing a certain number of weeks after starting treatment. Each study checks in with people at a different time. This timeline shows the best guess of each treatment’s effects at whatever time the researchers followed up."
+            )
+          ), 
+
           React.createElement("section", {className: "outcome-timeline horizontal"}, 
             React.createElement("section", {className: "t-row timeline-header"}, 
               React.createElement("div", {className: "t-cell moment"}, 
                 React.createElement("section", null, 
-                  React.createElement("div", {className: "title"}), 
-                  React.createElement("div", {className: "line"}, 
-                    React.createElement("div", {className: "bar"})
-                  ), 
-                  React.createElement("div", {className: "description"}, "Treatment")
+                  React.createElement("div", {className: "title strong"}, "Treatment group"), 
+                  React.createElement("div", {className: "description"}, "This is the treatment or group of people that was studied. Sometimes it’s one medication, sometimes a combination. There isn’t always information about the dose.")
                 )
               ), 
               durations.map(function (timepoint) {
                 return (
                   React.createElement("div", {key: measure + timepoint, className: "t-cell moment"}, 
                     React.createElement("section", null, 
-                      React.createElement("div", {className: "title"}, React.createElement("strong", null, timepoint, " weeks")), 
-                      React.createElement("div", {className: "line"}, 
-                        React.createElement("div", {className: "ball"})
-                      ), 
-                      React.createElement("div", {className: "description"}, 
-                        React.createElement("strong", null, measureMap[measure].name_short), " ", measureMap[measure].name_friendly, 
-                        measureMap[measure].description && React.createElement("p", null, measureMap[measure].description)
-                      )
+                      React.createElement("div", {className: "title strong"}, "at ", timepoint, " weeks"), 
+                      React.createElement("div", {className: "description"}, "This is the best guess of ", measureMap[measure].name_friendly, " for this time after starting treatment")
                     )
                   )
                 )
               })
             ), 
-            _.map(interventions, function (val, key) {
-              var entry = val;
+            
+            /* TODO: Separately and specially handle population. */
+
+            _.map(interventionsSorted, function (intervention) {
+              var entry = interventions[intervention];
               return (
-                React.createElement("section", {key: key, className: "t-row"}, 
-                  React.createElement("div", {className: "t-cell"}, 
-                    React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
+                React.createElement("section", {key: intervention, className: "t-row"}, 
+                  React.createElement("div", {className: "t-cell subject"}, 
+                    entry.which != 'population' && React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
+                    entry.which == 'population' && React.createElement(Population, {population: entry.population.parts.join(' + '), dosage: entry.dosage}), 
                     entry.comparison &&
-                      React.createElement("div", {className: "light"}, 
-                        "vs.", React.createElement("br", null), 
-                        entry.comparison.parts.join(' + ')
-                      ), 
+                      {/*<div className='pull-tab light'>
+                        vs.<br />
+                        {entry.comparison.parts.join(' + ')}
+                      </div>
+                      TODO: display comparison appropriately */}, 
                     
-                    React.createElement(Source, {source: entry.source, kind: entry.kind}), 
+                    React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
                     React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                   ), 
                   durations.map(function (timepoint, i) {
-                    if (entriesByInterventionAndDuration[key][timepoint]) {
-                      var entry = entriesByInterventionAndDuration[key][timepoint][0]
-                      if (entry.intervention) {
+                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
+                      var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
+                      if (entry.which != 'population' && entry.intervention) {
                         return (
-                          React.createElement("div", {key: key + timepoint, className: "t-cell moment-data"}, 
+                          React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
                             renderValue(entry.intervention)
+                          )
+                        )
+                      }
+                      if (entry.which == 'population') {
+                        return (
+                          React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
+                            renderValue(entry.population)
                           )
                         )
                       }
                     }
                     else {
                       return (
-                        React.createElement("div", {key: key + timepoint}, " ")
+                        React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, React.createElement("span", {className: 
+"light"}, "--"))
                       )
                     }
                   })
@@ -2423,6 +2559,17 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         )
       )
 	  }
+    if (measure) {
+      return (
+        React.createElement("div", {key: 'outcome-timeline' + measure}, 
+          React.createElement("section", {className: "measure-description"}, 
+            React.createElement("h3", null, measureMap[measure].name_long), 
+            React.createElement("h4", null, "Researchers measure this and call it ", React.createElement("strong", null, measureMap[measure].name_short), ": ", measureMap[measure].description && measureMap[measure].description), 
+            React.createElement("h4", null, React.createElement("strong", null, "This prototype doesn’t have enough data in it yet to show information for the medications you’ve selected."))
+          )
+        )
+      )
+    }
   },
 
   renderTimelineByTag: function(data, tags, tag) {
@@ -6082,8 +6229,11 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
 
     return (
       React.createElement("div", {className: visualizationClasses}, 
-        React.createElement(OverlayTrigger, {delayHide: 150, placement: "left", overlay: getTooltip(grade)}, 
-          React.createElement("span", null, getIcons(grade))
+        React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(grade)}, 
+          React.createElement("div", null, 
+            React.createElement("span", {className: "tiny-title"}, "Quality"), React.createElement("br", null), 
+            React.createElement("span", null, getIcons(grade))
+          )
         )
       )
     );
@@ -6938,6 +7088,9 @@ module.exports = RiskRelativeToBaseline;
 
 var React = require('react/addons');
 
+var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
+var Tooltip = require('react-bootstrap').Tooltip;
+
 // Source tag
 
 var Source = React.createClass({displayName: "Source",
@@ -6947,14 +7100,34 @@ var Source = React.createClass({displayName: "Source",
     kind: React.PropTypes.string
   },
 
+  getTooltip: function(kind) {
+    var sourceToDescriptionMap = {
+      'systematic review': 'A systematic review is a high-quality source. Researchers take a comprehensive, consistent look at as much data as they can find to produce a summary of what has been found so far.'
+    }
+    
+    var tooltip = (React.createElement(Tooltip, null, "Click to see more information about the source."))
+    if (sourceToDescriptionMap[kind]) {
+      tooltip = (
+        React.createElement(Tooltip, null, 
+          sourceToDescriptionMap[kind]
+        )
+      )
+    }
+    return tooltip
+  },
+
   render: function() {
     var source = this.props.source;
     var kind = this.props.kind;
-
+    var getTooltip = this.getTooltip;
+    
     if (source) {
       return (
-        React.createElement("a", {className: "source", href: source, target: "_new"}, 
-          kind ? React.createElement("span", null, kind, " »") : 'Source »'
+        React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(kind)}, 
+          React.createElement("a", {className: "source", href: source, target: "_new"}, 
+            React.createElement("span", {className: "tiny-title"}, "Source"), React.createElement("br", null), 
+            kind ? React.createElement("span", null, kind, " »") : 'Click to see source'
+          )
         )
       );
     }
@@ -6963,7 +7136,7 @@ var Source = React.createClass({displayName: "Source",
 });
 
 module.exports = Source;
-},{"react/addons":"react/addons"}],26:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7738,6 +7911,16 @@ var get = {
         return intersection.length > 0;
       }
     });
+    return filteredEntries;
+  },
+
+  filterEntriesToPopulationOnly: function(entries) {
+    // Filter entries to only those which are about populations.
+    var filteredEntries = _.filter(entries, function(entry) {
+      if (entry.which == 'population' && entry.population) {
+        return true
+      }
+    })
     return filteredEntries;
   }
 

@@ -63,8 +63,11 @@ var GradeQuality = React.createClass({
 
     return (
       <div className={visualizationClasses}>
-        <OverlayTrigger delayHide={150} placement='left' overlay={getTooltip(grade)}>
-          <span>{getIcons(grade)}</span>
+        <OverlayTrigger delayHide={150} placement='right' overlay={getTooltip(grade)}>
+          <div>
+            <span className='tiny-title'>Quality</span><br />
+            <span>{getIcons(grade)}</span>
+          </div>
         </OverlayTrigger>
       </div>
     );

@@ -34,10 +34,18 @@
 @color-risks: #cab22d;
 @color-risks-l: #f7f4dc;
 
+
+@color-ui-l: #C0A38B;
+@color-ui: #A18269;
+
+
 // Visual modifiers
 
 .light {
   opacity: .6;
+}
+.strong {
+  font-weight: bolder;
 }
 
 // Utility margins and spacing
@@ -55,11 +63,29 @@
   margin-left: 0.4em;
 }
 
+// Etc.
+
+.tiny-title {
+  color: @color-grey-l;
+}
+
+.pull-tab {
+  border-radius: 2px;
+  border-left-width: 2px;
+  border-left-style: solid;
+  padding: 0 0 0 3px;
+  font-size: 10px;
+  margin: .5em 0;
+  display: inline-block;
+  overflow-x: hidden;
+  cursor: pointer; 
+}
+
 // Font sizes
 
-@font-xl: 18px;
-@font-l: 15px;
-@font-s: 11px;
+@font-xl: 20px;
+@font-l: 16px;
+@font-s: 11.5px;
 
 // Shadows
 

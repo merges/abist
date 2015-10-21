@@ -3,7 +3,7 @@
 .visualization {
 
   .highlight {
-    color: @color-grey-l;
+    color: @color-grey-m;
   }
 
   &.absolute {
@@ -29,16 +29,6 @@
     .ss-icon {
       transition: color .12s ease,
                   text-shadow .12s ease;
-    }
-  }
-  &.grade-quality {
-    color: @color-grey-xxxl;
-    font-size: 1.3em;
-    cursor: pointer;
-    white-space: nowrap;
-
-    .ss-help {
-      font-size: 1.2em;
     }
   }
   &.difference {
@@ -180,19 +170,32 @@
   }
 }
 
-.source {
-  font-size: 10px;
-  color: white;
-  padding: .2em 1em .25em 0;
-  transition: opacity .2s ease;
-  border-radius: 1px;
-  border-top: 2px solid @color-blue;
-  margin: 1em 0 0 0;
-  display: inline-block;
-  overflow-x: hidden;
-  line-height: 1.1;
-  color: @color-blue;
+// GRADE quality widget
 
+.grade-quality {
+  .pull-tab;
+  color: @color-grey-xl;
+  border-color: @color-grey-xl;
+  white-space: nowrap;
+
+  .ss-icon {
+    display: inline-block;
+    margin-top: 5px;
+    letter-spacing: -.15em;
+    font-size: 13px;
+  }
+  .ss-help {
+    font-size: 1.2em;
+  }
+}
+
+// Evidence source widget
+
+.source {
+  .pull-tab;
+  color: @color-blue;
+  border-color: @color-blue;
+  
   &:hover {
     text-decoration: none;
   }
@@ -202,10 +205,6 @@
   .name {
     font-weight: bolder;
   }
-}
-
-.grade-quality {
-  font-size: 1em !important;
 }
 
 .population {
@@ -239,141 +238,181 @@
 
 // Outcome timeline
 
-// .outcome-timeline {
-//   display: table;
-//   table-layout: fixed;
-//   margin-bottom: 5em;
+.outcome-timeline.vertical {
+  display: table;
+  table-layout: fixed;
+  margin-bottom: 5em;
 
-//   > section {
-//     display: table-row;
+  > section {
+    display: table-row;
 
-//     > div {
-//       display: table-cell;
-//       height: 300px;
+    > div {
+      display: table-cell;
+      height: 300px;
 
-//       &.moment {
-//         width: 300px;
+      &.moment {
+        width: 300px;
 
-//         > section {
-//           display: table;
-//           table-layout: fixed;
-//           width: 100%;
-//           height: 100%;
+        > section {
+          display: table;
+          table-layout: fixed;
+          width: 100%;
+          height: 100%;
 
-//           > div {
-//             display: table-cell;
-//             height: 100%;
+          > div {
+            display: table-cell;
+            height: 100%;
 
-//             &.line {
-//               width: 41px;
-//               position: relative;
+            &.line {
+              width: 41px;
+              position: relative;
 
-//               &:before {
-//                 content: '';
-//                 position: absolute;
-//                 left: 20px;
-//                 height: 100%;
-//                 width: 1px;
-//                 background: @color-grey-xl;
-//               }
+              &:before {
+                content: '';
+                position: absolute;
+                left: 20px;
+                height: 100%;
+                width: 1px;
+                background: @color-grey-xl;
+              }
 
-//               .bar {
-//                 position: relative;
-//                 width: 31px;
-//                 margin: 0 auto;
+              .bar {
+                position: relative;
+                width: 31px;
+                margin: 0 auto;
 
-//                 &:before {
-//                   content: '';
-//                   position: absolute;
-//                   background: @color-grey-xl;
-//                   width: 31px;
-//                   height: 1px;
-//                 }
-//               }
-//               .ball {
-//                 position: relative;
-//                 margin: 0 auto;
-//                 width: 17px;
+                &:before {
+                  content: '';
+                  position: absolute;
+                  background: @color-grey-xl;
+                  width: 31px;
+                  height: 1px;
+                }
+              }
+              .ball {
+                position: relative;
+                margin: 0 auto;
+                width: 17px;
 
-//                 &:before {
-//                   content: '';
-//                   position: absolute;
-//                   background: @color-grey-xl;
-//                   width: 17px;
-//                   height: 17px;
-//                   top: 2px;
-//                   border-radius: 9.5px;
-//                 }
-//               }
-//             }
-//             &.title,
-//             &.description {
-//               padding: 0 5px;
-//             }
-//             &.title {
-//               text-align: right;
-//             }
-//             &.description {
-//               color: @color-grey-l;
-//             }
-//           }
-//         }
-//       }
-//       &.moment-data {
+                &:before {
+                  content: '';
+                  position: absolute;
+                  background: @color-grey-xl;
+                  width: 17px;
+                  height: 17px;
+                  top: 2px;
+                  border-radius: 9.5px;
+                }
+              }
+            }
+            &.title,
+            &.description {
+              padding: 0 5px;
+            }
+            &.title {
+              text-align: right;
+            }
+            &.description {
+              color: @color-grey-l;
+            }
+          }
+        }
+      }
+      &.moment-data {
         
-//         > section {
-//           display: table;
-//           table-layout: fixed;
-//           width: 100%;
-//           height: 100%;
+        > section {
+          display: table;
+          table-layout: fixed;
+          width: 100%;
+          height: 100%;
 
-//           > div {
-//             display: table-cell;
-//             height: 100%;
-//             padding: 0 1em;
-//             word-wrap: break-word;
+          > div {
+            display: table-cell;
+            height: 100%;
+            padding: 0 1em;
+            word-wrap: break-word;
             
-//             + div {
-//               border-left: 1px solid @color-grey-xxxxxl;
-//             }
-//           }
-//         }
-//       }
-//     }
+            + div {
+              border-left: 1px solid @color-grey-xxxxxl;
+            }
+          }
+        }
+      }
+    }
 
-//     &:last-of-type {
-//       .moment .line:after {
-//         content: '';
-//         position: absolute;
-//         left: 20px;
-//         height: 100%;
-//         width: 1px;
-//         background: @color-grey-xl;
-//       }
-//     }
-//   }
-// }
+    &:last-of-type {
+      .moment .line:after {
+        content: '';
+        position: absolute;
+        left: 20px;
+        height: 100%;
+        width: 1px;
+        background: @color-grey-xl;
+      }
+    }
+  }
+}
 
 .outcome-timeline.horizontal {
   display: table;
   border-collapse: collapse;
+  min-width: 100%;
 
   .t-row {
     display: table-row;
-    border-top: 1px solid @color-grey-xxl;
+    background: @color-grey-xxxxxxxl;
 
     .t-cell {
       min-width: 300px;
       width: 300px;
-      padding: 5px 0 15px 0;
+      padding: 15px;
       display: table-cell;
+      vertical-align: top;
+
+      + .t-cell.moment-data {
+        border-left: 1px dotted @color-ui-l;
+      }
+    }
+
+    &:nth-child(even) {
+      background: @color-grey-xxxxxl;
     }
   }
   .timeline-header {
-    background: @color-grey-xxxxxxl;
-
+    
     .t-cell {
+      background: white;
+      padding-top: 0;
+      padding-bottom: 60px;
+      
+      + .t-cell {
+        border-left: 1px dotted @color-ui-l;
+      }
+      .title {
+        font-size: @font-l;
+        color: @color-ui;
+      }
+      .description {
+        font-size: @font-s;
+        color: @color-grey-l;
+      }
+    }
+  }
+  .subject {
+    line-height: 1.15;
+  }
+  .intervention {
+    .name {
+      color: @color-grey-d;
+      display: inline-block;
+      margin-bottom: .25em;
+      font-size: @font-l;
+    }
+    .dosage {
+      display: block;
+      font-size: @font-s;
       color: @color-grey-l;
+      margin-bottom: 1em;
     }
   }
 }
