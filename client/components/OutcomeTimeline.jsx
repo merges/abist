@@ -24,6 +24,18 @@ var OutcomeTimeline = React.createClass({
     medications: React.PropTypes.array.isRequired
 	},
 
+  getInitialState: function() {
+    return {
+      keyMedication: null
+    }
+  },
+
+  componentWillReceiveProps: function() {
+    this.setState({
+      keyMedication: null
+    })
+  },
+
   renderDataBySource: function(data) {
     Object.keys(data).map(function (source) {
       return (
@@ -415,6 +427,8 @@ var OutcomeTimeline = React.createClass({
   // },
 
   renderTimelineByMeasure: function(measures, direction) {
+    var cx = React.addons.classSet
+
     var measureMap = this.props.data.measures
     var grades = this.props.data.grades
     var getInterventionAsString = this.getInterventionAsString
@@ -422,6 +436,8 @@ var OutcomeTimeline = React.createClass({
     var groupEntriesByDuration = this.groupEntriesByDuration
     var renderEntry = this.renderEntry
     var renderValue = this.renderValue
+
+    var keyMedication = this.state.keyMedication
 
     var renderRelativeRiskComparison = function(entries, measure) {
       var sources = {}
@@ -646,10 +662,12 @@ var OutcomeTimeline = React.createClass({
 
       console.log(interventionsSorted)
 
+      var handleMomentDataCellHover = this.handleMomentDataCellHover
+
       return (
         <div key={'outcome-timeline' + measure}>
           <section className='measure-description'>
-            <h3>{measureMap[measure].name_long}</h3> 
+            <h3>{measureMap[measure].name_long}</h3>
             <h4>Researchers measure this and call it <strong>{measureMap[measure].name_short}</strong>: {measureMap[measure].description && measureMap[measure].description}</h4>
             <h5>
               <strong>About this timeline.</strong><br />
@@ -669,20 +687,25 @@ var OutcomeTimeline = React.createClass({
                 return (
                   <div key={measure + timepoint} className='t-cell moment'>
                     <section>
+                      <div className='ball'></div>
                       <div className='title strong'>at {timepoint} weeks</div>
-                      <div className='description'>This is the best guess of {measureMap[measure].name_friendly} for this time after starting treatment</div>
+                      <div className='description'>This is the best guess of {measureMap[measure].name_friendly} at this time after starting treatment</div>
                     </section>
                   </div>
                 )
               })}
             </section>
-            
+
             {/* TODO: Separately and specially handle population. */}
 
             {_.map(interventionsSorted, function (intervention) {
               var entry = interventions[intervention];
+              var rowClasses = cx({
+                't-row': true,
+                'active': keyMedication == intervention
+              })
               return (
-                <section key={intervention} className='t-row'>
+                <section key={intervention} className={rowClasses}>
                   <div className='t-cell subject'>
                     {entry.which != 'population' && <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />}
                     {entry.which == 'population' && <Population population={entry.population.parts.join(' + ')} dosage={entry.dosage} />}
@@ -701,22 +724,29 @@ var OutcomeTimeline = React.createClass({
                       var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
                       if (entry.which != 'population' && entry.intervention) {
                         return (
-                          <div key={intervention + timepoint} className='t-cell moment-data'>
-                            {renderValue(entry.intervention)}
+                          <div
+                            key={intervention + timepoint}
+                            className='t-cell moment-data'
+                            onMouseEnter={handleMomentDataCellHover.bind(null, intervention)}>
+                              <section>
+                                {renderValue(entry.intervention)}
+                              </section>
                           </div>
                         )
                       }
                       if (entry.which == 'population') {
                         return (
                           <div key={intervention + timepoint} className='t-cell moment-data'>
-                            {renderValue(entry.population)}
+                            <section>
+                              {renderValue(entry.population)}
+                            </section>
                           </div>
                         )
                       }
                     }
                     else {
                       return (
-                        <div key={intervention + timepoint} className='t-cell moment-data'><span className=
+                        <div key={intervention + timepoint} className='t-cell moment'><span className=
                         'light'>--</span></div>
                       )
                     }
@@ -732,13 +762,19 @@ var OutcomeTimeline = React.createClass({
       return (
         <div key={'outcome-timeline' + measure}>
           <section className='measure-description'>
-            <h3>{measureMap[measure].name_long}</h3> 
+            <h3>{measureMap[measure].name_long}</h3>
             <h4>Researchers measure this and call it <strong>{measureMap[measure].name_short}</strong>: {measureMap[measure].description && measureMap[measure].description}</h4>
             <h4><strong>This prototype doesn’t have enough data in it yet to show information for the medications you’ve selected.</strong></h4>
           </section>
         </div>
       )
     }
+  },
+
+  handleMomentDataCellHover: function(medicationName) {
+    this.setState({
+      keyMedication: medicationName
+    })
   },
 
   renderTimelineByTag: function(data, tags, tag) {

@@ -361,6 +361,14 @@
   .t-row {
     display: table-row;
     background: @color-grey-xxxxxxxl;
+    transition: background .2s ease;
+
+    &:nth-child(even) {
+      background: @color-grey-xxxxxl;
+    }
+    &.active {
+      background: #fffef7;
+    }
 
     .t-cell {
       min-width: 300px;
@@ -368,23 +376,73 @@
       padding: 15px;
       display: table-cell;
       vertical-align: top;
+      position: relative;
+      transition: background .2s ease,
+                  box-shadow .2s ease;
 
+      + .t-cell.moment,
       + .t-cell.moment-data {
         border-left: 1px dotted @color-ui-l;
       }
-    }
-
-    &:nth-child(even) {
-      background: @color-grey-xxxxxl;
+      &.moment-data:hover {
+        position: relative;
+        // background: #FFFEF7;
+        .shadow-m;
+      }
     }
   }
   .timeline-header {
-    
+
     .t-cell {
       background: white;
       padding-top: 0;
       padding-bottom: 60px;
-      
+
+      > section {
+        position: relative;
+
+        .ball {
+          position: relative;
+
+          &:before {
+            content: '';
+            position: absolute;
+            background: @color-ui-l;
+            width: 17px;
+            height: 17px;
+            top: 3px;
+            left: -24px;
+            border-radius: 8.5px;
+          }
+        }
+
+        .line {
+          width: 100%;
+          height: 5px;
+
+          &:before {
+            content: '';
+            position: absolute;
+            height: 1px;
+            width: 100%;
+            background: @color-grey-xl;
+          }
+
+          .bar {
+            position: relative;
+            width: 31px;
+            margin: 0 auto;
+
+            &:before {
+              content: '';
+              position: absolute;
+              background: @color-grey-xl;
+              width: 31px;
+              height: 1px;
+            }
+          }
+        }
+      }
       + .t-cell {
         border-left: 1px dotted @color-ui-l;
       }
@@ -394,7 +452,9 @@
       }
       .description {
         font-size: @font-s;
-        color: @color-grey-l;
+        color: @color-ui;
+        max-width: 20%;
+        min-width: 18em;
       }
     }
   }
@@ -402,6 +462,7 @@
     line-height: 1.15;
   }
   .intervention {
+
     .name {
       color: @color-grey-d;
       display: inline-block;

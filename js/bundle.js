@@ -1855,6 +1855,18 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     medications: React.PropTypes.array.isRequired
 	},
 
+  getInitialState: function() {
+    return {
+      keyMedication: null
+    }
+  },
+
+  componentWillReceiveProps: function() {
+    this.setState({
+      keyMedication: null
+    })
+  },
+
   renderDataBySource: function(data) {
     Object.keys(data).map(function (source) {
       return (
@@ -2246,6 +2258,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   // },
 
   renderTimelineByMeasure: function(measures, direction) {
+    var cx = React.addons.classSet
+
     var measureMap = this.props.data.measures
     var grades = this.props.data.grades
     var getInterventionAsString = this.getInterventionAsString
@@ -2253,6 +2267,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var groupEntriesByDuration = this.groupEntriesByDuration
     var renderEntry = this.renderEntry
     var renderValue = this.renderValue
+
+    var keyMedication = this.state.keyMedication
 
     var renderRelativeRiskComparison = function(entries, measure) {
       var sources = {}
@@ -2477,6 +2493,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
       console.log(interventionsSorted)
 
+      var handleMomentDataCellHover = this.handleMomentDataCellHover
+
       return (
         React.createElement("div", {key: 'outcome-timeline' + measure}, 
           React.createElement("section", {className: "measure-description"}, 
@@ -2500,20 +2518,25 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                 return (
                   React.createElement("div", {key: measure + timepoint, className: "t-cell moment"}, 
                     React.createElement("section", null, 
+                      React.createElement("div", {className: "ball"}), 
                       React.createElement("div", {className: "title strong"}, "at ", timepoint, " weeks"), 
-                      React.createElement("div", {className: "description"}, "This is the best guess of ", measureMap[measure].name_friendly, " for this time after starting treatment")
+                      React.createElement("div", {className: "description"}, "This is the best guess of ", measureMap[measure].name_friendly, " at this time after starting treatment")
                     )
                   )
                 )
               })
             ), 
-            
+
             /* TODO: Separately and specially handle population. */
 
             _.map(interventionsSorted, function (intervention) {
               var entry = interventions[intervention];
+              var rowClasses = cx({
+                't-row': true,
+                'active': keyMedication == intervention
+              })
               return (
-                React.createElement("section", {key: intervention, className: "t-row"}, 
+                React.createElement("section", {key: intervention, className: rowClasses}, 
                   React.createElement("div", {className: "t-cell subject"}, 
                     entry.which != 'population' && React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
                     entry.which == 'population' && React.createElement(Population, {population: entry.population.parts.join(' + '), dosage: entry.dosage}), 
@@ -2532,22 +2555,29 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                       var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
                       if (entry.which != 'population' && entry.intervention) {
                         return (
-                          React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
-                            renderValue(entry.intervention)
+                          React.createElement("div", {
+                            key: intervention + timepoint, 
+                            className: "t-cell moment-data", 
+                            onMouseEnter: handleMomentDataCellHover.bind(null, intervention)}, 
+                              React.createElement("section", null, 
+                                renderValue(entry.intervention)
+                              )
                           )
                         )
                       }
                       if (entry.which == 'population') {
                         return (
                           React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
-                            renderValue(entry.population)
+                            React.createElement("section", null, 
+                              renderValue(entry.population)
+                            )
                           )
                         )
                       }
                     }
                     else {
                       return (
-                        React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, React.createElement("span", {className: 
+                        React.createElement("div", {key: intervention + timepoint, className: "t-cell moment"}, React.createElement("span", {className: 
 "light"}, "--"))
                       )
                     }
@@ -2570,6 +2600,12 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         )
       )
     }
+  },
+
+  handleMomentDataCellHover: function(medicationName) {
+    this.setState({
+      keyMedication: medicationName
+    })
   },
 
   renderTimelineByTag: function(data, tags, tag) {
@@ -9349,7 +9385,7 @@ var routes = (
 module.exports = routes;
 },{"./components/App.jsx":1,"./components/Experiment.jsx":2,"./components/Navigator.jsx":3,"./components/OutcomeTimeline.jsx":6,"./components/Processing.jsx":7,"./components/adverse/AdverseEvents.jsx":8,"./components/ptda/Ptda.jsx":9,"./components/visualizations/VisualizationSketches.jsx":26,"./components/visualizations/VisualizationTests.jsx":27,"react-router":"react-router","react/addons":"react/addons"}],34:[function(require,module,exports){
 /**
- * isMobile.js v0.3.5
+ * isMobile.js v0.3.9
  *
  * A simple library to detect Apple phones and tablets,
  * Android phones and tablets, other mobile devices (like blackberry, mini-opera and windows phone),
@@ -9366,11 +9402,14 @@ module.exports = routes;
         apple_tablet        = /iPad/i,
         android_phone       = /(?=.*\bAndroid\b)(?=.*\bMobile\b)/i, // Match 'Android' AND 'Mobile'
         android_tablet      = /Android/i,
+        amazon_phone        = /(?=.*\bAndroid\b)(?=.*\bSD4930UR\b)/i,
+        amazon_tablet       = /(?=.*\bAndroid\b)(?=.*\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\b)/i,
         windows_phone       = /IEMobile/i,
         windows_tablet      = /(?=.*\bWindows\b)(?=.*\bARM\b)/i, // Match 'Windows' AND 'ARM'
         other_blackberry    = /BlackBerry/i,
         other_blackberry_10 = /BB10/i,
         other_opera         = /Opera Mini/i,
+        other_chrome        = /(CriOS|Chrome)(?=.*\bMobile\b)/i,
         other_firefox       = /(?=.*\bFirefox\b)(?=.*\bMobile\b)/i, // Match 'Firefox' AND 'Mobile'
         seven_inch = new RegExp(
             '(?:' +         // Non-capturing group
@@ -9403,17 +9442,28 @@ module.exports = routes;
 
     var IsMobileClass = function(userAgent) {
         var ua = userAgent || navigator.userAgent;
+        // Facebook mobile app's integrated browser adds a bunch of strings that
+        // match everything. Strip it out if it exists.
+        var tmp = ua.split('[FBAN');
+        if (typeof tmp[1] !== 'undefined') {
+            ua = tmp[0];
+        }
 
         this.apple = {
             phone:  match(apple_phone, ua),
             ipod:   match(apple_ipod, ua),
-            tablet: match(apple_tablet, ua),
+            tablet: !match(apple_phone, ua) && match(apple_tablet, ua),
             device: match(apple_phone, ua) || match(apple_ipod, ua) || match(apple_tablet, ua)
         };
+        this.amazon = {
+            phone:  match(amazon_phone, ua),
+            tablet: !match(amazon_phone, ua) && match(amazon_tablet, ua),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua)
+        };
         this.android = {
-            phone:  match(android_phone, ua),
-            tablet: !match(android_phone, ua) && match(android_tablet, ua),
-            device: match(android_phone, ua) || match(android_tablet, ua)
+            phone:  match(amazon_phone, ua) || match(android_phone, ua),
+            tablet: !match(amazon_phone, ua) && !match(android_phone, ua) && (match(amazon_tablet, ua) || match(android_tablet, ua)),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua) || match(android_phone, ua) || match(android_tablet, ua)
         };
         this.windows = {
             phone:  match(windows_phone, ua),
@@ -9425,7 +9475,8 @@ module.exports = routes;
             blackberry10: match(other_blackberry_10, ua),
             opera:        match(other_opera, ua),
             firefox:      match(other_firefox, ua),
-            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua)
+            chrome:       match(other_chrome, ua),
+            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua) || match(other_chrome, ua)
         };
         this.seven_inch = match(seven_inch, ua);
         this.any = this.apple.device || this.android.device || this.windows.device || this.other.device || this.seven_inch;
@@ -9453,7 +9504,7 @@ module.exports = routes;
         module.exports = instantiate();
     } else if (typeof define === 'function' && define.amd) {
         //AMD
-        define(global.isMobile = instantiate());
+        define('isMobile', [], global.isMobile = instantiate());
     } else {
         global.isMobile = instantiate();
     }
