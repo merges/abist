@@ -19,7 +19,7 @@ The app is deployed to Heroku at [https://abist.herokuapp.com](https://abist.her
 
 ## Support
 
-I’m trying to make this a widely-usable app (and open source), so [BrowserStack](http://www.browserstack.com/) has been kind enough to give me a free account to test it across all kinds of browsers and platforms.
+I’m trying to make this a widely-usable app (and open source), so [BrowserStack](http://www.browserstack.com/) has been kind enough to give me a free account to test it across all kinds of browsers and platforms. Check them out, their tools are super useful.
 
 ## Helpful documentation
 

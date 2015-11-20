@@ -85,6 +85,10 @@ var Experiment = React.createClass({
             <p>A page with test cases for visualization widgets.</p>
           </h2>
         </nav>
+
+        <nav>
+          <p><a href='http://www.browserstack.com/'>BrowserStack</a> has been kind enough to give me a free account to test this project across many browsers and platforms.</p>
+        </nav>
       </div>
     );
   }
