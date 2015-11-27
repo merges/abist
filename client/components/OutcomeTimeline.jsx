@@ -251,17 +251,7 @@ var OutcomeTimeline = React.createClass({
 
     console.log(duration)
 
-    if (duration.low) {
-  		if (duration.interval == 'year') {
-        return duration.low * 52
-      }
-      if (duration.interval == 'month') {
-  			return duration.low * 4
-  		}
-  		if (duration.interval == 'week') {
-  			return duration.low
-  		}
-    }
+    
     if (duration.high) {
       if (duration.interval == 'year') {
         return duration.high * 52
@@ -271,6 +261,17 @@ var OutcomeTimeline = React.createClass({
       }
       if (duration.interval == 'week') {
         return duration.high
+      }
+    }
+    else if (duration.low) {
+      if (duration.interval == 'year') {
+        return duration.low * 52
+      }
+      if (duration.interval == 'month') {
+        return duration.low * 4
+      }
+      if (duration.interval == 'week') {
+        return duration.low
       }
     }
     return ('an unknown number of')
