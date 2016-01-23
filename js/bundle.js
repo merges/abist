@@ -123,6 +123,10 @@ var Experiment = React.createClass({displayName: "Experiment",
             React.createElement("a", {href: "/visualization-tests"}, "Visualization tests"), 
             React.createElement("p", null, "A page with test cases for visualization widgets.")
           )
+        ), 
+
+        React.createElement("nav", null, 
+          React.createElement("p", null, React.createElement("a", {href: "http://www.browserstack.com/"}, "BrowserStack"), " has been kind enough to give me a free account to test this project across many browsers and platforms.")
         )
       )
     );
@@ -2082,17 +2086,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
     console.log(duration)
 
-    if (duration.low) {
-  		if (duration.interval == 'year') {
-        return duration.low * 52
-      }
-      if (duration.interval == 'month') {
-  			return duration.low * 4
-  		}
-  		if (duration.interval == 'week') {
-  			return duration.low
-  		}
-    }
+    
     if (duration.high) {
       if (duration.interval == 'year') {
         return duration.high * 52
@@ -2102,6 +2096,17 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       }
       if (duration.interval == 'week') {
         return duration.high
+      }
+    }
+    else if (duration.low) {
+      if (duration.interval == 'year') {
+        return duration.low * 52
+      }
+      if (duration.interval == 'month') {
+        return duration.low * 4
+      }
+      if (duration.interval == 'week') {
+        return duration.low
       }
     }
     return ('an unknown number of')
@@ -9385,7 +9390,7 @@ var routes = (
 module.exports = routes;
 },{"./components/App.jsx":1,"./components/Experiment.jsx":2,"./components/Navigator.jsx":3,"./components/OutcomeTimeline.jsx":6,"./components/Processing.jsx":7,"./components/adverse/AdverseEvents.jsx":8,"./components/ptda/Ptda.jsx":9,"./components/visualizations/VisualizationSketches.jsx":26,"./components/visualizations/VisualizationTests.jsx":27,"react-router":"react-router","react/addons":"react/addons"}],34:[function(require,module,exports){
 /**
- * isMobile.js v0.3.9
+ * isMobile.js v0.3.5
  *
  * A simple library to detect Apple phones and tablets,
  * Android phones and tablets, other mobile devices (like blackberry, mini-opera and windows phone),
@@ -9402,14 +9407,11 @@ module.exports = routes;
         apple_tablet        = /iPad/i,
         android_phone       = /(?=.*\bAndroid\b)(?=.*\bMobile\b)/i, // Match 'Android' AND 'Mobile'
         android_tablet      = /Android/i,
-        amazon_phone        = /(?=.*\bAndroid\b)(?=.*\bSD4930UR\b)/i,
-        amazon_tablet       = /(?=.*\bAndroid\b)(?=.*\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\b)/i,
         windows_phone       = /IEMobile/i,
         windows_tablet      = /(?=.*\bWindows\b)(?=.*\bARM\b)/i, // Match 'Windows' AND 'ARM'
         other_blackberry    = /BlackBerry/i,
         other_blackberry_10 = /BB10/i,
         other_opera         = /Opera Mini/i,
-        other_chrome        = /(CriOS|Chrome)(?=.*\bMobile\b)/i,
         other_firefox       = /(?=.*\bFirefox\b)(?=.*\bMobile\b)/i, // Match 'Firefox' AND 'Mobile'
         seven_inch = new RegExp(
             '(?:' +         // Non-capturing group
@@ -9442,28 +9444,17 @@ module.exports = routes;
 
     var IsMobileClass = function(userAgent) {
         var ua = userAgent || navigator.userAgent;
-        // Facebook mobile app's integrated browser adds a bunch of strings that
-        // match everything. Strip it out if it exists.
-        var tmp = ua.split('[FBAN');
-        if (typeof tmp[1] !== 'undefined') {
-            ua = tmp[0];
-        }
 
         this.apple = {
             phone:  match(apple_phone, ua),
             ipod:   match(apple_ipod, ua),
-            tablet: !match(apple_phone, ua) && match(apple_tablet, ua),
+            tablet: match(apple_tablet, ua),
             device: match(apple_phone, ua) || match(apple_ipod, ua) || match(apple_tablet, ua)
         };
-        this.amazon = {
-            phone:  match(amazon_phone, ua),
-            tablet: !match(amazon_phone, ua) && match(amazon_tablet, ua),
-            device: match(amazon_phone, ua) || match(amazon_tablet, ua)
-        };
         this.android = {
-            phone:  match(amazon_phone, ua) || match(android_phone, ua),
-            tablet: !match(amazon_phone, ua) && !match(android_phone, ua) && (match(amazon_tablet, ua) || match(android_tablet, ua)),
-            device: match(amazon_phone, ua) || match(amazon_tablet, ua) || match(android_phone, ua) || match(android_tablet, ua)
+            phone:  match(android_phone, ua),
+            tablet: !match(android_phone, ua) && match(android_tablet, ua),
+            device: match(android_phone, ua) || match(android_tablet, ua)
         };
         this.windows = {
             phone:  match(windows_phone, ua),
@@ -9475,8 +9466,7 @@ module.exports = routes;
             blackberry10: match(other_blackberry_10, ua),
             opera:        match(other_opera, ua),
             firefox:      match(other_firefox, ua),
-            chrome:       match(other_chrome, ua),
-            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua) || match(other_chrome, ua)
+            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua)
         };
         this.seven_inch = match(seven_inch, ua);
         this.any = this.apple.device || this.android.device || this.windows.device || this.other.device || this.seven_inch;
@@ -9504,7 +9494,7 @@ module.exports = routes;
         module.exports = instantiate();
     } else if (typeof define === 'function' && define.amd) {
         //AMD
-        define('isMobile', [], global.isMobile = instantiate());
+        define(global.isMobile = instantiate());
     } else {
         global.isMobile = instantiate();
     }
