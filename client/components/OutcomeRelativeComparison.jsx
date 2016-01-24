@@ -2,8 +2,6 @@
 
 var React = require('react/addons');
 var _ = require('lodash');
-
-// Data
 var get = require('../data/get.js');
 
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');

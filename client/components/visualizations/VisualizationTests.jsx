@@ -5,6 +5,7 @@ var React = require('react/addons');
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
+var VisualAnalogScale = require('./VisualAnalogScale.jsx');
 
 // Visualization tests
 
@@ -16,6 +17,10 @@ var VisualizationTests = React.createClass({
       'processing': true
     });
 
+    var sectionStyle = {
+      marginBottom: '45px'
+    };
+
     return (
       <div className={classes}>
         <div className='header'>
@@ -24,13 +29,22 @@ var VisualizationTests = React.createClass({
 
         <div className='container'>
 
-          <section>
+          <section style={sectionStyle}>
+            <h2>Visual analog scale</h2>
+            <VisualAnalogScale value={-30.1} />
+            <VisualAnalogScale value={-46.9} />
+            <VisualAnalogScale value={24.6} />
+          </section>
+          
+          {/*
+          <section style={sectionStyle}>
             <h2>Absolute risk, relative to baseline</h2>
             <RiskRelativeToBaseline />
           </section>
+          */}
 
           {/*
-            <section>
+            <section style={sectionStyle}>
               <h2>Relative risk comparison</h2>
               <RelativeRiskComparison />
             </section>

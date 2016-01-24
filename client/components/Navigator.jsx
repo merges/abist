@@ -15,6 +15,7 @@ var NavItem = require('react-bootstrap').NavItem
 var Sticky = require('react-sticky')
 
 var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
+var OutcomeDifferences = require('./OutcomeDifferences.jsx')
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
 var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
@@ -889,6 +890,17 @@ var Navigator = React.createClass({
     var data = this.state.data
     var disabledMedications = this.state.disabledMedications
 
+    if (selectedMeasure == 'patient_pain') {
+      return (
+        <OutcomeDifferences
+          data={data}
+          dataByTag={this.getDataByTag(selectedTag)}
+          medications={medications}
+          disabledMedications={disabledMedications}
+          selectedTag={selectedTag}
+          selectedMeasure={selectedMeasure} />
+      )
+    }
     if (selectedMeasure == 'discontinued_ae') {
       return (
         <OutcomeRelativeComparison
@@ -900,7 +912,7 @@ var Navigator = React.createClass({
           selectedMeasure={selectedMeasure} />
       )
     }
-    else if (selectedMeasure == 'ae') {
+    if (selectedMeasure == 'ae') {
       return (
         <OutcomeAdverseEvents
           data={data}

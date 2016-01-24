@@ -136,7 +136,7 @@ var OutcomeTimeline = React.createClass({
       }
     	// Otherwise terate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
-        console.log('looping')
+        // console.log('looping')
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
@@ -249,9 +249,6 @@ var OutcomeTimeline = React.createClass({
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
 
-    console.log(duration)
-
-    
     if (duration.high) {
       if (duration.interval == 'year') {
         return duration.high * 52
@@ -523,11 +520,9 @@ var OutcomeTimeline = React.createClass({
     var measureData = measure && measures[measure].data
     !direction && (direction = 'horizontal')
 
-    console.log('about to render something')
-
     // Render a timeline
     if (measure && measureData) {
-      console.log('rendering a timeline')
+      // console.log('rendering a timeline')
 
       var medications = this.props.medications
       var disabledMedications = this.props.disabledMedications
@@ -640,9 +635,6 @@ var OutcomeTimeline = React.createClass({
         var interventionsSorted = _.keys(interventions).sort()
         var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
       }
-      
-
-      
 
       // console.log('------------GROUPED ENTRIES------------')
       // _.each(entriesByInterventionAndDuration, function(val, key) {
@@ -661,7 +653,7 @@ var OutcomeTimeline = React.createClass({
 
       // console.log(entriesByInterventionAndDuration)
 
-      console.log(interventionsSorted)
+      // console.log(interventionsSorted)
 
       var handleMomentDataCellHover = this.handleMomentDataCellHover
 

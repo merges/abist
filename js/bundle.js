@@ -153,6 +153,7 @@ var NavItem = require('react-bootstrap').NavItem
 var Sticky = require('react-sticky')
 
 var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
+var OutcomeDifferences = require('./OutcomeDifferences.jsx')
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
 var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
@@ -1027,6 +1028,17 @@ var Navigator = React.createClass({displayName: "Navigator",
     var data = this.state.data
     var disabledMedications = this.state.disabledMedications
 
+    if (selectedMeasure == 'patient_pain') {
+      return (
+        React.createElement(OutcomeDifferences, {
+          data: data, 
+          dataByTag: this.getDataByTag(selectedTag), 
+          medications: medications, 
+          disabledMedications: disabledMedications, 
+          selectedTag: selectedTag, 
+          selectedMeasure: selectedMeasure})
+      )
+    }
     if (selectedMeasure == 'discontinued_ae') {
       return (
         React.createElement(OutcomeRelativeComparison, {
@@ -1038,7 +1050,7 @@ var Navigator = React.createClass({displayName: "Navigator",
           selectedMeasure: selectedMeasure})
       )
     }
-    else if (selectedMeasure == 'ae') {
+    if (selectedMeasure == 'ae') {
       return (
         React.createElement(OutcomeAdverseEvents, {
           data: data, 
@@ -1233,7 +1245,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 })
 
 module.exports = Navigator
-},{"../data/get.js":28,"../data/medications.js":29,"../data/mock.js":30,"../data/preferences.js":31,"./OutcomeAdverseEvents.jsx":4,"./OutcomeRelativeComparison.jsx":5,"./OutcomeTimeline.jsx":6,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
+},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"../data/preferences.js":33,"./OutcomeAdverseEvents.jsx":4,"./OutcomeDifferences.jsx":5,"./OutcomeRelativeComparison.jsx":6,"./OutcomeTimeline.jsx":7,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -1461,13 +1473,113 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 });
 
 module.exports = OutcomeAdverseEvents;
-},{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/AbsoluteRiskComparison.jsx":18,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"lodash":"lodash","react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],5:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/AbsoluteRiskComparison.jsx":19,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],5:[function(require,module,exports){
+/** @jsx React.DOM */
+
+var React = require('react/addons');
+var cx = React.addons.classSet
+var _ = require('lodash');
+var get = require('../data/get.js');
+
+var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
+var Difference = require('./visualizations/Difference.jsx');
+var GradeQuality = require('./visualizations/GradeQuality.jsx');
+var Intervention = require('./visualizations/Intervention.jsx');
+var Population = require('./visualizations/Population.jsx');
+var Source = require('./visualizations/Source.jsx');
+var VisualAnalogScale = require('./visualizations/VisualAnalogScale.jsx');
+
+// Outcome differences
+
+var OutcomeDifferences = React.createClass({displayName: "OutcomeDifferences",
+  propTypes: {
+    data: React.PropTypes.object.isRequired,
+    dataByTag: React.PropTypes.object.isRequired,
+    disabledMedications: React.PropTypes.object,
+    medications: React.PropTypes.array.isRequired
+  },
+
+  renderDataByMeasure: function(selectedMeasure) {
+    var measures = this.props.data.measures; 
+    var dataByTag = this.props.dataByTag;
+    var measure = selectedMeasure;
+    var tag = this.props.selectedTag;
+    var measureData = dataByTag[tag][selectedMeasure].data;
+    var grades = this.props.data.grades;
+
+    if (measureData) {
+      var medications = this.props.medications;
+      var disabledMedications = this.props.disabledMedications;
+      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications);
+
+      var sortedEntries = _.sortBy(entries, function(entry) {
+        if (entry.intervention) {
+          return entry.intervention.parts[0]
+        }
+      })
+
+      return sortedEntries.map(function(entry, i) {
+        if (entry.intervention && entry.intervention['mean_score_difference']) {
+          var value = entry.intervention['mean_score_difference'].value.value
+
+          if (value != null) {
+            var entryStyle = {
+              marginBottom: '15px'
+            }
+            var inlineStyle = {
+              display: 'inline-block',
+              marginLeft: '15px'
+            }
+
+            return (
+              React.createElement("div", {key: i, style: entryStyle}, 
+                React.createElement("span", {style: {display: 'inline-block'}}, 
+                  React.createElement(Intervention, {intervention: entry.intervention.parts.join(' + '), dosage: entry.intervention.dosage}), 
+                  entry.comparison &&
+                    React.createElement("div", {className: "light"}, 
+                      "vs.", React.createElement("br", null), 
+                      entry.comparison.parts.join(' + ')
+                    ), 
+                  
+                  React.createElement(VisualAnalogScale, {key: i, value: value})
+                ), 
+                React.createElement("span", {style: inlineStyle}, 
+                  React.createElement(Source, {source: entry.source, kind: entry.kind})
+                ), 
+                React.createElement("span", {style: inlineStyle}, 
+                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                )
+              )
+            )
+          }
+        }
+      })
+    }
+  },
+
+  render: function() {
+    var classes = cx({
+      'processing': true,
+      'results': true
+    });
+
+    var selectedMeasure = this.props.selectedMeasure;
+    
+    return (
+      React.createElement("div", {className: classes}, 
+        selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)
+      )
+    );
+  }
+
+});
+
+module.exports = OutcomeDifferences;
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/Source.jsx":26,"./visualizations/VisualAnalogScale.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],6:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
 var _ = require('lodash');
-
-// Data
 var get = require('../data/get.js');
 
 var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
@@ -1832,7 +1944,7 @@ var OutcomeRelativeComparison = React.createClass({displayName: "OutcomeRelative
 });
 
 module.exports = OutcomeRelativeComparison;
-},{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"lodash":"lodash","react/addons":"react/addons"}],6:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons')
@@ -1971,7 +2083,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       }
     	// Otherwise terate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
-        console.log('looping')
+        // console.log('looping')
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
@@ -2084,9 +2196,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
 
-    console.log(duration)
-
-    
     if (duration.high) {
       if (duration.interval == 'year') {
         return duration.high * 52
@@ -2358,11 +2467,9 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var measureData = measure && measures[measure].data
     !direction && (direction = 'horizontal')
 
-    console.log('about to render something')
-
     // Render a timeline
     if (measure && measureData) {
-      console.log('rendering a timeline')
+      // console.log('rendering a timeline')
 
       var medications = this.props.medications
       var disabledMedications = this.props.disabledMedications
@@ -2475,9 +2582,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         var interventionsSorted = _.keys(interventions).sort()
         var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
       }
-      
-
-      
 
       // console.log('------------GROUPED ENTRIES------------')
       // _.each(entriesByInterventionAndDuration, function(val, key) {
@@ -2496,7 +2600,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
       // console.log(entriesByInterventionAndDuration)
 
-      console.log(interventionsSorted)
+      // console.log(interventionsSorted)
 
       var handleMomentDataCellHover = this.handleMomentDataCellHover
 
@@ -2658,7 +2762,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 })
 
 module.exports = OutcomeTimeline
-},{"../data/get.js":28,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react/addons":"react/addons"}],8:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -4077,7 +4181,7 @@ var Processing = React.createClass({displayName: "Processing",
 });
 
 module.exports = Processing;
-},{"../data/get.js":28,"../data/medications.js":29,"../data/mock.js":30,"./visualizations/AbsoluteFrequency.jsx":17,"./visualizations/Difference.jsx":19,"./visualizations/GradeQuality.jsx":20,"./visualizations/Intervention.jsx":21,"./visualizations/Population.jsx":22,"./visualizations/RelativeRiskComparison.jsx":23,"./visualizations/RiskRelativeToBaseline.jsx":24,"./visualizations/Source.jsx":25,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],8:[function(require,module,exports){
+},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],9:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -4376,7 +4480,7 @@ var AdverseEvents = React.createClass({displayName: "AdverseEvents",
 });
 
 module.exports = AdverseEvents;
-},{"../../data/medications.js":29,"react/addons":"react/addons"}],9:[function(require,module,exports){
+},{"../../data/medications.js":31,"react/addons":"react/addons"}],10:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5121,7 +5225,7 @@ var Ptda = React.createClass({displayName: "Ptda",
 });
 
 module.exports = Ptda;
-},{"../../data/get.js":28,"../../data/medications.js":29,"../../data/mock.js":30,"./PtdaConsiderations":10,"./PtdaCost":11,"./PtdaFrequency":12,"./PtdaMedicationSquare":13,"./PtdaMini":14,"./PtdaOnset":15,"./PtdaSideEffects":16,"ismobilejs":34,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],10:[function(require,module,exports){
+},{"../../data/get.js":30,"../../data/medications.js":31,"../../data/mock.js":32,"./PtdaConsiderations":11,"./PtdaCost":12,"./PtdaFrequency":13,"./PtdaMedicationSquare":14,"./PtdaMini":15,"./PtdaOnset":16,"./PtdaSideEffects":17,"ismobilejs":36,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],11:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5233,7 +5337,7 @@ var PtdaConsiderations = React.createClass({displayName: "PtdaConsiderations",
 });
 
 module.exports = PtdaConsiderations;
-},{"./PtdaMedicationSquare":13,"react/addons":"react/addons"}],11:[function(require,module,exports){
+},{"./PtdaMedicationSquare":14,"react/addons":"react/addons"}],12:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5342,7 +5446,7 @@ var PtdaCost = React.createClass({displayName: "PtdaCost",
 });
 
 module.exports = PtdaCost;
-},{"./PtdaMedicationSquare":13,"react/addons":"react/addons"}],12:[function(require,module,exports){
+},{"./PtdaMedicationSquare":14,"react/addons":"react/addons"}],13:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5447,7 +5551,7 @@ var PtdaFrequency = React.createClass({displayName: "PtdaFrequency",
 });
 
 module.exports = PtdaFrequency;
-},{"./PtdaMedicationSquare":13,"react/addons":"react/addons"}],13:[function(require,module,exports){
+},{"./PtdaMedicationSquare":14,"react/addons":"react/addons"}],14:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5497,7 +5601,7 @@ var PtdaMedicationSquare = React.createClass({displayName: "PtdaMedicationSquare
 });
 
 module.exports = PtdaMedicationSquare;
-},{"react/addons":"react/addons"}],14:[function(require,module,exports){
+},{"react/addons":"react/addons"}],15:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5604,7 +5708,7 @@ var PtdaMini = React.createClass({displayName: "PtdaMini",
 });
 
 module.exports = PtdaMini;
-},{"react/addons":"react/addons"}],15:[function(require,module,exports){
+},{"react/addons":"react/addons"}],16:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5708,7 +5812,7 @@ var PtdaOnset = React.createClass({displayName: "PtdaOnset",
 });
 
 module.exports = PtdaOnset;
-},{"./PtdaMedicationSquare":13,"react/addons":"react/addons"}],16:[function(require,module,exports){
+},{"./PtdaMedicationSquare":14,"react/addons":"react/addons"}],17:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5814,7 +5918,7 @@ var PtdaSideEffects = React.createClass({displayName: "PtdaSideEffects",
 });
 
 module.exports = PtdaSideEffects;
-},{"./PtdaMedicationSquare":13,"react/addons":"react/addons"}],17:[function(require,module,exports){
+},{"./PtdaMedicationSquare":14,"react/addons":"react/addons"}],18:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -5923,7 +6027,7 @@ var AbsoluteFrequency = React.createClass({displayName: "AbsoluteFrequency",
 });
 
 module.exports = AbsoluteFrequency;
-},{"react/addons":"react/addons"}],18:[function(require,module,exports){
+},{"react/addons":"react/addons"}],19:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6152,7 +6256,7 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
 });
 
 module.exports = AbsoluteRiskComparison;
-},{"./AbsoluteFrequency.jsx":17,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],19:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],20:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6204,7 +6308,7 @@ var Difference = React.createClass({displayName: "Difference",
 });
 
 module.exports = Difference;
-},{"react/addons":"react/addons"}],20:[function(require,module,exports){
+},{"react/addons":"react/addons"}],21:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6282,7 +6386,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
 });
 
 module.exports = GradeQuality;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],21:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],22:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6406,7 +6510,7 @@ var Intervention = React.createClass({displayName: "Intervention",
 });
 
 module.exports = Intervention;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],22:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],23:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6456,7 +6560,7 @@ var Population = React.createClass({displayName: "Population",
 });
 
 module.exports = Population;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],23:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],24:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6704,7 +6808,7 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
 });
 
 module.exports = RelativeRiskComparison;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],24:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],25:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7124,7 +7228,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 });
 
 module.exports = RiskRelativeToBaseline;
-},{"./AbsoluteFrequency.jsx":17,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],25:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7177,7 +7281,88 @@ var Source = React.createClass({displayName: "Source",
 });
 
 module.exports = Source;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
+/** @jsx React.DOM */
+
+var React = require('react/addons');
+var _ = require('lodash');
+var cx = React.addons.classSet
+
+// Visual analog scale as blocks (a la Mayo Clinic DAs)
+
+var VisualAnalogScale = React.createClass({displayName: "VisualAnalogScale",
+ 
+  propTypes: {
+    value: React.PropTypes.number,
+    range: React.PropTypes.number,
+  },
+
+  getDefaultProps: function() {
+    return {
+      range: 100
+    }
+  },
+
+  renderBlocks: function(value) {
+    var roundedValue = Math.ceil(value / 10)
+
+    return _.times(10, function(n) {
+      var isFilledIn = function(n, value) {
+        if (roundedValue < 0) {
+          return (10 + roundedValue) <= (n)
+        }
+        return (n + 1) <= roundedValue
+      }
+
+      var blockStyle = {
+        display: 'inline-block',
+        position: 'relative',
+        background: isFilledIn(n, value) ? '#9a9a9a' : '#efefef',
+        width: '35px',
+        height: '35px',
+        marginRight: n <= 8 && '5px',
+      }
+
+      var iconName = cx({
+        'ss-icon': true,
+        'ss-plus': value > 0,
+        'ss-hyphen': value < 0
+      })
+      var iconStyle = {
+        fontSize: '150%',
+        color: 'white',
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+      }
+
+      return (
+        React.createElement("div", {key: n, style: blockStyle}, 
+          React.createElement("i", {className: iconName, style: iconStyle})
+        )
+      )
+    })
+  },
+
+  render: function() {
+    var visualizationClasses = cx({
+      'visualization visual-analog-scale': true,
+      'up': value > 0,
+      'down': value < 0
+    })
+
+    var value = this.props.value;
+
+    return (
+      React.createElement("div", {className: visualizationClasses}, 
+        this.renderBlocks(value)
+      )
+    );
+  }
+});
+
+module.exports = VisualAnalogScale;
+},{"lodash":"lodash","react/addons":"react/addons"}],28:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7230,7 +7415,7 @@ var VisualizationSketches = React.createClass({displayName: "VisualizationSketch
 });
 
 module.exports = VisualizationSketches;
-},{"react/addons":"react/addons"}],27:[function(require,module,exports){
+},{"react/addons":"react/addons"}],29:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7238,6 +7423,7 @@ var React = require('react/addons');
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
+var VisualAnalogScale = require('./VisualAnalogScale.jsx');
 
 // Visualization tests
 
@@ -7249,6 +7435,10 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
       'processing': true
     });
 
+    var sectionStyle = {
+      marginBottom: '45px'
+    };
+
     return (
       React.createElement("div", {className: classes}, 
         React.createElement("div", {className: "header"}, 
@@ -7257,13 +7447,22 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 
         React.createElement("div", {className: "container"}, 
 
-          React.createElement("section", null, 
-            React.createElement("h2", null, "Absolute risk, relative to baseline"), 
-            React.createElement(RiskRelativeToBaseline, null)
+          React.createElement("section", {style: sectionStyle}, 
+            React.createElement("h2", null, "Visual analog scale"), 
+            React.createElement(VisualAnalogScale, {value: -30.1}), 
+            React.createElement(VisualAnalogScale, {value: -46.9}), 
+            React.createElement(VisualAnalogScale, {value: 24.6})
           )
+          
+          /*
+          <section style={sectionStyle}>
+            <h2>Absolute risk, relative to baseline</h2>
+            <RiskRelativeToBaseline />
+          </section>
+          */
 
           /*
-            <section>
+            <section style={sectionStyle}>
               <h2>Relative risk comparison</h2>
               <RelativeRiskComparison />
             </section>
@@ -7336,7 +7535,7 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 });
 
 module.exports = VisualizationTests;
-},{"./AbsoluteFrequency.jsx":17,"./RelativeRiskComparison.jsx":23,"./RiskRelativeToBaseline.jsx":24,"react/addons":"react/addons"}],28:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"./RelativeRiskComparison.jsx":24,"./RiskRelativeToBaseline.jsx":25,"./VisualAnalogScale.jsx":27,"react/addons":"react/addons"}],30:[function(require,module,exports){
 var _ = require('lodash');
 
 var get = {
@@ -7968,7 +8167,7 @@ var get = {
 };
 
 module.exports = get;
-},{"lodash":"lodash"}],29:[function(require,module,exports){
+},{"lodash":"lodash"}],31:[function(require,module,exports){
 var drugs = [
   {
     "name": "Methotrexate",
@@ -9143,7 +9342,7 @@ var drugs = [
 ];
 
 module.exports = drugs;
-},{}],30:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var mockData = {
   grades: {"1":{"grade":"1","description":"We are very uncertain about the estimate.","description_friendly":"Doctors and researchers don't have confidence in the results. They think the studies done so far have flaws that make the results unreliable, and that more research is needed on this topic.","name_friendly":"Very low quality","notes":"Very low quality","source":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"2":{"grade":"2","description":"Further research is very likely to have an important impact on our confidence in the estimate of effect and is likely to change the estimate.","description_friendly":"Doctors and researchers aren't confident in the results. They think that more research would likely change their minds, and probably produce different results. The change could be positive, or negative. They think that the studies done so far weren't well-done enough to make them confident in the results.","name_friendly":"Low quality","notes":"Low quality","source":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"3":{"grade":"3","description":"Further research is likely to have an important impact on our confidence in the estimate of effect and may change the estimate.","description_friendly":"Doctors and researchers aren't completely confident in the results. They think that more research might change their minds, and might even produce different results. They think that the studies done so far have been OK, but that there isn't enough data to make them completely confident.","name_friendly":"Moderate quality","notes":"Moderate quality","source":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"4":{"grade":"4","description":"Further research is very unlikely to change our confidence in the estimate of effect.","description_friendly":"Doctors and researchers are confident in the results. They don't think that more research would change the results, and think that the studies done so far have been reliable and well-done.","name_friendly":"High quality","notes":"High quality","source":"http://www.cochranelibrary.com/about/explanations-for-cochrane-summary-of-findings-sof-tables.html"},"X":{"grade":"X","description":"The evidence has not been quality-rated.","description_friendly":"Doctors and researchers haven't quality-rated this information according to the GRADE guidelines.","name_friendly":"Unknown quality","notes":"Unknown quality","source":""}}
   ,measures: {"tjc":{"name":"tjc","name_short":"TJC","name_long":"ACR tender joint count","name_friendly":"tender joint count","description":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\"","tags":["pain","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"sjc":{"name":"sjc","name_short":"SJC","name_long":"ACR swollen joint count","name_friendly":"swollen joint count","description":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\"","tags":["swelling","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"acr_tjc":{"name":"acr_tjc","name_short":"TJC","name_long":"ACR tender joint count","name_friendly":"tender joint count","description":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\"","tags":["pain","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"acr_sjc":{"name":"acr_sjc","name_short":"SJC","name_long":"ACR swollen joint count","name_friendly":"swollen joint count","description":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\"","tags":["swelling","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_pain":{"name":"patient_pain","name_short":"pain","name_long":"Patient's assessment of pain","name_friendly":"patient's assessment of pain","description":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\"","tags":["pain"],"kind":"scale","variable":"continuous","assessor":"patient","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_global_das":{"name":"patient_global_das","name_short":"patient global assessment","name_long":"Patient's global assessment of disease activity","name_friendly":"patient's global assessment of disease activity","description":"\"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\"","tags":["well being"],"kind":"scale","variable":"continuous","assessor":"patient","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"physician_global_das":{"name":"physician_global_das","name_short":"physician global assessment","name_long":"Physician's global assessent of disease activity","name_friendly":"physician's global assessent of disease activity","description":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\"","tags":["well being"],"kind":"scale","variable":"continuous","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_physical_function":{"name":"patient_physical_function","name_short":"physical function","name_long":"Patient's assessment of physical function","name_friendly":"patient's assessment of physical function","description":"\"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR.","tags":["function"],"kind":"composite","variable":"","assessor":"patient","related_measures":"","included_measures":["aims","haq","qwb","iwb","mhiq","mactar"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"apr":{"name":"apr","name_short":"acute-phase reactant","name_long":"Laboratory test, an acute-phase reactant value","name_friendly":"acute-phase reactant value","description":"\"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\"","tags":["biomarker"],"kind":"assay","variable":"","assessor":"laboratory","related_measures":"","included_measures":["esr","crp"],"source":"","notes":""},"esr":{"name":"esr","name_short":"sed rate","name_long":"Laboratory test, erythrocyte sedimentation rate","name_friendly":"erythrocyte sedimentation rate","description":"A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer","tags":["biomarker"],"kind":"assay","variable":"","assessor":"laboratory","related_measures":"","included_measures":"","source":"","notes":""},"sub_acr_20":{"name":"sub_acr_20","name_short":"less than ACR 20","name_long":"less than 20% improvement in RA symptoms","name_friendly":"less than 20% improvement","description":"less than 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"","variable":"","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"acr_20":{"name":"acr_20","name_short":"ACR 20","name_long":"20% improvement in RA symptoms","name_friendly":"20% improvement","description":"At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"acr_50":{"name":"acr_50","name_short":"ACR 50","name_long":"50% improvement in RA symptoms","name_friendly":"50% improvement","description":"At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"acr_70":{"name":"acr_70","name_short":"ACR 70","name_long":"70% improvement in RA symptoms","name_friendly":"70% improvement","description":"At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"discontinued_ae":{"name":"discontinued_ae","name_short":"withdrawal","name_long":"withdrawal from a trial due to an adverse event or side effect","name_friendly":"discontinued due to an adverse event","description":"A participant left a study because of a side effect or \"adverse\" event","tags":["adverse event","well being"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"discontinued_efficacy":{"name":"discontinued_efficacy","name_short":"withdrawal","name_long":"withdrawal from a trial due to lack of treatment efficacy","name_friendly":"discontinued due to lack of efficacy","description":"A participant left a study because they felt the medication wasn't working well","tags":["satisfaction"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"serious_ae":{"name":"serious_ae","name_short":"serious adverse event","name_long":"","name_friendly":"serious adverse event","description":"","tags":["adverse event"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"haq":{"name":"haq","name_short":"HAQ","name_long":"score on the Health Assessment Questionnaire","name_friendly":"Health Assessment Questionnaire","description":"","tags":["well being"],"kind":"questionnaire","variable":"","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"sf36_physical_20":{"name":"sf36_physical_20","name_short":"SF-36 Physical","name_long":"20% improvement on the SF-36 health questionnaire physical component","name_friendly":"SF-36 physical 20% improvement","description":"","tags":["function","improvement"],"kind":"questionnaire","variable":"dichotomous","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"sf36_mental_20":{"name":"sf36_mental_20","name_short":"SF-36 Mental","name_long":"20% improvement on the SF-36 health questionnaire mental component","name_friendly":"SF-36 mental 20% improvement","description":"","tags":["well being","improvement"],"kind":"questionnaire","variable":"dichotomous","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"remission":{"name":"remission","name_short":"remission","name_long":"disease remission","name_friendly":"remission","description":"","tags":["remission","improvement"],"kind":"event","variable":"dichotomous","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"permanent_work_disability":{"name":"permanent_work_disability","name_short":"permanent work disability","name_long":"RA-related permanent work disability","name_friendly":"permanent work disability","description":"","tags":["work","function"],"kind":"event","variable":"dichotomous","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"median_work_disability_days":{"name":"median_work_disability_days","name_short":"days off work","name_long":"days off work due to RA (median)","name_friendly":"days off work due to RA","description":"","tags":["work","function"],"kind":"count","variable":"interval","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"ae":{"name":"ae","name_short":"adverse event","name_long":"side effect","name_friendly":"side effect","description":"side effect","tags":["adverse event"],"kind":"","variable":"interval","assessor":"","related_measures":"","included_measures":"","source":"","notes":""}}
@@ -9154,7 +9353,7 @@ var mockData = {
 }
 
 module.exports = mockData;
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var _ = require('lodash');
 
 var preferences = {
@@ -9346,7 +9545,7 @@ var preferences = {
 };
 
 module.exports = preferences;
-},{"lodash":"lodash"}],32:[function(require,module,exports){
+},{"lodash":"lodash"}],34:[function(require,module,exports){
 // client.js
 
 var React = require('react/addons');
@@ -9356,7 +9555,7 @@ var routes = require('../routes.jsx');
 Router.run(routes, Router.HistoryLocation, function (Handler) {
   React.render(React.createElement(Handler, null), document.getElementById('app'));
 });
-},{"../routes.jsx":33,"react-router":"react-router","react/addons":"react/addons"}],33:[function(require,module,exports){
+},{"../routes.jsx":35,"react-router":"react-router","react/addons":"react/addons"}],35:[function(require,module,exports){
 // routes.jsx
 
 var React = require('react/addons');
@@ -9388,7 +9587,7 @@ var routes = (
 );
 
 module.exports = routes;
-},{"./components/App.jsx":1,"./components/Experiment.jsx":2,"./components/Navigator.jsx":3,"./components/OutcomeTimeline.jsx":6,"./components/Processing.jsx":7,"./components/adverse/AdverseEvents.jsx":8,"./components/ptda/Ptda.jsx":9,"./components/visualizations/VisualizationSketches.jsx":26,"./components/visualizations/VisualizationTests.jsx":27,"react-router":"react-router","react/addons":"react/addons"}],34:[function(require,module,exports){
+},{"./components/App.jsx":1,"./components/Experiment.jsx":2,"./components/Navigator.jsx":3,"./components/OutcomeTimeline.jsx":7,"./components/Processing.jsx":8,"./components/adverse/AdverseEvents.jsx":9,"./components/ptda/Ptda.jsx":10,"./components/visualizations/VisualizationSketches.jsx":28,"./components/visualizations/VisualizationTests.jsx":29,"react-router":"react-router","react/addons":"react/addons"}],36:[function(require,module,exports){
 /**
  * isMobile.js v0.3.5
  *
@@ -9501,4 +9700,4 @@ module.exports = routes;
 
 })(this);
 
-},{}]},{},[32]);
+},{}]},{},[34]);
