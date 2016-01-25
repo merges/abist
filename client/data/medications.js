@@ -109,8 +109,8 @@ var drugs = [
     "name": "Hydroxychloroquine",
     "name_generic": "hydroxychloroquine",
     "name_common": "Hydroxychloroquine",
-    "name_phonetic": "high-droks-ee-KLOR-oh-kwine",
-    "name_generic_phonetic": "high-droks-ee-KLOR-oh-kwine",
+    "name_phonetic": "hye-drox-ee-KLOR-oh-kwine",
+    "name_generic_phonetic": "hye-drox-ee-KLOR-oh-kwine",
     "class": [
       "DMARD",
       "Antimalarial"
