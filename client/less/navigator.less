@@ -1,6 +1,115 @@
 // Navigator
 
+@color-base-1: @color-grey-xxd;
+@color-base-2: @color-grey-xd;
+@color-base-3: @color-grey-d;
+@color-base-4: @color-grey-m;
+@color-accent-1: @color-grey-xxl;
+@color-accent-2: @color-grey-xxxl;
+@color-accent-3: @color-grey-xxxxl;
+@color-accent-3: @color-grey-xxxxxl;
+@color-link-1: @color-blue-d;
+@color-link-2: @color-blue;
+@color-link-3: @color-blue-l;
+@color-body: white;
+
+@font-size-1: 13px;
+@font-size-2: 15px;
+@font-size-3: 19px;
+@font-size-4: 23px;
+@font-size-5: 27px;
+@font-size-6: 31px;
+@font-size-7: 39px;
+
 .navigator {
+	background: @color-base-1;
+	color: @color-body;
+	font-weight: lighter;
+	font-size: @font-size-3;
+
+	min-height: 100vh;
+	min-width: 100vw;
+
+	h1 {
+		margin: 0;
+		font-weight: lighter;
+		font-size: @font-size-3;
+	}
+	.color-link {
+		color: @color-link-2;
+	}
+
+	// Basic layout
+	.sidebar {
+		.make-md-column(3);
+		.hidden-xs;
+		.hidden-sm;
+		.pad-4;
+
+		// position: relative;
+		// min-height: 100vh;
+		max-width: 400px;
+		
+	}
+	.details {
+		.make-md-column(9);
+		.pad-4;
+	}
+
+	// Medication cards
+	.medication-cards {
+		font-size: @font-size-2;
+
+		.dosage-forms.mini {
+			font-size: @font-size-1;
+
+			.form-name {
+				display: none;
+			}
+		}
+		
+		> ul {
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+
+			> li {
+				.pad-b-1;
+
+				> a {
+					padding: @pad-0 @pad-1 @pad-0 @pad-1;
+					color: white;
+					display: block;
+					background: @color-base-2;
+					border: 1px solid @color-base-2;
+					word-wrap: break-word;
+					transition: box-shadow .1s ease,
+											color .1s ease,
+											background .1s ease;
+					
+					&:hover {
+						text-decoration: none;
+					}
+				}
+				&.disabled {
+					> a {
+						border: 1px dotted @color-base-2; 
+						color: @color-base-2;
+						background: none;
+					}
+				}
+			}
+		}
+	}
+}
+
+.checkbox {
+	font-size: @font-size-2;
+}
+
+// Navigator old
+
+.navigator-old {
 	h1,
 	h2 {
 		margin: 0 0 .51em 0;
@@ -198,8 +307,6 @@
 
 
 
-
-
 .dev {
 	.drug-picker,
 	.medication-list {
@@ -251,7 +358,7 @@
 	}
 }
 
-.filter-controls {
+.filter-controls-old {
 	display: flex;
 	flex-flow: row wrap;
 	margin: -5px;
@@ -322,7 +429,7 @@
 	}
 }
 
-.medication-cards {
+.medication-cards-old {
 	padding-bottom: 1em;
 
 	> ul {
@@ -406,7 +513,7 @@
 	}
 }
 
-.tag-navigation {
+.tag-navigation-old {
 
 	> ul {
 		padding-top: 1em;

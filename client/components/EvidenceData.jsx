@@ -5,7 +5,7 @@ var getNumber = function(value) {
   return null;
 };
 
-// The prototype evidenceData object
+// The prototype evidenceData object for offline use / etc.
 
 var evidenceData = {
   measures: {},

@@ -139,6 +139,7 @@ module.exports = Experiment;
 /** @jsx React.DOM */
 
 var React = require('react/addons')
+var cx = React.addons.classSet
 var _ = require('lodash')
 
 // Data
@@ -213,23 +214,29 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
 
   propTypes: {
     medication: React.PropTypes.object.isRequired,
+    mini: React.PropTypes.bool,
     preferences: React.PropTypes.object,
     preferencesSelected: React.PropTypes.object
+  },
+
+  getDefaultProps: function() {
+    return {
+      mini: false
+    }
   },
 
   renderPreferredMedicationName: function (medication) {
     if (medication.name_common.toLowerCase() == medication.name_generic.toLowerCase()) {
       return (
         React.createElement("span", {className: "medication-name"}, 
-          React.createElement("strong", null, medication.name_generic.toLowerCase())
+          React.createElement("strong", null, medication.name_generic.capitalizeFirstletter())
         )
       )
     }
     else {
       return (
         React.createElement("span", {className: "medication-name"}, 
-          React.createElement("strong", null, medication.name_generic), React.createElement("br", null), 
-          React.createElement("span", {className: "light"}, medication.name_common)
+          React.createElement("strong", null, medication.name_generic.capitalizeFirstletter()), " ", React.createElement("span", {className: "light"}, "brand name ", medication.name_common)
         )
       )
     }
@@ -281,6 +288,18 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
     var preferences = this.props.preferences
     var preferencesSelected = this.props.preferencesSelected
 
+    if (this.props.mini) {
+      return React.createElement("div", null, 
+        React.createElement("div", {className: "dosage-forms mini"}, 
+          medication.forms.map(function (form, i) {
+            return (
+              React.createElement(DosageForm, {key: i, form: form.name})
+            )
+          })
+        ), 
+        this.renderPreferredMedicationName(medication)
+      )
+    }
     return (
       React.createElement("div", null, 
         React.createElement("div", {className: "dosage-forms"}, 
@@ -364,11 +383,10 @@ var Navigator = React.createClass({displayName: "Navigator",
       return disabled
     }
 
-
-
     return {
       data: {},
       dev: this.props.query.dev ? true : false,
+      full: this.props.query.full ? true : false,
       offline: this.props.query.offline ? true : false,
 
       // Medication filtering-related
@@ -383,7 +401,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         forms: getDosageForms(this.props.medications),
         generic_available: false,
         heart_failure: false,
-        kdieny_disease: false,
+        kidney_disease: false,
         liver_disease: false,
         pregnancy: false,
         tb: false
@@ -620,25 +638,21 @@ var Navigator = React.createClass({displayName: "Navigator",
     var preferences = this.props.preferences
     var preferencesSelected = this.state.preferencesSelected
 
-    var cx = React.addons.classSet
-
     return (
       React.createElement("div", {className: "filter-controls"}, 
           Object.keys(preferences).map(function(key) {
             var preference = preferences[key]
-
-            // Boolean preferences become a push button
             if (preference.type == 'boolean') {
-              var preferenceClasses = cx({
-                'button': true,
-                'active': preferencesSelected[key]
-              })
               return (
-                React.createElement("section", {key: preference.name}, 
-                  React.createElement("a", {className: preferenceClasses, key: key, onClick: filterPreference.bind(null, key, false)}, 
-                    preference.name
+                React.createElement("div", {className: "checkbox"}, 
+                  React.createElement("label", null, 
+                    React.createElement("input", {type: "checkbox", 
+                      key: key, 
+                      value: key, 
+                      checked: preferencesSelected[key], 
+                      onChange: filterPreference.bind(null, key, false)}), 
+                        preference.name
                   )
-                  /*<span className='description'>{preference.description}</span>*/
                 )
               )
             }
@@ -657,23 +671,23 @@ var Navigator = React.createClass({displayName: "Navigator",
                         'button option': true,
                         'active': !preferencesSelected[key][option]
                       })
-                      // return (
-                      //   <div>
-                      //     <input type='checkbox'
-                      //       className={optionClasses}
-                      //       key={option}
-                      //       value={option}
-                      //       checked={!preferencesSelected[key][option]}
-                      //       onChange={filterPreference.bind(null, key, option)}>
-                      //         {option}
-                      //     </input>
-                      //   </div>
-                      // )
                       return (
-                        React.createElement("a", {className: optionClasses, key: option, onClick: filterPreference.bind(null, key, option)}, 
-                          React.createElement(DosageForm, {form: option})
+                        React.createElement("div", null, 
+                          React.createElement("input", {type: "checkbox", 
+                            className: optionClasses, 
+                            key: option, 
+                            value: option, 
+                            checked: !preferencesSelected[key][option], 
+                            onChange: filterPreference.bind(null, key, option)}, 
+                              option
+                          )
                         )
                       )
+                      // return (
+                      //   <a className={optionClasses} key={option} onClick={filterPreference.bind(null, key, option)}>
+                      //     <DosageForm form={option} />
+                      //   </a>
+                      // )
                     })
                   )
                 )
@@ -915,7 +929,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     })
   },
 
-  renderMedicationBar: function (medications) {
+  renderMedicationList: function (medications) {
   	var disabledMedications = this.state.disabledMedications
     var handleMedicationClick = this.handleMedicationClick
     var renderPreferredMedicationName = this.renderPreferredMedicationName
@@ -932,7 +946,10 @@ var Navigator = React.createClass({displayName: "Navigator",
                 React.createElement("li", {key: i, className: (disabledMedications[medication.name] === true) && 'disabled'}, 
                   React.createElement("a", {
                     onClick: handleMedicationClick.bind(null, medication.name)}, 
-                      React.createElement(MedicationCard, {medication: medication, preferences: preferences, preferencesSelected: preferencesSelected})
+                      React.createElement(MedicationCard, {
+                        medication: medication, 
+                        mini: true, 
+                        preferences: preferences, preferencesSelected: preferencesSelected})
                   )
                 )
               )
@@ -958,7 +975,7 @@ var Navigator = React.createClass({displayName: "Navigator",
       var tagMeasures = tags[selectedTag]
       return (
         React.createElement("div", null, 
-          React.createElement(Nav, {className: "tag-navigation", bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
+          React.createElement(Nav, {bsStyle: "pills", activeKey: selectedMeasure && selectedMeasure, onSelect: this.handleMeasureSelect}, 
             Object.keys(tagMeasures).map(function (measure, i) {
               return (React.createElement(NavItem, {key: i, eventKey: measure}, measures[measure] ? measures[measure].name_friendly : measure))
             })
@@ -1005,6 +1022,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     }
   },
 
+  // Utility function to render data out as JSON
   renderDataToJSON: function (data) {
     return (
       React.createElement("div", null, 
@@ -1078,8 +1096,20 @@ var Navigator = React.createClass({displayName: "Navigator",
     })
   },
 
+  // Is all the necessary data available?
+  hasData: function (data) {
+    if (data != {} &&
+        data['grades'] &&
+        data['metrics'] &&
+        data['measures'] &&
+        data['tags'] &&
+        data['tagDescriptions'] &&
+        data['data'] != {}) {
+      return true
+    }
+  },
+
   render: function () {
-    var cx = React.addons.classSet
     var navigatorClasses = cx({
       'navigator': true,
       'dev row': this.state.dev,
@@ -1110,7 +1140,8 @@ var Navigator = React.createClass({displayName: "Navigator",
     var selectedMeasure     = this.state.selectedMeasure
     var selectedTag         = this.state.selectedTag
 
-    if (data != {} && data['grades'] && data['metrics'] && data['measures'] && data['tags'] && data['tagDescriptions'] && data['data'] != {}) {
+    // Necessary data available
+    if (this.hasData(data)) {
       // return (
       //   <div className='container-fluid'>
       //     <div className={navigatorClasses}>
@@ -1118,6 +1149,8 @@ var Navigator = React.createClass({displayName: "Navigator",
       //     </div>
       //   </div>
       // )
+
+      // Dev mode
       if (this.state.dev) {
         return (
           React.createElement("div", {className: "container-fluid"}, 
@@ -1127,7 +1160,7 @@ var Navigator = React.createClass({displayName: "Navigator",
             	), 
 
               React.createElement("section", {className: medicationListClasses}, 
-                this.renderMedicationBar(medications)
+                this.renderMedicationList(medications)
               ), 
 
               React.createElement("section", {className: detailsClasses}, 
@@ -1151,14 +1184,15 @@ var Navigator = React.createClass({displayName: "Navigator",
         )
       }
 
-      else {
+      // Old-style full-screen mode
+      if (this.state.full) {
         var selectedPreferenceItems = []
         _.each(this.state.preferencesSelected, function(value, key) {
           value == true && selectedPreferenceItems.push(key)
         })
 
         return (
-          React.createElement("div", {className: "navigator"}, 
+          React.createElement("div", {className: "navigator-old"}, 
             React.createElement("section", {className: "full-screen intro", ref: "intro"}, 
               React.createElement("div", {className: "spread"}, 
                 React.createElement("div", null, 
@@ -1185,7 +1219,7 @@ var Navigator = React.createClass({displayName: "Navigator",
                 React.createElement("div", null, 
                   React.createElement("h1", null, "These medications match your needs and preferences"), 
                   React.createElement("section", {className: medicationListClasses}, 
-                    this.renderMedicationBar(medications)
+                    this.renderMedicationList(medications)
                   ), 
                   React.createElement(ScrollTo, {to: "results", onClick: this.scrollSmoothlyToElement})
                 )
@@ -1222,13 +1256,33 @@ var Navigator = React.createClass({displayName: "Navigator",
                 stickyClass: "stuck", 
                 stickyStyle: {position: 'relative'}, 
                 topOffset: this.state.offsets['results']}, 
-                  this.renderMedicationBar(medications)
+                  this.renderMedicationList(medications)
               )
             )
           )
         )
       }
+
+      return (
+        React.createElement("div", {className: "navigator"}, 
+          React.createElement("div", {className: "sidebar"}, 
+            React.createElement("h1", null, 
+              "Rheumatoid arthritis", React.createElement("br", null), 
+              React.createElement("span", {className: "color-link"}, "medication choices")
+            ), 
+            this.renderPreferenceControls(preferences), 
+            this.renderMedicationList(medications)
+          ), 
+          React.createElement("div", {className: "details"}, 
+            this.renderTagBar(selectedTag), 
+            /*this.renderTagDescription(selectedTag)*/
+            this.renderMeasureBar(selectedTag, selectedMeasure), 
+            this.renderMeasure(selectedTag, selectedMeasure)
+          )
+        )
+      )
     }
+    // Necessary data unavailable
     return (
       React.createElement("div", {className: "navigator"}, 
         React.createElement("section", {className: "full-screen intro", ref: "intro"}, 
