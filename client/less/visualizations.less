@@ -2,21 +2,17 @@
 
 .visualization {
 
-  .highlight {
-    color: @color-grey-m;
-  }
-
   &.absolute {
     cursor: pointer;
-    margin: 1em 0;
     font-size: 6.5pt;
-    color: @color-grey-xxl;
+    color: @color-accent-1;
+    line-height: 1.3;
 
     &:hover {
-      color: @color-grey-xxxl;
+      color: @color-accent-4;
 
       .highlight {
-        color: @color-grey-xl;
+        opacity: 1;
       }
       .higher {
         color: black !important;
@@ -27,8 +23,14 @@
       }
     }
     .ss-icon {
+      opacity: .17;
       transition: color .12s ease,
+                  opacity .12s ease,
                   text-shadow .12s ease;
+
+      &.highlight {
+        opacity: 1;
+      }
     }
   }
   &.difference {
@@ -238,228 +240,31 @@
 
 // Outcome timeline
 
-.outcome-timeline.vertical {
-  display: table;
-  table-layout: fixed;
-  margin-bottom: 5em;
-
-  > section {
-    display: table-row;
-
-    > div {
-      display: table-cell;
-      height: 300px;
-
-      &.moment {
-        width: 300px;
-
-        > section {
-          display: table;
-          table-layout: fixed;
-          width: 100%;
-          height: 100%;
-
-          > div {
-            display: table-cell;
-            height: 100%;
-
-            &.line {
-              width: 41px;
-              position: relative;
-
-              &:before {
-                content: '';
-                position: absolute;
-                left: 20px;
-                height: 100%;
-                width: 1px;
-                background: @color-grey-xl;
-              }
-
-              .bar {
-                position: relative;
-                width: 31px;
-                margin: 0 auto;
-
-                &:before {
-                  content: '';
-                  position: absolute;
-                  background: @color-grey-xl;
-                  width: 31px;
-                  height: 1px;
-                }
-              }
-              .ball {
-                position: relative;
-                margin: 0 auto;
-                width: 17px;
-
-                &:before {
-                  content: '';
-                  position: absolute;
-                  background: @color-grey-xl;
-                  width: 17px;
-                  height: 17px;
-                  top: 2px;
-                  border-radius: 9.5px;
-                }
-              }
-            }
-            &.title,
-            &.description {
-              padding: 0 5px;
-            }
-            &.title {
-              text-align: right;
-            }
-            &.description {
-              color: @color-grey-l;
-            }
-          }
-        }
-      }
-      &.moment-data {
-        
-        > section {
-          display: table;
-          table-layout: fixed;
-          width: 100%;
-          height: 100%;
-
-          > div {
-            display: table-cell;
-            height: 100%;
-            padding: 0 1em;
-            word-wrap: break-word;
-            
-            + div {
-              border-left: 1px solid @color-grey-xxxxxl;
-            }
-          }
-        }
-      }
-    }
-
-    &:last-of-type {
-      .moment .line:after {
-        content: '';
-        position: absolute;
-        left: 20px;
-        height: 100%;
-        width: 1px;
-        background: @color-grey-xl;
-      }
-    }
-  }
-}
-
 .outcome-timeline.horizontal {
   display: table;
   border-collapse: collapse;
   min-width: 100%;
-
+  
+  .chunk {
+    margin: @pad-5 @pad-0;
+    background: @color-base-2;
+  }
+  .timeline-labels {
+    color: @color-base-4;
+    font-size: @font-size-2;
+    border-bottom: 1px solid @color-base-3;
+  }
   .t-row {
-    display: table-row;
-    background: @color-grey-xxxxxxxl;
-    transition: background .2s ease;
-
-    &:nth-child(even) {
-      background: @color-grey-xxxxxl;
-    }
-    &.active {
-      background: #fffef7;
-    }
+    // display: table-row;
 
     .t-cell {
+      .pad-3;
       min-width: 300px;
-      width: 300px;
-      padding: 15px;
       display: table-cell;
       vertical-align: top;
       position: relative;
-      transition: background .2s ease,
-                  box-shadow .2s ease;
-
-      + .t-cell.moment,
-      + .t-cell.moment-data {
-        border-left: 1px dotted @color-ui-l;
-      }
-      &.moment-data:hover {
-        position: relative;
-        // background: #FFFEF7;
-        .shadow-m;
-      }
+      transition: box-shadow .2s ease;
     }
-  }
-  .timeline-header {
-
-    .t-cell {
-      background: white;
-      padding-top: 0;
-      padding-bottom: 60px;
-
-      > section {
-        position: relative;
-
-        .ball {
-          position: relative;
-
-          &:before {
-            content: '';
-            position: absolute;
-            background: @color-ui-l;
-            width: 17px;
-            height: 17px;
-            top: 3px;
-            left: -24px;
-            border-radius: 8.5px;
-          }
-        }
-
-        .line {
-          width: 100%;
-          height: 5px;
-
-          &:before {
-            content: '';
-            position: absolute;
-            height: 1px;
-            width: 100%;
-            background: @color-grey-xl;
-          }
-
-          .bar {
-            position: relative;
-            width: 31px;
-            margin: 0 auto;
-
-            &:before {
-              content: '';
-              position: absolute;
-              background: @color-grey-xl;
-              width: 31px;
-              height: 1px;
-            }
-          }
-        }
-      }
-      + .t-cell {
-        border-left: 1px dotted @color-ui-l;
-      }
-      .title {
-        font-size: @font-l;
-        color: @color-ui;
-      }
-      .description {
-        font-size: @font-s;
-        color: @color-ui;
-        max-width: 20%;
-        min-width: 18em;
-      }
-    }
-  }
-  .subject {
-    line-height: 1.15;
   }
   .intervention {
 

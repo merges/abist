@@ -18,31 +18,36 @@ var VisualAnalogScale = require('./visualizations/VisualAnalogScale.jsx');
 var OutcomeDifferences = React.createClass({
   propTypes: {
     data: React.PropTypes.object.isRequired,
-    dataByTag: React.PropTypes.object.isRequired,
+    dataFiltered: React.PropTypes.array.isRequired,
     disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired
+    medications: React.PropTypes.array.isRequired,
+    measure: React.PropTypes.string
   },
 
-  renderDataByMeasure: function(selectedMeasure) {
-    var measures = this.props.data.measures; 
-    var dataByTag = this.props.dataByTag;
-    var measure = selectedMeasure;
-    var tag = this.props.selectedTag;
-    var measureData = dataByTag[tag][selectedMeasure].data;
-    var grades = this.props.data.grades;
+  render: function() {
+    var classes = cx({
+      'processing': true,
+      'results': true
+    })
 
-    if (measureData) {
-      var medications = this.props.medications;
-      var disabledMedications = this.props.disabledMedications;
-      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications);
+    var data = this.props.data
+    var dataFiltered = this.props.dataFiltered
+    var disabledMedications = this.props.disabledMedications
+    var medications = this.props.medications
+    var measure = this.props.measure
 
-      var sortedEntries = _.sortBy(entries, function(entry) {
-        if (entry.intervention) {
-          return entry.intervention.parts[0]
-        }
-      })
+    var grades = data.grades
 
-      return sortedEntries.map(function(entry, i) {
+    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
+
+    var sortedEntries = _.sortBy(entries, function(entry) {
+      if (entry.intervention) {
+        return entry.intervention.parts[0]
+      }
+    })
+
+    return <div>
+      {sortedEntries.map(function(entry, i) {
         if (entry.intervention && entry.intervention['mean_score_difference']) {
           var value = entry.intervention['mean_score_difference'].value.value
 
@@ -58,7 +63,9 @@ var OutcomeDifferences = React.createClass({
             return (
               <div key={i} style={entryStyle}>
                 <span style={{display: 'inline-block'}}>
-                  <Intervention intervention={entry.intervention.parts.join(' + ')} dosage={entry.intervention.dosage} />
+                  <Intervention 
+                    interventionName={entry.intervention.parts.join(' + ')}
+                    dosage={entry.intervention.dosage} />
                   {entry.comparison &&
                     <div className='light'>
                       vs.<br />
@@ -77,25 +84,9 @@ var OutcomeDifferences = React.createClass({
             )
           }
         }
-      })
-    }
-  },
-
-  render: function() {
-    var classes = cx({
-      'processing': true,
-      'results': true
-    });
-
-    var selectedMeasure = this.props.selectedMeasure;
-    
-    return (
-      <div className={classes}>
-        {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
-      </div>
-    );
+      })}
+    </div>
   }
-
 });
 
 module.exports = OutcomeDifferences;

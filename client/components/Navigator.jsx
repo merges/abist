@@ -4,11 +4,15 @@ var React = require('react/addons')
 var cx = React.addons.classSet
 var _ = require('lodash')
 
-// Data
 var get = require('../data/get.js')
 var medications = require('../data/medications.js')
 var preferences = require('../data/preferences.js')
 var mockData = require('../data/mock.js')
+
+var medicationsMap = _.indexBy(medications, 'name_generic')
+    medicationsMap['dmard'] = {
+      name: 'another RA medication (like methotrexate)'
+    }
 
 var Nav = require('react-bootstrap').Nav
 var NavItem = require('react-bootstrap').NavItem
@@ -207,6 +211,28 @@ var Navigator = React.createClass({
 
   getDefaultProps: function () {
     return {
+      issues: {
+        basic: {
+          name: 'basic issues',
+          measures: []
+        },
+        improvement: {
+          name: 'RA improvement',
+          measures: ['acr_50']
+        },
+        pain: {
+          name: 'pain',
+          measures: ['patient_pain']
+        },
+        work: {
+          name: 'work',
+          measures: ['median_work_disability_days']
+        },
+        side_effects: {
+          name: 'side effects',
+          measures: ['discontinued_ae', 'ae', 'serious_ae']
+        },
+      },
       medications: medications,
       preferences: preferences
     }
@@ -269,11 +295,7 @@ var Navigator = React.createClass({
         tb: false
       },
 
-      // User interaction-related
-      offsets: {
-        medications: 99999,
-        results: 99999
-      },
+      selectedIssue: null,
       selectedTag: null,
       selectedMeasure: null,
       stickyHolderHeight: 0
@@ -756,6 +778,29 @@ var Navigator = React.createClass({
     })
   },
 
+  getDataByMeasure: function (measures) {
+    var data = this.state.data.data
+    var dataByMeasure = _.indexBy(measures)
+
+    // Measure e.g. 'acr_50'
+    _.each(measures, function (measure) {
+      dataByMeasure[measure] = {}
+      dataByMeasure[measure]['data'] = []
+      
+      // Source (sheet in spreadsheet at https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=302670246)
+      _.each(data, function (source) {
+        // Entry i.e. line of spreadsheet
+        _.each(source, function (entry) {
+          if (entry.measure === measure) {
+            dataByMeasure[measure].data.push(entry)
+          }
+        })
+      })
+    })
+
+    return dataByMeasure
+  },
+
   getDataByTag: function (selectedTag) {
     var data = this.state.data.data
     var tags = this.state.data.tags
@@ -869,6 +914,22 @@ var Navigator = React.createClass({
     }
   },
 
+  handleIssueSelect: function (key) {
+    this.setState({
+      selectedIssue: key
+    })
+  },
+
+  renderIssueNavigationBar: function (selectedIssue) {
+    var issues = this.props.issues;
+
+    return <Nav className='tag-navigation' bsStyle="pills" activeKey={selectedIssue && selectedIssue} onSelect={this.handleIssueSelect}>
+        {Object.keys(issues).map(function (issue, i) {
+          return <NavItem key={i} eventKey={issue}>{issues[issue].name}</NavItem>
+        })}
+    </Nav>
+  },
+
   renderTagDescription: function (selectedTag) {
     var tagDescriptions = this.state.data.tagDescriptions
 
@@ -901,6 +962,51 @@ var Navigator = React.createClass({
         <div>data: {JSON.stringify(data.data)}</div>
       </div>
     )
+  },
+
+  renderDataByMeasure: function (measures) {
+    var data = this.state.data
+    var getDataByMeasure = this.getDataByMeasure
+    var medications = this.props.medications
+    var disabledMedications = this.state.disabledMedications
+    
+    var html = []
+
+    _.each(measures, function (measureName) {
+      if (measureName == 'patient_pain') {
+        html.push(<div key={measureName}>
+          <OutcomeDifferences
+            data={data}
+            dataFiltered={getDataByMeasure([measureName])[measureName].data}
+            medications={medications}
+            disabledMedications={disabledMedications}
+            measure={measureName}
+            medicationsMap={medicationsMap} />
+        </div>)
+      }
+      if (measureName == 'discontinued_ae') {
+        html.push(<div key={measureName}>
+          <OutcomeRelativeComparison
+            data={data}
+            dataFiltered={getDataByMeasure([measureName])[measureName].data}
+            medications={medications}
+            disabledMedications={disabledMedications}
+            measure={measureName}
+            medicationsMap={medicationsMap} />
+        </div>)
+      }
+      html.push(<div key={measureName}>
+        <OutcomeTimeline
+          data={data}
+          dataFiltered={getDataByMeasure([measureName])[measureName].data}
+          disabledMedications={disabledMedications}
+          measure={measureName}
+          medications={medications}
+          medicationsMap={medicationsMap} />
+      </div>)
+    })
+
+    return html
   },
 
   renderMeasure: function (selectedTag, selectedMeasure) {
@@ -958,6 +1064,15 @@ var Navigator = React.createClass({
     })
   },
 
+  renderDetails: function (selectedIssue) {
+    var issues = this.props.issues;
+    var measures = issues[selectedIssue] && issues[selectedIssue].measures
+    
+    return <div>
+      {this.renderDataByMeasure(measures)}
+    </div>
+  },
+
   // Is all the necessary data available?
   hasData: function (data) {
     if (data != {} &&
@@ -972,6 +1087,7 @@ var Navigator = React.createClass({
   },
 
   render: function () {
+
     var navigatorClasses = cx({
       'navigator': true,
       'dev row': this.state.dev,
@@ -1125,6 +1241,7 @@ var Navigator = React.createClass({
         )
       }
 
+      // Working navigator
       return (
         <div className='navigator'>
           <div className='sidebar'>
@@ -1136,18 +1253,18 @@ var Navigator = React.createClass({
             {this.renderMedicationList(medications)}
           </div>
           <div className='details'>
-            {this.renderTagBar(selectedTag)}
-            {/*this.renderTagDescription(selectedTag)*/}
-            {this.renderMeasureBar(selectedTag, selectedMeasure)}
-            {this.renderMeasure(selectedTag, selectedMeasure)}
+            {this.renderIssueNavigationBar(this.state.selectedIssue)}
+            {this.renderDetails(this.state.selectedIssue)}
           </div>
         </div>
       )
     }
-    // Necessary data unavailable
+
+
+    // No data — loading screen
     return (
       <div className='navigator'>
-        <section className='full-screen intro' ref='intro'>
+        <section className='full-screen' ref='intro'>
           <div className='spread'>
             <div>
               <h1>Loading</h1>

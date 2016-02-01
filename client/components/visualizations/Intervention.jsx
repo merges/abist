@@ -10,8 +10,10 @@ var Tooltip = require('react-bootstrap').Tooltip;
 var Intervention = React.createClass({
   
   propTypes: {
-    intervention: React.PropTypes.string.isRequired,
-    dosage: React.PropTypes.object
+    intervention: React.PropTypes.object,
+    interventionName: React.PropTypes.string,
+    dosage: React.PropTypes.object,
+    medicationsMap: React.PropTypes.object
   },
 
   getDosageDescription: function(dosage) {
@@ -99,13 +101,15 @@ var Intervention = React.createClass({
     });
 
     var intervention = this.props.intervention;
+    var interventionName = this.props.interventionName;
+    var medicationsMap = this.props.medicationsMap;
 
     if (this.props.dosage) {
       return (
         <div className={visualizationClasses}>
-          <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(intervention, this.props.dosage)}>
+          <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(interventionName, this.props.dosage)}>
             <span>
-              <span className='name'>{intervention}</span><br />
+              <span className='name'>{interventionName}</span><br />
               <span className='dosage'>{this.getDosageDescription(this.props.dosage)}</span>
             </span>
           </OverlayTrigger>
@@ -114,7 +118,7 @@ var Intervention = React.createClass({
     }
     return (
       <div className={visualizationClasses}>
-        <span className='name'>{intervention}</span>
+        <span className='name'>{interventionString}</span>
       </div>
     );
   }

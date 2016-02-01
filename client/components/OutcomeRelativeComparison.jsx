@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 
 var React = require('react/addons');
+var cx = React.addons.classSet;
 var _ = require('lodash');
 var get = require('../data/get.js');
 
@@ -198,31 +199,6 @@ var OutcomeRelativeComparison = React.createClass({
     );
   },
 
-  getDataByTag: function(tags, data) {
-    var dataByTag = JSON.parse(JSON.stringify(tags));
-
-    // Each tag (pain, function, etc.)
-    Object.keys(tags).map(function (tag) {
-      // Each source (sheet of data)
-      Object.keys(data).map(function (source) {
-        // Each entry in the source data (line of sheet)
-        data[source].map(function (entry) {
-          // Entry records an outcome in a measure that is associated with one of the tags?
-          // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
-          if (tags[tag][entry.measure]) {
-            // Create a place for data about each measure
-            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
-
-            dataByTag[tag][entry.measure]['data'].push(entry);
-          }
-        });
-      });
-    });
-
-    return dataByTag;
-  },
-
   getDurationAsWeeks: function(duration) {
 		// Should average to get common duration? Or use one end of range?
 		// i.e. if 4 to 12 weeks, use 4, 12, or 8?
@@ -256,9 +232,11 @@ var OutcomeRelativeComparison = React.createClass({
   	return entriesByDuration;
   },
 
-  renderDataByMeasure: function(selectedMeasure) {
-    var measures = this.props.data.measures;
-    var renderEntry = this.renderEntry;
+  render: function() {
+    var classes = cx({
+      'processing': true,
+      'results': true
+    });
 
     var renderRelativeRiskComparison = function(entries, measure) {
       var sources = {};
@@ -329,39 +307,32 @@ var OutcomeRelativeComparison = React.createClass({
       })
     };
 
-    var dataByTag = this.props.dataByTag;
-    var measure = selectedMeasure;
-    var tag = this.props.selectedTag;
-    var measureData = dataByTag[tag][selectedMeasure].data;
+    var data = this.props.data
+    var dataFiltered = this.props.dataFiltered
+    var disabledMedications = this.props.disabledMedications
+    var medications = this.props.medications
+    var measure = this.props.measure
 
-    if (measureData) {
-      var medications = this.props.medications;
-      var disabledMedications = this.props.disabledMedications;
-      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications);
+    var measures = this.props.data.measures
+    var grades = data.grades
+    
+    var renderEntry = this.renderEntry
 
-      return (
+    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
+
+    return (
+      <div className={classes}>
         <div key={measure}>
           {renderRiskRelativeToBaselineComparison(entries, measure)}
         </div>
-      );
-    }
-  },
-
-  render: function() {
-    var cx = React.addons.classSet;
-
-    var classes = cx({
-      'processing': true,
-      'results': true
-    });
-
-    var selectedMeasure = this.props.selectedMeasure;
-    
-    return (
-      <div className={classes}>
-        {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
       </div>
     );
+    
+    // return (
+    //   <div className={classes}>
+    //     {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
+    //   </div>
+    // );
   }
 });
 

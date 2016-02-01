@@ -11013,6 +11013,18 @@ html:hover [class^="ss-"] {
 .ss-share.right:after {
   content: '';
 }
+.small {
+  font-size: 13px;
+}
+.inline {
+  display: inline;
+}
+.inline-block {
+  display: inline-block;
+}
+.block {
+  display: block;
+}
 .pad-0 {
   padding: none;
 }
@@ -11230,20 +11242,17 @@ html:hover [class^="ss-"] {
 .nav-pills > li:last-of-type {
   margin-right: 0;
 }
-.visualization .highlight {
-  color: #888;
-}
 .visualization.absolute {
   cursor: pointer;
-  margin: 1em 0;
   font-size: 6.5pt;
   color: #ddd;
+  line-height: 1.3;
 }
 .visualization.absolute:hover {
-  color: #e8e8e8;
+  color: #f3f3f3;
 }
 .visualization.absolute:hover .highlight {
-  color: #bbb;
+  opacity: 1;
 }
 .visualization.absolute:hover .higher {
   color: black !important;
@@ -11253,7 +11262,11 @@ html:hover [class^="ss-"] {
   text-shadow: 0 0 4px #000000;
 }
 .visualization.absolute .ss-icon {
-  transition: color 0.12s ease, text-shadow 0.12s ease;
+  opacity: .17;
+  transition: color 0.12s ease, opacity 0.12s ease, text-shadow 0.12s ease;
+}
+.visualization.absolute .ss-icon.highlight {
+  opacity: 1;
 }
 .visualization.difference .ss-icon {
   vertical-align: middle;
@@ -11325,7 +11338,7 @@ html:hover [class^="ss-"] {
 .visualization.relative-risk-comparison .item .pill.active,
 .visualization.risk-relative-to-baseline .item .pill.active,
 .visualization.absolute-risk-comparison .item .pill.active {
-  color: #222;
+  color: #333;
   background: #bbb;
 }
 .visualization.relative-risk-comparison .item .legend,
@@ -11481,194 +11494,27 @@ html:hover [class^="ss-"] {
 .progress-bar.worse {
   background: #999;
 }
-.outcome-timeline.vertical {
-  display: table;
-  table-layout: fixed;
-  margin-bottom: 5em;
-}
-.outcome-timeline.vertical > section {
-  display: table-row;
-}
-.outcome-timeline.vertical > section > div {
-  display: table-cell;
-  height: 300px;
-}
-.outcome-timeline.vertical > section > div.moment {
-  width: 300px;
-}
-.outcome-timeline.vertical > section > div.moment > section {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
-  height: 100%;
-}
-.outcome-timeline.vertical > section > div.moment > section > div {
-  display: table-cell;
-  height: 100%;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line {
-  width: 41px;
-  position: relative;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line:before {
-  content: '';
-  position: absolute;
-  left: 20px;
-  height: 100%;
-  width: 1px;
-  background: #bbb;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line .bar {
-  position: relative;
-  width: 31px;
-  margin: 0 auto;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line .bar:before {
-  content: '';
-  position: absolute;
-  background: #bbb;
-  width: 31px;
-  height: 1px;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line .ball {
-  position: relative;
-  margin: 0 auto;
-  width: 17px;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.line .ball:before {
-  content: '';
-  position: absolute;
-  background: #bbb;
-  width: 17px;
-  height: 17px;
-  top: 2px;
-  border-radius: 9.5px;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.title,
-.outcome-timeline.vertical > section > div.moment > section > div.description {
-  padding: 0 5px;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.title {
-  text-align: right;
-}
-.outcome-timeline.vertical > section > div.moment > section > div.description {
-  color: #999;
-}
-.outcome-timeline.vertical > section > div.moment-data > section {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
-  height: 100%;
-}
-.outcome-timeline.vertical > section > div.moment-data > section > div {
-  display: table-cell;
-  height: 100%;
-  padding: 0 1em;
-  word-wrap: break-word;
-}
-.outcome-timeline.vertical > section > div.moment-data > section > div + div {
-  border-left: 1px solid #f3f3f3;
-}
-.outcome-timeline.vertical > section:last-of-type .moment .line:after {
-  content: '';
-  position: absolute;
-  left: 20px;
-  height: 100%;
-  width: 1px;
-  background: #bbb;
-}
 .outcome-timeline.horizontal {
   display: table;
   border-collapse: collapse;
   min-width: 100%;
 }
-.outcome-timeline.horizontal .t-row {
-  display: table-row;
-  background: #fafafa;
-  transition: background .2s ease;
+.outcome-timeline.horizontal .chunk {
+  margin: 45px 0;
+  background: #333;
 }
-.outcome-timeline.horizontal .t-row:nth-child(even) {
-  background: #f3f3f3;
-}
-.outcome-timeline.horizontal .t-row.active {
-  background: #fffef7;
+.outcome-timeline.horizontal .timeline-labels {
+  color: #888;
+  font-size: 15px;
+  border-bottom: 1px solid #444;
 }
 .outcome-timeline.horizontal .t-row .t-cell {
-  min-width: 300px;
-  width: 300px;
   padding: 15px;
+  min-width: 300px;
   display: table-cell;
   vertical-align: top;
   position: relative;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-.outcome-timeline.horizontal .t-row .t-cell + .t-cell.moment,
-.outcome-timeline.horizontal .t-row .t-cell + .t-cell.moment-data {
-  border-left: 1px dotted #C0A38B;
-}
-.outcome-timeline.horizontal .t-row .t-cell.moment-data:hover {
-  position: relative;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-}
-.outcome-timeline.horizontal .timeline-header .t-cell {
-  background: white;
-  padding-top: 0;
-  padding-bottom: 60px;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section {
-  position: relative;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .ball {
-  position: relative;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .ball:before {
-  content: '';
-  position: absolute;
-  background: #C0A38B;
-  width: 17px;
-  height: 17px;
-  top: 3px;
-  left: -24px;
-  border-radius: 8.5px;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .line {
-  width: 100%;
-  height: 5px;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .line:before {
-  content: '';
-  position: absolute;
-  height: 1px;
-  width: 100%;
-  background: #bbb;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .line .bar {
-  position: relative;
-  width: 31px;
-  margin: 0 auto;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell > section .line .bar:before {
-  content: '';
-  position: absolute;
-  background: #bbb;
-  width: 31px;
-  height: 1px;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell + .t-cell {
-  border-left: 1px dotted #C0A38B;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell .title {
-  font-size: 16px;
-  color: #A18269;
-}
-.outcome-timeline.horizontal .timeline-header .t-cell .description {
-  font-size: 11.5px;
-  color: #A18269;
-  max-width: 20%;
-  min-width: 18em;
-}
-.outcome-timeline.horizontal .subject {
-  line-height: 1.15;
+  transition: box-shadow 0.2s ease;
 }
 .outcome-timeline.horizontal .intervention .name {
   color: #666;
@@ -11689,6 +11535,8 @@ html:hover [class^="ss-"] {
   font-size: 19px;
   min-height: 100vh;
   min-width: 100vw;
+  position: relative;
+  overflow: auto;
 }
 .navigator h1 {
   margin: 0;
@@ -11699,18 +11547,15 @@ html:hover [class^="ss-"] {
   color: #6699ff;
 }
 .navigator .sidebar {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
   padding: 30px;
-  max-width: 400px;
-}
-@media (min-width: 992px) {
-  .navigator .sidebar {
-    float: left;
-    width: 25%;
-  }
+  width: 360px;
+  height: 100vh;
+  background: #222;
+  border-right: 1px solid #333;
+  z-index: 1;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 @media (max-width: 767px) {
   .navigator .sidebar {
@@ -11723,16 +11568,11 @@ html:hover [class^="ss-"] {
   }
 }
 .navigator .details {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
   padding: 30px;
 }
 @media (min-width: 992px) {
   .navigator .details {
-    float: left;
-    width: 75%;
+    margin-left: 360px;
   }
 }
 .navigator .medication-cards {
@@ -11753,11 +11593,11 @@ html:hover [class^="ss-"] {
   padding-bottom: 5px;
 }
 .navigator .medication-cards > ul > li > a {
-  padding: 0 5px 0 5px;
+  padding: 5px 5px 5px 5px;
   color: white;
   display: block;
-  background: #444;
-  border: 1px solid #444;
+  background: #333;
+  border: 1px solid #333;
   word-wrap: break-word;
   transition: box-shadow 0.1s ease, color 0.1s ease, background 0.1s ease;
 }
@@ -11765,12 +11605,72 @@ html:hover [class^="ss-"] {
   text-decoration: none;
 }
 .navigator .medication-cards > ul > li.disabled > a {
-  border: 1px dotted #444;
-  color: #444;
+  border: 1px dotted #333;
+  color: #333;
   background: none;
 }
 .checkbox {
   font-size: 15px;
+}
+.tag-navigation {
+  display: inline-block;
+}
+.tag-navigation > ul > li > a {
+  padding: 15px 0;
+  border: none;
+  border-radius: 0;
+  text-decoration: none;
+  width: 190px;
+  color: #888;
+  background: #333 !important;
+  text-align: center;
+  white-space: nowrap;
+  transition: color .1s ease,
+										border .1s ease,
+										background .1s ease;
+}
+.tag-navigation > ul > li > a:hover {
+  color: #6699ff;
+}
+.tag-navigation > ul > li.active > a {
+  color: white !important;
+  background: #6699ff !important;
+}
+.tag-navigation > ul > li.active > a:hover {
+  background: #fafafa;
+  border-color: #6699ff;
+}
+@media (max-width: 767px) {
+  .tag-navigation > ul > li {
+    float: none;
+    display: block;
+    margin: 0;
+  }
+  .tag-navigation > ul > li > a {
+    display: block;
+    padding: .1em 15px;
+  }
+}
+.visualization.absolute {
+  font-size: 13px;
+}
+.intervention .name {
+  font-size: 27px !important;
+}
+@media (max-width: 767px) {
+  .outcome-timeline .empty {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .outcome-timeline .empty {
+    display: none !important;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .outcome-timeline .empty {
+    display: none !important;
+  }
 }
 .navigator-old h1,
 .navigator-old h2 {
@@ -11860,7 +11760,6 @@ html:hover [class^="ss-"] {
   display: none;
 }
 .full-screen {
-  background: #f8fcfa;
   position: relative;
   padding-bottom: 60px;
 }
@@ -11897,8 +11796,8 @@ html:hover [class^="ss-"] {
 }
 .spread {
   display: table;
-  width: 100%;
-  height: 90vh;
+  width: 100vw;
+  height: 100vh;
 }
 .spread > div {
   padding: 6em 0;
@@ -12966,6 +12865,7 @@ html a:hover {
 }
 body {
   font-family: "Roboto";
+  line-height: 1.1;
 }
 .site-wide-nav {
   position: fixed;
