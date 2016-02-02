@@ -194,14 +194,13 @@ var OutcomeTimeline = React.createClass({
 
     return (
       <div>
-        <div className='inline-block pad-1'>
+        <div className='inline-block'>
           <AbsoluteFrequency frequency={data.value} metric={metric} denominator={100} breakpoint={10} baseline={baseline} />
         </div>
-        <div className='inline-block pad-1'>
+        <div className='inline-block'>
           <strong>{data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value)} people</strong> <span className='light'>out of 100</span><br />
           <span className='small'>
-            would be expected to experience {measures[measure].name_friendly}<br />
-            compared to when they started
+            would be expected to experience {measures[measure].name_friendly}
           </span>
         </div>
       </div>
@@ -720,8 +719,6 @@ var OutcomeTimeline = React.createClass({
                         </div>
                         TODO: display comparison appropriately */}
                       }
-                      <Source source={entry.source} kind={entry.kind} /><br />
-                      <GradeQuality grade={entry.quality} gradeMap={grades} />
                     </div>
                     {durations.map(function (timepoint, i) {
                       if (entriesByInterventionAndDuration[intervention][timepoint]) {
@@ -733,6 +730,8 @@ var OutcomeTimeline = React.createClass({
                               className='t-cell moment-data'>
                                 <section>
                                   {renderValue(entry.intervention)}
+                                  <Source source={entry.source} kind={entry.kind} /><br />
+                                  <GradeQuality grade={entry.quality} gradeMap={grades} />
                                 </section>
                             </div>
                           )

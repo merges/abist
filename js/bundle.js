@@ -149,7 +149,9 @@ var mockData = require('../data/mock.js')
 
 var medicationsMap = _.indexBy(medications, 'name_generic')
     medicationsMap['dmard'] = {
-      name: 'another RA medication (like methotrexate)'
+      name: 'another dmard',
+      name_generic: 'another RA drug',
+      name_common: 'like methotrexate'
     }
 
 var Nav = require('react-bootstrap').Nav
@@ -293,8 +295,8 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
     var preferencesSelected = this.props.preferencesSelected
 
     if (this.props.mini) {
-      return React.createElement("div", null, 
-        React.createElement("div", {className: "dosage-forms mini"}, 
+      return React.createElement("div", {className: "medication-card mini"}, 
+        React.createElement("div", {className: "dosage-forms"}, 
           medication.forms.map(function (form, i) {
             return (
               React.createElement(DosageForm, {key: i, form: form.name})
@@ -305,35 +307,86 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
       )
     }
     return (
-      React.createElement("div", null, 
-        React.createElement("div", {className: "dosage-forms"}, 
-          medication.forms.map(function (form, i) {
-            return (
-              React.createElement(DosageForm, {key: i, form: form.name})
+      React.createElement("div", {className: "medication-card large"}, 
+        React.createElement("div", {className: "t-table names"}, 
+          React.createElement("div", {className: "t-row"}, 
+            React.createElement("div", {className: "t-cell caption light"}, "medicine (generic) name"), 
+            React.createElement("div", {className: "t-cell caption light"}, 
+              medication.names_brand.length > 1 ? 'brand names' : 'brand name'
             )
-          })
-        ), 
-        this.renderPreferredMedicationName(medication), 
-
-        React.createElement("div", {className: "cost"}, 
-          React.createElement("span", {className: "light"}, "Monthly cost is about"), React.createElement("br", null), 
-          medication.ptda.cost.min != medication.ptda.cost.max ?
-            React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
-            React.createElement("span", null, "$", medication.ptda.cost.max)
-          
-        ), 
-
-        React.createElement("div", {className: "frequency"}, 
-          medication.ptda.frequency.dose &&
-            React.createElement("span", null, 
-              React.createElement("span", {className: "ss-icon ss-calendar inline-block space-r"}), 
-              medication.ptda.frequency.dose == 1 ? 'once ' : 'twice ', 
-              medication.ptda.frequency.multiple > 1 ?
-                React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :
-                React.createElement("span", null, "a ", medication.ptda.frequency.unit)
+          ), 
+          React.createElement("div", {className: "t-row"}, 
+            React.createElement("div", {className: "t-cell generic"}, medication.name_generic.capitalizeFirstletter()), 
+            React.createElement("div", {className: "t-cell brand"}, 
+              medication.names_brand.length > 1 ?
+                React.createElement("span", null, 
+                  medication.names_brand.map(function (item, i) {
+                    return React.createElement("span", null, 
+                      item, i < medication.names_brand.length - 1 && ', '
+                    )
+                  })
+                )
+                :
+                React.createElement("span", null, 
+                  medication.names_brand[0]
+                )
               
             )
-          
+          )
+        ), 
+
+        React.createElement("div", null, 
+          React.createElement("span", {className: "font-size-1 light"}, medication.name_generic_phonetic), 
+          React.createElement("span", {className: "font-size-1 light"}, 
+            medication.class.length > 1 ?
+              React.createElement("span", null, 
+                medication.class.map(function (item, i) {
+                  return React.createElement("span", null, 
+                    item, i < medication.class.length - 1 && ', '
+                  )
+                })
+              )
+              :
+              React.createElement("span", null, 
+                medication.class[0]
+              )
+            
+          )
+        ), 
+
+        React.createElement("div", {className: "t-table"}, 
+          React.createElement("div", {className: "t-row"}, 
+            React.createElement("div", {className: "t-cell caption"}, "how it’s taken"), 
+            React.createElement("div", {className: "t-cell caption"}, "cost")
+          ), 
+          React.createElement("div", {className: "t-row"}, 
+            React.createElement("div", {className: "t-cell dosage-forms pad-r-5"}, 
+              medication.forms.map(function (form, i) {
+                return (
+                  React.createElement(DosageForm, {key: i, form: form.name})
+                )
+              }), 
+              React.createElement("div", {className: "frequency"}, 
+                medication.ptda.frequency.dose &&
+                  React.createElement("span", null, 
+                    React.createElement("span", {className: "ss-icon ss-calendar inline-block space-r"}), 
+                    medication.ptda.frequency.dose == 1 ? 'once ' : 'twice ', 
+                    medication.ptda.frequency.multiple > 1 ?
+                      React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :
+                      React.createElement("span", null, "a ", medication.ptda.frequency.unit)
+                    
+                  )
+                
+              )
+            ), 
+            React.createElement("div", {className: "t-cell cost"}, 
+              React.createElement("span", {className: "light"}, "Monthly cost is about"), React.createElement("br", null), 
+              medication.ptda.cost.min != medication.ptda.cost.max ?
+                React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
+                React.createElement("span", null, "$", medication.ptda.cost.max)
+              
+            )
+          )
         ), 
 
         this.renderPreferences(preferences, preferencesSelected)
@@ -409,6 +462,20 @@ var Navigator = React.createClass({displayName: "Navigator",
       return disabled
     }
 
+    var preferencesDefault = {
+      alcohol: false,
+      cancer_treatment: false,
+      class: getClasses(this.props.medications),
+      cost: null,
+      forms: getDosageForms(this.props.medications),
+      generic_available: false,
+      heart_failure: false,
+      kidney_disease: false,
+      liver_disease: false,
+      pregnancy: false,
+      tb: false
+    }
+
     return {
       data: {},
       dev: this.props.query.dev ? true : false,
@@ -419,24 +486,14 @@ var Navigator = React.createClass({displayName: "Navigator",
       disabledMedications: getDisabledMedications(medications),
       menuOpen: false,
       preferences: this.props.preferences,
-      preferencesSelected: {
-        alcohol: false,
-        cancer_treatment: false,
-        class: getClasses(this.props.medications),
-        cost: null,
-        forms: getDosageForms(this.props.medications),
-        generic_available: false,
-        heart_failure: false,
-        kidney_disease: false,
-        liver_disease: false,
-        pregnancy: false,
-        tb: false
-      },
-
-      selectedIssue: null,
+      preferencesDefault: _.cloneDeep(preferencesDefault),
+      preferencesSelected: _.cloneDeep(preferencesDefault),
+      
+      // UI-related
+      selectedIssue: 'basic',
       selectedTag: null,
       selectedMeasure: null,
-      stickyHolderHeight: 0
+      userReadyToViewData: false
     }
   },
 
@@ -687,21 +744,20 @@ var Navigator = React.createClass({displayName: "Navigator",
 
               return (
                 React.createElement("section", {key: key}, 
-                  React.createElement("div", {className: "flex-container"}, 
+                  React.createElement("div", {className: "pad-t-2 pad-b-2"}, 
                     options.map(function(option, i) {
                       var optionClasses = cx({
-                        'button option': true,
                         'active': !preferencesSelected[key][option]
                       })
                       return (
-                        React.createElement("div", null, 
-                          React.createElement("input", {type: "checkbox", 
-                            className: optionClasses, 
-                            key: option, 
-                            value: option, 
-                            checked: !preferencesSelected[key][option], 
-                            onChange: filterPreference.bind(null, key, option)}, 
-                              option
+                        React.createElement("div", {className: "checkbox"}, 
+                          React.createElement("label", null, 
+                            React.createElement("input", {type: "checkbox", 
+                              key: option, 
+                              value: option, 
+                              checked: !preferencesSelected[key][option], 
+                              onChange: filterPreference.bind(null, key, option)}), 
+                                option
                           )
                         )
                       )
@@ -966,18 +1022,26 @@ var Navigator = React.createClass({displayName: "Navigator",
     return dataByTag
   },
 
-  handleMedicationClick: function (key) {
+  handleMedicationClick: function (medicationName) {
     var disabledMedications = this.state.disabledMedications
-    disabledMedications[key] = !disabledMedications[key]
+    disabledMedications[medicationName] = !disabledMedications[medicationName]
+
+    // User's prefs should be reset, since they would no longer match
+    var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
+    
     this.setState({
+      preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
     })
+
+    console.log(this.state.preferencesSelected)
+
+    this.forceUpdate()
   },
 
   renderMedicationList: function (medications) {
   	var disabledMedications = this.state.disabledMedications
     var handleMedicationClick = this.handleMedicationClick
-    var renderPreferredMedicationName = this.renderPreferredMedicationName
     var preferences = this.props.preferences
     var preferencesSelected = this.state.preferencesSelected
 
@@ -1003,6 +1067,26 @@ var Navigator = React.createClass({displayName: "Navigator",
         )
       )
     }
+  },
+
+  renderMedicationCards: function () {
+    var medications = this.props.medications
+    var disabledMedications = this.state.disabledMedications
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
+
+    return React.createElement("div", {className: "medication-cards"}, 
+      React.createElement("ul", null, 
+        Object.keys(medications).map(function (medication, i) {
+          var medication = medications[medication]
+          return React.createElement("li", {key: i, className: (disabledMedications[medication.name] === true) && 'disabled'}, 
+            React.createElement(MedicationCard, {
+              medication: medication, 
+              preferences: preferences, preferencesSelected: preferencesSelected})
+          )
+        })
+      )
+    )
   },
 
   handleMeasureSelect: function (key) {
@@ -1206,6 +1290,11 @@ var Navigator = React.createClass({displayName: "Navigator",
     var issues = this.props.issues;
     var measures = issues[selectedIssue] && issues[selectedIssue].measures
     
+    if (selectedIssue == 'basic') {
+      return React.createElement("div", null, 
+        this.renderMedicationCards()
+      )
+    }
     return React.createElement("div", null, 
       this.renderDataByMeasure(measures)
     )
@@ -1222,6 +1311,12 @@ var Navigator = React.createClass({displayName: "Navigator",
         data['data'] != {}) {
       return true
     }
+  },
+
+  handleShowDataClick: function(userReadyToViewData) {
+    this.setState({
+      userReadyToViewData: true
+    })
   },
 
   render: function () {
@@ -1379,18 +1474,37 @@ var Navigator = React.createClass({displayName: "Navigator",
         )
       }
 
+      var viewData = this.state.userReadyToViewData
+      var sidebarClasses = cx({
+        'sidebar': true,
+        'compact': viewData,
+        'open': !viewData
+      })
+      var detailsClasses = cx({
+        'details': true,
+        'compact': !viewData,
+        'open': viewData
+      })
+
       // Working navigator
       return (
         React.createElement("div", {className: "navigator"}, 
-          React.createElement("div", {className: "sidebar"}, 
+          React.createElement("div", {className: sidebarClasses}, 
             React.createElement("h1", null, 
               "Rheumatoid arthritis", React.createElement("br", null), 
               React.createElement("span", {className: "color-link"}, "medication choices")
             ), 
             this.renderPreferenceControls(preferences), 
-            this.renderMedicationList(medications)
+            this.renderMedicationList(medications), 
+            !viewData &&
+              React.createElement("button", {
+                className: "btn", 
+                onClick: this.handleShowDataClick.bind(null)}, 
+                  "Show me the data ›"
+              )
+            
           ), 
-          React.createElement("div", {className: "details"}, 
+          React.createElement("div", {className: detailsClasses}, 
             this.renderIssueNavigationBar(this.state.selectedIssue), 
             this.renderDetails(this.state.selectedIssue)
           )
@@ -2274,14 +2388,13 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
     return (
       React.createElement("div", null, 
-        React.createElement("div", {className: "inline-block pad-1"}, 
+        React.createElement("div", {className: "inline-block"}, 
           React.createElement(AbsoluteFrequency, {frequency: data.value, metric: metric, denominator: 100, breakpoint: 10, baseline: baseline})
         ), 
-        React.createElement("div", {className: "inline-block pad-1"}, 
+        React.createElement("div", {className: "inline-block"}, 
           React.createElement("strong", null, data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value), " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
           React.createElement("span", {className: "small"}, 
-            "would be expected to experience ", measures[measure].name_friendly, React.createElement("br", null), 
-            "compared to when they started"
+            "would be expected to experience ", measures[measure].name_friendly
           )
         )
       )
@@ -2798,10 +2911,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                           vs.<br />
                           {entry.comparison.parts.join(' + ')}
                         </div>
-                        TODO: display comparison appropriately */}, 
+                        TODO: display comparison appropriately */}
                       
-                      React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
-                      React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                     ), 
                     durations.map(function (timepoint, i) {
                       if (entriesByInterventionAndDuration[intervention][timepoint]) {
@@ -2812,7 +2923,9 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                               key: intervention + timepoint, 
                               className: "t-cell moment-data"}, 
                                 React.createElement("section", null, 
-                                  renderValue(entry.intervention)
+                                  renderValue(entry.intervention), 
+                                  React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
+                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
                                 )
                             )
                           )
@@ -6468,8 +6581,8 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       React.createElement("div", {className: visualizationClasses}, 
         React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(grade)}, 
           React.createElement("div", null, 
-            React.createElement("span", {className: "tiny-title"}, "Quality"), React.createElement("br", null), 
-            React.createElement("span", null, getIcons(grade))
+            React.createElement("span", {className: "tiny"}, "data quality"), React.createElement("br", null), 
+            React.createElement("span", {className: "box tiny"}, getIcons(grade))
           )
         )
       )
@@ -6485,6 +6598,10 @@ var React = require('react/addons');
 
 var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
 var Tooltip = require('react-bootstrap').Tooltip;
+
+String.prototype.capitalizeFirstletter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1)
+}
 
 // Intervention display with tooltip
 
@@ -6575,33 +6692,66 @@ var Intervention = React.createClass({displayName: "Intervention",
     );
   },
 
+  renderInterventionName: function() {
+    var intervention = this.props.intervention
+    var interventionName = this.props.interventionName
+    var medicationsMap = this.props.medicationsMap
+    var dosage = this.props.dosage
+
+    var html = []
+
+    if (intervention) {
+      for (i = 0; i < intervention.length; i++) {
+        var part = intervention[i]
+        if (medicationsMap && medicationsMap[part]) {
+          var med = medicationsMap[part]
+          html.push(React.createElement("span", {key: part, className: "name"}, 
+            React.createElement("div", {className: "generic"}, med.name_generic.capitalizeFirstletter()), 
+            med.names_brand && React.createElement("div", {className: "small brand"}, "brand name ", med.names_brand[0]), 
+            dosage && React.createElement("div", {className: "small dosage"}, this.getDosageDescription(dosage))
+          ))
+        }
+        else {
+          html.push(React.createElement("span", {key: part, className: "name"}, 
+            part.capitalizeFirstletter()
+          ))
+        }
+        if (i < intervention.length - 1 && intervention.length > 0) {
+          html.push(React.createElement("div", {className: "pad-b-2"}, "+"))
+        }
+      }
+    }
+    else {
+      html.push(React.createElement("span", {className: "name"}, interventionName))
+    }
+    return React.createElement("span", null, html)
+  },
+
   render: function() {
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'intervention': true
     });
 
-    var intervention = this.props.intervention;
-    var interventionName = this.props.interventionName;
-    var medicationsMap = this.props.medicationsMap;
+    var intervention = this.props.intervention
+    var interventionName = this.props.interventionName
+    var medicationsMap = this.props.medicationsMap
+    var dosage = this.props.dosage
 
     if (this.props.dosage) {
       return (
         React.createElement("div", {className: visualizationClasses}, 
-          React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: this.getTooltip(interventionName, this.props.dosage)}, 
+          React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: this.getTooltip(interventionName, dosage && dosage)}, 
             React.createElement("span", null, 
-              React.createElement("span", {className: "name"}, interventionName), React.createElement("br", null), 
-              React.createElement("span", {className: "dosage"}, this.getDosageDescription(this.props.dosage))
+              this.renderInterventionName()
             )
           )
         )
       );
     }
-    return (
-      React.createElement("div", {className: visualizationClasses}, 
-        React.createElement("span", {className: "name"}, interventionString)
-      )
-    );
+    return React.createElement("div", {className: visualizationClasses}, 
+      this.renderInterventionName()
+    )
   }
 });
 
@@ -7343,7 +7493,10 @@ var Source = React.createClass({displayName: "Source",
 
   getTooltip: function(kind) {
     var sourceToDescriptionMap = {
-      'systematic review': 'A systematic review is a high-quality source. Researchers take a comprehensive, consistent look at as much data as they can find to produce a summary of what has been found so far.'
+      'systematic review': 'A systematic review is a high-quality source. Researchers do a consistent review of as much evidence as they can find, looking at the big picture formed by all that research.',
+      'randomized trial': 'A randomized clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
+      'clinical trial': 'A clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
+      'meta-analysis': 'A meta-analysis is a high-quality source. Researchers do a consistent review of as much evidence as they can find, using statistics to compare treatments to one another, and then looking at the big picture formed by those statistics.'
     }
     
     var tooltip = (React.createElement(Tooltip, null, "Click to see more information about the source."))
@@ -7365,9 +7518,11 @@ var Source = React.createClass({displayName: "Source",
     if (source) {
       return (
         React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(kind)}, 
-          React.createElement("a", {className: "source", href: source, target: "_new"}, 
-            React.createElement("span", {className: "tiny-title"}, "Source"), React.createElement("br", null), 
-            kind ? React.createElement("span", null, kind, " »") : 'Click to see source'
+          React.createElement("span", {className: "source"}, 
+            React.createElement("span", {className: "tiny"}, "data source"), React.createElement("br", null), 
+            React.createElement("a", {href: source, target: "_new"}, 
+              kind ? React.createElement("span", {className: "box tiny"}, kind) : 'Click to see source'
+            )
           )
         )
       );
@@ -8278,7 +8433,7 @@ var drugs = [
       "Rasuvo"
     ],
     "class": [
-      "DMARD"
+      "Disease-modifying antirheumatic drug (DMARD)"
     ],
     "generic_available": true,
     "forms": [
@@ -8378,7 +8533,7 @@ var drugs = [
     "name_phonetic": "hye-drox-ee-KLOR-oh-kwine",
     "name_generic_phonetic": "hye-drox-ee-KLOR-oh-kwine",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Antimalarial"
     ],
     "generic_available": true,
@@ -8462,7 +8617,7 @@ var drugs = [
     "name_phonetic": "leh-FLUH-no-mide",
     "name_generic_phonetic": "leh-FLUH-no-mide",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Immune system modulator"
     ],
     "generic_available": true,
@@ -8546,7 +8701,7 @@ var drugs = [
     "name_phonetic": "suhl-fa-SAL-uh-zeen",
     "name_generic_phonetic": "suhl-fa-SAL-uh-zeen",
     "class": [
-      "DMARD"
+      "Disease-modifying antirheumatic drug (DMARD)"
     ],
     "generic_available": true,
     "names_brand": [
@@ -8630,7 +8785,7 @@ var drugs = [
     "name_phonetic": "SIM-puh-nee",
     "name_generic_phonetic": "go-LIM-oo-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -8721,7 +8876,7 @@ var drugs = [
     "name_phonetic": "hew-MEER-uh",
     "name_generic_phonetic": "ad-uh-LIH-muh-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic",
       "TNF blocker"
     ],
@@ -8813,7 +8968,7 @@ var drugs = [
     "name_phonetic": "SIM-zee-uh",
     "name_generic_phonetic": "sir-toh-LIZ-uh-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -8904,7 +9059,7 @@ var drugs = [
     "name_phonetic": "EN-brel",
     "name_generic_phonetic": "eh-TAN-er-sept",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF blocker",
       "Immune system modulator"
     ],
@@ -9001,7 +9156,7 @@ var drugs = [
     "name_generic_phonetic": "rye-TUX-ih-mab",
     "class": [
       "Anti-CD20",
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic"
     ],
     "generic_available": false,
@@ -9093,7 +9248,7 @@ var drugs = [
     "name_phonetic": "REM-ih-kade",
     "name_generic_phonetic": "in-FLIX-ih-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -9186,7 +9341,7 @@ var drugs = [
     "name_generic_phonetic": "a-BAH-tuh-sept",
     "class": [
       "Anti-CTLA4",
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic"
     ],
     "generic_available": false,
@@ -9272,7 +9427,7 @@ var drugs = [
     "name_phonetic": "ak-TEM-ra",
     "name_generic_phonetic": "toh-sil-IZ-oo-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic",
       "IL6 inhibitor"
     ],

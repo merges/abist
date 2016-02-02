@@ -11016,6 +11016,27 @@ html:hover [class^="ss-"] {
 .small {
   font-size: 13px;
 }
+.font-size-1 {
+  font-size: 13px;
+}
+.font-size-2 {
+  font-size: 15px;
+}
+.font-size-3 {
+  font-size: 19px;
+}
+.font-size-4 {
+  font-size: 23px;
+}
+.font-size-5 {
+  font-size: 27px;
+}
+.font-size-6 {
+  font-size: 31px;
+}
+.font-size-7 {
+  font-size: 39px;
+}
 .inline {
   display: inline;
 }
@@ -11148,8 +11169,23 @@ html:hover [class^="ss-"] {
 .space-l {
   margin-left: 0.4em;
 }
-.tiny-title {
-  color: #999;
+.t-table {
+  display: table;
+}
+.t-row {
+  display: table-row;
+}
+.t-cell {
+  display: table-cell;
+}
+.tiny {
+  font-size: 13px;
+}
+.box {
+  display: inline-block;
+  padding: 5px;
+  margin-left: -5px;
+  border: 1px solid #888;
 }
 .pull-tab {
   border-radius: 2px;
@@ -11428,46 +11464,30 @@ html:hover [class^="ss-"] {
   display: block;
 }
 .grade-quality {
-  border-radius: 2px;
-  border-left-width: 2px;
-  border-left-style: solid;
-  padding: 0 0 0 3px;
-  font-size: 10px;
-  margin: .5em 0;
   display: inline-block;
-  overflow-x: hidden;
-  cursor: pointer;
-  color: #bbb;
-  border-color: #bbb;
-  white-space: nowrap;
+}
+.grade-quality .box {
+  padding-top: 4px;
+  padding-bottom: 1px;
 }
 .grade-quality .ss-icon {
   display: inline-block;
-  margin-top: 5px;
   letter-spacing: -0.15em;
-  font-size: 13px;
+  opacity: .3;
 }
-.grade-quality .ss-help {
-  font-size: 1.2em;
+.grade-quality .ss-icon.highlight {
+  opacity: 1;
 }
 .source {
-  border-radius: 2px;
-  border-left-width: 2px;
-  border-left-style: solid;
-  padding: 0 0 0 3px;
-  font-size: 10px;
-  margin: .5em 0;
   display: inline-block;
-  overflow-x: hidden;
-  cursor: pointer;
-  color: #6699ff;
-  border-color: #6699ff;
 }
-.source:hover {
-  text-decoration: none;
+.source .box {
+  color: #6699ff;
 }
 .intervention .name {
-  font-weight: bolder;
+  display: inline-block;
+  vertical-align: text-top;
+  padding-bottom: 5px;
 }
 .population {
   cursor: pointer;
@@ -11516,18 +11536,6 @@ html:hover [class^="ss-"] {
   position: relative;
   transition: box-shadow 0.2s ease;
 }
-.outcome-timeline.horizontal .intervention .name {
-  color: #666;
-  display: inline-block;
-  margin-bottom: .25em;
-  font-size: 16px;
-}
-.outcome-timeline.horizontal .intervention .dosage {
-  display: block;
-  font-size: 11.5px;
-  color: #999;
-  margin-bottom: 1em;
-}
 .navigator {
   background: #222;
   color: white;
@@ -11548,7 +11556,6 @@ html:hover [class^="ss-"] {
 }
 .navigator .sidebar {
   padding: 30px;
-  width: 360px;
   height: 100vh;
   background: #222;
   border-right: 1px solid #333;
@@ -11556,33 +11563,81 @@ html:hover [class^="ss-"] {
   position: fixed;
   top: 0;
   left: 0;
+  max-width: 99999px;
+  transition: width .5s ease;
+  overflow: scroll;
+}
+.navigator .sidebar.compact {
+  width: 360px;
 }
 @media (max-width: 767px) {
-  .navigator .sidebar {
+  .navigator .sidebar.compact {
     display: none !important;
   }
 }
 @media (min-width: 768px) and (max-width: 991px) {
-  .navigator .sidebar {
+  .navigator .sidebar.compact {
     display: none !important;
   }
 }
+.navigator .sidebar.open {
+  width: 100vw;
+}
 .navigator .details {
   padding: 30px;
+  max-width: 99999px;
+}
+.navigator .details.compact {
+  width: 0;
 }
 @media (min-width: 992px) {
-  .navigator .details {
+  .navigator .details.open {
     margin-left: 360px;
   }
 }
 .navigator .medication-cards {
   font-size: 15px;
 }
-.navigator .medication-cards .dosage-forms.mini {
+.navigator .medication-cards .mini .dosage-forms {
   font-size: 13px;
 }
-.navigator .medication-cards .dosage-forms.mini .form-name {
+.navigator .medication-cards .mini .dosage-forms .form-name {
   display: none;
+}
+.navigator .medication-cards .large {
+  color: #f3f3f3;
+  background: #333;
+  border: 1px solid #333;
+  padding: 45px;
+  margin: 15px 0;
+}
+.navigator .medication-cards .large .names {
+  width: 100%;
+  border-bottom: 1px solid #444;
+  color: white;
+  padding-bottom: 2px;
+}
+.navigator .medication-cards .large .names .generic {
+  font-size: 39px;
+  padding-right: 45px;
+  width: 1px;
+}
+.navigator .medication-cards .large .names .brand {
+  font-size: 27px;
+}
+.navigator .medication-cards .large .caption {
+  font-size: 19px;
+}
+@media (max-width: 991px) {
+  .navigator .medication-cards .large .caption {
+    font-size: 13px;
+  }
+  .navigator .medication-cards .large .generic {
+    font-size: 23px !important;
+  }
+  .navigator .medication-cards .large .brand {
+    font-size: 15px !important;
+  }
 }
 .navigator .medication-cards > ul {
   margin: 0;
@@ -11604,7 +11659,8 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards > ul > li > a:hover {
   text-decoration: none;
 }
-.navigator .medication-cards > ul > li.disabled > a {
+.navigator .medication-cards > ul > li.disabled > a,
+.navigator .medication-cards > ul > li.disabled .large {
   border: 1px dotted #333;
   color: #333;
   background: none;
@@ -11655,7 +11711,8 @@ html:hover [class^="ss-"] {
   font-size: 13px;
 }
 .intervention .name {
-  font-size: 27px !important;
+  color: #e8e8e8 !important;
+  font-size: 23px !important;
 }
 @media (max-width: 767px) {
   .outcome-timeline .empty {

@@ -5,6 +5,10 @@ var React = require('react/addons');
 var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
 var Tooltip = require('react-bootstrap').Tooltip;
 
+String.prototype.capitalizeFirstletter = function() {
+  return this.charAt(0).toUpperCase() + this.slice(1)
+}
+
 // Intervention display with tooltip
 
 var Intervention = React.createClass({
@@ -94,33 +98,66 @@ var Intervention = React.createClass({
     );
   },
 
+  renderInterventionName: function() {
+    var intervention = this.props.intervention
+    var interventionName = this.props.interventionName
+    var medicationsMap = this.props.medicationsMap
+    var dosage = this.props.dosage
+
+    var html = []
+
+    if (intervention) {
+      for (i = 0; i < intervention.length; i++) {
+        var part = intervention[i]
+        if (medicationsMap && medicationsMap[part]) {
+          var med = medicationsMap[part]
+          html.push(<span key={part} className='name'>
+            <div className='generic'>{med.name_generic.capitalizeFirstletter()}</div>
+            {med.names_brand && <div className='small brand'>brand name {med.names_brand[0]}</div>}
+            {dosage && <div className='small dosage'>{this.getDosageDescription(dosage)}</div>}
+          </span>)
+        }
+        else {
+          html.push(<span key={part} className='name'>
+            {part.capitalizeFirstletter()}
+          </span>)
+        }
+        if (i < intervention.length - 1 && intervention.length > 0) {
+          html.push(<div className='pad-b-2'>+</div>)
+        }
+      }
+    }
+    else {
+      html.push(<span className='name'>{interventionName}</span>)
+    }
+    return <span>{html}</span>
+  },
+
   render: function() {
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'intervention': true
     });
 
-    var intervention = this.props.intervention;
-    var interventionName = this.props.interventionName;
-    var medicationsMap = this.props.medicationsMap;
+    var intervention = this.props.intervention
+    var interventionName = this.props.interventionName
+    var medicationsMap = this.props.medicationsMap
+    var dosage = this.props.dosage
 
     if (this.props.dosage) {
       return (
         <div className={visualizationClasses}>
-          <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(interventionName, this.props.dosage)}>
+          <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(interventionName, dosage && dosage)}>
             <span>
-              <span className='name'>{interventionName}</span><br />
-              <span className='dosage'>{this.getDosageDescription(this.props.dosage)}</span>
+              {this.renderInterventionName()}
             </span>
           </OverlayTrigger>
         </div>
       );
     }
-    return (
-      <div className={visualizationClasses}>
-        <span className='name'>{interventionString}</span>
-      </div>
-    );
+    return <div className={visualizationClasses}>
+      {this.renderInterventionName()}
+    </div>
   }
 });
 

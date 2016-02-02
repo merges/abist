@@ -11,7 +11,9 @@ var mockData = require('../data/mock.js')
 
 var medicationsMap = _.indexBy(medications, 'name_generic')
     medicationsMap['dmard'] = {
-      name: 'another RA medication (like methotrexate)'
+      name: 'another dmard',
+      name_generic: 'another RA drug',
+      name_common: 'like methotrexate'
     }
 
 var Nav = require('react-bootstrap').Nav
@@ -155,8 +157,8 @@ var MedicationCard = React.createClass({
     var preferencesSelected = this.props.preferencesSelected
 
     if (this.props.mini) {
-      return <div>
-        <div className='dosage-forms mini'>
+      return <div className='medication-card mini'>
+        <div className='dosage-forms'>
           {medication.forms.map(function (form, i) {
             return (
               <DosageForm key={i} form={form.name} />
@@ -167,35 +169,86 @@ var MedicationCard = React.createClass({
       </div>
     }
     return (
-      <div>
-        <div className='dosage-forms'>
-          {medication.forms.map(function (form, i) {
-            return (
-              <DosageForm key={i} form={form.name} />
-            )
-          })}
-        </div>
-        {this.renderPreferredMedicationName(medication)}
-
-        <div className='cost'>
-          <span className='light'>Monthly cost is about</span><br />
-          {medication.ptda.cost.min != medication.ptda.cost.max ?
-            <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
-            <span>${medication.ptda.cost.max}</span>
-          }
-        </div>
-
-        <div className='frequency'>
-          {medication.ptda.frequency.dose &&
-            <span>
-              <span className='ss-icon ss-calendar inline-block space-r'></span>
-              {medication.ptda.frequency.dose == 1 ? 'once ' : 'twice '}
-              {medication.ptda.frequency.multiple > 1 ?
-                <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
-                <span>a {medication.ptda.frequency.unit}</span>
+      <div className='medication-card large'>
+        <div className='t-table names'>
+          <div className='t-row'>
+            <div className='t-cell caption light'>medicine (generic) name</div>
+            <div className='t-cell caption light'>
+              {medication.names_brand.length > 1 ? 'brand names' : 'brand name'}
+            </div>
+          </div>
+          <div className='t-row'>
+            <div className='t-cell generic'>{medication.name_generic.capitalizeFirstletter()}</div>
+            <div className='t-cell brand'>
+              {medication.names_brand.length > 1 ?
+                <span>
+                  {medication.names_brand.map(function (item, i) {
+                    return <span>
+                      {item}{i < medication.names_brand.length - 1 && ', '}
+                    </span>
+                  })}
+                </span>
+                :
+                <span>
+                  {medication.names_brand[0]}
+                </span>
               }
-            </span>
-          }
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <span className='font-size-1 light'>{medication.name_generic_phonetic}</span>
+          <span className='font-size-1 light'>
+            {medication.class.length > 1 ?
+              <span>
+                {medication.class.map(function (item, i) {
+                  return <span>
+                    {item}{i < medication.class.length - 1 && ', '}
+                  </span>
+                })}
+              </span>
+              :
+              <span>
+                {medication.class[0]}
+              </span>
+            }
+          </span>
+        </div>
+
+        <div className='t-table'>
+          <div className='t-row'>
+            <div className='t-cell caption'>how it’s taken</div>
+            <div className='t-cell caption'>cost</div>
+          </div>
+          <div className='t-row'>
+            <div className='t-cell dosage-forms pad-r-5'>
+              {medication.forms.map(function (form, i) {
+                return (
+                  <DosageForm key={i} form={form.name} />
+                )
+              })}
+              <div className='frequency'>
+                {medication.ptda.frequency.dose &&
+                  <span>
+                    <span className='ss-icon ss-calendar inline-block space-r'></span>
+                    {medication.ptda.frequency.dose == 1 ? 'once ' : 'twice '}
+                    {medication.ptda.frequency.multiple > 1 ?
+                      <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
+                      <span>a {medication.ptda.frequency.unit}</span>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+            <div className='t-cell cost'>
+              <span className='light'>Monthly cost is about</span><br />
+              {medication.ptda.cost.min != medication.ptda.cost.max ?
+                <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
+                <span>${medication.ptda.cost.max}</span>
+              }
+            </div>
+          </div>
         </div>
 
         {this.renderPreferences(preferences, preferencesSelected)}
@@ -271,6 +324,20 @@ var Navigator = React.createClass({
       return disabled
     }
 
+    var preferencesDefault = {
+      alcohol: false,
+      cancer_treatment: false,
+      class: getClasses(this.props.medications),
+      cost: null,
+      forms: getDosageForms(this.props.medications),
+      generic_available: false,
+      heart_failure: false,
+      kidney_disease: false,
+      liver_disease: false,
+      pregnancy: false,
+      tb: false
+    }
+
     return {
       data: {},
       dev: this.props.query.dev ? true : false,
@@ -281,24 +348,14 @@ var Navigator = React.createClass({
       disabledMedications: getDisabledMedications(medications),
       menuOpen: false,
       preferences: this.props.preferences,
-      preferencesSelected: {
-        alcohol: false,
-        cancer_treatment: false,
-        class: getClasses(this.props.medications),
-        cost: null,
-        forms: getDosageForms(this.props.medications),
-        generic_available: false,
-        heart_failure: false,
-        kidney_disease: false,
-        liver_disease: false,
-        pregnancy: false,
-        tb: false
-      },
-
-      selectedIssue: null,
+      preferencesDefault: _.cloneDeep(preferencesDefault),
+      preferencesSelected: _.cloneDeep(preferencesDefault),
+      
+      // UI-related
+      selectedIssue: 'basic',
       selectedTag: null,
       selectedMeasure: null,
-      stickyHolderHeight: 0
+      userReadyToViewData: false
     }
   },
 
@@ -549,22 +606,21 @@ var Navigator = React.createClass({
 
               return (
                 <section key={key}>
-                  <div className='flex-container'>
+                  <div className='pad-t-2 pad-b-2'>
                     {options.map(function(option, i) {
                       var optionClasses = cx({
-                        'button option': true,
                         'active': !preferencesSelected[key][option]
                       })
                       return (
-                        <div>
-                          <input type='checkbox'
-                            className={optionClasses}
-                            key={option}
-                            value={option}
-                            checked={!preferencesSelected[key][option]}
-                            onChange={filterPreference.bind(null, key, option)}>
-                              {option}
-                          </input>
+                        <div className='checkbox'>
+                          <label>
+                            <input type='checkbox'
+                              key={option}
+                              value={option}
+                              checked={!preferencesSelected[key][option]}
+                              onChange={filterPreference.bind(null, key, option)} />
+                                {option}
+                          </label>
                         </div>
                       )
                       // return (
@@ -828,18 +884,26 @@ var Navigator = React.createClass({
     return dataByTag
   },
 
-  handleMedicationClick: function (key) {
+  handleMedicationClick: function (medicationName) {
     var disabledMedications = this.state.disabledMedications
-    disabledMedications[key] = !disabledMedications[key]
+    disabledMedications[medicationName] = !disabledMedications[medicationName]
+
+    // User's prefs should be reset, since they would no longer match
+    var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
+    
     this.setState({
+      preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
     })
+
+    console.log(this.state.preferencesSelected)
+
+    this.forceUpdate()
   },
 
   renderMedicationList: function (medications) {
   	var disabledMedications = this.state.disabledMedications
     var handleMedicationClick = this.handleMedicationClick
-    var renderPreferredMedicationName = this.renderPreferredMedicationName
     var preferences = this.props.preferences
     var preferencesSelected = this.state.preferencesSelected
 
@@ -865,6 +929,26 @@ var Navigator = React.createClass({
         </div>
       )
     }
+  },
+
+  renderMedicationCards: function () {
+    var medications = this.props.medications
+    var disabledMedications = this.state.disabledMedications
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
+
+    return <div className='medication-cards'>
+      <ul>
+        {Object.keys(medications).map(function (medication, i) {
+          var medication = medications[medication]
+          return <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
+            <MedicationCard
+              medication={medication}
+              preferences={preferences} preferencesSelected={preferencesSelected} />
+          </li>
+        })}
+      </ul>
+    </div>
   },
 
   handleMeasureSelect: function (key) {
@@ -1068,6 +1152,11 @@ var Navigator = React.createClass({
     var issues = this.props.issues;
     var measures = issues[selectedIssue] && issues[selectedIssue].measures
     
+    if (selectedIssue == 'basic') {
+      return <div>
+        {this.renderMedicationCards()}
+      </div>
+    }
     return <div>
       {this.renderDataByMeasure(measures)}
     </div>
@@ -1084,6 +1173,12 @@ var Navigator = React.createClass({
         data['data'] != {}) {
       return true
     }
+  },
+
+  handleShowDataClick: function(userReadyToViewData) {
+    this.setState({
+      userReadyToViewData: true
+    })
   },
 
   render: function () {
@@ -1241,18 +1336,37 @@ var Navigator = React.createClass({
         )
       }
 
+      var viewData = this.state.userReadyToViewData
+      var sidebarClasses = cx({
+        'sidebar': true,
+        'compact': viewData,
+        'open': !viewData
+      })
+      var detailsClasses = cx({
+        'details': true,
+        'compact': !viewData,
+        'open': viewData
+      })
+
       // Working navigator
       return (
         <div className='navigator'>
-          <div className='sidebar'>
+          <div className={sidebarClasses}>
             <h1>
               Rheumatoid arthritis<br />
               <span className='color-link'>medication choices</span>
             </h1>
             {this.renderPreferenceControls(preferences)}
             {this.renderMedicationList(medications)}
+            {!viewData &&
+              <button
+                className='btn'
+                onClick={this.handleShowDataClick.bind(null)}>
+                  Show me the data ›
+              </button>
+            }
           </div>
-          <div className='details'>
+          <div className={detailsClasses}>
             {this.renderIssueNavigationBar(this.state.selectedIssue)}
             {this.renderDetails(this.state.selectedIssue)}
           </div>

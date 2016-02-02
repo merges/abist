@@ -38,7 +38,7 @@
 @color-ui-l: #C0A38B;
 @color-ui: #A18269;
 
-// New color
+// Dark color
 
 @color-base-1: @color-grey-xxxd;
 @color-base-2: @color-grey-xxd;
@@ -53,6 +53,21 @@
 @color-link-3: @color-blue-l;
 @color-body: white;
 
+// Light color
+
+// @color-accent-1: @color-grey-d;
+// @color-accent-2: @color-grey-xd;
+// @color-accent-3: @color-grey-xxd;
+// @color-accent-4: @color-grey-xxxd;
+// @color-base-1: white;
+// @color-base-2: @color-grey-xxxxl;
+// @color-base-3: @color-grey-xl;
+// @color-base-4: @color-grey-l;
+// @color-link-1: @color-blue-d;
+// @color-link-2: @color-blue;
+// @color-link-3: @color-blue-l;
+// @color-body: @color-accent-4;
+
 @font-size-1: 13px;
 @font-size-2: 15px;
 @font-size-3: 19px;
@@ -63,6 +78,27 @@
 
 .small {
   font-size: @font-size-1;
+}
+.font-size-1 {
+  font-size: @font-size-1;
+}
+.font-size-2 {
+  font-size: @font-size-2;
+}
+.font-size-3 {
+  font-size: @font-size-3;
+}
+.font-size-4 {
+  font-size: @font-size-4;
+}
+.font-size-5 {
+  font-size: @font-size-5;
+}
+.font-size-6 {
+  font-size: @font-size-6;
+}
+.font-size-7 {
+  font-size: @font-size-7;
 }
 
 .inline {
@@ -220,10 +256,29 @@
   margin-left: 0.4em;
 }
 
+// Table
+
+.t-table {
+  display: table;
+}
+.t-row {
+  display: table-row;
+}
+.t-cell {
+  display: table-cell;
+}
+
 // Etc.
 
-.tiny-title {
-  color: @color-grey-l;
+.tiny {
+  font-size: @font-size-1;
+}
+
+.box {
+  display: inline-block;
+  padding: @pad-1;
+  margin-left: -@pad-1;
+  border: 1px solid @color-base-4;
 }
 
 .pull-tab {

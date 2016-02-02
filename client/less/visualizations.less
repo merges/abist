@@ -175,37 +175,40 @@
 // GRADE quality widget
 
 .grade-quality {
-  .pull-tab;
-  color: @color-grey-xl;
-  border-color: @color-grey-xl;
-  white-space: nowrap;
+  display: inline-block;
 
+  .box {
+    padding-top: 4px;
+    padding-bottom: 1px;
+  }
   .ss-icon {
     display: inline-block;
-    margin-top: 5px;
     letter-spacing: -.15em;
-    font-size: 13px;
-  }
-  .ss-help {
-    font-size: 1.2em;
+    opacity: .3;
+
+    &.highlight {
+      opacity: 1;
+    }
   }
 }
 
 // Evidence source widget
 
 .source {
-  .pull-tab;
-  color: @color-blue;
-  border-color: @color-blue;
-  
-  &:hover {
-    text-decoration: none;
+  display: inline-block;
+
+  .box {
+    color: @color-link-2;
   }
 }
 
+// Intervention widget
+
 .intervention {
   .name {
-    font-weight: bolder;
+    display: inline-block;
+    vertical-align: text-top;
+    padding-bottom: @pad-1;
   }
 }
 
@@ -264,21 +267,6 @@
       vertical-align: top;
       position: relative;
       transition: box-shadow .2s ease;
-    }
-  }
-  .intervention {
-
-    .name {
-      color: @color-grey-d;
-      display: inline-block;
-      margin-bottom: .25em;
-      font-size: @font-l;
-    }
-    .dosage {
-      display: block;
-      font-size: @font-s;
-      color: @color-grey-l;
-      margin-bottom: 1em;
     }
   }
 }

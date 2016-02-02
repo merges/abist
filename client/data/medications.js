@@ -12,7 +12,7 @@ var drugs = [
       "Rasuvo"
     ],
     "class": [
-      "DMARD"
+      "Disease-modifying antirheumatic drug (DMARD)"
     ],
     "generic_available": true,
     "forms": [
@@ -112,7 +112,7 @@ var drugs = [
     "name_phonetic": "hye-drox-ee-KLOR-oh-kwine",
     "name_generic_phonetic": "hye-drox-ee-KLOR-oh-kwine",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Antimalarial"
     ],
     "generic_available": true,
@@ -196,7 +196,7 @@ var drugs = [
     "name_phonetic": "leh-FLUH-no-mide",
     "name_generic_phonetic": "leh-FLUH-no-mide",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Immune system modulator"
     ],
     "generic_available": true,
@@ -280,7 +280,7 @@ var drugs = [
     "name_phonetic": "suhl-fa-SAL-uh-zeen",
     "name_generic_phonetic": "suhl-fa-SAL-uh-zeen",
     "class": [
-      "DMARD"
+      "Disease-modifying antirheumatic drug (DMARD)"
     ],
     "generic_available": true,
     "names_brand": [
@@ -364,7 +364,7 @@ var drugs = [
     "name_phonetic": "SIM-puh-nee",
     "name_generic_phonetic": "go-LIM-oo-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -455,7 +455,7 @@ var drugs = [
     "name_phonetic": "hew-MEER-uh",
     "name_generic_phonetic": "ad-uh-LIH-muh-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic",
       "TNF blocker"
     ],
@@ -547,7 +547,7 @@ var drugs = [
     "name_phonetic": "SIM-zee-uh",
     "name_generic_phonetic": "sir-toh-LIZ-uh-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -638,7 +638,7 @@ var drugs = [
     "name_phonetic": "EN-brel",
     "name_generic_phonetic": "eh-TAN-er-sept",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF blocker",
       "Immune system modulator"
     ],
@@ -735,7 +735,7 @@ var drugs = [
     "name_generic_phonetic": "rye-TUX-ih-mab",
     "class": [
       "Anti-CD20",
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic"
     ],
     "generic_available": false,
@@ -827,7 +827,7 @@ var drugs = [
     "name_phonetic": "REM-ih-kade",
     "name_generic_phonetic": "in-FLIX-ih-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "TNF inhibitor"
     ],
     "generic_available": false,
@@ -920,7 +920,7 @@ var drugs = [
     "name_generic_phonetic": "a-BAH-tuh-sept",
     "class": [
       "Anti-CTLA4",
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic"
     ],
     "generic_available": false,
@@ -1006,7 +1006,7 @@ var drugs = [
     "name_phonetic": "ak-TEM-ra",
     "name_generic_phonetic": "toh-sil-IZ-oo-mab",
     "class": [
-      "DMARD",
+      "Disease-modifying antirheumatic drug (DMARD)",
       "Biologic",
       "IL6 inhibitor"
     ],

@@ -22,25 +22,38 @@
 
 	// Basic layout
 	.sidebar {
-		.hidden-xs;
-		.hidden-sm;
 		.pad-4;
-
-		width: 360px;
 		height: 100vh;
 		background: @color-base-1;
 		border-right: 1px solid @color-base-2;
-		
 		z-index: 1;
 		position: fixed;
 		top: 0;
 		left: 0;
+		max-width: 99999px;
+		transition: width .5s ease;
+		overflow: scroll;
+
+		&.compact {
+			.hidden-xs;
+			.hidden-sm;
+			width: 360px;
+		}
+		&.open {
+			width: 100vw;
+		}
 	}
 	.details {
 		.pad-4;
+		max-width: 99999px;
 
-		@media (min-width: @screen-md-min) {
-			margin-left: 360px;
+		&.compact {
+			width: 0;
+		}
+		&.open {
+			@media (min-width: @screen-md-min) {
+				margin-left: 360px;
+			}
 		}
 	}
 
@@ -48,11 +61,51 @@
 	.medication-cards {
 		font-size: @font-size-2;
 
-		.dosage-forms.mini {
-			font-size: @font-size-1;
+		.mini  {
+			.dosage-forms{
+				font-size: @font-size-1;
 
-			.form-name {
-				display: none;
+				.form-name {
+					display: none;
+				}
+			}
+		}
+
+		.large {
+			color: @color-accent-4;
+			background: @color-base-2;
+			border: 1px solid @color-base-2; 
+			padding: @pad-5;
+			margin: @pad-3 0;
+
+			.names {
+				width: 100%;
+				border-bottom: 1px solid @color-base-3;
+				color: @color-body;
+				padding-bottom: 2px;
+
+				.generic {
+					.font-size-7;
+					.pad-r-5;
+					width: 1px;
+				}
+				.brand {
+					.font-size-5;
+				}
+			}
+			.caption {
+				.font-size-3;
+			}
+			@media (max-width: @screen-sm-max) {
+				.caption {
+					.font-size-1;
+				}
+				.generic {
+					.font-size-4 !important;
+				}
+				.brand {
+					.font-size-2 !important;
+				}
 			}
 		}
 		
@@ -66,7 +119,7 @@
 
 				> a {
 					padding: @pad-1 @pad-1 @pad-1 @pad-1;
-					color: white;
+					color: @color-body;
 					display: block;
 					background: @color-base-2;
 					border: 1px solid @color-base-2;
@@ -80,7 +133,8 @@
 					}
 				}
 				&.disabled {
-					> a {
+					> a,
+					.large {
 						border: 1px dotted @color-base-2; 
 						color: @color-base-2;
 						background: none;
@@ -158,7 +212,8 @@
 
 .intervention {
 	.name {
-		font-size: @font-size-5 !important;
+		color: @color-accent-2 !important;
+		font-size: @font-size-4 !important;
 	}
 }
 

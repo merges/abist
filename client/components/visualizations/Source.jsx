@@ -16,7 +16,10 @@ var Source = React.createClass({
 
   getTooltip: function(kind) {
     var sourceToDescriptionMap = {
-      'systematic review': 'A systematic review is a high-quality source. Researchers take a comprehensive, consistent look at as much data as they can find to produce a summary of what has been found so far.'
+      'systematic review': 'A systematic review is a high-quality source. Researchers do a consistent review of as much evidence as they can find, looking at the big picture formed by all that research.',
+      'randomized trial': 'A randomized clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
+      'clinical trial': 'A clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
+      'meta-analysis': 'A meta-analysis is a high-quality source. Researchers do a consistent review of as much evidence as they can find, using statistics to compare treatments to one another, and then looking at the big picture formed by those statistics.'
     }
     
     var tooltip = (<Tooltip>Click to see more information about the source.</Tooltip>)
@@ -38,10 +41,12 @@ var Source = React.createClass({
     if (source) {
       return (
         <OverlayTrigger delayHide={150} placement='right' overlay={getTooltip(kind)}>
-          <a className='source' href={source} target='_new'>
-            <span className='tiny-title'>Source</span><br />
-            {kind ? <span>{kind} »</span> : 'Click to see source'}
-          </a>
+          <span className='source'>
+            <span className='tiny'>data source</span><br />
+            <a href={source} target='_new'>
+              {kind ? <span className='box tiny'>{kind}</span> : 'Click to see source'}
+            </a>
+          </span>
         </OverlayTrigger>
       );
     }
