@@ -5,17 +5,16 @@ var cx = React.addons.classSet
 var _ = require('lodash');
 var get = require('../data/get.js');
 
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
 var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
+var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
-var VisualAnalogScale = require('./visualizations/VisualAnalogScale.jsx');
 
 // Outcome differences
 
-var OutcomeDifferences = React.createClass({
+var OutcomeRelativeDifferences = React.createClass({
   propTypes: {
     data: React.PropTypes.object.isRequired,
     dataFiltered: React.PropTypes.array.isRequired,
@@ -63,7 +62,8 @@ var OutcomeDifferences = React.createClass({
             return (
               <div key={i} style={entryStyle}>
                 <span style={{display: 'inline-block'}}>
-                  <Intervention 
+                  <Intervention
+                    intervention={entry.intervention.parts}
                     interventionName={entry.intervention.parts.join(' + ')}
                     dosage={entry.intervention.dosage} />
                   {entry.comparison &&
@@ -72,7 +72,7 @@ var OutcomeDifferences = React.createClass({
                       {entry.comparison.parts.join(' + ')}
                     </div>
                   }
-                  <VisualAnalogScale key={i} value={value} />
+                  <RelativeDifferenceBlocks key={i} value={value} />
                 </span>
                 <span style={inlineStyle}>
                   <Source source={entry.source} kind={entry.kind} />
@@ -89,4 +89,4 @@ var OutcomeDifferences = React.createClass({
   }
 });
 
-module.exports = OutcomeDifferences;
+module.exports = OutcomeRelativeDifferences;

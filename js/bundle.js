@@ -160,7 +160,7 @@ var NavItem = require('react-bootstrap').NavItem
 var Sticky = require('react-sticky')
 
 var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
-var OutcomeDifferences = require('./OutcomeDifferences.jsx')
+var OutcomeRelativeDifferences = require('./OutcomeRelativeDifferences.jsx')
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
 var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
@@ -488,7 +488,7 @@ var Navigator = React.createClass({displayName: "Navigator",
       preferences: this.props.preferences,
       preferencesDefault: _.cloneDeep(preferencesDefault),
       preferencesSelected: _.cloneDeep(preferencesDefault),
-      
+
       // UI-related
       selectedIssue: 'basic',
       selectedTag: null,
@@ -980,7 +980,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     _.each(measures, function (measure) {
       dataByMeasure[measure] = {}
       dataByMeasure[measure]['data'] = []
-      
+
       // Source (sheet in spreadsheet at https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=302670246)
       _.each(data, function (source) {
         // Entry i.e. line of spreadsheet
@@ -1028,7 +1028,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     // User's prefs should be reset, since they would no longer match
     var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
-    
+
     this.setState({
       preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
@@ -1191,13 +1191,13 @@ var Navigator = React.createClass({displayName: "Navigator",
     var getDataByMeasure = this.getDataByMeasure
     var medications = this.props.medications
     var disabledMedications = this.state.disabledMedications
-    
+
     var html = []
 
     _.each(measures, function (measureName) {
       if (measureName == 'patient_pain') {
         html.push(React.createElement("div", {key: measureName}, 
-          React.createElement(OutcomeDifferences, {
+          React.createElement(OutcomeRelativeDifferences, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
             medications: medications, 
@@ -1238,7 +1238,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     if (selectedMeasure == 'patient_pain') {
       return (
-        React.createElement(OutcomeDifferences, {
+        React.createElement(OutcomeRelativeDifferences, {
           data: data, 
           dataByTag: this.getDataByTag(selectedTag), 
           medications: medications, 
@@ -1289,7 +1289,7 @@ var Navigator = React.createClass({displayName: "Navigator",
   renderDetails: function (selectedIssue) {
     var issues = this.props.issues;
     var measures = issues[selectedIssue] && issues[selectedIssue].measures
-    
+
     if (selectedIssue == 'basic') {
       return React.createElement("div", null, 
         this.renderMedicationCards()
@@ -1530,7 +1530,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 })
 
 module.exports = Navigator
-},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"../data/preferences.js":33,"./OutcomeAdverseEvents.jsx":4,"./OutcomeDifferences.jsx":5,"./OutcomeRelativeComparison.jsx":6,"./OutcomeTimeline.jsx":7,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
+},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"../data/preferences.js":33,"./OutcomeAdverseEvents.jsx":4,"./OutcomeRelativeComparison.jsx":5,"./OutcomeRelativeDifferences.jsx":6,"./OutcomeTimeline.jsx":7,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -1758,100 +1758,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 });
 
 module.exports = OutcomeAdverseEvents;
-},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/AbsoluteRiskComparison.jsx":19,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],5:[function(require,module,exports){
-/** @jsx React.DOM */
-
-var React = require('react/addons');
-var cx = React.addons.classSet
-var _ = require('lodash');
-var get = require('../data/get.js');
-
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency.jsx');
-var Difference = require('./visualizations/Difference.jsx');
-var GradeQuality = require('./visualizations/GradeQuality.jsx');
-var Intervention = require('./visualizations/Intervention.jsx');
-var Population = require('./visualizations/Population.jsx');
-var Source = require('./visualizations/Source.jsx');
-var VisualAnalogScale = require('./visualizations/VisualAnalogScale.jsx');
-
-// Outcome differences
-
-var OutcomeDifferences = React.createClass({displayName: "OutcomeDifferences",
-  propTypes: {
-    data: React.PropTypes.object.isRequired,
-    dataFiltered: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired,
-    measure: React.PropTypes.string
-  },
-
-  render: function() {
-    var classes = cx({
-      'processing': true,
-      'results': true
-    })
-
-    var data = this.props.data
-    var dataFiltered = this.props.dataFiltered
-    var disabledMedications = this.props.disabledMedications
-    var medications = this.props.medications
-    var measure = this.props.measure
-
-    var grades = data.grades
-
-    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
-
-    var sortedEntries = _.sortBy(entries, function(entry) {
-      if (entry.intervention) {
-        return entry.intervention.parts[0]
-      }
-    })
-
-    return React.createElement("div", null, 
-      sortedEntries.map(function(entry, i) {
-        if (entry.intervention && entry.intervention['mean_score_difference']) {
-          var value = entry.intervention['mean_score_difference'].value.value
-
-          if (value != null) {
-            var entryStyle = {
-              marginBottom: '15px'
-            }
-            var inlineStyle = {
-              display: 'inline-block',
-              marginLeft: '15px'
-            }
-
-            return (
-              React.createElement("div", {key: i, style: entryStyle}, 
-                React.createElement("span", {style: {display: 'inline-block'}}, 
-                  React.createElement(Intervention, {
-                    interventionName: entry.intervention.parts.join(' + '), 
-                    dosage: entry.intervention.dosage}), 
-                  entry.comparison &&
-                    React.createElement("div", {className: "light"}, 
-                      "vs.", React.createElement("br", null), 
-                      entry.comparison.parts.join(' + ')
-                    ), 
-                  
-                  React.createElement(VisualAnalogScale, {key: i, value: value})
-                ), 
-                React.createElement("span", {style: inlineStyle}, 
-                  React.createElement(Source, {source: entry.source, kind: entry.kind})
-                ), 
-                React.createElement("span", {style: inlineStyle}, 
-                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
-                )
-              )
-            )
-          }
-        }
-      })
-    )
-  }
-});
-
-module.exports = OutcomeDifferences;
-},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/Source.jsx":26,"./visualizations/VisualAnalogScale.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],6:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/AbsoluteRiskComparison.jsx":19,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":25,"./visualizations/RiskRelativeToBaseline.jsx":26,"./visualizations/Source.jsx":27,"lodash":"lodash","react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],5:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -2169,7 +2076,7 @@ var OutcomeRelativeComparison = React.createClass({displayName: "OutcomeRelative
 
     var measures = this.props.data.measures
     var grades = data.grades
-    
+
     var renderEntry = this.renderEntry
 
     var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
@@ -2181,7 +2088,7 @@ var OutcomeRelativeComparison = React.createClass({displayName: "OutcomeRelative
         )
       )
     );
-    
+
     // return (
     //   <div className={classes}>
     //     {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
@@ -2191,7 +2098,100 @@ var OutcomeRelativeComparison = React.createClass({displayName: "OutcomeRelative
 });
 
 module.exports = OutcomeRelativeComparison;
-},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":25,"./visualizations/RiskRelativeToBaseline.jsx":26,"./visualizations/Source.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],6:[function(require,module,exports){
+/** @jsx React.DOM */
+
+var React = require('react/addons');
+var cx = React.addons.classSet
+var _ = require('lodash');
+var get = require('../data/get.js');
+
+var Difference = require('./visualizations/Difference.jsx');
+var GradeQuality = require('./visualizations/GradeQuality.jsx');
+var Intervention = require('./visualizations/Intervention.jsx');
+var Population = require('./visualizations/Population.jsx');
+var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
+var Source = require('./visualizations/Source.jsx');
+
+// Outcome differences
+
+var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativeDifferences",
+  propTypes: {
+    data: React.PropTypes.object.isRequired,
+    dataFiltered: React.PropTypes.array.isRequired,
+    disabledMedications: React.PropTypes.object,
+    medications: React.PropTypes.array.isRequired,
+    measure: React.PropTypes.string
+  },
+
+  render: function() {
+    var classes = cx({
+      'processing': true,
+      'results': true
+    })
+
+    var data = this.props.data
+    var dataFiltered = this.props.dataFiltered
+    var disabledMedications = this.props.disabledMedications
+    var medications = this.props.medications
+    var measure = this.props.measure
+
+    var grades = data.grades
+
+    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
+
+    var sortedEntries = _.sortBy(entries, function(entry) {
+      if (entry.intervention) {
+        return entry.intervention.parts[0]
+      }
+    })
+
+    return React.createElement("div", null, 
+      sortedEntries.map(function(entry, i) {
+        if (entry.intervention && entry.intervention['mean_score_difference']) {
+          var value = entry.intervention['mean_score_difference'].value.value
+
+          if (value != null) {
+            var entryStyle = {
+              marginBottom: '15px'
+            }
+            var inlineStyle = {
+              display: 'inline-block',
+              marginLeft: '15px'
+            }
+
+            return (
+              React.createElement("div", {key: i, style: entryStyle}, 
+                React.createElement("span", {style: {display: 'inline-block'}}, 
+                  React.createElement(Intervention, {
+                    intervention: entry.intervention.parts, 
+                    interventionName: entry.intervention.parts.join(' + '), 
+                    dosage: entry.intervention.dosage}), 
+                  entry.comparison &&
+                    React.createElement("div", {className: "light"}, 
+                      "vs.", React.createElement("br", null), 
+                      entry.comparison.parts.join(' + ')
+                    ), 
+                  
+                  React.createElement(RelativeDifferenceBlocks, {key: i, value: value})
+                ), 
+                React.createElement("span", {style: inlineStyle}, 
+                  React.createElement(Source, {source: entry.source, kind: entry.kind})
+                ), 
+                React.createElement("span", {style: inlineStyle}, 
+                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                )
+              )
+            )
+          }
+        }
+      })
+    )
+  }
+});
+
+module.exports = OutcomeRelativeDifferences;
+},{"../data/get.js":30,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeDifferenceBlocks.jsx":24,"./visualizations/Source.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons')
@@ -2967,7 +2967,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 })
 
 module.exports = OutcomeTimeline
-},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"lodash":"lodash","react/addons":"react/addons"}],8:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":25,"./visualizations/RiskRelativeToBaseline.jsx":26,"./visualizations/Source.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],8:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -4386,7 +4386,7 @@ var Processing = React.createClass({displayName: "Processing",
 });
 
 module.exports = Processing;
-},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":24,"./visualizations/RiskRelativeToBaseline.jsx":25,"./visualizations/Source.jsx":26,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],9:[function(require,module,exports){
+},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"./visualizations/AbsoluteFrequency.jsx":18,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeRiskComparison.jsx":25,"./visualizations/RiskRelativeToBaseline.jsx":26,"./visualizations/Source.jsx":27,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],9:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -6352,8 +6352,9 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
     for (var i = 1; i <= 100; i++) {
       var classes = cx({
         'ss-icon ss-user': true,
+        'tenth': i % 10 == 0,
         'active': i <= this.state.iconArrayHoverRiskValue || i <= this.state.pillHoverRiskValue
-      });
+      })
       iconArray.push(
         React.createElement("span", {
           key: i, 
@@ -6361,15 +6362,12 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
           onMouseEnter: handleIconArrayHover.bind(null, i), 
           onMouseLeave: handleIconArrayHoverLeave}, 
             React.createElement("span", {className: "number"}, i)
-        )
-      );
+        ))
     }
 
-    return (
-      React.createElement("div", {className: "icon-array"}, 
-        iconArray
-      )
-    );
+    return React.createElement("div", {className: "icon-array"}, 
+      iconArray
+    )
   },
 
   render: function() {
@@ -6516,10 +6514,10 @@ module.exports = Difference;
 },{"react/addons":"react/addons"}],21:[function(require,module,exports){
 /** @jsx React.DOM */
 
-var React = require('react/addons');
+var React = require('react/addons')
 
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Tooltip = require('react-bootstrap').Tooltip;
+var OverlayTrigger = require('react-bootstrap').OverlayTrigger
+var Tooltip = require('react-bootstrap').Tooltip
 
 // GRADE level of evidence visualization
 
@@ -6531,40 +6529,47 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
   },
 
   render: function() {
-    var cx = React.addons.classSet;
-    var grade = this.props.grade;
-    var grades = this.props.gradeMap;
+    var cx = React.addons.classSet
+    var grade = this.props.grade
+    var grades = this.props.gradeMap
 
     var visualizationClasses = cx({
       'visualization grade-quality': true
-    });
+    })
 
     var getIcons = function(grade) {
-      var icons = [];
-      var gradeNumber = Math.floor(parseInt(grade));
+      var icons = []
+      var gradeNumber = Math.floor(parseInt(grade))
       if (gradeNumber > 0) {
         for (var i = 1; i <= 4; i++) {
           var iconClasses = cx({
             'ss-icon ss-navigateright': true,
             'highlight': i <= gradeNumber
-          });
-          icons.push(React.createElement("i", {key: i, className: iconClasses}));
+          })
+          icons.push(React.createElement("i", {key: i, className: iconClasses}))
         }
       }
       else {
-        icons.push(React.createElement("i", {key: i, className: "ss-icon ss-help highlight"}));
+        var iconClass = 'ss-icon ss-navigateright'
+        var iconStyle = {opacity: '.1'}
+        icons.push(
+          React.createElement("i", {style: iconStyle, className: iconClass}),
+          React.createElement("i", {style: iconStyle, className: iconClass}),
+          React.createElement("i", {style: iconStyle, className: iconClass}),
+          React.createElement("i", {style: iconStyle, className: iconClass})
+        )
       }
-      return icons;
-    };
+      return icons
+    }
 
     var getTooltip = function(grade) {
-      var tooltip;
+      var tooltip
       if (grade == 'X' || !grade) {
         tooltip = (
           React.createElement(Tooltip, null, 
             React.createElement("strong", null, "Not rated."), " This information hasn’t been quality rated according to GRADE."
           )
-        );
+        )
       }
       else {
         tooltip = (
@@ -6572,10 +6577,10 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
             React.createElement("strong", null, grades[grade].name_friendly, "."), React.createElement("br", null), 
             grades[grade].description_friendly
           )
-        );
+        )
       }
-      return tooltip;
-    };
+      return tooltip
+    }
 
     return (
       React.createElement("div", {className: visualizationClasses}, 
@@ -6586,11 +6591,11 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
           )
         )
       )
-    );
+    )
   }
-});
+})
 
-module.exports = GradeQuality;
+module.exports = GradeQuality
 },{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],22:[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -6606,7 +6611,7 @@ String.prototype.capitalizeFirstletter = function() {
 // Intervention display with tooltip
 
 var Intervention = React.createClass({displayName: "Intervention",
-  
+
   propTypes: {
     intervention: React.PropTypes.object,
     interventionName: React.PropTypes.string,
@@ -6618,7 +6623,7 @@ var Intervention = React.createClass({displayName: "Intervention",
     var dosageDescription = '';
     var dosageInterval = parseInt(dosage['dosage_interval']);
     var dosageMultiple = dosage['dosage_multiple'] && parseInt(dosage['dosage_multiple']);
-    
+
     // Quantity
     // e.g. 25 mg
     dosage.dosage.length < 10 && (dosageDescription += dosage.dosage + ' ');
@@ -6636,7 +6641,7 @@ var Intervention = React.createClass({displayName: "Intervention",
     }
 
     // Interval
-    // e.g. daily || weekly || monthly 
+    // e.g. daily || weekly || monthly
     if (!dosage['dosage_multiple'] || dosage['dosage_multiple'] == 1) {
       if (dosage['dosage_interval'] == 'day') {
         dosageDescription += 'daily';
@@ -6660,7 +6665,7 @@ var Intervention = React.createClass({displayName: "Intervention",
       }
       else if (dosage['dosage_interval'] == 'month') {
         dosageDescription += dosage['dosage_multiple'] + ' months';
-      } 
+      }
     }
 
     return dosageDescription;
@@ -6707,8 +6712,8 @@ var Intervention = React.createClass({displayName: "Intervention",
           var med = medicationsMap[part]
           html.push(React.createElement("span", {key: part, className: "name"}, 
             React.createElement("div", {className: "generic"}, med.name_generic.capitalizeFirstletter()), 
-            med.names_brand && React.createElement("div", {className: "small brand"}, "brand name ", med.names_brand[0]), 
-            dosage && React.createElement("div", {className: "small dosage"}, this.getDosageDescription(dosage))
+            med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && React.createElement("div", {className: "small brand"}, "brand name ", med.names_brand[0]), 
+            i == 0 && dosage && React.createElement("div", {className: "small dosage"}, this.getDosageDescription(dosage))
           ))
         }
         else {
@@ -6717,7 +6722,7 @@ var Intervention = React.createClass({displayName: "Intervention",
           ))
         }
         if (i < intervention.length - 1 && intervention.length > 0) {
-          html.push(React.createElement("div", {className: "pad-b-2"}, "+"))
+          html.push(React.createElement("span", {className: "pad-b-2"}, " + "))
         }
       }
     }
@@ -6810,11 +6815,81 @@ module.exports = Population;
 /** @jsx React.DOM */
 
 var React = require('react/addons');
+var _ = require('lodash');
+var cx = React.addons.classSet
+
+// Relative difference blocks (a la Mayo Clinic DAs)
+
+var RelativeDifferenceBlocks = React.createClass({displayName: "RelativeDifferenceBlocks",
+
+  propTypes: {
+    value: React.PropTypes.number,
+    range: React.PropTypes.number,
+  },
+
+  getDefaultProps: function() {
+    return {
+      range: 100
+    }
+  },
+
+  renderBlocks: function(value) {
+    var roundedValue = Math.ceil(value / 10)
+
+    return _.times(10, function(n) {
+      var isFilledIn = function(n, value) {
+        if (roundedValue < 0) {
+          return (10 + roundedValue) <= (n)
+        }
+        return (n + 1) <= roundedValue
+      }
+
+      var blockClass = cx({
+        'vas-block': true,
+        'highlight': isFilledIn(n, value)
+      })
+
+      var iconClass = cx({
+        'ss-icon': true,
+        'ss-plus': isFilledIn(n, value) && value > 0,
+        'ss-hyphen': isFilledIn(n, value) && value < 0
+      })
+
+      return (
+        React.createElement("div", {key: n, className: blockClass}, 
+          React.createElement("i", {className: iconClass})
+        )
+      )
+    })
+  },
+
+  render: function() {
+    var visualizationClasses = cx({
+      'visualization visual-analog-scale': true,
+      'up': value > 0,
+      'down': value < 0
+    })
+
+    var value = this.props.value;
+
+    return (
+      React.createElement("div", {className: visualizationClasses}, 
+        this.renderBlocks(value)
+      )
+    );
+  }
+});
+
+module.exports = RelativeDifferenceBlocks;
+},{"lodash":"lodash","react/addons":"react/addons"}],25:[function(require,module,exports){
+/** @jsx React.DOM */
+
+var React = require('react/addons');
 
 var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
 var Tooltip = require('react-bootstrap').Tooltip;
 
-// Intervention display with tooltip
+// Relative risk comparison
 
 var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskComparison",
 
@@ -7054,7 +7129,7 @@ var RelativeRiskComparison = React.createClass({displayName: "RelativeRiskCompar
 });
 
 module.exports = RelativeRiskComparison;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],25:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7068,7 +7143,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // Intervention display with tooltip
 
 var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBaseline",
-  
+
   propTypes: {
     comparison: React.PropTypes.object,
     items: React.PropTypes.array,
@@ -7211,7 +7286,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 
   getPopover: function(item, baselineFrequency) {
     var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
-    
+
     return (
       React.createElement(Popover, {title: item.parts}, 
         "Estimated risk ", React.createElement("span", {className: "ss-icon ss-user"}), " ", React.createElement("strong", null, riskFrequency), " of 100", 
@@ -7225,9 +7300,9 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 
     var handlePillHover = this.handlePillHover;
     var handlePillHoverLeave = this.handlePillHoverLeave;
-    
+
     var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
-    
+
     var classes = cx({
       'pill': true,
       'active': riskFrequency <= this.state.iconArrayHoverRiskValue
@@ -7317,17 +7392,18 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
     for (var i = 1; i <= 100; i++) {
       var classes = cx({
         'ss-icon ss-user': true,
+        'tenth': i % 10 == 0,
         'active': i <= this.state.iconArrayHoverRiskValue || i <= this.state.pillHoverRiskValue
-      });
+      })
       iconArray.push(
         React.createElement("span", {
           key: i, 
           className: classes, 
           onMouseEnter: handleIconArrayHover.bind(null, i), 
           onMouseLeave: handleIconArrayHoverLeave.bind(null)}, 
-          React.createElement("span", {className: "number"}, i)
+            React.createElement("span", {className: "number"}, i)
         )
-      );
+      )
     }
 
     return (
@@ -7338,7 +7414,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
   },
 
   render: function() {
-    
+
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization risk-relative-to-baseline': true
@@ -7359,7 +7435,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       values.push(item.rr.value.value);
     });
     // var range = 1;
-    
+
     var getPosition = function(value) {
       return Math.round(value * baselineFrequency);
     };
@@ -7386,7 +7462,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       var value = item.rr.value.value;
       position = getPosition(value);
 
-      // No previous position      
+      // No previous position
       if (!previousPosition) {
         // console.log('first')
         groups[position] = [];
@@ -7416,7 +7492,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
         // Subtract one to get more accurat position in markup
         left: (group - 1) + '%'
       }
-      
+
       var legend;
       if (i == 0) {
         legend = group + ' (baseline)';
@@ -7440,7 +7516,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
           React.createElement("div", {className: "title"}, 
             React.createElement("h3", null, 
               "Estimated risk of ", React.createElement("strong", null, measures[measure].name_short, " - ", measures[measure].name_friendly), React.createElement("br", null), 
-              "(compared with ", comparison.parts, ")"     
+              "(compared with ", comparison.parts, ")"
             ), 
             React.createElement("p", null, measures[measure].description), 
             React.createElement("p", null, "RR of intervention * baseline of comparison (", comparison.parts, ")")
@@ -7456,13 +7532,13 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
               React.createElement("div", {className: "axis-label left"}, 
                 React.createElement("strong", null, "0 of 100"), 
                 React.createElement("p", null, 
-                  "At this extreme, no one is expected to have ", React.createElement("strong", null, measures[measure].name_friendly)
+                  "At this end, no one is expected to experience ", React.createElement("strong", null, measures[measure].name_friendly)
                 )
               ), 
               React.createElement("div", {className: "axis-label right"}, 
                 React.createElement("strong", null, "100 of 100"), 
                 React.createElement("p", null, 
-                  "At this extreme, almost everyone is expected to have ", React.createElement("strong", null, measures[measure].name_friendly)
+                  "At this end, almost everyone is expected to experience ", React.createElement("strong", null, measures[measure].name_friendly)
                 )
               )
             )
@@ -7474,7 +7550,7 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
 });
 
 module.exports = RiskRelativeToBaseline;
-},{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7532,88 +7608,7 @@ var Source = React.createClass({displayName: "Source",
 });
 
 module.exports = Source;
-},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
-/** @jsx React.DOM */
-
-var React = require('react/addons');
-var _ = require('lodash');
-var cx = React.addons.classSet
-
-// Visual analog scale as blocks (a la Mayo Clinic DAs)
-
-var VisualAnalogScale = React.createClass({displayName: "VisualAnalogScale",
- 
-  propTypes: {
-    value: React.PropTypes.number,
-    range: React.PropTypes.number,
-  },
-
-  getDefaultProps: function() {
-    return {
-      range: 100
-    }
-  },
-
-  renderBlocks: function(value) {
-    var roundedValue = Math.ceil(value / 10)
-
-    return _.times(10, function(n) {
-      var isFilledIn = function(n, value) {
-        if (roundedValue < 0) {
-          return (10 + roundedValue) <= (n)
-        }
-        return (n + 1) <= roundedValue
-      }
-
-      var blockStyle = {
-        display: 'inline-block',
-        position: 'relative',
-        background: isFilledIn(n, value) ? '#9a9a9a' : '#efefef',
-        width: '35px',
-        height: '35px',
-        marginRight: n <= 8 && '5px',
-      }
-
-      var iconName = cx({
-        'ss-icon': true,
-        'ss-plus': value > 0,
-        'ss-hyphen': value < 0
-      })
-      var iconStyle = {
-        fontSize: '150%',
-        color: 'white',
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-      }
-
-      return (
-        React.createElement("div", {key: n, style: blockStyle}, 
-          React.createElement("i", {className: iconName, style: iconStyle})
-        )
-      )
-    })
-  },
-
-  render: function() {
-    var visualizationClasses = cx({
-      'visualization visual-analog-scale': true,
-      'up': value > 0,
-      'down': value < 0
-    })
-
-    var value = this.props.value;
-
-    return (
-      React.createElement("div", {className: visualizationClasses}, 
-        this.renderBlocks(value)
-      )
-    );
-  }
-});
-
-module.exports = VisualAnalogScale;
-},{"lodash":"lodash","react/addons":"react/addons"}],28:[function(require,module,exports){
+},{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],28:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');
@@ -7674,7 +7669,7 @@ var React = require('react/addons');
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
-var VisualAnalogScale = require('./VisualAnalogScale.jsx');
+var RelativeDifferenceBlocks = require('./RelativeDifferenceBlocks.jsx');
 
 // Visualization tests
 
@@ -7700,11 +7695,11 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 
           React.createElement("section", {style: sectionStyle}, 
             React.createElement("h2", null, "Visual analog scale"), 
-            React.createElement(VisualAnalogScale, {value: -30.1}), 
-            React.createElement(VisualAnalogScale, {value: -46.9}), 
-            React.createElement(VisualAnalogScale, {value: 24.6})
+            React.createElement(RelativeDifferenceBlocks, {value: -30.1}), 
+            React.createElement(RelativeDifferenceBlocks, {value: -46.9}), 
+            React.createElement(RelativeDifferenceBlocks, {value: 24.6})
           )
-          
+
           /*
           <section style={sectionStyle}>
             <h2>Absolute risk, relative to baseline</h2>
@@ -7786,7 +7781,7 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 });
 
 module.exports = VisualizationTests;
-},{"./AbsoluteFrequency.jsx":18,"./RelativeRiskComparison.jsx":24,"./RiskRelativeToBaseline.jsx":25,"./VisualAnalogScale.jsx":27,"react/addons":"react/addons"}],30:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"./RelativeDifferenceBlocks.jsx":24,"./RelativeRiskComparison.jsx":25,"./RiskRelativeToBaseline.jsx":26,"react/addons":"react/addons"}],30:[function(require,module,exports){
 var _ = require('lodash');
 
 var get = {

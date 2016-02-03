@@ -12,7 +12,7 @@ String.prototype.capitalizeFirstletter = function() {
 // Intervention display with tooltip
 
 var Intervention = React.createClass({
-  
+
   propTypes: {
     intervention: React.PropTypes.object,
     interventionName: React.PropTypes.string,
@@ -24,7 +24,7 @@ var Intervention = React.createClass({
     var dosageDescription = '';
     var dosageInterval = parseInt(dosage['dosage_interval']);
     var dosageMultiple = dosage['dosage_multiple'] && parseInt(dosage['dosage_multiple']);
-    
+
     // Quantity
     // e.g. 25 mg
     dosage.dosage.length < 10 && (dosageDescription += dosage.dosage + ' ');
@@ -42,7 +42,7 @@ var Intervention = React.createClass({
     }
 
     // Interval
-    // e.g. daily || weekly || monthly 
+    // e.g. daily || weekly || monthly
     if (!dosage['dosage_multiple'] || dosage['dosage_multiple'] == 1) {
       if (dosage['dosage_interval'] == 'day') {
         dosageDescription += 'daily';
@@ -66,7 +66,7 @@ var Intervention = React.createClass({
       }
       else if (dosage['dosage_interval'] == 'month') {
         dosageDescription += dosage['dosage_multiple'] + ' months';
-      } 
+      }
     }
 
     return dosageDescription;
@@ -113,8 +113,8 @@ var Intervention = React.createClass({
           var med = medicationsMap[part]
           html.push(<span key={part} className='name'>
             <div className='generic'>{med.name_generic.capitalizeFirstletter()}</div>
-            {med.names_brand && <div className='small brand'>brand name {med.names_brand[0]}</div>}
-            {dosage && <div className='small dosage'>{this.getDosageDescription(dosage)}</div>}
+            {med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && <div className='small brand'>brand name {med.names_brand[0]}</div>}
+            {i == 0 && dosage && <div className='small dosage'>{this.getDosageDescription(dosage)}</div>}
           </span>)
         }
         else {
@@ -123,7 +123,7 @@ var Intervention = React.createClass({
           </span>)
         }
         if (i < intervention.length - 1 && intervention.length > 0) {
-          html.push(<div className='pad-b-2'>+</div>)
+          html.push(<span className='pad-b-2'> + </span>)
         }
       }
     }

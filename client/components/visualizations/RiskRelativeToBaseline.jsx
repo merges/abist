@@ -11,7 +11,7 @@ var Tooltip = require('react-bootstrap').Tooltip;
 // Intervention display with tooltip
 
 var RiskRelativeToBaseline = React.createClass({
-  
+
   propTypes: {
     comparison: React.PropTypes.object,
     items: React.PropTypes.array,
@@ -154,7 +154,7 @@ var RiskRelativeToBaseline = React.createClass({
 
   getPopover: function(item, baselineFrequency) {
     var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
-    
+
     return (
       <Popover title={item.parts}>
         Estimated risk <span className='ss-icon ss-user'></span> <strong>{riskFrequency}</strong> of 100
@@ -168,9 +168,9 @@ var RiskRelativeToBaseline = React.createClass({
 
     var handlePillHover = this.handlePillHover;
     var handlePillHoverLeave = this.handlePillHoverLeave;
-    
+
     var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
-    
+
     var classes = cx({
       'pill': true,
       'active': riskFrequency <= this.state.iconArrayHoverRiskValue
@@ -260,17 +260,18 @@ var RiskRelativeToBaseline = React.createClass({
     for (var i = 1; i <= 100; i++) {
       var classes = cx({
         'ss-icon ss-user': true,
+        'tenth': i % 10 == 0,
         'active': i <= this.state.iconArrayHoverRiskValue || i <= this.state.pillHoverRiskValue
-      });
+      })
       iconArray.push(
         <span
           key={i}
           className={classes}
           onMouseEnter={handleIconArrayHover.bind(null, i)}
           onMouseLeave={handleIconArrayHoverLeave.bind(null)}>
-          <span className='number'>{i}</span>
+            <span className='number'>{i}</span>
         </span>
-      );
+      )
     }
 
     return (
@@ -281,7 +282,7 @@ var RiskRelativeToBaseline = React.createClass({
   },
 
   render: function() {
-    
+
     var cx = React.addons.classSet;
     var visualizationClasses = cx({
       'visualization risk-relative-to-baseline': true
@@ -302,7 +303,7 @@ var RiskRelativeToBaseline = React.createClass({
       values.push(item.rr.value.value);
     });
     // var range = 1;
-    
+
     var getPosition = function(value) {
       return Math.round(value * baselineFrequency);
     };
@@ -329,7 +330,7 @@ var RiskRelativeToBaseline = React.createClass({
       var value = item.rr.value.value;
       position = getPosition(value);
 
-      // No previous position      
+      // No previous position
       if (!previousPosition) {
         // console.log('first')
         groups[position] = [];
@@ -359,7 +360,7 @@ var RiskRelativeToBaseline = React.createClass({
         // Subtract one to get more accurat position in markup
         left: (group - 1) + '%'
       }
-      
+
       var legend;
       if (i == 0) {
         legend = group + ' (baseline)';
@@ -383,7 +384,7 @@ var RiskRelativeToBaseline = React.createClass({
           <div className='title'>
             <h3>
               Estimated risk of <strong>{measures[measure].name_short} - {measures[measure].name_friendly}</strong><br />
-              (compared with {comparison.parts})     
+              (compared with {comparison.parts})
             </h3>
             <p>{measures[measure].description}</p>
             <p>RR of intervention * baseline of comparison ({comparison.parts})</p>
@@ -399,13 +400,13 @@ var RiskRelativeToBaseline = React.createClass({
               <div className='axis-label left'>
                 <strong>0 of 100</strong>
                 <p>
-                  At this extreme, no one is expected to have <strong>{measures[measure].name_friendly}</strong>
+                  At this end, no one is expected to experience <strong>{measures[measure].name_friendly}</strong>
                 </p>
               </div>
               <div className='axis-label right'>
                 <strong>100 of 100</strong>
                 <p>
-                  At this extreme, almost everyone is expected to have <strong>{measures[measure].name_friendly}</strong>
+                  At this end, almost everyone is expected to experience <strong>{measures[measure].name_friendly}</strong>
                 </p>
               </div>
             </div>

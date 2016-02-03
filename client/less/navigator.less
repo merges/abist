@@ -51,6 +51,9 @@
 			width: 0;
 		}
 		&.open {
+			@media (max-width: @screen-xs-max) {
+				padding: @pad-1 0;
+			}
 			@media (min-width: @screen-md-min) {
 				margin-left: 360px;
 			}
@@ -74,7 +77,7 @@
 		.large {
 			color: @color-accent-4;
 			background: @color-base-2;
-			border: 1px solid @color-base-2; 
+			border: 1px solid @color-base-2;
 			padding: @pad-5;
 			margin: @pad-3 0;
 
@@ -97,6 +100,8 @@
 				.font-size-3;
 			}
 			@media (max-width: @screen-sm-max) {
+				padding: @pad-1;
+
 				.caption {
 					.font-size-1;
 				}
@@ -108,7 +113,7 @@
 				}
 			}
 		}
-		
+
 		> ul {
 			margin: 0;
 			padding: 0;
@@ -127,7 +132,7 @@
 					transition: box-shadow .1s ease,
 											color .1s ease,
 											background .1s ease;
-					
+
 					&:hover {
 						text-decoration: none;
 					}
@@ -135,7 +140,7 @@
 				&.disabled {
 					> a,
 					.large {
-						border: 1px dotted @color-base-2; 
+						border: 1px dotted @color-base-2;
 						color: @color-base-2;
 						background: none;
 					}
@@ -165,7 +170,7 @@
 				background: @color-base-2 !important;
 				text-align: center;
 				white-space: nowrap;
-				
+
 				transition: color .1s ease,
 										border .1s ease,
 										background .1s ease;
@@ -178,7 +183,7 @@
 				> a {
 					color: white !important;
 					background: @color-link-2 !important;
-					
+
 					&:hover {
 						background: @color-grey-xxxxxxxl;
 						border-color: @color-blue;
@@ -200,11 +205,24 @@
 			}
 		}
 	}
+
+	@media (max-width: @screen-xs-max) {
+		display: block;
+
+		> ul {
+			> li {
+				> a {
+					.pad-1;
+					width: 100%;
+				}
+			}
+		}
+	}
 }
 
 // Special visualization adjustments
 .visualization {
-	
+
 	&.absolute {
 		font-size: @font-size-1;
 	}
@@ -547,72 +565,72 @@
 	}
 }
 
-.medication-cards-old {
-	padding-bottom: 1em;
+// .medication-cards-old {
+// 	padding-bottom: 1em;
 
-	> ul {
-		margin: -5px;
-		padding: 0;
-		list-style-type: none;
-		display: flex;
-		flex-flow: row wrap;
-		align-items: stretch;
-		// justify-content: space-between;
+// 	> ul {
+// 		margin: -5px;
+// 		padding: 0;
+// 		list-style-type: none;
+// 		display: flex;
+// 		flex-flow: row wrap;
+// 		align-items: stretch;
+// 		// justify-content: space-between;
 
-		> li {
-			// display: block;
-			padding: 5px;
-			flex: auto;
-			flex-basis: 33%;
-			
-			@media (max-width: @screen-xs-max) {
-				flex-basis: 100%;
-			}
-			@media (min-width: @screen-sm-min) and (max-width: @screen-md-max) {
-				flex-basis: 50%;
-			}
+// 		> li {
+// 			// display: block;
+// 			padding: 5px;
+// 			flex: auto;
+// 			flex-basis: 33%;
 
-			> a {
-				position: relative;
-				line-height: 1.25;
-				color: white;
-				display: block;
-				border-radius: 2px;
-				padding: 8px 8px 24px 8px;
-				background: @color-blue;
-				border: 1px solid @color-blue;
-				word-wrap: break-word;
-				.shadow-l;
+// 			@media (max-width: @screen-xs-max) {
+// 				flex-basis: 100%;
+// 			}
+// 			@media (min-width: @screen-sm-min) and (max-width: @screen-md-max) {
+// 				flex-basis: 50%;
+// 			}
 
-				transition: box-shadow .15s ease,
-										color .15s ease,
-										background .15s ease;
+// 			> a {
+// 				position: relative;
+// 				line-height: 1.25;
+// 				color: white;
+// 				display: block;
+// 				border-radius: 2px;
+// 				padding: 8px 8px 24px 8px;
+// 				background: @color-blue;
+// 				border: 1px solid @color-blue;
+// 				word-wrap: break-word;
+// 				.shadow-l;
 
-				&:hover {
-					text-decoration: none;
-				}
-			}
+// 				transition: box-shadow .15s ease,
+// 										color .15s ease,
+// 										background .15s ease;
 
-			&.disabled {
-				> a {
-					border: 1px dotted @color-grey-l; 
-					color: @color-grey-l;
-					background: none;
-					.shadow-xl;
-				}
-			}
+// 				&:hover {
+// 					text-decoration: none;
+// 				}
+// 			}
 
-			.cost,
-			.frequency,
-			.preferences {
-				padding: 4px 0;
-			}
-			.preferences p {
-				margin: 0;
-			}
-		}
-	}
-}
+// 			&.disabled {
+// 				> a {
+// 					border: 1px dotted @color-grey-l;
+// 					color: @color-grey-l;
+// 					background: none;
+// 					.shadow-xl;
+// 				}
+// 			}
+
+// 			.cost,
+// 			.frequency,
+// 			.preferences {
+// 				padding: 4px 0;
+// 			}
+// 			.preferences p {
+// 				margin: 0;
+// 			}
+// 		}
+// 	}
+// }
 
 
 .panel {
@@ -661,7 +679,7 @@
 					color: @color-blue !important;
 					border-color: @color-blue;
 					background: @color-grey-xxxxxxxl;
-					
+
 					&:hover {
 						background: @color-grey-xxxxxxxl;
 						border-color: @color-blue;

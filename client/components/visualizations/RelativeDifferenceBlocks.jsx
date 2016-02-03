@@ -4,10 +4,10 @@ var React = require('react/addons');
 var _ = require('lodash');
 var cx = React.addons.classSet
 
-// Visual analog scale as blocks (a la Mayo Clinic DAs)
+// Relative difference blocks (a la Mayo Clinic DAs)
 
-var VisualAnalogScale = React.createClass({
- 
+var RelativeDifferenceBlocks = React.createClass({
+
   propTypes: {
     value: React.PropTypes.number,
     range: React.PropTypes.number,
@@ -30,31 +30,20 @@ var VisualAnalogScale = React.createClass({
         return (n + 1) <= roundedValue
       }
 
-      var blockStyle = {
-        display: 'inline-block',
-        position: 'relative',
-        background: isFilledIn(n, value) ? '#9a9a9a' : '#efefef',
-        width: '35px',
-        height: '35px',
-        marginRight: n <= 8 && '5px',
-      }
-
-      var iconName = cx({
-        'ss-icon': true,
-        'ss-plus': value > 0,
-        'ss-hyphen': value < 0
+      var blockClass = cx({
+        'vas-block': true,
+        'highlight': isFilledIn(n, value)
       })
-      var iconStyle = {
-        fontSize: '150%',
-        color: 'white',
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-      }
+
+      var iconClass = cx({
+        'ss-icon': true,
+        'ss-plus': isFilledIn(n, value) && value > 0,
+        'ss-hyphen': isFilledIn(n, value) && value < 0
+      })
 
       return (
-        <div key={n} style={blockStyle}>
-          <i className={iconName} style={iconStyle}></i>
+        <div key={n} className={blockClass}>
+          <i className={iconClass}></i>
         </div>
       )
     })
@@ -77,4 +66,4 @@ var VisualAnalogScale = React.createClass({
   }
 });
 
-module.exports = VisualAnalogScale;
+module.exports = RelativeDifferenceBlocks;

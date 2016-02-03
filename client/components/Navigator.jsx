@@ -22,7 +22,7 @@ var NavItem = require('react-bootstrap').NavItem
 var Sticky = require('react-sticky')
 
 var OutcomeAdverseEvents = require('./OutcomeAdverseEvents.jsx')
-var OutcomeDifferences = require('./OutcomeDifferences.jsx')
+var OutcomeRelativeDifferences = require('./OutcomeRelativeDifferences.jsx')
 var OutcomeRelativeComparison = require('./OutcomeRelativeComparison.jsx')
 var OutcomeTimeline = require('./OutcomeTimeline.jsx')
 
@@ -350,7 +350,7 @@ var Navigator = React.createClass({
       preferences: this.props.preferences,
       preferencesDefault: _.cloneDeep(preferencesDefault),
       preferencesSelected: _.cloneDeep(preferencesDefault),
-      
+
       // UI-related
       selectedIssue: 'basic',
       selectedTag: null,
@@ -842,7 +842,7 @@ var Navigator = React.createClass({
     _.each(measures, function (measure) {
       dataByMeasure[measure] = {}
       dataByMeasure[measure]['data'] = []
-      
+
       // Source (sheet in spreadsheet at https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=302670246)
       _.each(data, function (source) {
         // Entry i.e. line of spreadsheet
@@ -890,7 +890,7 @@ var Navigator = React.createClass({
 
     // User's prefs should be reset, since they would no longer match
     var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
-    
+
     this.setState({
       preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
@@ -1053,13 +1053,13 @@ var Navigator = React.createClass({
     var getDataByMeasure = this.getDataByMeasure
     var medications = this.props.medications
     var disabledMedications = this.state.disabledMedications
-    
+
     var html = []
 
     _.each(measures, function (measureName) {
       if (measureName == 'patient_pain') {
         html.push(<div key={measureName}>
-          <OutcomeDifferences
+          <OutcomeRelativeDifferences
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
             medications={medications}
@@ -1100,7 +1100,7 @@ var Navigator = React.createClass({
 
     if (selectedMeasure == 'patient_pain') {
       return (
-        <OutcomeDifferences
+        <OutcomeRelativeDifferences
           data={data}
           dataByTag={this.getDataByTag(selectedTag)}
           medications={medications}
@@ -1151,7 +1151,7 @@ var Navigator = React.createClass({
   renderDetails: function (selectedIssue) {
     var issues = this.props.issues;
     var measures = issues[selectedIssue] && issues[selectedIssue].measures
-    
+
     if (selectedIssue == 'basic') {
       return <div>
         {this.renderMedicationCards()}

@@ -117,8 +117,9 @@ var AbsoluteRiskComparison = React.createClass({
     for (var i = 1; i <= 100; i++) {
       var classes = cx({
         'ss-icon ss-user': true,
+        'tenth': i % 10 == 0,
         'active': i <= this.state.iconArrayHoverRiskValue || i <= this.state.pillHoverRiskValue
-      });
+      })
       iconArray.push(
         <span
           key={i}
@@ -126,15 +127,12 @@ var AbsoluteRiskComparison = React.createClass({
           onMouseEnter={handleIconArrayHover.bind(null, i)}
           onMouseLeave={handleIconArrayHoverLeave}>
             <span className='number'>{i}</span>
-        </span>
-      );
+        </span>)
     }
 
-    return (
-      <div className='icon-array'>
-        {iconArray}
-      </div>
-    );
+    return <div className='icon-array'>
+      {iconArray}
+    </div>
   },
 
   render: function() {

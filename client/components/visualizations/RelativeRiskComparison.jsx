@@ -5,7 +5,7 @@ var React = require('react/addons');
 var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
 var Tooltip = require('react-bootstrap').Tooltip;
 
-// Intervention display with tooltip
+// Relative risk comparison
 
 var RelativeRiskComparison = React.createClass({
 

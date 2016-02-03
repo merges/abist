@@ -42,10 +42,8 @@
   &.risk-relative-to-baseline,
   &.absolute-risk-comparison {
     width: 100%;
-    min-height: 32em;
+    min-height: 38em;
     position: relative;
-    border: 1px solid @color-grey-xxxxxl;
-    background: white;
 
     .chart-holder {
       width: 100%;
@@ -58,10 +56,15 @@
       width: 80%;
       padding-bottom: 0;
       list-style-type: none;
-      border-bottom: 1px solid @color-grey-d;
+      border-bottom: 1px solid @color-base-4;
       position: relative;
       bottom: 0;
       left: 10%;
+
+      @media (max-width: @screen-xs-max) {
+        width: 100%;
+        left: 0;
+      }
     }
     .item {
       position: absolute;
@@ -89,12 +92,12 @@
         }
 
         &:hover {
-          color: @color-grey-xxl;
-          background: @color-grey-d;
+          color: @color-accent-1;
+          background: @color-base-3;
         }
         &.active {
-          color: @color-grey-xxd;
-          background: @color-grey-xl;
+          color: @color-accent-1;
+          background: @color-base-3;
         }
       }
       .legend {
@@ -107,7 +110,7 @@
         font-size: 1em;
       }
       .line {
-        background: @color-grey-xxxl;
+        background: @color-accent-3;
         width: 1px;
         height: 7em;
       }
@@ -123,11 +126,25 @@
       .axis-label {
         float: left;
         width: 25%;
+        margin-top: @pad-3;
+        font-size: @font-size-2;
 
         &.right {
           position: relative;
           margin-left: 50%;
           text-align: right;
+        }
+      }
+
+      @media (max-width: @screen-xs-max) {
+        padding: 0;
+
+        .axis-label {
+          width: 40%;
+
+          &.right {
+            margin-left: 20%;
+          }
         }
       }
     }
@@ -141,25 +158,25 @@
         cursor: pointer;
         display: table-cell;
         text-align: right;
-        color: @color-grey-xxl;
+        color: @color-base-3;
         font-size: .75em;
 
         > .number {
+          padding: 0 @pad-1;
           position: absolute;
-          top: -1em;
-          border-radius: 50%;
-          width: 1.5em;
-          height: 1.5em;
-          line-height: 1.5em;
+          top: -2.5em;
+          right: -0.25em;
           text-align: center;
-          background: white;
           display: none;
           opacity: 0;
+          background: @color-accent-4;
           transition: opacity .3s ease;
+          color: @color-base-4;
+          font-size: @font-size-1;
         }
 
         &.active {
-          color: @color-grey-m;
+          color: @color-base-4;
         }
         &:hover {
           > .number {
@@ -167,8 +184,53 @@
             display: block;
           }
         }
+
+        // Fit on small screens
+        @media (max-width: @screen-md-max) {
+          display: none;
+
+          &.tenth {
+            display: table-cell;
+
+            > .number {
+              opacity: 1;
+              display: block;
+              top: 0;
+              right: 1.75em;
+              padding: 0;
+              background: none;
+              font-size: 11px;
+            }
+          }
+        }
       }
     }
+  }
+}
+
+// Relative difference blocks
+
+.vas-block {
+  display: inline-block;
+  position: relative;
+  background: @color-base-2;
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+
+  &.highlight {
+    background: @color-base-4;
+
+    .ss-icon {
+      color: @color-body;
+    }
+  }
+
+  .ss-icon {
+    // color: @color-base-3;
+    position: absolute;
+    bottom: 0;
+    right: 0;
   }
 }
 
@@ -247,7 +309,7 @@
   display: table;
   border-collapse: collapse;
   min-width: 100%;
-  
+
   .chunk {
     margin: @pad-5 @pad-0;
     background: @color-base-2;

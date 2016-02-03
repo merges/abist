@@ -315,7 +315,7 @@ var OutcomeRelativeComparison = React.createClass({
 
     var measures = this.props.data.measures
     var grades = data.grades
-    
+
     var renderEntry = this.renderEntry
 
     var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
@@ -327,7 +327,7 @@ var OutcomeRelativeComparison = React.createClass({
         </div>
       </div>
     );
-    
+
     // return (
     //   <div className={classes}>
     //     {selectedMeasure !== null && this.renderDataByMeasure(selectedMeasure)}
