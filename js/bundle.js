@@ -249,11 +249,12 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
   },
 
   renderPreferences: function (preferences, preferencesSelected) {
-    if (preferences && preferencesSelected) {
+    if (preferences) {
       var medication = this.props.medication
+
       return (
-        React.createElement("div", {className: "preferences"}, 
-          _.map(preferencesSelected, function (value, key) {
+        React.createElement("div", {className: "preferences t-table"}, 
+          _.map(preferences, function (value, key) {
             // Check medication for this key, to see if it has a hit
             // e.g. medication[risks.alcohol] = 0 (ok), 1 (unsure), 2 (bad)
             // e.g. medication[generic_available]
@@ -270,17 +271,22 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
               }
             }
 
+            var preferenceClass = cx({
+              't-cell': true,
+              'active': preferencesSelected[key]
+            })
+
             // If we get an "unsafe"
             if (match == 'unsafe') {
-              return (React.createElement("p", {key: medication.name + key}, "Not ", preferences[key].name.toLowerCase()))
+              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "Not ", preferences[key].name.toLowerCase())
             }
             // If we get an "unknown"
             if (match == 'unknown') {
-              return (React.createElement("p", {key: medication.name + key}, "No information about whether ", preferences[key].name.toLowerCase()))
+              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "No information about whether ", preferences[key].name.toLowerCase())
             }
             // If we get a "false" i.e. for a boolean, it's not true
             if (match === false) {
-              return (React.createElement("p", {key: medication.name + key}, "No ", preferences[key].name.toLowerCase()))
+              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "No ", preferences[key].name.toLowerCase())
             }
             // TODO handle dosage form properly
           })
@@ -335,9 +341,9 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
           )
         ), 
 
-        React.createElement("div", null, 
-          React.createElement("span", {className: "font-size-1 light"}, medication.name_generic_phonetic), 
-          React.createElement("span", {className: "font-size-1 light"}, 
+        React.createElement("div", {className: "pad-b-5"}, 
+          React.createElement("span", {className: "font-size-1 light pad-r-5"}, medication.name_generic_phonetic), 
+          React.createElement("span", {className: "font-size-1 light pad-r-5"}, 
             medication.class.length > 1 ?
               React.createElement("span", null, 
                 medication.class.map(function (item, i) {
@@ -354,7 +360,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
           )
         ), 
 
-        React.createElement("div", {className: "t-table"}, 
+        React.createElement("div", {className: "t-table pad-b-5"}, 
           React.createElement("div", {className: "t-row"}, 
             React.createElement("div", {className: "t-cell caption"}, "how it’s taken"), 
             React.createElement("div", {className: "t-cell caption"}, "cost")
@@ -362,14 +368,20 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
           React.createElement("div", {className: "t-row"}, 
             React.createElement("div", {className: "t-cell dosage-forms pad-r-5"}, 
               medication.forms.map(function (form, i) {
-                return (
+                numberOfForms = medication.forms.length
+                if (numberOfForms > 1 && i < numberOfForms - 1) {
+                  return React.createElement("span", null, 
+                    React.createElement(DosageForm, {key: i, form: form.name}), 
+                    React.createElement("span", null, " or ")
+                  )
+                }
+                return React.createElement("span", null, 
                   React.createElement(DosageForm, {key: i, form: form.name})
                 )
               }), 
               React.createElement("div", {className: "frequency"}, 
                 medication.ptda.frequency.dose &&
                   React.createElement("span", null, 
-                    React.createElement("span", {className: "ss-icon ss-calendar inline-block space-r"}), 
                     medication.ptda.frequency.dose == 1 ? 'once ' : 'twice ', 
                     medication.ptda.frequency.multiple > 1 ?
                       React.createElement("span", null, "every ", medication.ptda.frequency.multiple, " ", medication.ptda.frequency.unit, "s") :

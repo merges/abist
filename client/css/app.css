@@ -11670,6 +11670,11 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards {
   font-size: 15px;
 }
+.navigator .medication-cards .medication-card {
+  transition: background .5s ease,
+                border .5s ease,
+                color .5s ease;
+}
 .navigator .medication-cards .mini .dosage-forms {
   font-size: 13px;
 }
@@ -11682,6 +11687,10 @@ html:hover [class^="ss-"] {
   border: 1px solid #333;
   padding: 45px;
   margin: 15px 0;
+}
+.navigator .medication-cards .large .caption {
+  font-size: 19px;
+  padding-bottom: 10px;
 }
 .navigator .medication-cards .large .names {
   width: 100%;
@@ -11697,8 +11706,13 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards .large .names .brand {
   font-size: 27px;
 }
-.navigator .medication-cards .large .caption {
-  font-size: 19px;
+.navigator .medication-cards .large .preferences {
+  transition: color .3s ease,
+                    opacity .3s ease;
+}
+.navigator .medication-cards .large .preferences .active {
+  color: white;
+  opacity: 1;
 }
 @media (max-width: 991px) {
   .navigator .medication-cards .large {
@@ -11739,6 +11753,10 @@ html:hover [class^="ss-"] {
   border: 1px dotted #333;
   color: #333;
   background: none;
+}
+.navigator .medication-cards > ul > li.disabled .preferences .active {
+  color: white;
+  opacity: 1;
 }
 .checkbox {
   font-size: 15px;
@@ -12007,57 +12025,15 @@ html:hover [class^="ss-"] {
   flex: auto;
   align-items: stretch;
 }
-.filter-controls-old {
-  display: flex;
-  flex-flow: row wrap;
-  margin: -5px;
-}
-.filter-controls-old > section {
-  display: block;
-  flex: auto;
-  flex-basis: 33%;
-  align-self: stretch;
-  padding: 5px;
-}
-@media (max-width: 767px) {
-  .filter-controls-old > section {
-    flex-basis: 100%;
-  }
-}
-@media (min-width: 768px) and (max-width: 1199px) {
-  .filter-controls-old > section {
-    flex-basis: 50%;
-  }
-}
-.filter-controls-old a.button {
-  display: block;
-}
-.filter-controls-old a.button.option {
-  display: inline-block;
-}
-.filter-controls-old a.button.option + .option {
-  margin-left: 10px;
-}
-.filter-controls-old .description {
-  display: block;
-}
-.filter-controls-old input {
-  margin-right: .25em;
-}
-.filter-controls-old .dosage-form > .ss-icon {
-  display: block;
-}
 .dosage-forms {
   float: right;
   position: relative;
-  margin-left: 1em;
 }
 .dosage-forms > .dosage-form {
   text-align: center;
   display: inline-block;
-  width: 48px;
   vertical-align: text-top;
-  font-size: 120%;
+  font-size: 1.2em;
 }
 .dosage-forms > .dosage-form > span {
   display: block;
@@ -12069,6 +12045,9 @@ html:hover [class^="ss-"] {
 }
 .dosage-forms > .dosage-form + .dosage-form {
   margin-left: 5px;
+}
+.frequency {
+  float: right;
 }
 .panel {
   padding: 5em 0 0 0;

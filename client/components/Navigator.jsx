@@ -111,11 +111,12 @@ var MedicationCard = React.createClass({
   },
 
   renderPreferences: function (preferences, preferencesSelected) {
-    if (preferences && preferencesSelected) {
+    if (preferences) {
       var medication = this.props.medication
+
       return (
-        <div className='preferences'>
-          {_.map(preferencesSelected, function (value, key) {
+        <div className='preferences t-table'>
+          {_.map(preferences, function (value, key) {
             // Check medication for this key, to see if it has a hit
             // e.g. medication[risks.alcohol] = 0 (ok), 1 (unsure), 2 (bad)
             // e.g. medication[generic_available]
@@ -132,17 +133,22 @@ var MedicationCard = React.createClass({
               }
             }
 
+            var preferenceClass = cx({
+              't-cell': true,
+              'active': preferencesSelected[key]
+            })
+
             // If we get an "unsafe"
             if (match == 'unsafe') {
-              return (<p key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</p>)
+              return <div className={preferenceClass} key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</div>
             }
             // If we get an "unknown"
             if (match == 'unknown') {
-              return (<p key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</p>)
+              return <div className={preferenceClass} key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</div>
             }
             // If we get a "false" i.e. for a boolean, it's not true
             if (match === false) {
-              return (<p key={medication.name + key}>No {preferences[key].name.toLowerCase()}</p>)
+              return <div className={preferenceClass} key={medication.name + key}>No {preferences[key].name.toLowerCase()}</div>
             }
             // TODO handle dosage form properly
           })}
@@ -197,9 +203,9 @@ var MedicationCard = React.createClass({
           </div>
         </div>
 
-        <div>
-          <span className='font-size-1 light'>{medication.name_generic_phonetic}</span>
-          <span className='font-size-1 light'>
+        <div className='pad-b-5'>
+          <span className='font-size-1 light pad-r-5'>{medication.name_generic_phonetic}</span>
+          <span className='font-size-1 light pad-r-5'>
             {medication.class.length > 1 ?
               <span>
                 {medication.class.map(function (item, i) {
@@ -216,7 +222,7 @@ var MedicationCard = React.createClass({
           </span>
         </div>
 
-        <div className='t-table'>
+        <div className='t-table pad-b-5'>
           <div className='t-row'>
             <div className='t-cell caption'>how it’s taken</div>
             <div className='t-cell caption'>cost</div>
@@ -224,14 +230,20 @@ var MedicationCard = React.createClass({
           <div className='t-row'>
             <div className='t-cell dosage-forms pad-r-5'>
               {medication.forms.map(function (form, i) {
-                return (
+                numberOfForms = medication.forms.length
+                if (numberOfForms > 1 && i < numberOfForms - 1) {
+                  return <span>
+                    <DosageForm key={i} form={form.name} />
+                    <span> or </span>
+                  </span>
+                }
+                return <span>
                   <DosageForm key={i} form={form.name} />
-                )
+                </span>
               })}
               <div className='frequency'>
                 {medication.ptda.frequency.dose &&
                   <span>
-                    <span className='ss-icon ss-calendar inline-block space-r'></span>
                     {medication.ptda.frequency.dose == 1 ? 'once ' : 'twice '}
                     {medication.ptda.frequency.multiple > 1 ?
                       <span>every {medication.ptda.frequency.multiple} {medication.ptda.frequency.unit}s</span> :
