@@ -115,7 +115,7 @@ var MedicationCard = React.createClass({
       var medication = this.props.medication
 
       return (
-        <div className='preferences t-table'>
+        <div className='preferences t-table table-layout-fixed'>
           {_.map(preferences, function (value, key) {
             // Check medication for this key, to see if it has a hit
             // e.g. medication[risks.alcohol] = 0 (ok), 1 (unsure), 2 (bad)
@@ -123,33 +123,54 @@ var MedicationCard = React.createClass({
             // e.g. medication[preferences[key]]
             // e.g. methotrexate[risks.alcohol]
 
+            if (preferences[key].type === 'list') {
+              return
+            }
+
             // Is a the preference true or non-empty?
+            var match = null
             if (value) {
               // Does the preference exist in our preferences object, and is there a function to look for a match?
               if (preferences[key] && preferences[key].isMatch) {
                 var isMatch = preferences[key].isMatch
                 var lookupKey = preferences[key].key
-                var match = isMatch(_.get(medication, lookupKey), value)
+                match = isMatch(_.get(medication, lookupKey), value)
               }
             }
 
             var preferenceClass = cx({
-              't-cell': true,
+              't-cell preference': true,
               'active': preferencesSelected[key]
             })
+            var iconClasses = {
+              'ss-icon': true
+            }
+            iconClasses[preferences[key].icon] = true
+            var iconClass = cx(iconClasses)
+            
+            var renderSafetyText = function(match) {
+              if (match == 'unsafe') {
+                return <strong>Unsafe</strong>
+              }
+              // If we get an "unknown"
+              if (match == 'unknown') {
+                return <strong>Not sure</strong>
+              }
+              // If we get a "false" i.e. for a boolean, it's not true
+              if (match === false) {
+                return <strong>Not sure</strong>
+              }
+              return <strong>OK</strong>
+            }
 
-            // If we get an "unsafe"
-            if (match == 'unsafe') {
-              return <div className={preferenceClass} key={medication.name + key}>Not {preferences[key].name.toLowerCase()}</div>
-            }
-            // If we get an "unknown"
-            if (match == 'unknown') {
-              return <div className={preferenceClass} key={medication.name + key}>No information about whether {preferences[key].name.toLowerCase()}</div>
-            }
-            // If we get a "false" i.e. for a boolean, it's not true
-            if (match === false) {
-              return <div className={preferenceClass} key={medication.name + key}>No {preferences[key].name.toLowerCase()}</div>
-            }
+            return <div key={medication.name + key} className={preferenceClass}>
+              <div className={iconClass}></div>
+              {preferences[key].name_short}
+              <div>{renderSafetyText(match)}</div>
+            </div>
+
+            // // If we get an "unsafe"
+            
             // TODO handle dosage form properly
           })}
         </div>
@@ -900,15 +921,13 @@ var Navigator = React.createClass({
     var disabledMedications = this.state.disabledMedications
     disabledMedications[medicationName] = !disabledMedications[medicationName]
 
-    // User's prefs should be reset, since they would no longer match
+    // User's prefs should be reset, since may no longer match
     var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
 
     this.setState({
       preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
     })
-
-    console.log(this.state.preferencesSelected)
 
     this.forceUpdate()
   },

@@ -253,7 +253,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
       var medication = this.props.medication
 
       return (
-        React.createElement("div", {className: "preferences t-table"}, 
+        React.createElement("div", {className: "preferences t-table table-layout-fixed"}, 
           _.map(preferences, function (value, key) {
             // Check medication for this key, to see if it has a hit
             // e.g. medication[risks.alcohol] = 0 (ok), 1 (unsure), 2 (bad)
@@ -261,33 +261,54 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
             // e.g. medication[preferences[key]]
             // e.g. methotrexate[risks.alcohol]
 
+            if (preferences[key].type === 'list') {
+              return
+            }
+
             // Is a the preference true or non-empty?
+            var match = null
             if (value) {
               // Does the preference exist in our preferences object, and is there a function to look for a match?
               if (preferences[key] && preferences[key].isMatch) {
                 var isMatch = preferences[key].isMatch
                 var lookupKey = preferences[key].key
-                var match = isMatch(_.get(medication, lookupKey), value)
+                match = isMatch(_.get(medication, lookupKey), value)
               }
             }
 
             var preferenceClass = cx({
-              't-cell': true,
+              't-cell preference': true,
               'active': preferencesSelected[key]
             })
+            var iconClasses = {
+              'ss-icon': true
+            }
+            iconClasses[preferences[key].icon] = true
+            var iconClass = cx(iconClasses)
+            
+            var renderSafetyText = function(match) {
+              if (match == 'unsafe') {
+                return React.createElement("strong", null, "Unsafe")
+              }
+              // If we get an "unknown"
+              if (match == 'unknown') {
+                return React.createElement("strong", null, "Not sure")
+              }
+              // If we get a "false" i.e. for a boolean, it's not true
+              if (match === false) {
+                return React.createElement("strong", null, "Not sure")
+              }
+              return React.createElement("strong", null, "OK")
+            }
 
-            // If we get an "unsafe"
-            if (match == 'unsafe') {
-              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "Not ", preferences[key].name.toLowerCase())
-            }
-            // If we get an "unknown"
-            if (match == 'unknown') {
-              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "No information about whether ", preferences[key].name.toLowerCase())
-            }
-            // If we get a "false" i.e. for a boolean, it's not true
-            if (match === false) {
-              return React.createElement("div", {className: preferenceClass, key: medication.name + key}, "No ", preferences[key].name.toLowerCase())
-            }
+            return React.createElement("div", {key: medication.name + key, className: preferenceClass}, 
+              React.createElement("div", {className: iconClass}), 
+              preferences[key].name_short, 
+              React.createElement("div", null, renderSafetyText(match))
+            )
+
+            // // If we get an "unsafe"
+            
             // TODO handle dosage form properly
           })
         )
@@ -1038,15 +1059,13 @@ var Navigator = React.createClass({displayName: "Navigator",
     var disabledMedications = this.state.disabledMedications
     disabledMedications[medicationName] = !disabledMedications[medicationName]
 
-    // User's prefs should be reset, since they would no longer match
+    // User's prefs should be reset, since may no longer match
     var preferencesDefault = _.cloneDeep(this.state.preferencesDefault)
 
     this.setState({
       preferencesSelected: preferencesDefault,
       disabledMedications: disabledMedications
     })
-
-    console.log(this.state.preferencesSelected)
 
     this.forceUpdate()
   },
@@ -9615,31 +9634,31 @@ module.exports = mockData;
 var _ = require('lodash');
 
 var preferences = {
+  'forms': {
+    'key': 'forms',
+    'name': 'Dosage form',
+    'name_short': 'Dosage form',
+    'type': 'list',
+    'icon': null,
+    'description': 'preferred way of taking your medicine',
+    isMatch: function(drugForms, selectedForms) {
+      if (drugForms) {
+        _.each(drugForms, function(form) {
+          if (selectedForms[form.name] == true) {
+            return false;
+          }
+        })
+      }
+      return true;
+    },
+  },
   'alcohol': {
     'key': 'risks.alcohol',
     'name': 'Alcohol-friendly',
+    'name_short': 'Alcohol-friendly',
     'type': 'boolean',
+    'icon': 'ss-cocktail',
     'description': 'If you drink alcohol',
-    isMatch: function(object) {
-      if (object) {
-        if (object.risk == 2) {
-          return 'unsafe';
-        }
-        if (object.risk == 1) {
-          return 'possibly unsafe';
-        }
-        if (object.risk == 0) {
-          return 'safe';
-        }
-      }
-      return 'unknown';
-    }
-  },
-  'cancer_treatment': {
-    'key': 'risks.cancer_treatment',
-    'name': 'Safer while in cancer treatment',
-    'type': 'boolean',
-    'description': 'If you’re undergoing cancer treatment with surgery, chemotherapy, or radiation therapy',
     isMatch: function(object) {
       if (object) {
         if (object.risk == 2) {
@@ -9667,29 +9686,12 @@ var preferences = {
   //   'type': 'list',
   //   'description': 'Drug classes'
   // },
-  'forms': {
-    'key': 'forms',
-    'name': 'Dosage form',
-    'type': 'list',
-    'description': 'preferred way of taking your medicine',
-    isMatch: function(drugForms, selectedForms) {
-      // console.log('DRUG FORMS FORMS', drugForms);
-      // console.log('SELECTED FORMS', selectedForms);
-
-      if (drugForms) {
-        _.each(drugForms, function(form) {
-          if (selectedForms[form.name] == true) {
-            return false;
-          }
-        })
-      }
-      return true;
-    },
-  },
   'generic_available': {
     'key': 'generic_available',
     'name': 'Generic available (less expensive)',
+    'name_short': 'Generic available',
     'type': 'boolean',
+    'icon': 'ss-moneybag',
     'description': 'A cheaper, generic version is available',
     isMatch: function(genericAvailable) {
       if (genericAvailable === true) {
@@ -9700,10 +9702,34 @@ var preferences = {
       }
     }
   },
+  'cancer_treatment': {
+    'key': 'risks.cancer_treatment',
+    'name': 'Safer if in cancer treatment',
+    'name_short': 'In cancer treatment?',
+    'type': 'boolean',
+    'icon': 'ss-dna',
+    'description': 'If you’re undergoing cancer treatment with surgery, chemotherapy, or radiation therapy',
+    isMatch: function(object) {
+      if (object) {
+        if (object.risk == 2) {
+          return 'unsafe';
+        }
+        if (object.risk == 1) {
+          return 'possibly unsafe';
+        }
+        if (object.risk == 0) {
+          return 'safe';
+        }
+      }
+      return 'unknown';
+    }
+  },
   'heart_failure': {
     'key': 'risks.heart_failure',
     'name': 'Safer for people with heart failure',
+    'name_short': 'Have heart failure?',
     'type': 'boolean',
+    'icon': 'ss-anatomicalheart',
     'description': 'if you have level III or IV heart failure',
     isMatch: function(object) {
       if (object) {
@@ -9723,7 +9749,9 @@ var preferences = {
   'kidney_disease': {
     'key': 'risks.kidney_disease',
     'name': 'Safer for kidney disease',
+    'name_short': 'Have kidney disease?',
     'type': 'boolean',
+    'icon': 'ss-steak',
     'description': 'if you have kidney disease',
     isMatch: function(object) {
       if (object) {
@@ -9743,7 +9771,9 @@ var preferences = {
   'liver_disease': {
     'key': 'risks.liver_disease',
     'name': 'Safer for liver disease',
+    'name_short': 'Have liver disease?',
     'type': 'boolean',
+    'icon': 'ss-steak',
     'description': 'if you have liver disease',
     isMatch: function(object) {
       if (object) {
@@ -9763,7 +9793,9 @@ var preferences = {
   'pregnancy': {
     'key': 'risks.pregnancy',
     'name': 'Safer for pregnancy',
+    'name_short': 'Pregnancy',
     'type': 'boolean',
+    'icon': 'ss-bbqapron',
     'description': 'if you’re pregnant or considering it',
     isMatch: function(object) {
       if (object) {
@@ -9783,7 +9815,9 @@ var preferences = {
   'tb': {
     'key': 'risks.tb',
     'name': 'Safer for tuberculosis',
+    'name_short': 'At risk for TB?',
     'type': 'boolean',
+    'icon': 'ss-snowflake',
     'description': 'if you have or might be exposed to tuberculosis',
     isMatch: function(object) {
       if (object) {

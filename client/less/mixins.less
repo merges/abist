@@ -101,6 +101,8 @@
   font-size: @font-size-7;
 }
 
+// Display
+
 .inline {
   display: inline;
 }
@@ -109,6 +111,27 @@
 }
 .block {
   display: block;
+}
+.relative {
+  position: relative;
+}
+.fixed {
+  position: fixed;
+}
+.clear-both {
+  clear: both;
+}
+.t-table {
+  display: table;
+}
+.t-row {
+  display: table-row;
+}
+.t-cell {
+  display: table-cell;
+}
+.table-layout-fixed {
+  table-layout: fixed;
 }
 
 // Padding mixins
@@ -231,7 +254,6 @@
   padding-left: @pad-6;
 }
 
-
 // Visual modifiers
 
 .light {
@@ -254,18 +276,6 @@
 }
 .space-l {
   margin-left: 0.4em;
-}
-
-// Table
-
-.t-table {
-  display: table;
-}
-.t-row {
-  display: table-row;
-}
-.t-cell {
-  display: table-cell;
 }
 
 // Etc.

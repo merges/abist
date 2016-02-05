@@ -11046,6 +11046,27 @@ html:hover [class^="ss-"] {
 .block {
   display: block;
 }
+.relative {
+  position: relative;
+}
+.fixed {
+  position: fixed;
+}
+.clear-both {
+  clear: both;
+}
+.t-table {
+  display: table;
+}
+.t-row {
+  display: table-row;
+}
+.t-cell {
+  display: table-cell;
+}
+.table-layout-fixed {
+  table-layout: fixed;
+}
 .pad-0 {
   padding: none;
 }
@@ -11168,15 +11189,6 @@ html:hover [class^="ss-"] {
 }
 .space-l {
   margin-left: 0.4em;
-}
-.t-table {
-  display: table;
-}
-.t-row {
-  display: table-row;
-}
-.t-cell {
-  display: table-cell;
 }
 .tiny {
   font-size: 13px;
@@ -11706,15 +11718,20 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards .large .names .brand {
   font-size: 27px;
 }
-.navigator .medication-cards .large .preferences {
+.navigator .medication-cards .large .preferences .preference {
+  padding: 0 5px;
+  text-align: center;
   transition: color .3s ease,
-                    opacity .3s ease;
+	                    opacity .3s ease;
 }
-.navigator .medication-cards .large .preferences .active {
+.navigator .medication-cards .large .preferences .preference .ss-icon {
+  font-size: 27px;
+}
+.navigator .medication-cards .large .preferences .preference.active {
   color: white;
   opacity: 1;
 }
-@media (max-width: 991px) {
+@media (max-width: 767px) {
   .navigator .medication-cards .large {
     padding: 5px;
   }
@@ -11726,6 +11743,9 @@ html:hover [class^="ss-"] {
   }
   .navigator .medication-cards .large .brand {
     font-size: 15px !important;
+  }
+  .navigator .medication-cards .large .preferences {
+    font-size: 13px;
   }
 }
 .navigator .medication-cards > ul {
