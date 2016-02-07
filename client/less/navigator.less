@@ -32,7 +32,8 @@
 		left: 0;
 		max-width: 99999px;
 		transition: width .5s ease;
-		overflow: scroll;
+		overflow-y: scroll;
+		-webkit-overflow-scrolling: touch;
 
 		&.compact {
 			.hidden-xs;
@@ -46,6 +47,8 @@
 	.details {
 		.pad-4;
 		max-width: 99999px;
+		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
 
 		&.compact {
 			width: 0;
@@ -90,6 +93,7 @@
 			.caption {
         .font-size-3;
         .pad-b-2;
+        .light;
       }
       .names {
 				width: 100%;
@@ -106,12 +110,28 @@
 					.font-size-5;
 				}
 			}
-      .cost {
+			.dosage-forms {
+				float: none;
+				font-size: @font-size-4;
 
+				.dosage-form {
+					display: inline-block;
+					float: none;
+
+					.ss-icon {
+						display: inline;
+						margin-right: @pad-2;
+						vertical-align: text-bottom;
+					}
+				}
+			}
+      .cost {
+      	font-size: @font-size-4;
       }
       // TODO flexbox
       .preferences {
         .preference {
+        	opacity: .5;
         	padding: 0 @pad-1;
         	text-align: center;
 	        transition: color .3s ease,
@@ -599,11 +619,6 @@
 			margin-left: 5px;
 		}
 	}
-}
-
-.frequency {
-  // clear: both;
-  float: right;
 }
 
 // .medication-cards-old {

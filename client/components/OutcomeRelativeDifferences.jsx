@@ -12,7 +12,7 @@ var Population = require('./visualizations/Population.jsx');
 var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
-// Outcome differences
+// Outcome relative difference blocks (i.e. change in pain)
 
 var OutcomeRelativeDifferences = React.createClass({
   propTypes: {
@@ -51,35 +51,30 @@ var OutcomeRelativeDifferences = React.createClass({
           var value = entry.intervention['mean_score_difference'].value.value
 
           if (value != null) {
-            var entryStyle = {
-              marginBottom: '15px'
-            }
             var inlineStyle = {
               display: 'inline-block',
-              marginLeft: '15px'
+              verticalAlign: 'text-bottom'
             }
 
             return (
-              <div key={i} style={entryStyle}>
-                <span style={{display: 'inline-block'}}>
+              <div key={i} className='pad-b-4'>
+                <div>
                   <Intervention
                     intervention={entry.intervention.parts}
                     interventionName={entry.intervention.parts.join(' + ')}
                     dosage={entry.intervention.dosage} />
-                  {entry.comparison &&
-                    <div className='light'>
-                      vs.<br />
-                      {entry.comparison.parts.join(' + ')}
-                    </div>
-                  }
-                  <RelativeDifferenceBlocks key={i} value={value} />
-                </span>
-                <span style={inlineStyle}>
-                  <Source source={entry.source} kind={entry.kind} />
-                </span>
-                <span style={inlineStyle}>
-                  <GradeQuality grade={entry.quality} gradeMap={grades} />
-                </span>
+                </div>
+                <div>
+                  <span style={inlineStyle} className='pad-r-3'>
+                    <RelativeDifferenceBlocks key={i} value={value} />
+                  </span>
+                  <span style={inlineStyle}>
+                    <Source source={entry.source} kind={entry.kind} />
+                  </span>
+                  <span style={inlineStyle}>
+                    <GradeQuality grade={entry.quality} gradeMap={grades} />
+                  </span>
+                </div>
               </div>
             )
           }

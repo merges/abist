@@ -150,17 +150,17 @@ var MedicationCard = React.createClass({
             
             var renderSafetyText = function(match) {
               if (match == 'unsafe') {
-                return <strong>Unsafe</strong>
+                return <strong key={key + match}>Unsafe</strong>
               }
               // If we get an "unknown"
               if (match == 'unknown') {
-                return <strong>Not sure</strong>
+                return <strong key={key + match}>Not sure</strong>
               }
               // If we get a "false" i.e. for a boolean, it's not true
               if (match === false) {
-                return <strong>Not sure</strong>
+                return <strong key={key + match}>Not sure</strong>
               }
-              return <strong>OK</strong>
+              return <strong key={key + match}>OK</strong>
             }
 
             return <div key={medication.name + key} className={preferenceClass}>
@@ -210,7 +210,7 @@ var MedicationCard = React.createClass({
               {medication.names_brand.length > 1 ?
                 <span>
                   {medication.names_brand.map(function (item, i) {
-                    return <span>
+                    return <span className={i}>
                       {item}{i < medication.names_brand.length - 1 && ', '}
                     </span>
                   })}
@@ -230,7 +230,7 @@ var MedicationCard = React.createClass({
             {medication.class.length > 1 ?
               <span>
                 {medication.class.map(function (item, i) {
-                  return <span>
+                  return <span key={i} className={i}>
                     {item}{i < medication.class.length - 1 && ', '}
                   </span>
                 })}
@@ -253,12 +253,12 @@ var MedicationCard = React.createClass({
               {medication.forms.map(function (form, i) {
                 numberOfForms = medication.forms.length
                 if (numberOfForms > 1 && i < numberOfForms - 1) {
-                  return <span>
+                  return <span key={i} className={i}>
                     <DosageForm key={i} form={form.name} />
                     <span> or </span>
                   </span>
                 }
-                return <span>
+                return <span key={i}>
                   <DosageForm key={i} form={form.name} />
                 </span>
               })}
@@ -275,11 +275,12 @@ var MedicationCard = React.createClass({
               </div>
             </div>
             <div className='t-cell cost'>
-              <span className='light'>Monthly cost is about</span><br />
               {medication.ptda.cost.min != medication.ptda.cost.max ?
                 <span>${medication.ptda.cost.min}-${medication.ptda.cost.max}</span> :
                 <span>${medication.ptda.cost.max}</span>
               }
+              <br /><span className='light'>every month</span>
+              
             </div>
           </div>
         </div>
@@ -614,11 +615,11 @@ var Navigator = React.createClass({
 
     return (
       <div className='filter-controls'>
-          {Object.keys(preferences).map(function(key) {
+          {Object.keys(preferences).map(function (key, i) {
             var preference = preferences[key]
             if (preference.type == 'boolean') {
               return (
-                <div className='checkbox'>
+                <div key={i} className='checkbox'>
                   <label>
                     <input type='checkbox'
                       key={key}
@@ -645,7 +646,7 @@ var Navigator = React.createClass({
                         'active': !preferencesSelected[key][option]
                       })
                       return (
-                        <div className='checkbox'>
+                        <div key={i} className='checkbox'>
                           <label>
                             <input type='checkbox'
                               key={option}
@@ -1087,9 +1088,9 @@ var Navigator = React.createClass({
 
     var html = []
 
-    _.each(measures, function (measureName) {
+    _.each(measures, function (measureName, i) {
       if (measureName == 'patient_pain') {
-        html.push(<div key={measureName}>
+        html.push(<div key={measureName + i}>
           <OutcomeRelativeDifferences
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1100,7 +1101,7 @@ var Navigator = React.createClass({
         </div>)
       }
       if (measureName == 'discontinued_ae') {
-        html.push(<div key={measureName}>
+        html.push(<div key={measureName + i}>
           <OutcomeRelativeComparison
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1110,7 +1111,18 @@ var Navigator = React.createClass({
             medicationsMap={medicationsMap} />
         </div>)
       }
-      html.push(<div key={measureName}>
+      if (measureName == 'ae') {
+        console.log(measureName, i)
+        html.push(<div key={measureName + i}>
+          <OutcomeAdverseEvents
+            data={data}
+            dataFiltered={getDataByMeasure([measureName])[measureName].data}
+            medications={medications}
+            disabledMedications={disabledMedications}
+            measure={measureName} />
+        </div>)
+      }
+      html.push(<div key={measureName + i}>
         <OutcomeTimeline
           data={data}
           dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1387,6 +1399,13 @@ var Navigator = React.createClass({
               Rheumatoid arthritis<br />
               <span className='color-link'>medication choices</span>
             </h1>
+            {!viewData &&
+              <button
+                className='btn'
+                onClick={this.handleShowDataClick.bind(null)}>
+                  Show me the data ›
+              </button>
+            }
             {this.renderPreferenceControls(preferences)}
             {this.renderMedicationList(medications)}
             {!viewData &&

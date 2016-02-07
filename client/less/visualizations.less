@@ -42,7 +42,7 @@
   &.risk-relative-to-baseline,
   &.absolute-risk-comparison {
     width: 100%;
-    min-height: 38em;
+    min-height: 22em;
     position: relative;
 
     .chart-holder {
@@ -53,13 +53,13 @@
 
     ul {
       height: 12em;
-      width: 80%;
+      // width: 80%;
       padding-bottom: 0;
       list-style-type: none;
       border-bottom: 1px solid @color-base-4;
       position: relative;
       bottom: 0;
-      left: 10%;
+      // left: 10%;
 
       @media (max-width: @screen-xs-max) {
         width: 100%;
@@ -120,8 +120,8 @@
     }
     .axis-labels {
       width: 100%;
-      padding-left: 10%;
-      padding-right: 10%;
+      // padding-left: 10%;
+      // padding-right: 10%;
 
       .axis-label {
         float: left;
@@ -238,10 +238,12 @@
 
 .grade-quality {
   display: inline-block;
+  margin-right: @pad-3;
 
   .box {
-    padding-top: 4px;
-    padding-bottom: 1px;
+    height: 25px;
+    display: table-cell;
+    vertical-align: middle;
   }
   .ss-icon {
     display: inline-block;
@@ -258,9 +260,13 @@
 
 .source {
   display: inline-block;
+  margin-right: @pad-3;
 
   .box {
     color: @color-link-2;
+    height: 25px;
+    display: table-cell;
+    vertical-align: middle;
   }
 }
 
@@ -291,15 +297,16 @@
 
 .progress {
   margin-top: .5em;
+  background: @color-base-2;
 }
 .progress-bar {
-  background: @color-grey-xl;
+  background: @color-base-2;
 
   &.better {
-    background: @color-grey-l;
+    background: @color-base-4;
   }
   &.worse {
-    background: @color-grey-l;
+    background: @color-base-3;
   }
 }
 

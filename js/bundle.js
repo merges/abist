@@ -288,17 +288,17 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
             
             var renderSafetyText = function(match) {
               if (match == 'unsafe') {
-                return React.createElement("strong", null, "Unsafe")
+                return React.createElement("strong", {key: key + match}, "Unsafe")
               }
               // If we get an "unknown"
               if (match == 'unknown') {
-                return React.createElement("strong", null, "Not sure")
+                return React.createElement("strong", {key: key + match}, "Not sure")
               }
               // If we get a "false" i.e. for a boolean, it's not true
               if (match === false) {
-                return React.createElement("strong", null, "Not sure")
+                return React.createElement("strong", {key: key + match}, "Not sure")
               }
-              return React.createElement("strong", null, "OK")
+              return React.createElement("strong", {key: key + match}, "OK")
             }
 
             return React.createElement("div", {key: medication.name + key, className: preferenceClass}, 
@@ -348,7 +348,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
               medication.names_brand.length > 1 ?
                 React.createElement("span", null, 
                   medication.names_brand.map(function (item, i) {
-                    return React.createElement("span", null, 
+                    return React.createElement("span", {className: i}, 
                       item, i < medication.names_brand.length - 1 && ', '
                     )
                   })
@@ -368,7 +368,7 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
             medication.class.length > 1 ?
               React.createElement("span", null, 
                 medication.class.map(function (item, i) {
-                  return React.createElement("span", null, 
+                  return React.createElement("span", {key: i, className: i}, 
                     item, i < medication.class.length - 1 && ', '
                   )
                 })
@@ -391,12 +391,12 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
               medication.forms.map(function (form, i) {
                 numberOfForms = medication.forms.length
                 if (numberOfForms > 1 && i < numberOfForms - 1) {
-                  return React.createElement("span", null, 
+                  return React.createElement("span", {key: i, className: i}, 
                     React.createElement(DosageForm, {key: i, form: form.name}), 
                     React.createElement("span", null, " or ")
                   )
                 }
-                return React.createElement("span", null, 
+                return React.createElement("span", {key: i}, 
                   React.createElement(DosageForm, {key: i, form: form.name})
                 )
               }), 
@@ -413,10 +413,11 @@ var MedicationCard = React.createClass({displayName: "MedicationCard",
               )
             ), 
             React.createElement("div", {className: "t-cell cost"}, 
-              React.createElement("span", {className: "light"}, "Monthly cost is about"), React.createElement("br", null), 
               medication.ptda.cost.min != medication.ptda.cost.max ?
                 React.createElement("span", null, "$", medication.ptda.cost.min, "-$", medication.ptda.cost.max) :
-                React.createElement("span", null, "$", medication.ptda.cost.max)
+                React.createElement("span", null, "$", medication.ptda.cost.max), 
+              
+              React.createElement("br", null), React.createElement("span", {className: "light"}, "every month")
               
             )
           )
@@ -752,11 +753,11 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     return (
       React.createElement("div", {className: "filter-controls"}, 
-          Object.keys(preferences).map(function(key) {
+          Object.keys(preferences).map(function (key, i) {
             var preference = preferences[key]
             if (preference.type == 'boolean') {
               return (
-                React.createElement("div", {className: "checkbox"}, 
+                React.createElement("div", {key: i, className: "checkbox"}, 
                   React.createElement("label", null, 
                     React.createElement("input", {type: "checkbox", 
                       key: key, 
@@ -783,7 +784,7 @@ var Navigator = React.createClass({displayName: "Navigator",
                         'active': !preferencesSelected[key][option]
                       })
                       return (
-                        React.createElement("div", {className: "checkbox"}, 
+                        React.createElement("div", {key: i, className: "checkbox"}, 
                           React.createElement("label", null, 
                             React.createElement("input", {type: "checkbox", 
                               key: option, 
@@ -1225,9 +1226,9 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     var html = []
 
-    _.each(measures, function (measureName) {
+    _.each(measures, function (measureName, i) {
       if (measureName == 'patient_pain') {
-        html.push(React.createElement("div", {key: measureName}, 
+        html.push(React.createElement("div", {key: measureName + i}, 
           React.createElement(OutcomeRelativeDifferences, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1238,7 +1239,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         ))
       }
       if (measureName == 'discontinued_ae') {
-        html.push(React.createElement("div", {key: measureName}, 
+        html.push(React.createElement("div", {key: measureName + i}, 
           React.createElement(OutcomeRelativeComparison, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1248,7 +1249,18 @@ var Navigator = React.createClass({displayName: "Navigator",
             medicationsMap: medicationsMap})
         ))
       }
-      html.push(React.createElement("div", {key: measureName}, 
+      if (measureName == 'ae') {
+        console.log(measureName, i)
+        html.push(React.createElement("div", {key: measureName + i}, 
+          React.createElement(OutcomeAdverseEvents, {
+            data: data, 
+            dataFiltered: getDataByMeasure([measureName])[measureName].data, 
+            medications: medications, 
+            disabledMedications: disabledMedications, 
+            measure: measureName})
+        ))
+      }
+      html.push(React.createElement("div", {key: measureName + i}, 
         React.createElement(OutcomeTimeline, {
           data: data, 
           dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1525,6 +1537,13 @@ var Navigator = React.createClass({displayName: "Navigator",
               "Rheumatoid arthritis", React.createElement("br", null), 
               React.createElement("span", {className: "color-link"}, "medication choices")
             ), 
+            !viewData &&
+              React.createElement("button", {
+                className: "btn", 
+                onClick: this.handleShowDataClick.bind(null)}, 
+                  "Show me the data ›"
+              ), 
+            
             this.renderPreferenceControls(preferences), 
             this.renderMedicationList(medications), 
             !viewData &&
@@ -1587,9 +1606,10 @@ var ProgressBar = require('react-bootstrap').ProgressBar;
 var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents",
   propTypes: {
     data: React.PropTypes.object.isRequired,
-    dataByTag: React.PropTypes.object.isRequired,
+    dataFiltered: React.PropTypes.array.isRequired,
     disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired
+    medications: React.PropTypes.array.isRequired,
+    measure: React.PropTypes.string
   },
 
   renderDataByMeasure: function(selectedMeasure) {
@@ -1694,27 +1714,25 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       'results': true
     });
 
-    var data                = this.props.data;
-    var medications         = this.props.medications;
-    var selectedMeasure     = this.props.selectedMeasure;
-    var selectedTag         = this.props.selectedTag;
-    var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data;
-    var disabledMedications = this.props.disabledMedications;
+    var data                = this.props.data
+    var dataFiltered        = this.props.dataFiltered
+    var medications         = this.props.medications
+    var measure             = this.props.measure
+    // var selectedTag         = this.props.selectedTag
+    // var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data
+    var disabledMedications = this.props.disabledMedications
 
-    if (measureData) {
-      // return (
-      //   <AbsoluteRiskComparison />
-      // );
 
-      measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
+    if (dataFiltered) {
+      var entries = get.filterEntriesByMedication(dataFiltered, medications, disabledMedications)
       
-      var groupedMeasureData = _.groupBy(measureData, function (entry) {
+      var groupedData = _.groupBy(entries, function (entry) {
         return entry.comparison + entry.intervention;
       });
 
       return (
         React.createElement("section", {className: classes}, 
-          _.map(groupedMeasureData, function (group) {
+          _.map(groupedData, function (group) {
             var firstEntry = group[0];
             var comparison = firstEntry.comparison.join(' + ');
             var intervention = firstEntry.intervention.join(' + ');
@@ -1731,8 +1749,8 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
                                   .value();
 
             return (
-              React.createElement("div", {key: group}, 
-                React.createElement("h4", null, 
+              React.createElement("div", {className: "pad-t-5 pad-b-5", key: comparison + intervention}, 
+                React.createElement("h2", null, 
                   "When ", React.createElement("strong", null, intervention), " was compared with ", React.createElement("strong", null, comparison), " for people with RA", React.createElement("br", null), 
                   React.createElement("span", {className: "light"}, "these were the most common side effects")
                 ), 
@@ -1740,43 +1758,66 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
                 React.createElement(GradeQuality, {grade: firstEntry.quality, gradeMap: data.grades}), 
 
                 groupedByDetail.map(function (clump, i) {
-                  var name              = clump[0].measure_detail;
-                  var comparisonValue   = _.chain(clump)
-                                           .findWhere({'which': 'comparison'})
-                                           .value()
-                                           .value.value;
-                  var interventionValue = _.chain(clump)
-                                           .findWhere({'which': 'intervention'})
-                                           .value()
-                                           .value.value;
+                  // If there's only an entry for the intervention, we can't
+                  // draw a comparison chart.
 
-                  if (interventionValue < comparisonValue) {
-                    var stackedValue = comparisonValue - interventionValue;
-                    return (
-                      React.createElement("div", {key: i}, 
-                        React.createElement("strong", null, name), React.createElement("br", null), 
-                        React.createElement("span", {className: "light"}, "less common with ", React.createElement("strong", null, intervention)), 
-                        React.createElement(ProgressBar, null, 
-                          React.createElement(ProgressBar, {bsSize: "xsmall", className: "better", label: "%(percent)s% taking " + intervention, now: interventionValue, key: 1}), 
-                          React.createElement(ProgressBar, {bsSize: "xsmall", label: comparisonValue + '% on ' + comparison, now: stackedValue, key: 2})
-                        )
-                      )
-                    );
+                  if (!_.find(clump, {'which': 'comparison'})) {
+                    return
                   }
-                  else {
-                    var stackedValue = interventionValue - comparisonValue;
-                    return (
-                      React.createElement("div", {key: i}, 
-                        React.createElement("strong", null, name), React.createElement("br", null), 
-                        React.createElement("span", {className: "light"}, "as or more common with ", React.createElement("strong", null, intervention)), 
-                        React.createElement(ProgressBar, null, 
-                          React.createElement(ProgressBar, {bsSize: "xsmall", label: "%(percent)s% on " + comparison, now: comparisonValue, key: 1}), 
-                          React.createElement(ProgressBar, {bsSize: "xsmall", className: "worse", label: interventionValue + '% on ' + intervention, now: stackedValue, key: 2})
+
+                  var name = clump[0].measure_detail;
+                  
+                  // PILL VISUALIZATION
+                  return React.createElement("div", {key: i, className: "visualization-rr pad-b-5"}, 
+                    React.createElement("h3", {className: "font-size-6"}, name), 
+                    React.createElement(AbsoluteRiskComparison, {
+                      items: clump, 
+                      measure: name})
+                  )
+
+
+                  // WEIRD RELATIVE VISUALIZATION
+
+                  // var comparisonValue   = _.chain(clump)
+                  //                          .find({'which': 'comparison'})
+                  //                          .value()
+                  //                          .value.value;
+                  // var interventionValue = _.chain(clump)
+                  //                          .find({'which': 'intervention'})
+                  //                          .value()
+                  //                          .value.value;
+
+                  // if (interventionValue < comparisonValue) {
+                  //   var stackedValue = comparisonValue - interventionValue;
+
+                  //   // Progress bar
+                  //   return (
+                  //     <div key={i}>
+                  //       <strong>{name}</strong><br />
+                  //       <span className='light'>less common with <strong>{intervention}</strong></span>
+                  //       <ProgressBar>
+                  //         <ProgressBar bsSize="xsmall" className='better' label={"%(percent)s% taking " + intervention} now={interventionValue} key={1} />
+                  //         <ProgressBar bsSize="xsmall" label={comparisonValue + '% on ' + comparison} now={stackedValue} key={2} />
+                  //       </ProgressBar>
+                  //     </div>
+                  //   );
+                  // }
+                  // else {
+                  //   var stackedValue = interventionValue - comparisonValue;
+
+                  //   // Progress bar
+                  //   return (
+                  //     <div key={i}>
+                  //       <strong>{name}</strong><br />
+                  //       <span className='light'>as or more common with <strong>{intervention}</strong></span>
+                  //       <ProgressBar>
+                  //         <ProgressBar bsSize="xsmall" label={"%(percent)s% on " + comparison} now={comparisonValue} key={1} />
+                  //         <ProgressBar bsSize="xsmall" className='worse' label={interventionValue + '% on ' + intervention} now={stackedValue} key={2} />
                           
-                        )
-                      )
-                    );
-                  }
+                  //       </ProgressBar>
+                  //     </div>
+                  //   );
+                  // }
                 })
               )
             );
@@ -2144,7 +2185,7 @@ var Population = require('./visualizations/Population.jsx');
 var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
-// Outcome differences
+// Outcome relative difference blocks (i.e. change in pain)
 
 var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativeDifferences",
   propTypes: {
@@ -2183,34 +2224,29 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
           var value = entry.intervention['mean_score_difference'].value.value
 
           if (value != null) {
-            var entryStyle = {
-              marginBottom: '15px'
-            }
             var inlineStyle = {
               display: 'inline-block',
-              marginLeft: '15px'
+              verticalAlign: 'text-bottom'
             }
 
             return (
-              React.createElement("div", {key: i, style: entryStyle}, 
-                React.createElement("span", {style: {display: 'inline-block'}}, 
+              React.createElement("div", {key: i, className: "pad-b-4"}, 
+                React.createElement("div", null, 
                   React.createElement(Intervention, {
                     intervention: entry.intervention.parts, 
                     interventionName: entry.intervention.parts.join(' + '), 
-                    dosage: entry.intervention.dosage}), 
-                  entry.comparison &&
-                    React.createElement("div", {className: "light"}, 
-                      "vs.", React.createElement("br", null), 
-                      entry.comparison.parts.join(' + ')
-                    ), 
-                  
-                  React.createElement(RelativeDifferenceBlocks, {key: i, value: value})
+                    dosage: entry.intervention.dosage})
                 ), 
-                React.createElement("span", {style: inlineStyle}, 
-                  React.createElement(Source, {source: entry.source, kind: entry.kind})
-                ), 
-                React.createElement("span", {style: inlineStyle}, 
-                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                React.createElement("div", null, 
+                  React.createElement("span", {style: inlineStyle, className: "pad-r-3"}, 
+                    React.createElement(RelativeDifferenceBlocks, {key: i, value: value})
+                  ), 
+                  React.createElement("span", {style: inlineStyle}, 
+                    React.createElement(Source, {source: entry.source, kind: entry.kind})
+                  ), 
+                  React.createElement("span", {style: inlineStyle}, 
+                    React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                  )
                 )
               )
             )
@@ -2239,7 +2275,7 @@ var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.js
 var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx')
 var Source = require('./visualizations/Source.jsx')
 
-// Outcome timeline test
+// Outcome timeline i.e. outcomes at certain timepoints
 
 var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 	propTypes: {
@@ -2419,10 +2455,10 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
     return (
       React.createElement("div", null, 
-        React.createElement("div", {className: "inline-block"}, 
+        React.createElement("div", null, 
           React.createElement(AbsoluteFrequency, {frequency: data.value, metric: metric, denominator: 100, breakpoint: 10, baseline: baseline})
         ), 
-        React.createElement("div", {className: "inline-block"}, 
+        React.createElement("div", null, 
           React.createElement("strong", null, data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value), " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
           React.createElement("span", {className: "small"}, 
             "would be expected to experience ", measures[measure].name_friendly
@@ -6279,12 +6315,13 @@ var Tooltip = require('react-bootstrap').Tooltip;
 var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskComparison",
 
   propTypes: {
-    items: React.PropTypes.array.isRequred
+    items: React.PropTypes.array.isRequired,
+    mesaure: React.PropTypes.string
   },
 
   getDefaultProps: function() {
-    return {
-      items: [{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":39,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":50,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":30,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":38,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":15,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":21,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":11,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":37,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":9,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":8,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":3,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["placebo"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":0,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"","high":"","interval":""},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":86,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"infection of any kind","measure":"ae","metric":"ar_100","grade":"","value":{"value":81,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":70,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":65,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":59,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"non-upper respiratory infection","measure":"ae","metric":"ar_100","grade":"","value":{"value":54,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":18,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"injection site reaction","measure":"ae","metric":"ar_100","grade":"","value":{"value":43,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"diarrhea","measure":"ae","metric":"ar_100","grade":"","value":{"value":16,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":19,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"rash","measure":"ae","metric":"ar_100","grade":"","value":{"value":13,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"itching","measure":"ae","metric":"ar_100","grade":"","value":{"value":5,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"fever","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":4,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hives","measure":"ae","metric":"ar_100","grade":"","value":{"value":2,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"comparison","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hypersensitivity","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"},{"which":"intervention","population":null,"intervention":["etanercept"],"comparison":["methotrexate"],"measure_detail":"hypersensitivity","measure":"ae","metric":"ar_100","grade":"","value":{"value":1,"value_ci_low":null,"value_ci_high":null},"duration":{"low":"2","high":"2","interval":"year"},"dosage":{"dosage":"","dosage_form":["subcutaneous"],"dosage_frequency":"","dosage_multiple":"","dosage_interval":""},"source":"http://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a002b40c-097d-47a5-957f-7a7b1807af7f","notes":"","kind":"drug company data"}],
+  	return {
+      measure: null,
       showTitle: true,
       showValues: false
     };
@@ -6298,17 +6335,19 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
   },
 
   getPopover: function(item) {
-    var name =  item.measure_detail;
-        name += ' (';
+  	// console.log(item)
+    var measure =  item.measure_detail
+        // name += ' (';
+    var name = ''
     item.which == 'comparison' ?
           name += item.comparison.join(' + ')
           :
-          name += item.intervention.join(' + ');
-        name += ')';
+          name += item.intervention.join(' + ')
+        // name += ')';
 
     return (
-      React.createElement(Popover, {title: name}, 
-        name, " ", React.createElement("span", {className: "ss-icon ss-user"}), " ", React.createElement("strong", null, item.value.value), " of 100"
+      React.createElement(Popover, {title: measure}, 
+        name, " ", React.createElement("span", {className: "ss-icon ss-user"}), " ", React.createElement("strong", null, item.value.value), " of 100 people"
       )
     );
   },
@@ -6326,13 +6365,15 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
       'active': riskFrequency <= this.state.iconArrayHoverRiskValue
     });
 
-    var name =  item.measure_detail;
-        name += ' (';
+    // Include measure_detail?
+    // var name =  item.measure_detail;
+    //     name += ' (';
+    var name = ''
     item.which == 'comparison' ?
           name += item.comparison.join(' + ')
           :
-          name += item.intervention.join(' + ');
-        name += ')';
+          name += item.intervention.join(' + ')
+        // name += ')';
 
     return (
       React.createElement(OverlayTrigger, {
@@ -6442,8 +6483,6 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
       }
     });
 
-    console.log(groups)
-
     var pillGroups = [];
     Object.keys(groups).forEach(function(pos, i) {
       var style = {
@@ -6459,25 +6498,45 @@ var AbsoluteRiskComparison = React.createClass({displayName: "AbsoluteRiskCompar
       );
     });
 
+    var giantLabelsStyle = {
+    	display: 'table',
+    	tableLayout: 'fixed',
+    	position: 'absolute',
+    	bottom: '35%',
+    	width: '100%',
+    	height: '65%'
+    }
+    var bigRightStyle = {
+      textAlign: 'right',
+    }
+
+    var measure = this.props.measure
+
     return (
       React.createElement("div", null, 
         React.createElement("div", {className: "visualization absolute-risk-comparison"}, 
           React.createElement("div", {className: "chart-holder"}, 
+          	React.createElement("div", {style: giantLabelsStyle}, 
+          		React.createElement("span", {className: "x-light giant-label"}, "less ", measure), 
+          		React.createElement("span", {className: "giant-label"}), 
+			        React.createElement("span", {className: "x-light giant-label", style: bigRightStyle}, "more ", measure)
+          	), 
+
             React.createElement("ul", null, 
               pillGroups
             ), 
             React.createElement("div", {className: "axis-labels"}, 
               this.renderIconArray(), 
               React.createElement("div", {className: "axis-label left"}, 
-                React.createElement("strong", null, "0 of 100"), 
+                React.createElement("strong", null, "None of 100 people"), 
                 React.createElement("p", null, 
-                  "At this end, no one is expected to experience"
+                  "At this end, no one is expected to experience ", React.createElement("strong", null, measure)
                 )
               ), 
               React.createElement("div", {className: "axis-label right"}, 
-                React.createElement("strong", null, "100 of 100"), 
+                React.createElement("strong", null, "100 of 100 people"), 
                 React.createElement("p", null, 
-                  "At this end, almost everyone is expected to experience"
+                  "At this end, almost everyone is expected to experience ", React.createElement("strong", null, measure)
                 )
               )
             )
@@ -7822,12 +7881,15 @@ var get = {
     metrics: 'ojmf289',
     grades: 'oo3g5h2',
     data: {
-      biologics: 'oij9tdp',
+      dmards: 'oij9tdp',
       etanercept: 'oogh8lu',
-      finraco: 'oclozwl',
-      hydroxycholoroquine: 'oozzuoc',
+      tocilizumab: 'ociwrxy',
+      leflunomide: 'og4s4wi',
       methotrexate: 'oa4uchu',
-      tocilizumab: 'ociwrxy'
+      hydroxycholoroquine: 'oozzuoc',
+      sulfasalazine: 'ovz798r',
+      cyclosporine: 'om399vw',
+      finraco: 'oclozwl',
     },
     tagDescriptions: 'o2pd8py'
   },

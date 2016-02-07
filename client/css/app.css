@@ -11175,8 +11175,22 @@ html:hover [class^="ss-"] {
 .light {
   opacity: .6;
 }
+.x-light {
+  opacity: .15;
+}
 .strong {
   font-weight: bolder;
+}
+.giant-label {
+  font-size: 39px;
+  display: table-cell;
+  vertical-align: bottom;
+  padding-bottom: 15px;
+}
+@media (max-width: 767px) {
+  .giant-label {
+    font-size: 27px;
+  }
 }
 .space-t {
   margin-top: 0.4em;
@@ -11323,7 +11337,7 @@ html:hover [class^="ss-"] {
 .visualization.risk-relative-to-baseline,
 .visualization.absolute-risk-comparison {
   width: 100%;
-  min-height: 38em;
+  min-height: 22em;
   position: relative;
 }
 .visualization.relative-risk-comparison .chart-holder,
@@ -11337,13 +11351,11 @@ html:hover [class^="ss-"] {
 .visualization.risk-relative-to-baseline ul,
 .visualization.absolute-risk-comparison ul {
   height: 12em;
-  width: 80%;
   padding-bottom: 0;
   list-style-type: none;
   border-bottom: 1px solid #888;
   position: relative;
   bottom: 0;
-  left: 10%;
 }
 @media (max-width: 767px) {
   .visualization.relative-risk-comparison ul,
@@ -11422,8 +11434,6 @@ html:hover [class^="ss-"] {
 .visualization.risk-relative-to-baseline .axis-labels,
 .visualization.absolute-risk-comparison .axis-labels {
   width: 100%;
-  padding-left: 10%;
-  padding-right: 10%;
 }
 .visualization.relative-risk-comparison .axis-labels .axis-label,
 .visualization.risk-relative-to-baseline .axis-labels .axis-label,
@@ -11544,10 +11554,12 @@ html:hover [class^="ss-"] {
 }
 .grade-quality {
   display: inline-block;
+  margin-right: 15px;
 }
 .grade-quality .box {
-  padding-top: 4px;
-  padding-bottom: 1px;
+  height: 25px;
+  display: table-cell;
+  vertical-align: middle;
 }
 .grade-quality .ss-icon {
   display: inline-block;
@@ -11559,9 +11571,13 @@ html:hover [class^="ss-"] {
 }
 .source {
   display: inline-block;
+  margin-right: 15px;
 }
 .source .box {
   color: #6699ff;
+  height: 25px;
+  display: table-cell;
+  vertical-align: middle;
 }
 .intervention .name {
   display: inline-block;
@@ -11583,15 +11599,16 @@ html:hover [class^="ss-"] {
 }
 .progress {
   margin-top: .5em;
+  background: #333;
 }
 .progress-bar {
-  background: #bbb;
+  background: #333;
 }
 .progress-bar.better {
-  background: #999;
+  background: #888;
 }
 .progress-bar.worse {
-  background: #999;
+  background: #444;
 }
 .outcome-timeline.horizontal {
   display: table;
@@ -11644,7 +11661,8 @@ html:hover [class^="ss-"] {
   left: 0;
   max-width: 99999px;
   transition: width .5s ease;
-  overflow: scroll;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 .navigator .sidebar.compact {
   width: 360px;
@@ -11665,6 +11683,8 @@ html:hover [class^="ss-"] {
 .navigator .details {
   padding: 30px;
   max-width: 99999px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 .navigator .details.compact {
   width: 0;
@@ -11703,6 +11723,7 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards .large .caption {
   font-size: 19px;
   padding-bottom: 10px;
+  opacity: .6;
 }
 .navigator .medication-cards .large .names {
   width: 100%;
@@ -11718,7 +11739,24 @@ html:hover [class^="ss-"] {
 .navigator .medication-cards .large .names .brand {
   font-size: 27px;
 }
+.navigator .medication-cards .large .dosage-forms {
+  float: none;
+  font-size: 23px;
+}
+.navigator .medication-cards .large .dosage-forms .dosage-form {
+  display: inline-block;
+  float: none;
+}
+.navigator .medication-cards .large .dosage-forms .dosage-form .ss-icon {
+  display: inline;
+  margin-right: 10px;
+  vertical-align: text-bottom;
+}
+.navigator .medication-cards .large .cost {
+  font-size: 23px;
+}
 .navigator .medication-cards .large .preferences .preference {
+  opacity: .5;
   padding: 0 5px;
   text-align: center;
   transition: color .3s ease,
@@ -12065,9 +12103,6 @@ html:hover [class^="ss-"] {
 }
 .dosage-forms > .dosage-form + .dosage-form {
   margin-left: 5px;
-}
-.frequency {
-  float: right;
 }
 .panel {
   padding: 5em 0 0 0;

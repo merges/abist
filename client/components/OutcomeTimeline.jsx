@@ -14,7 +14,7 @@ var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison.js
 var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline.jsx')
 var Source = require('./visualizations/Source.jsx')
 
-// Outcome timeline test
+// Outcome timeline i.e. outcomes at certain timepoints
 
 var OutcomeTimeline = React.createClass({
 	propTypes: {
@@ -194,10 +194,10 @@ var OutcomeTimeline = React.createClass({
 
     return (
       <div>
-        <div className='inline-block'>
+        <div>
           <AbsoluteFrequency frequency={data.value} metric={metric} denominator={100} breakpoint={10} baseline={baseline} />
         </div>
-        <div className='inline-block'>
+        <div>
           <strong>{data.value && (metric == 'ar_1000' ? Math.floor(data.value * 0.1) : data.value)} people</strong> <span className='light'>out of 100</span><br />
           <span className='small'>
             would be expected to experience {measures[measure].name_friendly}

@@ -23,9 +23,10 @@ var ProgressBar = require('react-bootstrap').ProgressBar;
 var OutcomeAdverseEvents = React.createClass({
   propTypes: {
     data: React.PropTypes.object.isRequired,
-    dataByTag: React.PropTypes.object.isRequired,
+    dataFiltered: React.PropTypes.array.isRequired,
     disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired
+    medications: React.PropTypes.array.isRequired,
+    measure: React.PropTypes.string
   },
 
   renderDataByMeasure: function(selectedMeasure) {
@@ -130,27 +131,25 @@ var OutcomeAdverseEvents = React.createClass({
       'results': true
     });
 
-    var data                = this.props.data;
-    var medications         = this.props.medications;
-    var selectedMeasure     = this.props.selectedMeasure;
-    var selectedTag         = this.props.selectedTag;
-    var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data;
-    var disabledMedications = this.props.disabledMedications;
+    var data                = this.props.data
+    var dataFiltered        = this.props.dataFiltered
+    var medications         = this.props.medications
+    var measure             = this.props.measure
+    // var selectedTag         = this.props.selectedTag
+    // var measureData         = this.props.dataByTag[selectedTag][selectedMeasure].data
+    var disabledMedications = this.props.disabledMedications
 
-    if (measureData) {
-      // return (
-      //   <AbsoluteRiskComparison />
-      // );
 
-      measureData = get.filterEntriesByMedication(measureData, medications, disabledMedications)
+    if (dataFiltered) {
+      var entries = get.filterEntriesByMedication(dataFiltered, medications, disabledMedications)
       
-      var groupedMeasureData = _.groupBy(measureData, function (entry) {
+      var groupedData = _.groupBy(entries, function (entry) {
         return entry.comparison + entry.intervention;
       });
 
       return (
         <section className={classes}>
-          {_.map(groupedMeasureData, function (group) {
+          {_.map(groupedData, function (group) {
             var firstEntry = group[0];
             var comparison = firstEntry.comparison.join(' + ');
             var intervention = firstEntry.intervention.join(' + ');
@@ -167,52 +166,75 @@ var OutcomeAdverseEvents = React.createClass({
                                   .value();
 
             return (
-              <div key={group}>
-                <h4>
+              <div className='pad-t-5 pad-b-5' key={comparison + intervention}>
+                <h2>
                   When <strong>{intervention}</strong> was compared with <strong>{comparison}</strong> for people with RA<br />
                   <span className='light'>these were the most common side effects</span>
-                </h4>
+                </h2>
                 <Source source={firstEntry.source} kind={firstEntry.kind} />
                 <GradeQuality grade={firstEntry.quality} gradeMap={data.grades} />
 
                 {groupedByDetail.map(function (clump, i) {
-                  var name              = clump[0].measure_detail;
-                  var comparisonValue   = _.chain(clump)
-                                           .findWhere({'which': 'comparison'})
-                                           .value()
-                                           .value.value;
-                  var interventionValue = _.chain(clump)
-                                           .findWhere({'which': 'intervention'})
-                                           .value()
-                                           .value.value;
+                  // If there's only an entry for the intervention, we can't
+                  // draw a comparison chart.
 
-                  if (interventionValue < comparisonValue) {
-                    var stackedValue = comparisonValue - interventionValue;
-                    return (
-                      <div key={i}>
-                        <strong>{name}</strong><br />
-                        <span className='light'>less common with <strong>{intervention}</strong></span>
-                        <ProgressBar>
-                          <ProgressBar bsSize="xsmall" className='better' label={"%(percent)s% taking " + intervention} now={interventionValue} key={1} />
-                          <ProgressBar bsSize="xsmall" label={comparisonValue + '% on ' + comparison} now={stackedValue} key={2} />
-                        </ProgressBar>
-                      </div>
-                    );
+                  if (!_.find(clump, {'which': 'comparison'})) {
+                    return
                   }
-                  else {
-                    var stackedValue = interventionValue - comparisonValue;
-                    return (
-                      <div key={i}>
-                        <strong>{name}</strong><br />
-                        <span className='light'>as or more common with <strong>{intervention}</strong></span>
-                        <ProgressBar>
-                          <ProgressBar bsSize="xsmall" label={"%(percent)s% on " + comparison} now={comparisonValue} key={1} />
-                          <ProgressBar bsSize="xsmall" className='worse' label={interventionValue + '% on ' + intervention} now={stackedValue} key={2} />
+
+                  var name = clump[0].measure_detail;
+                  
+                  // PILL VISUALIZATION
+                  return <div key={i} className='visualization-rr pad-b-5'>
+                    <h3 className='font-size-6'>{name}</h3>
+                    <AbsoluteRiskComparison
+                      items={clump}
+                      measure={name} />
+                  </div>
+
+
+                  // WEIRD RELATIVE VISUALIZATION
+
+                  // var comparisonValue   = _.chain(clump)
+                  //                          .find({'which': 'comparison'})
+                  //                          .value()
+                  //                          .value.value;
+                  // var interventionValue = _.chain(clump)
+                  //                          .find({'which': 'intervention'})
+                  //                          .value()
+                  //                          .value.value;
+
+                  // if (interventionValue < comparisonValue) {
+                  //   var stackedValue = comparisonValue - interventionValue;
+
+                  //   // Progress bar
+                  //   return (
+                  //     <div key={i}>
+                  //       <strong>{name}</strong><br />
+                  //       <span className='light'>less common with <strong>{intervention}</strong></span>
+                  //       <ProgressBar>
+                  //         <ProgressBar bsSize="xsmall" className='better' label={"%(percent)s% taking " + intervention} now={interventionValue} key={1} />
+                  //         <ProgressBar bsSize="xsmall" label={comparisonValue + '% on ' + comparison} now={stackedValue} key={2} />
+                  //       </ProgressBar>
+                  //     </div>
+                  //   );
+                  // }
+                  // else {
+                  //   var stackedValue = interventionValue - comparisonValue;
+
+                  //   // Progress bar
+                  //   return (
+                  //     <div key={i}>
+                  //       <strong>{name}</strong><br />
+                  //       <span className='light'>as or more common with <strong>{intervention}</strong></span>
+                  //       <ProgressBar>
+                  //         <ProgressBar bsSize="xsmall" label={"%(percent)s% on " + comparison} now={comparisonValue} key={1} />
+                  //         <ProgressBar bsSize="xsmall" className='worse' label={interventionValue + '% on ' + intervention} now={stackedValue} key={2} />
                           
-                        </ProgressBar>
-                      </div>
-                    );
-                  }
+                  //       </ProgressBar>
+                  //     </div>
+                  //   );
+                  // }
                 })}
               </div>
             );
