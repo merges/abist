@@ -19,7 +19,7 @@
     "jquery": "~2.1.3",
     "jquery-browserify": "~1.8.1",
     "less": "~2.2.0",
-    "lodash": "^3.10.1",
+    "lodash": "^4.6.1",
     "node-jsx": "0.12.4",
     "npm": "~2.1.2",
     "react": "^0.13.1",
@@ -39,7 +39,6 @@
     "reactify": "^0.17.1"
   },
   "scripts": {
-    "postinstall": "./node_modules/bower/bin/bower install",
     "build": "browserify -t [reactify --harmony] js/client.js > js/bundle.js",
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"

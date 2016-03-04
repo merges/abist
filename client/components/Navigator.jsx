@@ -1397,7 +1397,7 @@ var Navigator = React.createClass({
           <div className={sidebarClasses}>
             <h1>
               Rheumatoid arthritis<br />
-              <span className='color-link'>medication choices</span>
+              <span className='color-link'>medication navigator</span>
             </h1>
             {!viewData &&
               <button

@@ -673,6 +673,8 @@ var OutcomeTimeline = React.createClass({
           <section className='outcome-timeline horizontal'>
             {/* TODO: Separately and specially handle population. */}
 
+          {/* TODO: Have text at top that says "best performer, worst performer!" SUMMARIES! */}
+
             {_.map(interventionsSorted, function (intervention) {
               var entry = interventions[intervention];
               var rowClasses = cx({

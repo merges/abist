@@ -1535,7 +1535,7 @@ var Navigator = React.createClass({displayName: "Navigator",
           React.createElement("div", {className: sidebarClasses}, 
             React.createElement("h1", null, 
               "Rheumatoid arthritis", React.createElement("br", null), 
-              React.createElement("span", {className: "color-link"}, "medication choices")
+              React.createElement("span", {className: "color-link"}, "medication navigator")
             ), 
             !viewData &&
               React.createElement("button", {
@@ -2196,6 +2196,106 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     measure: React.PropTypes.string
   },
 
+  getComparisonMean: function(acceptableMeasures, sortedEntries) {
+    function Med (drug, score) {
+      this.drug = drug
+      this.score = score
+    }
+    var Meds = {}
+    var means = []
+    
+    var counter = 0;
+    sortedEntries.map(function(entry) {
+      // Return if this entry doesn’t have an intervention
+      if (!entry.comparison) {
+        return
+      }
+      // Check to see whether this entry has an appropriate metric
+      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
+      if (measureToUse) {
+        var value = entry.comparison[measureToUse].value.value
+        if (value) {
+          value && means.push(value)
+          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value)
+          counter++
+        }
+      }
+    })
+
+    if (counter !== 0) {
+      var sum = _.sum(means)
+      var mean = sum/means.length
+      var meansSubtractedSquared = _.map(means, function(val) {
+        return Math.pow((val - mean), 2)
+      })
+      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
+      console.log(sum, mean, deviation)
+      console.table(Meds, ['drug', 'score'])
+    }
+
+    var roundedMean = mean.toFixed(2)
+    console.log('mean', roundedMean)
+    return roundedMean
+  },
+
+  getInterventionValues: function(acceptableMeasures, sortedEntries, comparisonMean) {
+    function Med (drug, score, normalized, difference) {
+      this.drug = drug
+      this.score = score
+      this.normalized = normalized
+      this.difference = difference
+    }
+    var Meds = {}
+    var means = []
+
+    newEntries = []
+    
+    var counter = 0;
+    sortedEntries.map(function(entry) {
+      // Return if this entry doesn’t have an intervention
+      if (!entry.intervention) {
+        return
+      }
+      // Check to see whether this entry has an appropriate metric
+      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
+      if (measureToUse) {
+        var value = entry.intervention[measureToUse].value.value
+        if (value) {
+          newEntries.push(_.cloneDeep(entry))
+
+          value && means.push(value)
+          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
+          var difference = (value - comparisonMean).toFixed(2)
+          Meds[counter].difference = difference
+          counter++   
+        }
+      }
+    })
+
+    if (counter !== 0) {
+      var sum = _.sum(means)
+      var mean = sum/means.length
+      var meansSubtractedSquared = _.map(means, function(val) {
+        return Math.pow((val - mean), 2)
+      })
+      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixed(2)
+      var meansNormalized = _.map(means, function(val, i) {
+        var normalized = (val - mean) / deviation
+        Meds[i].normalized = normalized
+        return normalized
+      })
+
+      // Normalized difference? # of stdDevs better than placebo
+      _.each(newEntries, function (entry, i) {
+        var differenceInDeviations = Meds[i].difference / deviation
+        Meds[i]['differenceNormalized'] = differenceInDeviations
+      })
+
+      console.log('mean', mean, '-----', 'deviation', deviation)
+      console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
+    }
+  },
+
   render: function() {
     var classes = cx({
       'processing': true,
@@ -2206,24 +2306,48 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     var dataFiltered = this.props.dataFiltered
     var disabledMedications = this.props.disabledMedications
     var medications = this.props.medications
+    var medicationsMap = this.props.medicationsMap
     var measure = this.props.measure
-
     var grades = data.grades
 
     var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
-
     var sortedEntries = _.sortBy(entries, function(entry) {
       if (entry.intervention) {
         return entry.intervention.parts[0]
       }
     })
+    
+    var acceptableMeasures = [
+      'mean_difference_100',
+      'mean_difference_10',
+      'mean_score_change_100'
+    ]
+    
+    // TODO re-scale everything to 100
+    var comparisonMean = this.getComparisonMean(acceptableMeasures, sortedEntries)
+    var mid = 10 // Minimally important difference
 
+    this.getInterventionValues(acceptableMeasures, sortedEntries, comparisonMean)
+    
     return React.createElement("div", null, 
       sortedEntries.map(function(entry, i) {
-        if (entry.intervention && entry.intervention['mean_score_difference']) {
-          var value = entry.intervention['mean_score_difference'].value.value
+
+        // Return if this entry doesn’t have an intervention
+        if (!entry.intervention) {
+          return
+        }
+
+        // Check to see whether this entry has an appropriate metric
+        var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
+        console.log(measureToUse)
+
+        if (measureToUse) {
+          var value = entry.intervention[measureToUse].value.value
 
           if (value != null) {
+            // Calculate the mean_score_difference based on the pooled comparisonMean
+            var difference = (value - comparisonMean).toFixed(2)
+            
             var inlineStyle = {
               display: 'inline-block',
               verticalAlign: 'text-bottom'
@@ -2235,11 +2359,12 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
                   React.createElement(Intervention, {
                     intervention: entry.intervention.parts, 
                     interventionName: entry.intervention.parts.join(' + '), 
-                    dosage: entry.intervention.dosage})
+                    dosage: entry.intervention.dosage, 
+                    medicationsMap: medicationsMap})
                 ), 
                 React.createElement("div", null, 
                   React.createElement("span", {style: inlineStyle, className: "pad-r-3"}, 
-                    React.createElement(RelativeDifferenceBlocks, {key: i, value: value})
+                    React.createElement(RelativeDifferenceBlocks, {key: i, value: difference})
                   ), 
                   React.createElement("span", {style: inlineStyle}, 
                     React.createElement(Source, {source: entry.source, kind: entry.kind})
@@ -2933,6 +3058,8 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
           React.createElement("section", {className: "outcome-timeline horizontal"}, 
             /* TODO: Separately and specially handle population. */
+
+          /* TODO: Have text at top that says "best performer, worst performer!" SUMMARIES! */
 
             _.map(interventionsSorted, function (intervention) {
               var entry = interventions[intervention];
@@ -6833,7 +6960,7 @@ var Intervention = React.createClass({displayName: "Intervention",
     var medicationsMap = this.props.medicationsMap
     var dosage = this.props.dosage
 
-    if (this.props.dosage) {
+    if (dosage) {
       return (
         React.createElement("div", {className: visualizationClasses}, 
           React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: this.getTooltip(interventionName, dosage && dosage)}, 
@@ -9943,7 +10070,7 @@ var routes = (
 module.exports = routes;
 },{"./components/App.jsx":1,"./components/Experiment.jsx":2,"./components/Navigator.jsx":3,"./components/OutcomeTimeline.jsx":7,"./components/Processing.jsx":8,"./components/adverse/AdverseEvents.jsx":9,"./components/ptda/Ptda.jsx":10,"./components/visualizations/VisualizationSketches.jsx":28,"./components/visualizations/VisualizationTests.jsx":29,"react-router":"react-router","react/addons":"react/addons"}],36:[function(require,module,exports){
 /**
- * isMobile.js v0.3.5
+ * isMobile.js v0.3.9
  *
  * A simple library to detect Apple phones and tablets,
  * Android phones and tablets, other mobile devices (like blackberry, mini-opera and windows phone),
@@ -9960,11 +10087,14 @@ module.exports = routes;
         apple_tablet        = /iPad/i,
         android_phone       = /(?=.*\bAndroid\b)(?=.*\bMobile\b)/i, // Match 'Android' AND 'Mobile'
         android_tablet      = /Android/i,
+        amazon_phone        = /(?=.*\bAndroid\b)(?=.*\bSD4930UR\b)/i,
+        amazon_tablet       = /(?=.*\bAndroid\b)(?=.*\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\b)/i,
         windows_phone       = /IEMobile/i,
         windows_tablet      = /(?=.*\bWindows\b)(?=.*\bARM\b)/i, // Match 'Windows' AND 'ARM'
         other_blackberry    = /BlackBerry/i,
         other_blackberry_10 = /BB10/i,
         other_opera         = /Opera Mini/i,
+        other_chrome        = /(CriOS|Chrome)(?=.*\bMobile\b)/i,
         other_firefox       = /(?=.*\bFirefox\b)(?=.*\bMobile\b)/i, // Match 'Firefox' AND 'Mobile'
         seven_inch = new RegExp(
             '(?:' +         // Non-capturing group
@@ -9997,17 +10127,28 @@ module.exports = routes;
 
     var IsMobileClass = function(userAgent) {
         var ua = userAgent || navigator.userAgent;
+        // Facebook mobile app's integrated browser adds a bunch of strings that
+        // match everything. Strip it out if it exists.
+        var tmp = ua.split('[FBAN');
+        if (typeof tmp[1] !== 'undefined') {
+            ua = tmp[0];
+        }
 
         this.apple = {
             phone:  match(apple_phone, ua),
             ipod:   match(apple_ipod, ua),
-            tablet: match(apple_tablet, ua),
+            tablet: !match(apple_phone, ua) && match(apple_tablet, ua),
             device: match(apple_phone, ua) || match(apple_ipod, ua) || match(apple_tablet, ua)
         };
+        this.amazon = {
+            phone:  match(amazon_phone, ua),
+            tablet: !match(amazon_phone, ua) && match(amazon_tablet, ua),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua)
+        };
         this.android = {
-            phone:  match(android_phone, ua),
-            tablet: !match(android_phone, ua) && match(android_tablet, ua),
-            device: match(android_phone, ua) || match(android_tablet, ua)
+            phone:  match(amazon_phone, ua) || match(android_phone, ua),
+            tablet: !match(amazon_phone, ua) && !match(android_phone, ua) && (match(amazon_tablet, ua) || match(android_tablet, ua)),
+            device: match(amazon_phone, ua) || match(amazon_tablet, ua) || match(android_phone, ua) || match(android_tablet, ua)
         };
         this.windows = {
             phone:  match(windows_phone, ua),
@@ -10019,7 +10160,8 @@ module.exports = routes;
             blackberry10: match(other_blackberry_10, ua),
             opera:        match(other_opera, ua),
             firefox:      match(other_firefox, ua),
-            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua)
+            chrome:       match(other_chrome, ua),
+            device:       match(other_blackberry, ua) || match(other_blackberry_10, ua) || match(other_opera, ua) || match(other_firefox, ua) || match(other_chrome, ua)
         };
         this.seven_inch = match(seven_inch, ua);
         this.any = this.apple.device || this.android.device || this.windows.device || this.other.device || this.seven_inch;
@@ -10047,7 +10189,7 @@ module.exports = routes;
         module.exports = instantiate();
     } else if (typeof define === 'function' && define.amd) {
         //AMD
-        define(global.isMobile = instantiate());
+        define('isMobile', [], global.isMobile = instantiate());
     } else {
         global.isMobile = instantiate();
     }

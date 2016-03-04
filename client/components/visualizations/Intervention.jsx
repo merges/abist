@@ -144,7 +144,7 @@ var Intervention = React.createClass({
     var medicationsMap = this.props.medicationsMap
     var dosage = this.props.dosage
 
-    if (this.props.dosage) {
+    if (dosage) {
       return (
         <div className={visualizationClasses}>
           <OverlayTrigger delayHide={150} placement='right' overlay={this.getTooltip(interventionName, dosage && dosage)}>
