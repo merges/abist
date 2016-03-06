@@ -7922,7 +7922,7 @@ var Source = React.createClass({displayName: "Source",
             React.createElement("span", {className: "box tiny"}, 
               React.createElement("span", {className: "light"}, "source "), 
               React.createElement("a", {href: source, target: "_new"}, 
-                kind ? {kind} : 'Click to see'
+                kind ? kind : 'Click to see'
               )
             )
           )

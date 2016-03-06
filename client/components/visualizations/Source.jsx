@@ -45,7 +45,7 @@ var Source = React.createClass({
             <span className='box tiny'>
               <span className='light'>source </span>
               <a href={source} target='_new'>
-                {kind ? {kind} : 'Click to see'}
+                {kind ? kind : 'Click to see'}
               </a>
             </span>
           </span>
