@@ -8107,6 +8107,7 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 
 module.exports = VisualizationTests;
 },{"./AbsoluteFrequency.jsx":18,"./RelativeChangeBlocks.jsx":24,"./RelativeRiskComparison.jsx":25,"./RiskRelativeToBaseline.jsx":26,"react/addons":"react/addons"}],30:[function(require,module,exports){
+var $ = require('jquery');
 var _ = require('lodash');
 
 Number.prototype.toFixedNumber = function(x, base){
@@ -8768,7 +8769,7 @@ var get = {
 };
 
 module.exports = get;
-},{"lodash":"lodash"}],31:[function(require,module,exports){
+},{"jquery":"jquery","lodash":"lodash"}],31:[function(require,module,exports){
 var drugs = [
   {
     "name": "Methotrexate",
