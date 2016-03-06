@@ -138,6 +138,7 @@ module.exports = Experiment;
 },{"react/addons":"react/addons"}],3:[function(require,module,exports){
 /** @jsx React.DOM */
 
+var $ = require('jquery')
 var React = require('react/addons')
 var cx = React.addons.classSet
 var _ = require('lodash')
@@ -1590,7 +1591,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 })
 
 module.exports = Navigator
-},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"../data/preferences.js":33,"./OutcomeAdverseEvents.jsx":4,"./OutcomeRelativeComparison.jsx":5,"./OutcomeRelativeDifferences.jsx":6,"./OutcomeTimeline.jsx":7,"lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
+},{"../data/get.js":30,"../data/medications.js":31,"../data/mock.js":32,"../data/preferences.js":33,"./OutcomeAdverseEvents.jsx":4,"./OutcomeRelativeComparison.jsx":5,"./OutcomeRelativeDifferences.jsx":6,"./OutcomeTimeline.jsx":7,"jquery":"jquery","lodash":"lodash","react-bootstrap":"react-bootstrap","react-sticky":"react-sticky","react/addons":"react/addons"}],4:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons');

@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+var $ = require('jquery')
 var React = require('react/addons')
 var cx = React.addons.classSet
 var _ = require('lodash')
