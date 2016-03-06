@@ -9,7 +9,7 @@ var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
-var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
+var RelativeChangeBlocks = require('./visualizations/RelativeChangeBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
 // Outcome relative difference blocks (i.e. change in pain)
@@ -23,189 +23,273 @@ var OutcomeRelativeDifferences = React.createClass({
     measure: React.PropTypes.string
   },
 
-  getComparisonMean: function(acceptableMeasures, sortedEntries) {
-    function Med (drug, score) {
-      this.drug = drug
-      this.score = score
-    }
-    var Meds = {}
+  // This function gets the mean of placebo values
+  getMeanPlaceboChange: function(acceptableMetrics, sortedEntries) {
     var means = []
-    
-    var counter = 0;
     sortedEntries.map(function(entry) {
-      // Return if this entry doesn’t have an intervention
+      // Ignore this entry if it doesn't involve comparison with placebo
       if (!entry.comparison) {
         return
       }
       // Check to see whether this entry has an appropriate metric
-      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-      if (measureToUse) {
-        var value = entry.comparison[measureToUse].value.value
+      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      if (metricToUse) {
+        var value = entry.comparison[metricToUse].value.value
         if (value) {
-          value && means.push(value)
-          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value)
-          counter++
+          means.push(value)
         }
       }
     })
 
-    if (counter !== 0) {
+    if (means.length > 0) {
       var sum = _.sum(means)
       var mean = sum/means.length
       var meansSubtractedSquared = _.map(means, function(val) {
         return Math.pow((val - mean), 2)
       })
       var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
-      console.log(sum, mean, deviation)
-      console.table(Meds, ['drug', 'score'])
+      var roundedMean = mean.toFixedNumber(2)
+
+      console.log('mean of means:', mean)
+      console.log('deviation of means:', deviation)
+      console.log('rounded mean:', roundedMean)
+      
+      return roundedMean
     }
 
-    var roundedMean = mean.toFixed(2)
-    console.log('mean', roundedMean)
-    return roundedMean
+    // No mean? Assume the baseline change is 0.
+    return 0
   },
 
-  getInterventionValues: function(acceptableMeasures, sortedEntries, comparisonMean) {
-    function Med (drug, score, normalized, difference) {
-      this.drug = drug
-      this.score = score
-      this.normalized = normalized
-      this.difference = difference
-    }
-    var Meds = {}
-    var means = []
+  // getInterventionValues: function(acceptableMetrics, sortedEntries, placeboMean) {
+  //   function Med (drug, score, normalized, difference) {
+  //     this.drug = drug
+  //     this.score = score
+  //     this.normalized = normalized
+  //     this.difference = difference
+  //   }
+  //   var Meds = {}
+  //   var means = []
 
-    newEntries = []
+  //   newEntries = []
     
-    var counter = 0;
-    sortedEntries.map(function(entry) {
-      // Return if this entry doesn’t have an intervention
-      if (!entry.intervention) {
-        return
-      }
-      // Check to see whether this entry has an appropriate metric
-      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-      if (measureToUse) {
-        var value = entry.intervention[measureToUse].value.value
-        if (value) {
-          newEntries.push(_.cloneDeep(entry))
+  //   var counter = 0;
+  //   sortedEntries.map(function(entry) {
+  //     // Return if this entry doesn’t have an intervention
+  //     if (!entry.intervention) {
+  //       return
+  //     }
+  //     // Check to see whether this entry has an appropriate metric
+  //     var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+  //     if (metricToUse) {
+  //       var value = entry.intervention[metricToUse].value.value
+  //       if (value) {
+  //         newEntries.push(_.cloneDeep(entry))
 
-          value && means.push(value)
-          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
-          var difference = (value - comparisonMean).toFixed(2)
-          Meds[counter].difference = difference
-          counter++   
-        }
-      }
-    })
+  //         value && means.push(value)
+  //         Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
+  //         var difference = (value - placeboMean).toFixedNumber(2)
+  //         Meds[counter].difference = difference
+  //         counter++   
+  //       }
+  //     }
+  //   })
 
-    if (counter !== 0) {
-      var sum = _.sum(means)
-      var mean = sum/means.length
-      var meansSubtractedSquared = _.map(means, function(val) {
-        return Math.pow((val - mean), 2)
-      })
-      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixed(2)
-      var meansNormalized = _.map(means, function(val, i) {
-        var normalized = (val - mean) / deviation
-        Meds[i].normalized = normalized
-        return normalized
-      })
+  //   if (counter !== 0) {
+  //     var sum = _.sum(means)
+  //     var mean = sum/means.length
+  //     var meansSubtractedSquared = _.map(means, function(val) {
+  //       return Math.pow((val - mean), 2)
+  //     })
+  //     var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixedNumber(2)
+  //     var meansNormalized = _.map(means, function(val, i) {
+  //       var normalized = (val - mean) / deviation
+  //       Meds[i].normalized = normalized
+  //       return normalized
+  //     })
 
-      // Normalized difference? # of stdDevs better than placebo
-      _.each(newEntries, function (entry, i) {
-        var differenceInDeviations = Meds[i].difference / deviation
-        Meds[i]['differenceNormalized'] = differenceInDeviations
-      })
+  //     // Normalized difference? # of stdDevs better than placebo
+  //     _.each(newEntries, function (entry, i) {
+  //       var differenceInDeviations = Meds[i].difference / deviation
+  //       Meds[i]['differenceNormalized'] = Math.round(differenceInDeviations)
+  //     })
 
-      console.log('mean', mean, '-----', 'deviation', deviation)
-      console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
+  //     // console.log('mean', mean, '-----', 'deviation', deviation)
+  //     // console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
+  //   }
+
+  //   return deviation
+  // },
+
+  getChangeValue: function(value, metricToUse, placeboMean) {
+    /*
+    
+    Get the value as a change metric. placeboMean is the unweighted pooled placebo change
+    from baseline. The baseline is unknown; we trust the mean of placebo values for
+    the purposes of this UI.
+
+    Some metrics already report a mean change. We leave those alone. Metrics that report
+    a *difference* need to have the placeboMean added to come up with the total change
+    from baseline.
+
+    For example:
+      - placeboMean                   = -9.9  (-9.9 mean placebo change from baseline)
+      - value is mean_change_100      = -23.7 (-23.7 mean change on a 100 pt scale)
+      - value is mean_difference_100  = -15.2 (-15.2 mean difference from placebo on a 100 pt scale)
+
+    The mean_change_100 value can be left alone. It's already a value expressed as
+    change from baseline.
+
+    The mean_difference_100 value needs to have the placeboMean added to it.
+    It's currently expressed as difference between intervention and placebo,
+    and we need it to be expressed as change from baseline.
+
+    https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=1186511571
+    Each metric in the metrics spreadsheet has a "kind" field that describes whether
+    it is an absolute, relative, or difference metric. If our metricToUse is a *difference*
+    metric, we need to do this calculation with the placeboMean.
+
+    TODO: Using study sample size (which we have) the placeboMean can be weighted.
+    
+    */
+    
+    var metrics = this.props.data.metrics
+    var kind = metrics[metricToUse].kind
+    if (kind == 'difference') {
+      value = value + placeboMean
     }
+
+    // Now transform this into minimally important difference (MID) units.
+    // For 100 mm scale, which this is limited to right now, it's 10.
+    var mid = 10 // Minimally important difference
+    var value = Math.round(value / mid) * 10
+    
+    return value
+
+    // UNUSED
+    // Calculate the mean_score_difference based on the pooled placeboMean
+    // var difference = (value - placeboMean).toFixedNumber(2)
+
+    // UNUSED
+    // Calculate difference in stdDevs and round
+    // var difference = Math.round((value - placeboMean) / deviation) * 10
   },
 
   render: function() {
-    var classes = cx({
-      'processing': true,
-      'results': true
-    })
-
-    var data = this.props.data
-    var dataFiltered = this.props.dataFiltered
+    var data                = this.props.data
+    var dataFiltered        = this.props.dataFiltered
     var disabledMedications = this.props.disabledMedications
-    var medications = this.props.medications
-    var medicationsMap = this.props.medicationsMap
-    var measure = this.props.measure
-    var grades = data.grades
+    var medications         = this.props.medications
+    var medicationsMap      = this.props.medicationsMap
+    var measures            = this.props.data.measures
+    var measure             = this.props.measure
+    var grades              = data.grades
 
-    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
+    /*
+
+    Filter out entries where the comparison was not placebo, and the entry reports
+    a mean difference. For the purposes of this UI, we want to focus on outcomes where:
+
+    - The comparison was placebo, and there is a mean difference reported
+    - A mean change is reported, regardless of what the comparison was (we don't care)
+
+    This UI will pool placebo means together and *add* that mean to the mean difference
+    data, to arrive at a mean change. The mean change scores will be converted into
+    minimally important difference (MID) units.
+    
+    */
+    var entries = get.filterEntriesWithNonPlaceboComparisons(get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications))
     var sortedEntries = _.sortBy(entries, function(entry) {
       if (entry.intervention) {
         return entry.intervention.parts[0]
       }
     })
-    
-    var acceptableMeasures = [
+
+    // Acceptable metrics for comparison
+    var acceptableMetrics = [
       'mean_difference_100',
       'mean_difference_10',
-      'mean_score_change_100'
+      'mean_change_100',
+      'mean_change_10'
     ]
-    
-    // TODO re-scale everything to 100
-    var comparisonMean = this.getComparisonMean(acceptableMeasures, sortedEntries)
-    var mid = 10 // Minimally important difference
 
-    this.getInterventionValues(acceptableMeasures, sortedEntries, comparisonMean)
+    // This function gets the value in just the way we want it,
+    // as a change statistic and expressed in the units we want
+    var getChangeValue = this.getChangeValue
+    var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
+    // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
     
-    return <div>
-      {sortedEntries.map(function(entry, i) {
+    var inlineStyle = {
+      display: 'inline-block',
+      verticalAlign: 'text-bottom'
+    }
 
-        // Return if this entry doesn’t have an intervention
-        if (!entry.intervention) {
+
+    var rows = []
+    sortedEntries.forEach(function(entry, i) {
+      // Ignore this entry if it does not report an outcome for an intervention
+      if (!entry.intervention) {
+        return
+      }
+      
+      // Check to see whether this entry has an appropriate metric
+      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      if (metricToUse) {
+        var value = entry.intervention[metricToUse].value.value
+        
+        // Ignore this entry if for some reason it doesn't have a value      
+        if (!value) {
           return
         }
 
-        // Check to see whether this entry has an appropriate metric
-        var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-        console.log(measureToUse)
+        // Get the value as change from baseline, which may involve a little math
+        // depending on the metric being used
+        var changeValue = getChangeValue(value, metricToUse, placeboMean)
 
-        if (measureToUse) {
-          var value = entry.intervention[measureToUse].value.value
+        rows.push(
+          <tr key={entry.intervention.parts.join(' + ') + i}>
+            <td className='pad-t-4 pad-b-1 text-right'>
+              <Intervention
+                intervention={entry.intervention.parts}
+                interventionName={entry.intervention.parts.join(' + ')}
+                dosage={entry.intervention.dosage}
+                medicationsMap={medicationsMap} />
+            </td>
+            <td></td>
+            <td></td>
+          </tr>
+        )
+        rows.push(
+          <tr key={entry.intervention.parts.join(' + ') + i + 'data'}>
+            <td className='text-right vertical-align-bottom'>
+              <RelativeChangeBlocks value={changeValue} />
+            </td>
+            <td></td>
+            <td className='pad-l-4 vertical-align-bottom'>
+              <span style={inlineStyle}>
+                <Source source={entry.source} kind={entry.kind} />
+              </span>
+              <span style={inlineStyle}>
+                <GradeQuality grade={entry.quality} gradeMap={grades} />
+              </span>
+            </td>
+          </tr>
+        )
+      }
+    })
 
-          if (value != null) {
-            // Calculate the mean_score_difference based on the pooled comparisonMean
-            var difference = (value - comparisonMean).toFixed(2)
-            
-            var inlineStyle = {
-              display: 'inline-block',
-              verticalAlign: 'text-bottom'
-            }
-
-            return (
-              <div key={i} className='pad-b-4'>
-                <div>
-                  <Intervention
-                    intervention={entry.intervention.parts}
-                    interventionName={entry.intervention.parts.join(' + ')}
-                    dosage={entry.intervention.dosage}
-                    medicationsMap={medicationsMap} />
-                </div>
-                <div>
-                  <span style={inlineStyle} className='pad-r-3'>
-                    <RelativeDifferenceBlocks key={i} value={difference} />
-                  </span>
-                  <span style={inlineStyle}>
-                    <Source source={entry.source} kind={entry.kind} />
-                  </span>
-                  <span style={inlineStyle}>
-                    <GradeQuality grade={entry.quality} gradeMap={grades} />
-                  </span>
-                </div>
-              </div>
-            )
-          }
-        }
-      })}
-    </div>
+    return <table>
+      <tbody>
+        <tr className='border-b-1'>
+          <td>
+            <h3>‹ less {measures[measure].name_friendly}</h3>
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+        {rows}
+      </tbody>
+    </table>
   }
 });
 

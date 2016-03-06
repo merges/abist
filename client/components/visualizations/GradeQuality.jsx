@@ -53,7 +53,7 @@ var GradeQuality = React.createClass({
       if (grade == 'X' || !grade) {
         tooltip = (
           <Tooltip>
-            <strong>Not rated.</strong> This information hasn’t been quality rated according to GRADE.
+            <strong>Not sure.</strong> This information hasn’t been quality rated according to GRADE.
           </Tooltip>
         )
       }
@@ -72,8 +72,7 @@ var GradeQuality = React.createClass({
       <div className={visualizationClasses}>
         <OverlayTrigger delayHide={150} placement='right' overlay={getTooltip(grade)}>
           <div>
-            <span className='tiny'>data quality</span><br />
-            <span className='box tiny'>{getIcons(grade)}</span>
+            <span className='box tiny'><span className='light'>quality</span> {getIcons(grade)}</span>
           </div>
         </OverlayTrigger>
       </div>

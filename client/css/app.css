@@ -11067,6 +11067,30 @@ html:hover [class^="ss-"] {
 .table-layout-fixed {
   table-layout: fixed;
 }
+.vertical-align-top {
+  vertical-align: top;
+}
+.vertical-align-middle {
+  vertical-align: middle;
+}
+.vertical-align-bottom {
+  vertical-align: bottom;
+}
+.border-b-1 {
+  border-bottom: 1px solid #444;
+}
+.text-right {
+  text-align: right;
+}
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.no-break {
+  white-space: nowrap;
+}
 .pad-0 {
   padding: none;
 }
@@ -11211,7 +11235,7 @@ html:hover [class^="ss-"] {
   display: inline-block;
   padding: 5px;
   margin-left: -5px;
-  border: 1px solid #888;
+  border: 1px solid #444;
 }
 .pull-tab {
   border-radius: 2px;
@@ -11533,24 +11557,25 @@ html:hover [class^="ss-"] {
     font-size: 11px;
   }
 }
-.vas-block {
+.relative-change-blocks {
+  line-height: 0;
+}
+.relative-change-block {
   display: inline-block;
   position: relative;
   background: #333;
   width: 35px;
   height: 35px;
-  margin-right: 5px;
+  margin-left: 5px;
+  line-height: 42px;
 }
-.vas-block.highlight {
+.relative-change-block.highlight {
   background: #888;
 }
-.vas-block.highlight .ss-icon {
-  color: white;
-}
-.vas-block .ss-icon {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+.relative-change-block.highlight .ss-icon {
+  display: block;
+  text-align: center;
+  color: #222;
 }
 .grade-quality {
   display: inline-block;
@@ -11562,6 +11587,7 @@ html:hover [class^="ss-"] {
   vertical-align: middle;
 }
 .grade-quality .ss-icon {
+  font-size: .6em;
   display: inline-block;
   letter-spacing: -0.15em;
   opacity: .3;
@@ -11574,15 +11600,16 @@ html:hover [class^="ss-"] {
   margin-right: 15px;
 }
 .source .box {
-  color: #6699ff;
   height: 25px;
   display: table-cell;
   vertical-align: middle;
 }
+.source a {
+  color: #6699ff;
+}
 .intervention .name {
   display: inline-block;
   vertical-align: text-top;
-  padding-bottom: 5px;
 }
 .population {
   cursor: pointer;

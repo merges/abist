@@ -107,23 +107,31 @@ var Intervention = React.createClass({
     var html = []
 
     if (intervention) {
+
       for (i = 0; i < intervention.length; i++) {
         var part = intervention[i]
+        var interventionHtml = []
+
         if (medicationsMap && medicationsMap[part]) {
           var med = medicationsMap[part]
-          html.push(<span key={part} className='name'>
-            <div className='generic'>{med.name_generic.capitalizeFirstletter()}</div>
-            {med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && <div className='small brand'>brand name {med.names_brand[0]}</div>}
-            {i == 0 && dosage && <div className='small dosage'>{this.getDosageDescription(dosage)}</div>}
-          </span>)
+          interventionHtml = (
+            <span key={part} className='name text-left'>
+              <div className='generic'>
+                {intervention.length > 0 && i > 0 && '+ '} {med.name_generic.capitalizeFirstletter()}
+              </div>
+              {med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && <div className='small brand'>brand name {med.names_brand[0]}</div>}
+              {i == 0 && dosage && <div className='small dosage'>{this.getDosageDescription(dosage)}</div>}
+            </span>
+          )
+          html.push(interventionHtml)
         }
         else {
-          html.push(<span key={part} className='name'>
-            {part.capitalizeFirstletter()}
-          </span>)
-        }
-        if (i < intervention.length - 1 && intervention.length > 0) {
-          html.push(<span className='pad-b-2'> + </span>)
+          interventionHtml = (
+            <span key={part} className='name text-left'>
+              {intervention.length > 0 && i > 0 && '+ '}{part.capitalizeFirstletter()}
+            </span>
+          )
+          html.push(interventionHtml)
         }
       }
     }

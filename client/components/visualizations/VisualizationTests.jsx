@@ -5,7 +5,7 @@ var React = require('react/addons');
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
-var RelativeDifferenceBlocks = require('./RelativeDifferenceBlocks.jsx');
+var RelativeChangeBlocks = require('./RelativeChangeBlocks.jsx');
 
 // Visualization tests
 
@@ -31,9 +31,9 @@ var VisualizationTests = React.createClass({
 
           <section style={sectionStyle}>
             <h2>Visual analog scale</h2>
-            <RelativeDifferenceBlocks value={-30.1} />
-            <RelativeDifferenceBlocks value={-46.9} />
-            <RelativeDifferenceBlocks value={24.6} />
+            <RelativeChangeBlocks value={-30.1} />
+            <RelativeChangeBlocks value={-46.9} />
+            <RelativeChangeBlocks value={24.6} />
           </section>
 
           {/*

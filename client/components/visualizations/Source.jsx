@@ -42,10 +42,12 @@ var Source = React.createClass({
       return (
         <OverlayTrigger delayHide={150} placement='right' overlay={getTooltip(kind)}>
           <span className='source'>
-            <span className='tiny'>data source</span><br />
-            <a href={source} target='_new'>
-              {kind ? <span className='box tiny'>{kind}</span> : 'Click to see source'}
-            </a>
+            <span className='box tiny'>
+              <span className='light'>source </span>
+              <a href={source} target='_new'>
+                {kind ? {kind} : 'Click to see'}
+              </a>
+            </span>
           </span>
         </OverlayTrigger>
       );

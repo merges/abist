@@ -1398,23 +1398,33 @@ var Navigator = React.createClass({
             <h1>
               Rheumatoid arthritis<br />
               <span className='color-link'>medication navigator</span>
+
             </h1>
+            
             {!viewData &&
-              <button
-                className='btn'
-                onClick={this.handleShowDataClick.bind(null)}>
-                  Show me the data ›
-              </button>
+              <p>
+                <button
+                  className='btn'
+                  onClick={this.handleShowDataClick.bind(null)}>
+                    Show me the data ›
+                </button>
+              </p>
             }
+            
             {this.renderPreferenceControls(preferences)}
             {this.renderMedicationList(medications)}
+            
             {!viewData &&
-              <button
-                className='btn'
-                onClick={this.handleShowDataClick.bind(null)}>
-                  Show me the data ›
-              </button>
+              <p>
+                <button
+                  className='btn'
+                  onClick={this.handleShowDataClick.bind(null)}>
+                    Show me the data ›
+                </button>
+              </p>
             }
+
+            <p><small>This prototype is based on the <a href='http://www.ncbi.nlm.nih.gov/pubmed/25649726' target='_new'>RA Choice decision aid</a> by Barton, et al. and employs dozens of other data sources.</small></p>
           </div>
           <div className={detailsClasses}>
             {this.renderIssueNavigationBar(this.state.selectedIssue)}

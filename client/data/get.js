@@ -1,5 +1,10 @@
 var _ = require('lodash');
 
+Number.prototype.toFixedNumber = function(x, base){
+  var pow = Math.pow(base||10,x);
+  return +(Math.round(this*pow) / pow);
+}
+
 var get = {
 
   sheets: {
@@ -98,6 +103,13 @@ var get = {
           entry['value']['value_iqr_low']           = value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t);
           entry['value']['value_iqr_high']          = value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t);
 
+          // If there is no value, but there is a ci_low and ci_high, we insert the mean of those two values
+          // so that we can later perform calculations with it. This is a hack.
+          if (!entry.value.value && entry.value.value_ci_low && entry.value.value_ci_high) {
+            var mean = ((entry.value.value_ci_low + entry.value.value_ci_high) / 2).toFixedNumber(2)
+            entry.value.value = mean
+          }
+
           // Duration
           entry['duration']                       = {};
           entry['duration']['low']                  = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
@@ -116,6 +128,7 @@ var get = {
           entry['source']                         = value.gsx$source ? value.gsx$source.$t : null;
           entry['notes']                          = value.gsx$notes ? value.gsx$notes.$t : null;
           entry['kind']                           = value.gsx$kind ? value.gsx$kind.$t : null;
+      
       processedData.push(entry);
     });
 
@@ -573,18 +586,18 @@ var get = {
   },
 
   filterEntriesByMedication: function(entries, medications, disabledMedications) {
-    // disabledMedications is an object with key value pairs like so:
-    //
-    // {
-    //  "Methotrexate": true,
-    //  "Simponi": false
-    // }
-    //
-    // This function gets a simple list of medications that are not disabled,
-    // i.e. whose value is false.
-
+    /*
+    disabledMedications is an object with key value pairs like so:
+    
+    {
+     "Methotrexate": true,
+     "Simponi": false
+    }
+    
+    This function gets a simple list of medications that are not disabled,
+    i.e. whose value is false.
+    */
     var enabledMedicationNames = [];
-
     Object.keys(disabledMedications).forEach(function(key) {
       if (disabledMedications[key] === false) {
 
@@ -627,6 +640,20 @@ var get = {
       }
     })
     return filteredEntries;
+  },
+
+  filterEntriesWithNonPlaceboComparisons: function(entries) {
+    // Filter out entries where the comparison was not placebo
+    var filteredEntries = _.filter(entries, function(entry) {
+      // If this comparison was with something other than placebo, discard it
+      if (entry.comparison) {
+        if (entry.comparison.parts && entry.comparison.parts[0].toLowerCase() != 'placebo') {
+          return false
+        }
+      }
+      return entry
+    })
+    return filteredEntries
   }
 
 };

@@ -208,29 +208,29 @@
   }
 }
 
-// Relative difference blocks
+// Relative change blocks
 
-.vas-block {
+.relative-change-blocks {
+  line-height: 0;
+}
+
+.relative-change-block {
   display: inline-block;
   position: relative;
   background: @color-base-2;
   width: 35px;
   height: 35px;
-  margin-right: 5px;
-
+  margin-left: 5px;
+  line-height: 42px;
+  
   &.highlight {
     background: @color-base-4;
 
     .ss-icon {
-      color: @color-body;
+      display: block;
+      text-align: center;
+      color: @color-base-1;
     }
-  }
-
-  .ss-icon {
-    // color: @color-base-3;
-    position: absolute;
-    bottom: 0;
-    right: 0;
   }
 }
 
@@ -246,6 +246,7 @@
     vertical-align: middle;
   }
   .ss-icon {
+    font-size: .6em;
     display: inline-block;
     letter-spacing: -.15em;
     opacity: .3;
@@ -263,10 +264,12 @@
   margin-right: @pad-3;
 
   .box {
-    color: @color-link-2;
     height: 25px;
     display: table-cell;
     vertical-align: middle;
+  }
+  a {
+    color: @color-link-2;
   }
 }
 
@@ -276,7 +279,7 @@
   .name {
     display: inline-block;
     vertical-align: text-top;
-    padding-bottom: @pad-1;
+    // padding-bottom: @pad-1;
   }
 }
 

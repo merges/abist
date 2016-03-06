@@ -1536,23 +1536,33 @@ var Navigator = React.createClass({displayName: "Navigator",
             React.createElement("h1", null, 
               "Rheumatoid arthritis", React.createElement("br", null), 
               React.createElement("span", {className: "color-link"}, "medication navigator")
+
             ), 
+            
             !viewData &&
-              React.createElement("button", {
-                className: "btn", 
-                onClick: this.handleShowDataClick.bind(null)}, 
-                  "Show me the data ›"
+              React.createElement("p", null, 
+                React.createElement("button", {
+                  className: "btn", 
+                  onClick: this.handleShowDataClick.bind(null)}, 
+                    "Show me the data ›"
+                )
               ), 
+            
             
             this.renderPreferenceControls(preferences), 
             this.renderMedicationList(medications), 
-            !viewData &&
-              React.createElement("button", {
-                className: "btn", 
-                onClick: this.handleShowDataClick.bind(null)}, 
-                  "Show me the data ›"
-              )
             
+            !viewData &&
+              React.createElement("p", null, 
+                React.createElement("button", {
+                  className: "btn", 
+                  onClick: this.handleShowDataClick.bind(null)}, 
+                    "Show me the data ›"
+                )
+              ), 
+            
+
+            React.createElement("p", null, React.createElement("small", null, "This prototype is based on the ", React.createElement("a", {href: "http://www.ncbi.nlm.nih.gov/pubmed/25649726", target: "_new"}, "RA Choice decision aid"), " by Barton, et al. and employs dozens of other data sources."))
           ), 
           React.createElement("div", {className: detailsClasses}, 
             this.renderIssueNavigationBar(this.state.selectedIssue), 
@@ -2182,7 +2192,7 @@ var Difference = require('./visualizations/Difference.jsx');
 var GradeQuality = require('./visualizations/GradeQuality.jsx');
 var Intervention = require('./visualizations/Intervention.jsx');
 var Population = require('./visualizations/Population.jsx');
-var RelativeDifferenceBlocks = require('./visualizations/RelativeDifferenceBlocks.jsx');
+var RelativeChangeBlocks = require('./visualizations/RelativeChangeBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
 // Outcome relative difference blocks (i.e. change in pain)
@@ -2196,194 +2206,278 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     measure: React.PropTypes.string
   },
 
-  getComparisonMean: function(acceptableMeasures, sortedEntries) {
-    function Med (drug, score) {
-      this.drug = drug
-      this.score = score
-    }
-    var Meds = {}
+  // This function gets the mean of placebo values
+  getMeanPlaceboChange: function(acceptableMetrics, sortedEntries) {
     var means = []
-    
-    var counter = 0;
     sortedEntries.map(function(entry) {
-      // Return if this entry doesn’t have an intervention
+      // Ignore this entry if it doesn't involve comparison with placebo
       if (!entry.comparison) {
         return
       }
       // Check to see whether this entry has an appropriate metric
-      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-      if (measureToUse) {
-        var value = entry.comparison[measureToUse].value.value
+      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      if (metricToUse) {
+        var value = entry.comparison[metricToUse].value.value
         if (value) {
-          value && means.push(value)
-          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value)
-          counter++
+          means.push(value)
         }
       }
     })
 
-    if (counter !== 0) {
+    if (means.length > 0) {
       var sum = _.sum(means)
       var mean = sum/means.length
       var meansSubtractedSquared = _.map(means, function(val) {
         return Math.pow((val - mean), 2)
       })
       var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
-      console.log(sum, mean, deviation)
-      console.table(Meds, ['drug', 'score'])
+      var roundedMean = mean.toFixedNumber(2)
+
+      console.log('mean of means:', mean)
+      console.log('deviation of means:', deviation)
+      console.log('rounded mean:', roundedMean)
+      
+      return roundedMean
     }
 
-    var roundedMean = mean.toFixed(2)
-    console.log('mean', roundedMean)
-    return roundedMean
+    // No mean? Assume the baseline change is 0.
+    return 0
   },
 
-  getInterventionValues: function(acceptableMeasures, sortedEntries, comparisonMean) {
-    function Med (drug, score, normalized, difference) {
-      this.drug = drug
-      this.score = score
-      this.normalized = normalized
-      this.difference = difference
-    }
-    var Meds = {}
-    var means = []
+  // getInterventionValues: function(acceptableMetrics, sortedEntries, placeboMean) {
+  //   function Med (drug, score, normalized, difference) {
+  //     this.drug = drug
+  //     this.score = score
+  //     this.normalized = normalized
+  //     this.difference = difference
+  //   }
+  //   var Meds = {}
+  //   var means = []
 
-    newEntries = []
+  //   newEntries = []
     
-    var counter = 0;
-    sortedEntries.map(function(entry) {
-      // Return if this entry doesn’t have an intervention
-      if (!entry.intervention) {
-        return
-      }
-      // Check to see whether this entry has an appropriate metric
-      var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-      if (measureToUse) {
-        var value = entry.intervention[measureToUse].value.value
-        if (value) {
-          newEntries.push(_.cloneDeep(entry))
+  //   var counter = 0;
+  //   sortedEntries.map(function(entry) {
+  //     // Return if this entry doesn’t have an intervention
+  //     if (!entry.intervention) {
+  //       return
+  //     }
+  //     // Check to see whether this entry has an appropriate metric
+  //     var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+  //     if (metricToUse) {
+  //       var value = entry.intervention[metricToUse].value.value
+  //       if (value) {
+  //         newEntries.push(_.cloneDeep(entry))
 
-          value && means.push(value)
-          Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
-          var difference = (value - comparisonMean).toFixed(2)
-          Meds[counter].difference = difference
-          counter++   
-        }
-      }
-    })
+  //         value && means.push(value)
+  //         Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
+  //         var difference = (value - placeboMean).toFixedNumber(2)
+  //         Meds[counter].difference = difference
+  //         counter++   
+  //       }
+  //     }
+  //   })
 
-    if (counter !== 0) {
-      var sum = _.sum(means)
-      var mean = sum/means.length
-      var meansSubtractedSquared = _.map(means, function(val) {
-        return Math.pow((val - mean), 2)
-      })
-      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixed(2)
-      var meansNormalized = _.map(means, function(val, i) {
-        var normalized = (val - mean) / deviation
-        Meds[i].normalized = normalized
-        return normalized
-      })
+  //   if (counter !== 0) {
+  //     var sum = _.sum(means)
+  //     var mean = sum/means.length
+  //     var meansSubtractedSquared = _.map(means, function(val) {
+  //       return Math.pow((val - mean), 2)
+  //     })
+  //     var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixedNumber(2)
+  //     var meansNormalized = _.map(means, function(val, i) {
+  //       var normalized = (val - mean) / deviation
+  //       Meds[i].normalized = normalized
+  //       return normalized
+  //     })
 
-      // Normalized difference? # of stdDevs better than placebo
-      _.each(newEntries, function (entry, i) {
-        var differenceInDeviations = Meds[i].difference / deviation
-        Meds[i]['differenceNormalized'] = differenceInDeviations
-      })
+  //     // Normalized difference? # of stdDevs better than placebo
+  //     _.each(newEntries, function (entry, i) {
+  //       var differenceInDeviations = Meds[i].difference / deviation
+  //       Meds[i]['differenceNormalized'] = Math.round(differenceInDeviations)
+  //     })
 
-      console.log('mean', mean, '-----', 'deviation', deviation)
-      console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
+  //     // console.log('mean', mean, '-----', 'deviation', deviation)
+  //     // console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
+  //   }
+
+  //   return deviation
+  // },
+
+  getChangeValue: function(value, metricToUse, placeboMean) {
+    /*
+    
+    Get the value as a change metric. placeboMean is the unweighted pooled placebo change
+    from baseline. The baseline is unknown; we trust the mean of placebo values for
+    the purposes of this UI.
+
+    Some metrics already report a mean change. We leave those alone. Metrics that report
+    a *difference* need to have the placeboMean added to come up with the total change
+    from baseline.
+
+    For example:
+      - placeboMean                   = -9.9  (-9.9 mean placebo change from baseline)
+      - value is mean_change_100      = -23.7 (-23.7 mean change on a 100 pt scale)
+      - value is mean_difference_100  = -15.2 (-15.2 mean difference from placebo on a 100 pt scale)
+
+    The mean_change_100 value can be left alone. It's already a value expressed as
+    change from baseline.
+
+    The mean_difference_100 value needs to have the placeboMean added to it.
+    It's currently expressed as difference between intervention and placebo,
+    and we need it to be expressed as change from baseline.
+
+    https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=1186511571
+    Each metric in the metrics spreadsheet has a "kind" field that describes whether
+    it is an absolute, relative, or difference metric. If our metricToUse is a *difference*
+    metric, we need to do this calculation with the placeboMean.
+
+    TODO: Using study sample size (which we have) the placeboMean can be weighted.
+    
+    */
+    
+    var metrics = this.props.data.metrics
+    var kind = metrics[metricToUse].kind
+    if (kind == 'difference') {
+      value = value + placeboMean
     }
+
+    // Now transform this into minimally important difference (MID) units.
+    // For 100 mm scale, which this is limited to right now, it's 10.
+    var mid = 10 // Minimally important difference
+    var value = Math.round(value / mid) * 10
+    
+    return value
+
+    // UNUSED
+    // Calculate the mean_score_difference based on the pooled placeboMean
+    // var difference = (value - placeboMean).toFixedNumber(2)
+
+    // UNUSED
+    // Calculate difference in stdDevs and round
+    // var difference = Math.round((value - placeboMean) / deviation) * 10
   },
 
   render: function() {
-    var classes = cx({
-      'processing': true,
-      'results': true
-    })
-
-    var data = this.props.data
-    var dataFiltered = this.props.dataFiltered
+    var data                = this.props.data
+    var dataFiltered        = this.props.dataFiltered
     var disabledMedications = this.props.disabledMedications
-    var medications = this.props.medications
-    var medicationsMap = this.props.medicationsMap
-    var measure = this.props.measure
-    var grades = data.grades
+    var medications         = this.props.medications
+    var medicationsMap      = this.props.medicationsMap
+    var measures            = this.props.data.measures
+    var measure             = this.props.measure
+    var grades              = data.grades
 
-    var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications);
+    /*
+
+    Filter out entries where the comparison was not placebo, and the entry reports
+    a mean difference. For the purposes of this UI, we want to focus on outcomes where:
+
+    - The comparison was placebo, and there is a mean difference reported
+    - A mean change is reported, regardless of what the comparison was (we don't care)
+
+    This UI will pool placebo means together and *add* that mean to the mean difference
+    data, to arrive at a mean change. The mean change scores will be converted into
+    minimally important difference (MID) units.
+    
+    */
+    var entries = get.filterEntriesWithNonPlaceboComparisons(get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications))
     var sortedEntries = _.sortBy(entries, function(entry) {
       if (entry.intervention) {
         return entry.intervention.parts[0]
       }
     })
-    
-    var acceptableMeasures = [
+
+    // Acceptable metrics for comparison
+    var acceptableMetrics = [
       'mean_difference_100',
       'mean_difference_10',
-      'mean_score_change_100'
+      'mean_change_100',
+      'mean_change_10'
     ]
-    
-    // TODO re-scale everything to 100
-    var comparisonMean = this.getComparisonMean(acceptableMeasures, sortedEntries)
-    var mid = 10 // Minimally important difference
 
-    this.getInterventionValues(acceptableMeasures, sortedEntries, comparisonMean)
+    // This function gets the value in just the way we want it,
+    // as a change statistic and expressed in the units we want
+    var getChangeValue = this.getChangeValue
+    var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
+    // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
     
-    return React.createElement("div", null, 
-      sortedEntries.map(function(entry, i) {
+    var inlineStyle = {
+      display: 'inline-block',
+      verticalAlign: 'text-bottom'
+    }
 
-        // Return if this entry doesn’t have an intervention
-        if (!entry.intervention) {
+
+    var rows = []
+    sortedEntries.forEach(function(entry, i) {
+      // Ignore this entry if it does not report an outcome for an intervention
+      if (!entry.intervention) {
+        return
+      }
+      
+      // Check to see whether this entry has an appropriate metric
+      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      if (metricToUse) {
+        var value = entry.intervention[metricToUse].value.value
+        
+        // Ignore this entry if for some reason it doesn't have a value      
+        if (!value) {
           return
         }
 
-        // Check to see whether this entry has an appropriate metric
-        var measureToUse = _.find(acceptableMeasures, _.partial(_.has, entry.intervention))
-        console.log(measureToUse)
+        // Get the value as change from baseline, which may involve a little math
+        // depending on the metric being used
+        var changeValue = getChangeValue(value, metricToUse, placeboMean)
 
-        if (measureToUse) {
-          var value = entry.intervention[measureToUse].value.value
-
-          if (value != null) {
-            // Calculate the mean_score_difference based on the pooled comparisonMean
-            var difference = (value - comparisonMean).toFixed(2)
-            
-            var inlineStyle = {
-              display: 'inline-block',
-              verticalAlign: 'text-bottom'
-            }
-
-            return (
-              React.createElement("div", {key: i, className: "pad-b-4"}, 
-                React.createElement("div", null, 
-                  React.createElement(Intervention, {
-                    intervention: entry.intervention.parts, 
-                    interventionName: entry.intervention.parts.join(' + '), 
-                    dosage: entry.intervention.dosage, 
-                    medicationsMap: medicationsMap})
-                ), 
-                React.createElement("div", null, 
-                  React.createElement("span", {style: inlineStyle, className: "pad-r-3"}, 
-                    React.createElement(RelativeDifferenceBlocks, {key: i, value: difference})
-                  ), 
-                  React.createElement("span", {style: inlineStyle}, 
-                    React.createElement(Source, {source: entry.source, kind: entry.kind})
-                  ), 
-                  React.createElement("span", {style: inlineStyle}, 
-                    React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
-                  )
-                )
+        rows.push(
+          React.createElement("tr", {key: entry.intervention.parts.join(' + ') + i}, 
+            React.createElement("td", {className: "pad-t-4 pad-b-1 text-right"}, 
+              React.createElement(Intervention, {
+                intervention: entry.intervention.parts, 
+                interventionName: entry.intervention.parts.join(' + '), 
+                dosage: entry.intervention.dosage, 
+                medicationsMap: medicationsMap})
+            ), 
+            React.createElement("td", null), 
+            React.createElement("td", null)
+          )
+        )
+        rows.push(
+          React.createElement("tr", {key: entry.intervention.parts.join(' + ') + i + 'data'}, 
+            React.createElement("td", {className: "text-right vertical-align-bottom"}, 
+              React.createElement(RelativeChangeBlocks, {value: changeValue})
+            ), 
+            React.createElement("td", null), 
+            React.createElement("td", {className: "pad-l-4 vertical-align-bottom"}, 
+              React.createElement("span", {style: inlineStyle}, 
+                React.createElement(Source, {source: entry.source, kind: entry.kind})
+              ), 
+              React.createElement("span", {style: inlineStyle}, 
+                React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
               )
             )
-          }
-        }
-      })
+          )
+        )
+      }
+    })
+
+    return React.createElement("table", null, 
+      React.createElement("tbody", null, 
+        React.createElement("tr", {className: "border-b-1"}, 
+          React.createElement("td", null, 
+            React.createElement("h3", null, "‹ less ", measures[measure].name_friendly)
+          ), 
+          React.createElement("td", null), 
+          React.createElement("td", null)
+        ), 
+        rows
+      )
     )
   }
 });
 
 module.exports = OutcomeRelativeDifferences;
-},{"../data/get.js":30,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeDifferenceBlocks.jsx":24,"./visualizations/Source.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
+},{"../data/get.js":30,"./visualizations/Difference.jsx":20,"./visualizations/GradeQuality.jsx":21,"./visualizations/Intervention.jsx":22,"./visualizations/Population.jsx":23,"./visualizations/RelativeChangeBlocks.jsx":24,"./visualizations/Source.jsx":27,"lodash":"lodash","react/addons":"react/addons"}],7:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons')
@@ -6784,7 +6878,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       if (grade == 'X' || !grade) {
         tooltip = (
           React.createElement(Tooltip, null, 
-            React.createElement("strong", null, "Not rated."), " This information hasn’t been quality rated according to GRADE."
+            React.createElement("strong", null, "Not sure."), " This information hasn’t been quality rated according to GRADE."
           )
         )
       }
@@ -6803,8 +6897,7 @@ var GradeQuality = React.createClass({displayName: "GradeQuality",
       React.createElement("div", {className: visualizationClasses}, 
         React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(grade)}, 
           React.createElement("div", null, 
-            React.createElement("span", {className: "tiny"}, "data quality"), React.createElement("br", null), 
-            React.createElement("span", {className: "box tiny"}, getIcons(grade))
+            React.createElement("span", {className: "box tiny"}, React.createElement("span", {className: "light"}, "quality"), " ", getIcons(grade))
           )
         )
       )
@@ -6923,23 +7016,31 @@ var Intervention = React.createClass({displayName: "Intervention",
     var html = []
 
     if (intervention) {
+
       for (i = 0; i < intervention.length; i++) {
         var part = intervention[i]
+        var interventionHtml = []
+
         if (medicationsMap && medicationsMap[part]) {
           var med = medicationsMap[part]
-          html.push(React.createElement("span", {key: part, className: "name"}, 
-            React.createElement("div", {className: "generic"}, med.name_generic.capitalizeFirstletter()), 
-            med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && React.createElement("div", {className: "small brand"}, "brand name ", med.names_brand[0]), 
-            i == 0 && dosage && React.createElement("div", {className: "small dosage"}, this.getDosageDescription(dosage))
-          ))
+          interventionHtml = (
+            React.createElement("span", {key: part, className: "name text-left"}, 
+              React.createElement("div", {className: "generic"}, 
+                intervention.length > 0 && i > 0 && '+ ', " ", med.name_generic.capitalizeFirstletter()
+              ), 
+              med.names_brand && med.name_generic.toLowerCase() != med.name_common.toLowerCase() && React.createElement("div", {className: "small brand"}, "brand name ", med.names_brand[0]), 
+              i == 0 && dosage && React.createElement("div", {className: "small dosage"}, this.getDosageDescription(dosage))
+            )
+          )
+          html.push(interventionHtml)
         }
         else {
-          html.push(React.createElement("span", {key: part, className: "name"}, 
-            part.capitalizeFirstletter()
-          ))
-        }
-        if (i < intervention.length - 1 && intervention.length > 0) {
-          html.push(React.createElement("span", {className: "pad-b-2"}, " + "))
+          interventionHtml = (
+            React.createElement("span", {key: part, className: "name text-left"}, 
+              intervention.length > 0 && i > 0 && '+ ', part.capitalizeFirstletter()
+            )
+          )
+          html.push(interventionHtml)
         }
       }
     }
@@ -7035,34 +7136,38 @@ var React = require('react/addons');
 var _ = require('lodash');
 var cx = React.addons.classSet
 
-// Relative difference blocks (a la Mayo Clinic DAs)
+// Relative change blocks (a la Mayo Clinic DAs)
 
-var RelativeDifferenceBlocks = React.createClass({displayName: "RelativeDifferenceBlocks",
+var RelativeChangeBlocks = React.createClass({displayName: "RelativeChangeBlocks",
 
   propTypes: {
+    // value should be on a 100 point scale
     value: React.PropTypes.number,
-    range: React.PropTypes.number,
+    // If range is specified, there will be at least that many blocks (e.g. 10)
+    // but ordinarily, we just let there be as many blocks as necessary.
+    range: React.PropTypes.number
   },
 
-  getDefaultProps: function() {
-    return {
-      range: 100
-    }
-  },
-
-  renderBlocks: function(value) {
-    var roundedValue = Math.ceil(value / 10)
-
-    return _.times(10, function(n) {
+  renderBlocks: function(value, range) {
+    var roundedValue = Math.round(value / 10)
+    
+    return _.times(range, function(n) {
       var isFilledIn = function(n, value) {
+        // If roundedValue == range, it means we're only supposed
+        // to render just enough blocks.
+        if (Math.abs(roundedValue) == range) {
+          return true
+        }
+        // Otherwise we have a minimum number of blocks,
+        // and only want to fill in the appropriate few.
         if (roundedValue < 0) {
-          return (10 + roundedValue) <= (n)
+          return (10 + roundedValue) <= n
         }
         return (n + 1) <= roundedValue
       }
 
       var blockClass = cx({
-        'vas-block': true,
+        'relative-change-block': true,
         'highlight': isFilledIn(n, value)
       })
 
@@ -7082,22 +7187,23 @@ var RelativeDifferenceBlocks = React.createClass({displayName: "RelativeDifferen
 
   render: function() {
     var visualizationClasses = cx({
-      'visualization visual-analog-scale': true,
+      'visualization relative-change-blocks': true,
       'up': value > 0,
       'down': value < 0
     })
 
-    var value = this.props.value;
+    var value = this.props.value
+    var range = this.props.range ? this.props.range : Math.abs(value / 10)
 
     return (
       React.createElement("div", {className: visualizationClasses}, 
-        this.renderBlocks(value)
+        this.renderBlocks(value, range)
       )
     );
   }
 });
 
-module.exports = RelativeDifferenceBlocks;
+module.exports = RelativeChangeBlocks;
 },{"lodash":"lodash","react/addons":"react/addons"}],25:[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -7812,9 +7918,11 @@ var Source = React.createClass({displayName: "Source",
       return (
         React.createElement(OverlayTrigger, {delayHide: 150, placement: "right", overlay: getTooltip(kind)}, 
           React.createElement("span", {className: "source"}, 
-            React.createElement("span", {className: "tiny"}, "data source"), React.createElement("br", null), 
-            React.createElement("a", {href: source, target: "_new"}, 
-              kind ? React.createElement("span", {className: "box tiny"}, kind) : 'Click to see source'
+            React.createElement("span", {className: "box tiny"}, 
+              React.createElement("span", {className: "light"}, "source "), 
+              React.createElement("a", {href: source, target: "_new"}, 
+                kind ? {kind} : 'Click to see'
+              )
             )
           )
         )
@@ -7886,7 +7994,7 @@ var React = require('react/addons');
 var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
 var RelativeRiskComparison = require('./RelativeRiskComparison.jsx');
 var RiskRelativeToBaseline = require('./RiskRelativeToBaseline.jsx');
-var RelativeDifferenceBlocks = require('./RelativeDifferenceBlocks.jsx');
+var RelativeChangeBlocks = require('./RelativeChangeBlocks.jsx');
 
 // Visualization tests
 
@@ -7912,9 +8020,9 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 
           React.createElement("section", {style: sectionStyle}, 
             React.createElement("h2", null, "Visual analog scale"), 
-            React.createElement(RelativeDifferenceBlocks, {value: -30.1}), 
-            React.createElement(RelativeDifferenceBlocks, {value: -46.9}), 
-            React.createElement(RelativeDifferenceBlocks, {value: 24.6})
+            React.createElement(RelativeChangeBlocks, {value: -30.1}), 
+            React.createElement(RelativeChangeBlocks, {value: -46.9}), 
+            React.createElement(RelativeChangeBlocks, {value: 24.6})
           )
 
           /*
@@ -7998,8 +8106,13 @@ var VisualizationTests = React.createClass({displayName: "VisualizationTests",
 });
 
 module.exports = VisualizationTests;
-},{"./AbsoluteFrequency.jsx":18,"./RelativeDifferenceBlocks.jsx":24,"./RelativeRiskComparison.jsx":25,"./RiskRelativeToBaseline.jsx":26,"react/addons":"react/addons"}],30:[function(require,module,exports){
+},{"./AbsoluteFrequency.jsx":18,"./RelativeChangeBlocks.jsx":24,"./RelativeRiskComparison.jsx":25,"./RiskRelativeToBaseline.jsx":26,"react/addons":"react/addons"}],30:[function(require,module,exports){
 var _ = require('lodash');
+
+Number.prototype.toFixedNumber = function(x, base){
+  var pow = Math.pow(base||10,x);
+  return +(Math.round(this*pow) / pow);
+}
 
 var get = {
 
@@ -8099,6 +8212,13 @@ var get = {
           entry['value']['value_iqr_low']           = value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t);
           entry['value']['value_iqr_high']          = value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t);
 
+          // If there is no value, but there is a ci_low and ci_high, we insert the mean of those two values
+          // so that we can later perform calculations with it. This is a hack.
+          if (!entry.value.value && entry.value.value_ci_low && entry.value.value_ci_high) {
+            var mean = ((entry.value.value_ci_low + entry.value.value_ci_high) / 2).toFixedNumber(2)
+            entry.value.value = mean
+          }
+
           // Duration
           entry['duration']                       = {};
           entry['duration']['low']                  = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
@@ -8117,6 +8237,7 @@ var get = {
           entry['source']                         = value.gsx$source ? value.gsx$source.$t : null;
           entry['notes']                          = value.gsx$notes ? value.gsx$notes.$t : null;
           entry['kind']                           = value.gsx$kind ? value.gsx$kind.$t : null;
+      
       processedData.push(entry);
     });
 
@@ -8574,18 +8695,18 @@ var get = {
   },
 
   filterEntriesByMedication: function(entries, medications, disabledMedications) {
-    // disabledMedications is an object with key value pairs like so:
-    //
-    // {
-    //  "Methotrexate": true,
-    //  "Simponi": false
-    // }
-    //
-    // This function gets a simple list of medications that are not disabled,
-    // i.e. whose value is false.
-
+    /*
+    disabledMedications is an object with key value pairs like so:
+    
+    {
+     "Methotrexate": true,
+     "Simponi": false
+    }
+    
+    This function gets a simple list of medications that are not disabled,
+    i.e. whose value is false.
+    */
     var enabledMedicationNames = [];
-
     Object.keys(disabledMedications).forEach(function(key) {
       if (disabledMedications[key] === false) {
 
@@ -8628,6 +8749,20 @@ var get = {
       }
     })
     return filteredEntries;
+  },
+
+  filterEntriesWithNonPlaceboComparisons: function(entries) {
+    // Filter out entries where the comparison was not placebo
+    var filteredEntries = _.filter(entries, function(entry) {
+      // If this comparison was with something other than placebo, discard it
+      if (entry.comparison) {
+        if (entry.comparison.parts && entry.comparison.parts[0].toLowerCase() != 'placebo') {
+          return false
+        }
+      }
+      return entry
+    })
+    return filteredEntries
   }
 
 };
