@@ -18,13 +18,13 @@ gulp.task('externals', function () {
       // extensions: ['.jsx'],
       // insertGlobals: true,
     });
-    return b.require('react')
+    return b.require('jquery')
+            .require('react')
             .require('react/addons')
             .require('react-bootstrap')
             .require('react-router')
             .require('react-sticky')
             .require('lodash')
-            .require('jquery')
             .bundle();
   });
   return gulp.src(['client/js/dependencies.js'])
