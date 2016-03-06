@@ -5,6 +5,7 @@ require('node-jsx').install({
   harmony: true
 });
 
+var $ = require('jquery');
 var React = require('react');
 var Router = require('react-router');
 
