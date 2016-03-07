@@ -456,7 +456,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         },
         side_effects: {
           name: 'side effects',
-          measures: ['ae', 'discontinued_ae', 'serious_ae']
+          measures: ['ae', 'discontinued_ae']
         },
       },
       medications: medications,
@@ -492,7 +492,7 @@ var Navigator = React.createClass({displayName: "Navigator",
     var getDisabledMedications = function(medications) {
       var disabled = {}
       medications.forEach(function(medication) {
-        disabled[medication.name] = false
+        disabled[medication.name_generic] = false
       })
       return disabled
     }
@@ -681,36 +681,36 @@ var Navigator = React.createClass({displayName: "Navigator",
     })
   },
 
-  filterDrugs: function (drugs, preferencesSelected) {
+  filterDrugs: function (medications, preferencesSelected) {
     var disabledDrugs = {}
 
-    drugs.forEach(function(drug, i) {
-      var drugFeatures = {}
+    medications.forEach(function(drug, i) {
+      var medicationFeatures = {}
 
       // 1. Examine all the preferences for a match
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] && preferencesSelected[preference] != null) {
           var filter = drugFilters[preference]
           var options = preferencesSelected[preference]
-          drugFeatures[preference] = filter.isMatch(drug, options)
+          medicationFeatures[preference] = filter.isMatch(drug, options)
         }
       }
 
       // 2. Check if the drug should be disabled
-      var keepDrug = true
+      var keepMedication = true
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] != null) {
-          for (var feature in drugFeatures) {
-            if (preferencesSelected[preference] && !drugFeatures[preference]) {
-              keepDrug = false
+          for (var feature in medicationFeatures) {
+            if (preferencesSelected[preference] && !medicationFeatures[preference]) {
+              keepMedication = false
             }
           }
         }
       }
-      disabledDrugs[drug.name] = !keepDrug
+      disabledMedications[medication.name_generic] = !keepMedication
     })
 
-    return disabledDrugs
+    return disabledMedications
   },
 
   togglePreferenceControls: function (direction) {
@@ -865,7 +865,7 @@ var Navigator = React.createClass({displayName: "Navigator",
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
               medicationMatchingPreferences[preference] = true
-              // disabledMedications[medication.name] = true
+              // disabledMedications[medication.name_generic] = true
             }
             // Not a key in medication object, so check ptda.risks
             else {
@@ -993,10 +993,10 @@ var Navigator = React.createClass({displayName: "Navigator",
 
         // Add the medication to disabledMedications.
         if (disableMedication) {
-          disabledMedications[medication.name] = true
+          disabledMedications[medication.name_generic] = true
         }
         else {
-          disabledMedications[medication.name] = false
+          disabledMedications[medication.name_generic] = false
         }
       }
     })
@@ -1085,9 +1085,9 @@ var Navigator = React.createClass({displayName: "Navigator",
             Object.keys(medications).map(function (medication, i) {
             	var medication = medications[medication]
               return (
-                React.createElement("li", {key: i, className: (disabledMedications[medication.name] === true) && 'disabled'}, 
+                React.createElement("li", {key: i, className: (disabledMedications[medication.name_generic] === true) && 'disabled'}, 
                   React.createElement("a", {
-                    onClick: handleMedicationClick.bind(null, medication.name)}, 
+                    onClick: handleMedicationClick.bind(null, medication.name_generic)}, 
                       React.createElement(MedicationCard, {
                         medication: medication, 
                         mini: true, 
@@ -1112,7 +1112,7 @@ var Navigator = React.createClass({displayName: "Navigator",
       React.createElement("ul", null, 
         Object.keys(medications).map(function (medication, i) {
           var medication = medications[medication]
-          return React.createElement("li", {key: i, className: (disabledMedications[medication.name] === true) && 'disabled'}, 
+          return React.createElement("li", {key: i, className: (disabledMedications[medication.name_generic] === true) && 'disabled'}, 
             React.createElement(MedicationCard, {
               medication: medication, 
               preferences: preferences, preferencesSelected: preferencesSelected})
@@ -1229,7 +1229,7 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     _.each(measures, function (measureName, i) {
       if (measureName == 'patient_pain') {
-        html.push(React.createElement("div", {key: measureName + i}, 
+        html.push(React.createElement("div", {className: "evidence-panel", key: measureName + i}, 
           React.createElement(OutcomeRelativeDifferences, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1240,7 +1240,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         ))
       }
       if (measureName == 'ae') {
-        html.push(React.createElement("div", {key: measureName + i}, 
+        html.push(React.createElement("div", {className: "evidence-panel", key: measureName + i}, 
           React.createElement(OutcomeAdverseEvents, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1251,7 +1251,7 @@ var Navigator = React.createClass({displayName: "Navigator",
         ))
       }
       if (measureName == 'discontinued_ae') {
-        html.push(React.createElement("div", {key: measureName + i}, 
+        html.push(React.createElement("div", {className: "evidence-panel", key: measureName + i}, 
           React.createElement(OutcomeRelativeComparison, {
             data: data, 
             dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1261,7 +1261,7 @@ var Navigator = React.createClass({displayName: "Navigator",
             medicationsMap: medicationsMap})
         ))
       }
-      html.push(React.createElement("div", {key: measureName + i}, 
+      html.push(React.createElement("div", {className: "evidence-panel", key: measureName + i}, 
         React.createElement(OutcomeTimeline, {
           data: data, 
           dataFiltered: getDataByMeasure([measureName])[measureName].data, 
@@ -1290,19 +1290,30 @@ var Navigator = React.createClass({displayName: "Navigator",
 
     if (selectedIssue == 'basic') {
       return React.createElement("div", null, 
-        React.createElement("h2", null, "Text about basic issues"), 
+        React.createElement("div", {className: "explanatory"}, 
+          React.createElement("h1", null, "What are these medications?"), 
+          React.createElement("p", null, "These are basic facts and lifestyle considerations about each medication. If a medication doesn’t fit the options you choose on the left, it will be dimmed here.")
+        ), 
         this.renderMedicationCards()
       )
     }
     if (selectedIssue == 'improvement') {
       return React.createElement("div", null, 
-        React.createElement("h2", null, "Text about overall improvement"), 
+        React.createElement("div", {className: "explanatory"}, 
+          React.createElement("h1", null, "How well do these medications ", React.createElement("strong", null, "work?")), 
+          React.createElement("p", null, "It turns out that’s a tough question. There are dozens of ways to ask how much someone with RA has improved by taking a medication—from just asking,to lab tests, to X-rays."), 
+          React.createElement("p", null, "One way is to have a doctor count tender and swollen joints, and ask people about their pain or overall assessment. If there’s 50% improvement, that is generally considered good progress.")
+        ), 
         this.renderDataByMeasure(measures)
       )
     }
     if (selectedIssue == 'pain') {
       return React.createElement("div", null, 
-        React.createElement("h2", null, "Text about pain"), 
+        React.createElement("div", {className: "explanatory"}, 
+          React.createElement("h1", null, "How well do these medications ", React.createElement("strong", null, "lower pain?")), 
+          React.createElement("p", null, "This is hard to answer, partly because these medications aren’t pain relievers themselves. They slow down RA, which can help reduce pain."), 
+          React.createElement("p", null, "Lowering pain by 1 box is considered the minimum amount most people can feel.")
+        ), 
         this.renderDataByMeasure(measures)
       )
     }
@@ -1314,8 +1325,19 @@ var Navigator = React.createClass({displayName: "Navigator",
     }
     if (selectedIssue == 'side_effects') {
       return React.createElement("div", null, 
-        React.createElement("h2", null, "Text about side effects"), 
-        this.renderDataByMeasure(measures)
+        React.createElement("div", {className: "explanatory"}, 
+          React.createElement("h1", null, "What are common ", React.createElement("strong", null, "side effects?")), 
+          React.createElement("p", null, "Avoiding side effects is important to most people taking RA medications. Some are common, and if you know about them you can be prepared for them."), 
+          React.createElement("p", null, "For some medications, there isn’t any good information about how common certain side effects are. That doesn’t mean they can’t happen. It just means that good data hasn’t been published.")
+        ), 
+        React.createElement("div", null, 
+          
+          this.renderDataByMeasure(measures), 
+          React.createElement("div", {className: "explanatory"}, 
+            React.createElement("h1", null, "What are these medications?"), 
+            React.createElement("p", null, "These are basic facts and lifestyle considerations about each medication. If a medication doesn’t fit the options you choose on the left, it will be dimmed here.")
+          )
+        )
       )
     }
     return React.createElement("div", null, 
@@ -1516,11 +1538,10 @@ var Navigator = React.createClass({displayName: "Navigator",
             React.createElement("h1", null, 
               "Rheumatoid arthritis", React.createElement("br", null), 
               React.createElement("span", {className: "color-link"}, "medication navigator")
-
             ), 
             
             !viewData &&
-              React.createElement("p", null, 
+              React.createElement("p", {className: "pad-t-2 pad-b-2"}, 
                 React.createElement("button", {
                   className: "btn", 
                   onClick: this.handleShowDataClick.bind(null)}, 
@@ -1533,7 +1554,7 @@ var Navigator = React.createClass({displayName: "Navigator",
             this.renderMedicationList(medications), 
             
             !viewData &&
-              React.createElement("p", null, 
+              React.createElement("p", {className: "pad-t-2 pad-b-2"}, 
                 React.createElement("button", {
                   className: "btn", 
                   onClick: this.handleShowDataClick.bind(null)}, 
@@ -1542,7 +1563,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               ), 
             
 
-            React.createElement("p", null, React.createElement("small", null, "This prototype is based on the ", React.createElement("a", {href: "http://www.ncbi.nlm.nih.gov/pubmed/25649726", target: "_new"}, "RA Choice decision aid"), " by Barton, et al. and employs dozens of other data sources."))
+            React.createElement("p", {className: "pad-t-2"}, React.createElement("small", null, "This prototype is based on the ", React.createElement("a", {href: "http://www.ncbi.nlm.nih.gov/pubmed/25649726", target: "_new"}, "RA Choice decision aid"), " by Barton, et al. and employs dozens of other data sources."))
           ), 
           React.createElement("div", {className: detailsClasses}, 
             this.renderIssueNavigationBar(this.state.selectedIssue), 
@@ -1779,7 +1800,8 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
   renderOutcomeDetailMenu: function (names) {
     return React.createElement(DropdownButton, {
-            title: 'Side effect', 
+            bsStyle: null, 
+            title: 'Choose a side effect', 
             key: 'adverse-event-menu', 
             id: 'adverse-event-menu', 
             onSelect: this.handleAdverseEventChange}, 
@@ -1791,13 +1813,9 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
   render: function() {
     var cx = React.addons.classSet
-    var classes = cx({
-      'adverse-events': true,
-      'results': true
-    })
 
     var data                = this.props.data
-    var dataFiltered        = this.props.dataFiltered
+    var entries        = this.props.dataFiltered
     var medications         = this.props.medications
     var medicationsMap      = this.props.medicationsMap
     var measure             = this.props.measure
@@ -1805,8 +1823,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
     var getMeanValue = this.getMeanValue
 
-    // Filter out disabled medication entries and group by comparison + intervention
-    var entries = get.filterEntriesByMedication(dataFiltered, medications, disabledMedications)  
+    // Data by comparison + intervention
     var groupedData = _.groupBy(entries, function (entry) {
       return entry.comparison + entry.intervention
     })
@@ -1815,49 +1832,111 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
     var entriesByDetail = this.groupEntriesByDetail(entries)
     var selectedDetail = this.state.selectedDetail
 
-    var entriesForSelectedDetail = entriesByDetail[selectedDetail]
-    var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
-    var means = {}
-    _.each(entriesByWhichForSelectedDetail, function (value, key) {
-      var mean = getMeanValue(value)
-      means[key] = mean
-    })
+    var resultHtml = []
+    
+    // If an outcome detail is selected, we can get results
+    if (selectedDetail) {
+      var html =[]
 
-    return React.createElement("section", {className: classes}, 
-      React.createElement("div", null, this.renderOutcomeDetailMenu(outcomeDetails)), 
+      // Get data for this detail
+      var entriesForSelectedDetail = entriesByDetail[selectedDetail]
+      var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
+      var means = {}
+      _.each(entriesByWhichForSelectedDetail, function (value, key) {
+        var mean = getMeanValue(value)
+        means[key] = mean
+      })
       
-      selectedDetail &&
-        React.createElement("div", {key: selectedDetail + i, className: "pad-b-5"}, 
-          React.createElement("h3", {className: "font-size-2"}, selectedDetail), 
+      // Populate data into natural medication presentation order
+      var dataByIntervention = {
+        placebo: _.get(means, 'placebo')
+      }
+      _.each(medications, function(medication) {
+        dataByIntervention[medication.name_generic] = _.get(means, medication.name_generic)
+      })
 
-          React.createElement("div", {className: "flex flex-row"}, 
-            _.map(means, function(value, key) {
-              var inlineStyle = {
-                maxWidth: '150px',
-                display: 'inline-block',
-                margin: '5px'
-              }
+      // Enforce natural presentation order
+      _.each(dataByIntervention, function(val, key) {
+        // key == 'methotrexate'
+        // val == meanValue || empty
 
-              return React.createElement("span", {key: key + selectedDetail, style: inlineStyle}, 
-                React.createElement(Intervention, {
-                  interventionName: key.capitalizeFirstletter()}), 
-                React.createElement("div", {className: "pad-t-1 pad-b-5 font-size-2"}, 
-                  React.createElement("strong", null, value, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
-                  React.createElement("span", {className: "small"}, 
-                    "would be expected to experience ", selectedDetail
-                  )
-                ), 
+        // If this med is disabled, don't show anything
+        if (disabledMedications[key]) {
+          return
+        }
+
+        var inlineStyle = {
+          width: '210px',
+          flex: '0 1 auto',
+          marginRight: '10px',
+          hyphens: 'auto'
+        }
+
+        // There is a data
+        if (val) {
+          html.push(
+            React.createElement("span", {key: key + selectedDetail, className: "pad-b-4", style: inlineStyle}, 
+              React.createElement(Intervention, {interventionName: key.capitalizeFirstletter()}), 
+              React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
+                React.createElement("strong", null, val, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
+                React.createElement("span", {className: "small"}, 
+                  "would be expected to experience", React.createElement("br", null), 
+                  selectedDetail
+                )
+              ), 
+              React.createElement(AbsoluteFrequency, {
+                frequency: val, 
+                metric: 'ar_100', 
+                denominator: 100, 
+                breakpoint: 10, 
+                baseline: null})
+            )
+          )
+        }
+        // There is no data
+        else {
+          html.push(
+            React.createElement("span", {key: key + selectedDetail, className: "pad-b-4 opacity-3", style: inlineStyle}, 
+              React.createElement(Intervention, {
+                interventionName: key.capitalizeFirstletter()}), 
+              React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
+                React.createElement("span", null, "No information"), React.createElement("br", null), 
+                React.createElement("span", {className: "small"}, 
+                  "about how common", React.createElement("br", null), 
+                  selectedDetail, " is"
+                )
+              ), 
+              React.createElement("div", {className: "opacity-5"}, 
                 React.createElement(AbsoluteFrequency, {
-                  frequency: value, 
+                  frequency: 0, 
                   metric: 'ar_100', 
                   denominator: 100, 
                   breakpoint: 10, 
                   baseline: null})
               )
-            })
+            )
           )
+        }
+      })
+
+      resultHtml.push(
+        React.createElement("div", {key: selectedDetail + 'ae', className: "pad-b-5"}, 
+          React.createElement("h2", {className: "font-size-7 font-lighter light pad-b-3"}, selectedDetail), 
+          React.createElement("div", {className: "flex flex-row"}, html)
         )
-      
+      )
+    }
+
+    var classes = cx({
+      'adverse-events results pad-l-5 pad-r-5': true,
+    })
+    var style = {
+      minHeight: '300px'
+    }
+
+    return React.createElement("section", {style: style, className: classes}, 
+      React.createElement("div", null, this.renderOutcomeDetailMenu(outcomeDetails)), 
+      resultHtml
     )
   }
 })
@@ -2325,9 +2404,9 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
       var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
       var roundedMean = mean.toFixedNumber(2)
 
-      console.log('mean of means:', mean)
-      console.log('deviation of means:', deviation)
-      console.log('rounded mean:', roundedMean)
+      // console.log('mean of means:', mean)
+      // console.log('deviation of means:', deviation)
+      // console.log('rounded mean:', roundedMean)
       
       return roundedMean
     }
@@ -2493,14 +2572,53 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     var getChangeValue = this.getChangeValue
     var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
     // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
-    
+
+
+
+
+
+
+
+    // Populate data into natural medication presentation order
+    var dataByIntervention = {
+      placebo: []
+    }
+    _.each(medications, function(medication) {
+      dataByIntervention[medication.name_generic] = []
+    })
+
     var inlineStyle = {
       display: 'inline-block',
       verticalAlign: 'text-bottom'
     }
 
+    // Build rows
+    dataByIntervention['placebo'].push(
+      React.createElement("tr", {key: 'placebo'}, 
+        React.createElement("td", {className: "pad-t-4 pad-b-1 text-right"}, 
+          React.createElement(Intervention, {interventionName: 'Placebo'})
+        ), 
+        React.createElement("td", null), 
+        React.createElement("td", null)
+      )
+    )
+    dataByIntervention['placebo'].push(
+      React.createElement("tr", {key: 'placebo' + 'data'}, 
+        React.createElement("td", {className: "text-right vertical-align-bottom"}, 
+          React.createElement(RelativeChangeBlocks, {value: placeboMean})
+        ), 
+        React.createElement("td", null), 
+        React.createElement("td", {className: "pad-l-4 vertical-align-bottom"}, 
+          React.createElement("span", {style: inlineStyle}, 
+            React.createElement(Source, {label: "pooled from all sources below"})
+          ), 
+          React.createElement("span", {style: inlineStyle}, 
+            React.createElement(GradeQuality, {grade: null, gradeMap: grades})
+          )
+        )
+      )
+    )
 
-    var rows = []
     sortedEntries.forEach(function(entry, i) {
       // Ignore this entry if it does not report an outcome for an intervention
       if (!entry.intervention) {
@@ -2512,6 +2630,10 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
       if (metricToUse) {
         var value = entry.intervention[metricToUse].value.value
         
+        // Ignore this entry if it's for a drug we don't support
+        if (!dataByIntervention[entry.intervention.parts[0]]) {
+          return
+        }
         // Ignore this entry if for some reason it doesn't have a value      
         if (!value) {
           return
@@ -2521,7 +2643,7 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
         // depending on the metric being used
         var changeValue = getChangeValue(value, metricToUse, placeboMean)
 
-        rows.push(
+        dataByIntervention[entry.intervention.parts[0]].push(
           React.createElement("tr", {key: entry.intervention.parts.join(' + ') + i}, 
             React.createElement("td", {className: "pad-t-4 pad-b-1 text-right"}, 
               React.createElement(Intervention, {
@@ -2534,7 +2656,7 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
             React.createElement("td", null)
           )
         )
-        rows.push(
+        dataByIntervention[entry.intervention.parts[0]].push(
           React.createElement("tr", {key: entry.intervention.parts.join(' + ') + i + 'data'}, 
             React.createElement("td", {className: "text-right vertical-align-bottom"}, 
               React.createElement(RelativeChangeBlocks, {value: changeValue})
@@ -2551,6 +2673,32 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
           )
         )
       }
+    })
+
+    // Enforce natural presentation order
+    var rows = []
+    _.each(dataByIntervention, function(val, key) {
+      // key == 'methotrexate'
+      // val == meanValue || empty
+
+      // If this med is disabled, don't show anything
+      if (disabledMedications[key]) {
+        return
+      }
+      if (dataByIntervention[key].length == 0) {
+        rows.push(
+          React.createElement("tr", {key: key}, 
+            React.createElement("td", {className: "pad-t-4 pad-b-1 text-right opacity-3"}, 
+              React.createElement("small", null, "No ", measure.name_friendly, " info for"), " ", React.createElement(Intervention, {interventionName: key})
+            ), 
+            React.createElement("td", null), 
+            React.createElement("td", null)
+          )
+        )
+      }
+      _.each(dataByIntervention[key], function(row) {
+        rows.push(row)
+      })
     })
 
     return React.createElement("table", null, 
@@ -7239,9 +7387,18 @@ var RelativeChangeBlocks = React.createClass({displayName: "RelativeChangeBlocks
   },
 
   renderBlocks: function(value, range) {
+    var labelStyle = {
+      position: 'absolute',
+      width: '100%',
+      textAlign: 'center',
+      lineHeight: '36px',
+      color: 'white'
+    }
+
     var roundedValue = Math.round(value / 10)
     
-    return _.times(range, function(n) {
+    var html = []
+    _.times(range, function(n) {
       var isFilledIn = function(n, value) {
         // If roundedValue == range, it means we're only supposed
         // to render just enough blocks.
@@ -7260,19 +7417,32 @@ var RelativeChangeBlocks = React.createClass({displayName: "RelativeChangeBlocks
         'relative-change-block': true,
         'highlight': isFilledIn(n, value)
       })
+      var blockStyle = {
+        background: 'rgba(165,165,165,' + (1 - ((range - n) / 6)) + ')'
+      }
 
-      var iconClass = cx({
-        'ss-icon': true,
-        'ss-plus': isFilledIn(n, value) && value > 0,
-        'ss-hyphen': isFilledIn(n, value) && value < 0
-      })
-
-      return (
-        React.createElement("div", {key: n, className: blockClass}, 
-          React.createElement("i", {className: iconClass})
+      html.push(
+        React.createElement("div", {key: n, className: blockClass, style: blockStyle}, 
+          n == 0 && React.createElement("div", {style: labelStyle}, "-", range - n)
         )
       )
     })
+
+    // 0 / no change block
+    if (range < 1) {
+      var blockStyle = {
+        width: '75px',
+        background: 'none',
+        border: '1px solid #333',
+      }
+      html.push(
+        React.createElement("div", {className: "relative-change-block", style: blockStyle}, 
+          React.createElement("div", {className: "font-size-1 text-center", style: {lineHeight: '34px'}}, "no change")
+        )
+      )
+    }
+
+    return html
   },
 
   render: function() {
@@ -7966,10 +8136,10 @@ module.exports = RiskRelativeToBaseline;
 },{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
 /** @jsx React.DOM */
 
-var React = require('react/addons');
+var React = require('react/addons')
 
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Tooltip = require('react-bootstrap').Tooltip;
+var OverlayTrigger = require('react-bootstrap').OverlayTrigger
+var Tooltip = require('react-bootstrap').Tooltip
 
 // Source tag
 
@@ -7977,7 +8147,8 @@ var Source = React.createClass({displayName: "Source",
   
   propTypes: {
     source: React.PropTypes.string,
-    kind: React.PropTypes.string
+    kind: React.PropTypes.string,
+    label: React.PropTypes.string,
   },
 
   getTooltip: function(kind) {
@@ -8000,9 +8171,10 @@ var Source = React.createClass({displayName: "Source",
   },
 
   render: function() {
-    var source = this.props.source;
-    var kind = this.props.kind;
-    var getTooltip = this.getTooltip;
+    var source = this.props.source
+    var kind = this.props.kind
+    var label = this.props.label
+    var getTooltip = this.getTooltip
     
     if (source) {
       return (
@@ -8016,13 +8188,22 @@ var Source = React.createClass({displayName: "Source",
             )
           )
         )
-      );
+      )
     }
-    return (React.createElement("noscript", null));
+    if (label) {
+      return (
+        React.createElement("span", {className: "source"}, 
+          React.createElement("span", {className: "box tiny"}, 
+            label
+          )
+        )
+      )
+    }
+    return (React.createElement("noscript", null))
   }
-});
+})
 
-module.exports = Source;
+module.exports = Source
 },{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],28:[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -8790,8 +8971,8 @@ var get = {
     disabledMedications is an object with key value pairs like so:
     
     {
-     "Methotrexate": true,
-     "Simponi": false
+     "methotrexate": true,
+     "golimumab": false
     }
     
     This function gets a simple list of medications that are not disabled,
@@ -8807,7 +8988,7 @@ var get = {
         // but this is more comprehensive.
 
         var medicationObject = _.find(medications, function(medication) {
-          return medication.name_common == key;
+          return medication.name_generic == key;
         });
 
         enabledMedicationNames.push(medicationObject.name_generic.toLowerCase());

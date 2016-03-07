@@ -50,9 +50,9 @@ var OutcomeRelativeDifferences = React.createClass({
       var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
       var roundedMean = mean.toFixedNumber(2)
 
-      console.log('mean of means:', mean)
-      console.log('deviation of means:', deviation)
-      console.log('rounded mean:', roundedMean)
+      // console.log('mean of means:', mean)
+      // console.log('deviation of means:', deviation)
+      // console.log('rounded mean:', roundedMean)
       
       return roundedMean
     }
@@ -218,14 +218,53 @@ var OutcomeRelativeDifferences = React.createClass({
     var getChangeValue = this.getChangeValue
     var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
     // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
-    
+
+
+
+
+
+
+
+    // Populate data into natural medication presentation order
+    var dataByIntervention = {
+      placebo: []
+    }
+    _.each(medications, function(medication) {
+      dataByIntervention[medication.name_generic] = []
+    })
+
     var inlineStyle = {
       display: 'inline-block',
       verticalAlign: 'text-bottom'
     }
 
+    // Build rows
+    dataByIntervention['placebo'].push(
+      <tr key={'placebo'}>
+        <td className='pad-t-4 pad-b-1 text-right'>
+          <Intervention interventionName={'Placebo'} />
+        </td>
+        <td></td>
+        <td></td>
+      </tr>
+    )
+    dataByIntervention['placebo'].push(
+      <tr key={'placebo' + 'data'}>
+        <td className='text-right vertical-align-bottom'>
+          <RelativeChangeBlocks value={placeboMean} />
+        </td>
+        <td></td>
+        <td className='pad-l-4 vertical-align-bottom'>
+          <span style={inlineStyle}>
+            <Source label='pooled from all sources below' />
+          </span>
+          <span style={inlineStyle}>
+            <GradeQuality grade={null} gradeMap={grades} />
+          </span>
+        </td>
+      </tr>
+    )
 
-    var rows = []
     sortedEntries.forEach(function(entry, i) {
       // Ignore this entry if it does not report an outcome for an intervention
       if (!entry.intervention) {
@@ -237,6 +276,10 @@ var OutcomeRelativeDifferences = React.createClass({
       if (metricToUse) {
         var value = entry.intervention[metricToUse].value.value
         
+        // Ignore this entry if it's for a drug we don't support
+        if (!dataByIntervention[entry.intervention.parts[0]]) {
+          return
+        }
         // Ignore this entry if for some reason it doesn't have a value      
         if (!value) {
           return
@@ -246,7 +289,7 @@ var OutcomeRelativeDifferences = React.createClass({
         // depending on the metric being used
         var changeValue = getChangeValue(value, metricToUse, placeboMean)
 
-        rows.push(
+        dataByIntervention[entry.intervention.parts[0]].push(
           <tr key={entry.intervention.parts.join(' + ') + i}>
             <td className='pad-t-4 pad-b-1 text-right'>
               <Intervention
@@ -259,7 +302,7 @@ var OutcomeRelativeDifferences = React.createClass({
             <td></td>
           </tr>
         )
-        rows.push(
+        dataByIntervention[entry.intervention.parts[0]].push(
           <tr key={entry.intervention.parts.join(' + ') + i + 'data'}>
             <td className='text-right vertical-align-bottom'>
               <RelativeChangeBlocks value={changeValue} />
@@ -276,6 +319,32 @@ var OutcomeRelativeDifferences = React.createClass({
           </tr>
         )
       }
+    })
+
+    // Enforce natural presentation order
+    var rows = []
+    _.each(dataByIntervention, function(val, key) {
+      // key == 'methotrexate'
+      // val == meanValue || empty
+
+      // If this med is disabled, don't show anything
+      if (disabledMedications[key]) {
+        return
+      }
+      if (dataByIntervention[key].length == 0) {
+        rows.push(
+          <tr key={key}>
+            <td className='pad-t-4 pad-b-1 text-right opacity-3'>
+              <small>No {measure.name_friendly} info for</small> <Intervention interventionName={key} />
+            </td>
+            <td></td>
+            <td></td>
+          </tr>
+        )
+      }
+      _.each(dataByIntervention[key], function(row) {
+        rows.push(row)
+      })
     })
 
     return <table>

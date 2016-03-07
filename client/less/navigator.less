@@ -16,6 +16,24 @@
 		font-weight: lighter;
 		font-size: @font-size-3;
 	}
+	.explanatory {
+		padding: @pad-3 @pad-3 @pad-5 @pad-5;
+		max-width: 750px;
+		font-size: @font-size-3;
+		color: @color-base-4;
+
+		h1 {
+			@font-size-4;
+			font-weight: bold;
+
+			strong {
+				color: @color-accent-1;
+			}
+		}
+		p {
+			margin: @pad-1 0 0 0;
+		}
+	}
 	.color-link {
 		color: @color-link-2;
 	}
@@ -35,6 +53,10 @@
 		overflow-y: scroll;
 		-webkit-overflow-scrolling: touch;
 
+		h1 {
+			padding-top: @pad-1;
+			font-size: @font-size-4;
+		}
 		&.compact {
 			.hidden-xs;
 			.hidden-sm;
@@ -61,6 +83,9 @@
 				margin-left: 360px;
 			}
 		}
+	}
+	.evidence-panel {
+		width: 100%;
 	}
 
 	// Medication cards
@@ -204,10 +229,20 @@
 			}
 		}
 	}
-}
 
-.checkbox {
-	font-size: @font-size-2;
+	// Bootstrap stuff
+	.checkbox {
+		font-size: @font-size-2;
+	}
+	.btn {
+		color: white;
+		background: @color-link-2;
+
+		&:hover {
+			color: white;
+			background: @color-link-3;
+		}
+	}
 }
 
 .tag-navigation {

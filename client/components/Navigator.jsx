@@ -318,7 +318,7 @@ var Navigator = React.createClass({
         },
         side_effects: {
           name: 'side effects',
-          measures: ['ae', 'discontinued_ae', 'serious_ae']
+          measures: ['ae', 'discontinued_ae']
         },
       },
       medications: medications,
@@ -354,7 +354,7 @@ var Navigator = React.createClass({
     var getDisabledMedications = function(medications) {
       var disabled = {}
       medications.forEach(function(medication) {
-        disabled[medication.name] = false
+        disabled[medication.name_generic] = false
       })
       return disabled
     }
@@ -543,36 +543,36 @@ var Navigator = React.createClass({
     })
   },
 
-  filterDrugs: function (drugs, preferencesSelected) {
+  filterDrugs: function (medications, preferencesSelected) {
     var disabledDrugs = {}
 
-    drugs.forEach(function(drug, i) {
-      var drugFeatures = {}
+    medications.forEach(function(drug, i) {
+      var medicationFeatures = {}
 
       // 1. Examine all the preferences for a match
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] && preferencesSelected[preference] != null) {
           var filter = drugFilters[preference]
           var options = preferencesSelected[preference]
-          drugFeatures[preference] = filter.isMatch(drug, options)
+          medicationFeatures[preference] = filter.isMatch(drug, options)
         }
       }
 
       // 2. Check if the drug should be disabled
-      var keepDrug = true
+      var keepMedication = true
       for (var preference in preferencesSelected) {
         if (preferencesSelected[preference] != null) {
-          for (var feature in drugFeatures) {
-            if (preferencesSelected[preference] && !drugFeatures[preference]) {
-              keepDrug = false
+          for (var feature in medicationFeatures) {
+            if (preferencesSelected[preference] && !medicationFeatures[preference]) {
+              keepMedication = false
             }
           }
         }
       }
-      disabledDrugs[drug.name] = !keepDrug
+      disabledMedications[medication.name_generic] = !keepMedication
     })
 
-    return disabledDrugs
+    return disabledMedications
   },
 
   togglePreferenceControls: function (direction) {
@@ -727,7 +727,7 @@ var Navigator = React.createClass({
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
               medicationMatchingPreferences[preference] = true
-              // disabledMedications[medication.name] = true
+              // disabledMedications[medication.name_generic] = true
             }
             // Not a key in medication object, so check ptda.risks
             else {
@@ -855,10 +855,10 @@ var Navigator = React.createClass({
 
         // Add the medication to disabledMedications.
         if (disableMedication) {
-          disabledMedications[medication.name] = true
+          disabledMedications[medication.name_generic] = true
         }
         else {
-          disabledMedications[medication.name] = false
+          disabledMedications[medication.name_generic] = false
         }
       }
     })
@@ -947,9 +947,9 @@ var Navigator = React.createClass({
             {Object.keys(medications).map(function (medication, i) {
             	var medication = medications[medication]
               return (
-                <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
+                <li key={i} className={(disabledMedications[medication.name_generic] === true) && 'disabled'}>
                   <a
-                    onClick={handleMedicationClick.bind(null, medication.name)}>
+                    onClick={handleMedicationClick.bind(null, medication.name_generic)}>
                       <MedicationCard
                         medication={medication}
                         mini={true}
@@ -974,7 +974,7 @@ var Navigator = React.createClass({
       <ul>
         {Object.keys(medications).map(function (medication, i) {
           var medication = medications[medication]
-          return <li key={i} className={(disabledMedications[medication.name] === true) && 'disabled'}>
+          return <li key={i} className={(disabledMedications[medication.name_generic] === true) && 'disabled'}>
             <MedicationCard
               medication={medication}
               preferences={preferences} preferencesSelected={preferencesSelected} />
@@ -1091,7 +1091,7 @@ var Navigator = React.createClass({
 
     _.each(measures, function (measureName, i) {
       if (measureName == 'patient_pain') {
-        html.push(<div key={measureName + i}>
+        html.push(<div className='evidence-panel' key={measureName + i}>
           <OutcomeRelativeDifferences
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1102,7 +1102,7 @@ var Navigator = React.createClass({
         </div>)
       }
       if (measureName == 'ae') {
-        html.push(<div key={measureName + i}>
+        html.push(<div className='evidence-panel' key={measureName + i}>
           <OutcomeAdverseEvents
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1113,7 +1113,7 @@ var Navigator = React.createClass({
         </div>)
       }
       if (measureName == 'discontinued_ae') {
-        html.push(<div key={measureName + i}>
+        html.push(<div className='evidence-panel' key={measureName + i}>
           <OutcomeRelativeComparison
             data={data}
             dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1123,7 +1123,7 @@ var Navigator = React.createClass({
             medicationsMap={medicationsMap} />
         </div>)
       }
-      html.push(<div key={measureName + i}>
+      html.push(<div className='evidence-panel' key={measureName + i}>
         <OutcomeTimeline
           data={data}
           dataFiltered={getDataByMeasure([measureName])[measureName].data}
@@ -1152,19 +1152,30 @@ var Navigator = React.createClass({
 
     if (selectedIssue == 'basic') {
       return <div>
-        <h2>Text about basic issues</h2>
+        <div className='explanatory'>
+          <h1>What are these medications?</h1>
+          <p>These are basic facts and lifestyle considerations about each medication. If a medication doesn’t fit the options you choose on the left, it will be dimmed here.</p>
+        </div>
         {this.renderMedicationCards()}
       </div>
     }
     if (selectedIssue == 'improvement') {
       return <div>
-        <h2>Text about overall improvement</h2>
+        <div className='explanatory'>
+          <h1>How well do these medications <strong>work?</strong></h1>
+          <p>It turns out that’s a tough question. There are dozens of ways to ask how much someone with RA has improved by taking a medication—from just asking,to lab tests, to X-rays.</p>
+          <p>One way is to have a doctor count tender and swollen joints, and ask people about their pain or overall assessment. If there’s 50% improvement, that is generally considered good progress.</p>
+        </div>
         {this.renderDataByMeasure(measures)}
       </div>
     }
     if (selectedIssue == 'pain') {
       return <div>
-        <h2>Text about pain</h2>
+        <div className='explanatory'>
+          <h1>How well do these medications <strong>lower pain?</strong></h1>
+          <p>This is hard to answer, partly because these medications aren’t pain relievers themselves. They slow down RA, which can help reduce pain.</p>
+          <p>Lowering pain by 1 box is considered the minimum amount most people can feel.</p>
+        </div>
         {this.renderDataByMeasure(measures)}
       </div>
     }
@@ -1176,8 +1187,19 @@ var Navigator = React.createClass({
     }
     if (selectedIssue == 'side_effects') {
       return <div>
-        <h2>Text about side effects</h2>
-        {this.renderDataByMeasure(measures)}
+        <div className='explanatory'>
+          <h1>What are common <strong>side effects?</strong></h1>
+          <p>Avoiding side effects is important to most people taking RA medications. Some are common, and if you know about them you can be prepared for them.</p>
+          <p>For some medications, there isn’t any good information about how common certain side effects are. That doesn’t mean they can’t happen. It just means that good data hasn’t been published.</p>
+        </div>
+        <div>
+          
+          {this.renderDataByMeasure(measures)}
+          <div className='explanatory'>
+            <h1>What are these medications?</h1>
+            <p>These are basic facts and lifestyle considerations about each medication. If a medication doesn’t fit the options you choose on the left, it will be dimmed here.</p>
+          </div>
+        </div>
       </div>
     }
     return <div>
@@ -1378,11 +1400,10 @@ var Navigator = React.createClass({
             <h1>
               Rheumatoid arthritis<br />
               <span className='color-link'>medication navigator</span>
-
             </h1>
             
             {!viewData &&
-              <p>
+              <p className='pad-t-2 pad-b-2'>
                 <button
                   className='btn'
                   onClick={this.handleShowDataClick.bind(null)}>
@@ -1395,7 +1416,7 @@ var Navigator = React.createClass({
             {this.renderMedicationList(medications)}
             
             {!viewData &&
-              <p>
+              <p className='pad-t-2 pad-b-2'>
                 <button
                   className='btn'
                   onClick={this.handleShowDataClick.bind(null)}>
@@ -1404,7 +1425,7 @@ var Navigator = React.createClass({
               </p>
             }
 
-            <p><small>This prototype is based on the <a href='http://www.ncbi.nlm.nih.gov/pubmed/25649726' target='_new'>RA Choice decision aid</a> by Barton, et al. and employs dozens of other data sources.</small></p>
+            <p className='pad-t-2'><small>This prototype is based on the <a href='http://www.ncbi.nlm.nih.gov/pubmed/25649726' target='_new'>RA Choice decision aid</a> by Barton, et al. and employs dozens of other data sources.</small></p>
           </div>
           <div className={detailsClasses}>
             {this.renderIssueNavigationBar(this.state.selectedIssue)}

@@ -591,8 +591,8 @@ var get = {
     disabledMedications is an object with key value pairs like so:
     
     {
-     "Methotrexate": true,
-     "Simponi": false
+     "methotrexate": true,
+     "golimumab": false
     }
     
     This function gets a simple list of medications that are not disabled,
@@ -608,7 +608,7 @@ var get = {
         // but this is more comprehensive.
 
         var medicationObject = _.find(medications, function(medication) {
-          return medication.name_common == key;
+          return medication.name_generic == key;
         });
 
         enabledMedicationNames.push(medicationObject.name_generic.toLowerCase());

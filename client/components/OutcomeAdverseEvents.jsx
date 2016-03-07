@@ -206,7 +206,8 @@ var OutcomeAdverseEvents = React.createClass({
 
   renderOutcomeDetailMenu: function (names) {
     return <DropdownButton
-            title={'Side effect'}
+            bsStyle={null}
+            title={'Choose a side effect'}
             key={'adverse-event-menu'}
             id={'adverse-event-menu'}
             onSelect={this.handleAdverseEventChange}>
@@ -218,13 +219,9 @@ var OutcomeAdverseEvents = React.createClass({
 
   render: function() {
     var cx = React.addons.classSet
-    var classes = cx({
-      'adverse-events': true,
-      'results': true
-    })
 
     var data                = this.props.data
-    var dataFiltered        = this.props.dataFiltered
+    var entries        = this.props.dataFiltered
     var medications         = this.props.medications
     var medicationsMap      = this.props.medicationsMap
     var measure             = this.props.measure
@@ -232,8 +229,7 @@ var OutcomeAdverseEvents = React.createClass({
 
     var getMeanValue = this.getMeanValue
 
-    // Filter out disabled medication entries and group by comparison + intervention
-    var entries = get.filterEntriesByMedication(dataFiltered, medications, disabledMedications)  
+    // Data by comparison + intervention
     var groupedData = _.groupBy(entries, function (entry) {
       return entry.comparison + entry.intervention
     })
@@ -242,49 +238,111 @@ var OutcomeAdverseEvents = React.createClass({
     var entriesByDetail = this.groupEntriesByDetail(entries)
     var selectedDetail = this.state.selectedDetail
 
-    var entriesForSelectedDetail = entriesByDetail[selectedDetail]
-    var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
-    var means = {}
-    _.each(entriesByWhichForSelectedDetail, function (value, key) {
-      var mean = getMeanValue(value)
-      means[key] = mean
-    })
+    var resultHtml = []
+    
+    // If an outcome detail is selected, we can get results
+    if (selectedDetail) {
+      var html =[]
 
-    return <section className={classes}>
-      <div>{this.renderOutcomeDetailMenu(outcomeDetails)}</div>
+      // Get data for this detail
+      var entriesForSelectedDetail = entriesByDetail[selectedDetail]
+      var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
+      var means = {}
+      _.each(entriesByWhichForSelectedDetail, function (value, key) {
+        var mean = getMeanValue(value)
+        means[key] = mean
+      })
       
-      {selectedDetail &&
-        <div key={selectedDetail + i} className='pad-b-5'>
-          <h3 className='font-size-2'>{selectedDetail}</h3>
+      // Populate data into natural medication presentation order
+      var dataByIntervention = {
+        placebo: _.get(means, 'placebo')
+      }
+      _.each(medications, function(medication) {
+        dataByIntervention[medication.name_generic] = _.get(means, medication.name_generic)
+      })
 
-          <div className='flex flex-row'>
-            {_.map(means, function(value, key) {
-              var inlineStyle = {
-                maxWidth: '150px',
-                display: 'inline-block',
-                margin: '5px'
-              }
+      // Enforce natural presentation order
+      _.each(dataByIntervention, function(val, key) {
+        // key == 'methotrexate'
+        // val == meanValue || empty
 
-              return <span key={key + selectedDetail} style={inlineStyle}>
-                <Intervention
-                  interventionName={key.capitalizeFirstletter()} />
-                <div className='pad-t-1 pad-b-5 font-size-2'>
-                  <strong>{value} people</strong> <span className='light'>out of 100</span><br />
-                  <span className='small'>
-                    would be expected to experience {selectedDetail}
-                  </span>
-                </div>
+        // If this med is disabled, don't show anything
+        if (disabledMedications[key]) {
+          return
+        }
+
+        var inlineStyle = {
+          width: '210px',
+          flex: '0 1 auto',
+          marginRight: '10px',
+          hyphens: 'auto'
+        }
+
+        // There is a data
+        if (val) {
+          html.push(
+            <span key={key + selectedDetail} className='pad-b-4' style={inlineStyle}>
+              <Intervention interventionName={key.capitalizeFirstletter()} />
+              <div className='pad-t-1 pad-b-2 font-size-2'>
+                <strong>{val} people</strong> <span className='light'>out of 100</span><br />
+                <span className='small'>
+                  would be expected to experience<br />
+                  {selectedDetail}
+                </span>
+              </div>
+              <AbsoluteFrequency
+                frequency={val}
+                metric={'ar_100'}
+                denominator={100} 
+                breakpoint={10}
+                baseline={null} />
+            </span>
+          )
+        }
+        // There is no data
+        else {
+          html.push(
+            <span key={key + selectedDetail} className='pad-b-4 opacity-3' style={inlineStyle}>
+              <Intervention
+                interventionName={key.capitalizeFirstletter()} />
+              <div className='pad-t-1 pad-b-2 font-size-2'>
+                <span>No information</span><br />
+                <span className='small'>
+                  about how common<br />
+                  {selectedDetail} is
+                </span>
+              </div>
+              <div className='opacity-5'>
                 <AbsoluteFrequency
-                  frequency={value}
+                  frequency={0}
                   metric={'ar_100'}
                   denominator={100} 
                   breakpoint={10}
                   baseline={null} />
-              </span>
-            })}
-          </div>
+              </div>
+            </span>
+          )
+        }
+      })
+
+      resultHtml.push(
+        <div key={selectedDetail + 'ae'} className='pad-b-5'>
+          <h2 className='font-size-7 font-lighter light pad-b-3'>{selectedDetail}</h2>
+          <div className='flex flex-row'>{html}</div>
         </div>
-      }
+      )
+    }
+
+    var classes = cx({
+      'adverse-events results pad-l-5 pad-r-5': true,
+    })
+    var style = {
+      minHeight: '300px'
+    }
+
+    return <section style={style} className={classes}>
+      <div>{this.renderOutcomeDetailMenu(outcomeDetails)}</div>
+      {resultHtml}
     </section>
   }
 })

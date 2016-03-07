@@ -5893,11 +5893,7 @@ button.close {
 .experiment > section:before,
 .experiment > section:after,
 .experiment > nav:before,
-.experiment > nav:after,
-.adverse-events:before,
-.adverse-events:after,
-.adverse-events > section:before,
-.adverse-events > section:after {
+.experiment > nav:after {
   content: " ";
   display: table;
 }
@@ -5925,9 +5921,7 @@ button.close {
 .ptda > section:after,
 .experiment:after,
 .experiment > section:after,
-.experiment > nav:after,
-.adverse-events:after,
-.adverse-events > section:after {
+.experiment > nav:after {
   clear: both;
 }
 .center-block {
@@ -11037,6 +11031,9 @@ html:hover [class^="ss-"] {
 .font-size-7 {
   font-size: 39px;
 }
+.font-lighter {
+  font-weight: lighter;
+}
 .inline {
   display: inline;
 }
@@ -11076,6 +11073,39 @@ html:hover [class^="ss-"] {
 .vertical-align-bottom {
   vertical-align: bottom;
 }
+.opacity-10 {
+  opacity: 1;
+}
+.opacity-9 {
+  opacity: .9;
+}
+.opacity-8 {
+  opacity: .8;
+}
+.opacity-7 {
+  opacity: .7;
+}
+.opacity-6 {
+  opacity: .6;
+}
+.opacity-5 {
+  opacity: .5;
+}
+.opacity-4 {
+  opacity: .4;
+}
+.opacity-3 {
+  opacity: .3;
+}
+.opacity-2 {
+  opacity: .2;
+}
+.opacity-1 {
+  opacity: .1;
+}
+.opacity-0 {
+  opacity: .0;
+}
 .flex {
   display: flex;
 }
@@ -11097,6 +11127,14 @@ html:hover [class^="ss-"] {
 }
 .no-break {
   white-space: nowrap;
+}
+.hyphenate {
+  -ms-word-break: break-all;
+  word-break: break-all;
+  word-break: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
 }
 .pad-0 {
   padding: none;
@@ -11617,6 +11655,12 @@ html:hover [class^="ss-"] {
 .intervention .name {
   display: inline-block;
   vertical-align: text-top;
+  -ms-word-break: break-all;
+  word-break: break-all;
+  word-break: break-word;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
 }
 .population {
   cursor: pointer;
@@ -11681,6 +11725,22 @@ html:hover [class^="ss-"] {
   font-weight: lighter;
   font-size: 19px;
 }
+.navigator .explanatory {
+  padding: 15px 15px 45px 45px;
+  max-width: 750px;
+  font-size: 19px;
+  color: #888;
+}
+.navigator .explanatory h1 {
+  @font-size- 4;
+  font-weight: bold;
+}
+.navigator .explanatory h1 strong {
+  color: #ddd;
+}
+.navigator .explanatory p {
+  margin: 5px 0 0 0;
+}
 .navigator .color-link {
   color: #6699ff;
 }
@@ -11697,6 +11757,10 @@ html:hover [class^="ss-"] {
   transition: width .5s ease;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
+}
+.navigator .sidebar h1 {
+  padding-top: 5px;
+  font-size: 23px;
 }
 .navigator .sidebar.compact {
   width: 360px;
@@ -11732,6 +11796,9 @@ html:hover [class^="ss-"] {
   .navigator .details.open {
     margin-left: 360px;
   }
+}
+.navigator .evidence-panel {
+  width: 100%;
 }
 .navigator .medication-cards {
   font-size: 15px;
@@ -11850,8 +11917,16 @@ html:hover [class^="ss-"] {
   color: white;
   opacity: 1;
 }
-.checkbox {
+.navigator .checkbox {
   font-size: 15px;
+}
+.navigator .btn {
+  color: white;
+  background: #6699ff;
+}
+.navigator .btn:hover {
+  color: white;
+  background: #88AAFF;
 }
 .tag-navigation {
   display: inline-block;
@@ -13337,49 +13412,4 @@ body {
 }
 .preference-controls .option + .option {
   border-top: 1px solid #eee;
-}
-.adverse-events {
-  margin-right: auto;
-  margin-left: auto;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-.adverse-events > .navbar-header,
-.adverse-events > .navbar-collapse {
-  margin-right: -15px;
-  margin-left: -15px;
-}
-@media (min-width: 768px) {
-  .adverse-events > .navbar-header,
-  .adverse-events > .navbar-collapse {
-    margin-right: 0;
-    margin-left: 0;
-  }
-}
-.adverse-events > section {
-  margin-left: -15px;
-  margin-right: -15px;
-}
-.adverse-events > section:first-of-type > div {
-  padding-top: 6em;
-}
-.adverse-events > section > div {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .adverse-events > section > div {
-    float: left;
-    width: 66.66666667%;
-  }
-}
-@media (min-width: 768px) {
-  .adverse-events > section > div {
-    margin-left: 16.66666667%;
-  }
-}
-.adverse-events .chart {
-  width: 85%;
 }

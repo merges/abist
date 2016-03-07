@@ -101,6 +101,10 @@
   font-size: @font-size-7;
 }
 
+.font-lighter {
+  font-weight: lighter;
+}
+
 // Display
 
 .inline {
@@ -143,6 +147,44 @@
   vertical-align: bottom;
 }
 
+// Opacity
+
+.opacity-10 {
+  opacity: 1;
+}
+.opacity-9 {
+  opacity: .9;
+}
+.opacity-8 {
+  opacity: .8;
+}
+.opacity-7 {
+  opacity: .7;
+}
+.opacity-6 {
+  opacity: .6;
+}
+.opacity-5 {
+  opacity: .5;
+}
+.opacity-4 {
+  opacity: .4;
+}
+.opacity-3 {
+  opacity: .3;
+}
+.opacity-2 {
+  opacity: .2;
+}
+.opacity-1 {
+  opacity: .1;
+}
+.opacity-0 {
+  opacity: .0;
+}
+
+// Flexbox
+
 .flex {
   display: flex;
 }
@@ -157,7 +199,7 @@
   border-bottom: 1px solid @color-base-3;
 }
 
-// Text alignment
+// Text
 
 .text-right {
   text-align: right;
@@ -171,6 +213,16 @@
 
 .no-break {
   white-space: nowrap;
+}
+
+.hyphenate {
+  -ms-word-break: break-all;
+      word-break: break-all;
+      word-break: break-word;
+
+  -webkit-hyphens: auto;
+     -moz-hyphens: auto;
+          hyphens: auto;
 }
 
 // Padding mixins

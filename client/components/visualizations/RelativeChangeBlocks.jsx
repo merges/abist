@@ -17,9 +17,18 @@ var RelativeChangeBlocks = React.createClass({
   },
 
   renderBlocks: function(value, range) {
+    var labelStyle = {
+      position: 'absolute',
+      width: '100%',
+      textAlign: 'center',
+      lineHeight: '36px',
+      color: 'white'
+    }
+
     var roundedValue = Math.round(value / 10)
     
-    return _.times(range, function(n) {
+    var html = []
+    _.times(range, function(n) {
       var isFilledIn = function(n, value) {
         // If roundedValue == range, it means we're only supposed
         // to render just enough blocks.
@@ -38,19 +47,32 @@ var RelativeChangeBlocks = React.createClass({
         'relative-change-block': true,
         'highlight': isFilledIn(n, value)
       })
+      var blockStyle = {
+        background: 'rgba(165,165,165,' + (1 - ((range - n) / 6)) + ')'
+      }
 
-      var iconClass = cx({
-        'ss-icon': true,
-        'ss-plus': isFilledIn(n, value) && value > 0,
-        'ss-hyphen': isFilledIn(n, value) && value < 0
-      })
-
-      return (
-        <div key={n} className={blockClass}>
-          <i className={iconClass}></i>
+      html.push(
+        <div key={n} className={blockClass} style={blockStyle}>
+          {n == 0 && <div style={labelStyle}>-{range - n}</div>}
         </div>
       )
     })
+
+    // 0 / no change block
+    if (range < 1) {
+      var blockStyle = {
+        width: '75px',
+        background: 'none',
+        border: '1px solid #333',
+      }
+      html.push(
+        <div className='relative-change-block' style={blockStyle}>
+          <div className='font-size-1 text-center' style={{lineHeight: '34px'}}>no change</div>
+        </div>
+      )
+    }
+
+    return html
   },
 
   render: function() {

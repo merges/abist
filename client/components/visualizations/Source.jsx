@@ -1,9 +1,9 @@
 /** @jsx React.DOM */
 
-var React = require('react/addons');
+var React = require('react/addons')
 
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Tooltip = require('react-bootstrap').Tooltip;
+var OverlayTrigger = require('react-bootstrap').OverlayTrigger
+var Tooltip = require('react-bootstrap').Tooltip
 
 // Source tag
 
@@ -11,7 +11,8 @@ var Source = React.createClass({
   
   propTypes: {
     source: React.PropTypes.string,
-    kind: React.PropTypes.string
+    kind: React.PropTypes.string,
+    label: React.PropTypes.string,
   },
 
   getTooltip: function(kind) {
@@ -34,9 +35,10 @@ var Source = React.createClass({
   },
 
   render: function() {
-    var source = this.props.source;
-    var kind = this.props.kind;
-    var getTooltip = this.getTooltip;
+    var source = this.props.source
+    var kind = this.props.kind
+    var label = this.props.label
+    var getTooltip = this.getTooltip
     
     if (source) {
       return (
@@ -50,10 +52,19 @@ var Source = React.createClass({
             </span>
           </span>
         </OverlayTrigger>
-      );
+      )
     }
-    return (<noscript />);
+    if (label) {
+      return (
+        <span className='source'>
+          <span className='box tiny'>
+            {label}
+          </span>
+        </span>
+      )
+    }
+    return (<noscript />)
   }
-});
+})
 
-module.exports = Source;
+module.exports = Source
