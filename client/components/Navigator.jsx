@@ -318,7 +318,7 @@ var Navigator = React.createClass({
         },
         side_effects: {
           name: 'side effects',
-          measures: ['discontinued_ae', 'ae', 'serious_ae']
+          measures: ['ae', 'discontinued_ae', 'serious_ae']
         },
       },
       medications: medications,
@@ -1101,6 +1101,17 @@ var Navigator = React.createClass({
             medicationsMap={medicationsMap} />
         </div>)
       }
+      if (measureName == 'ae') {
+        html.push(<div key={measureName + i}>
+          <OutcomeAdverseEvents
+            data={data}
+            dataFiltered={getDataByMeasure([measureName])[measureName].data}
+            medications={medications}
+            disabledMedications={disabledMedications}
+            measure={measureName}
+            medicationsMap={medicationsMap} />
+        </div>)
+      }
       if (measureName == 'discontinued_ae') {
         html.push(<div key={measureName + i}>
           <OutcomeRelativeComparison
@@ -1110,17 +1121,6 @@ var Navigator = React.createClass({
             disabledMedications={disabledMedications}
             measure={measureName}
             medicationsMap={medicationsMap} />
-        </div>)
-      }
-      if (measureName == 'ae') {
-        console.log(measureName, i)
-        html.push(<div key={measureName + i}>
-          <OutcomeAdverseEvents
-            data={data}
-            dataFiltered={getDataByMeasure([measureName])[measureName].data}
-            medications={medications}
-            disabledMedications={disabledMedications}
-            measure={measureName} />
         </div>)
       }
       html.push(<div key={measureName + i}>
@@ -1137,54 +1137,6 @@ var Navigator = React.createClass({
     return html
   },
 
-  renderMeasure: function (selectedTag, selectedMeasure) {
-    var medications = this.props.medications
-    var data = this.state.data
-    var disabledMedications = this.state.disabledMedications
-
-    if (selectedMeasure == 'patient_pain') {
-      return (
-        <OutcomeRelativeDifferences
-          data={data}
-          dataByTag={this.getDataByTag(selectedTag)}
-          medications={medications}
-          disabledMedications={disabledMedications}
-          selectedTag={selectedTag}
-          selectedMeasure={selectedMeasure} />
-      )
-    }
-    if (selectedMeasure == 'discontinued_ae') {
-      return (
-        <OutcomeRelativeComparison
-          data={data}
-          dataByTag={this.getDataByTag(selectedTag)}
-          medications={medications}
-          disabledMedications={disabledMedications}
-          selectedTag={selectedTag}
-          selectedMeasure={selectedMeasure} />
-      )
-    }
-    if (selectedMeasure == 'ae') {
-      return (
-        <OutcomeAdverseEvents
-          data={data}
-          dataByTag={this.getDataByTag(selectedTag)}
-          medications={medications}
-          disabledMedications={disabledMedications}
-          selectedTag={selectedTag}
-          selectedMeasure={selectedMeasure} />
-      )
-    }
-    return(
-      <OutcomeTimeline
-        data={data}
-        medications={medications}
-        disabledMedications={disabledMedications}
-        selectedTag={selectedTag}
-        selectedMeasure={selectedMeasure} />
-    )
-  },
-
   handleShortcutClick: function (tag, measure) {
     this.setState({
       selectedTag: tag,
@@ -1196,9 +1148,36 @@ var Navigator = React.createClass({
     var issues = this.props.issues;
     var measures = issues[selectedIssue] && issues[selectedIssue].measures
 
+    console.log(selectedIssue)
+
     if (selectedIssue == 'basic') {
       return <div>
+        <h2>Text about basic issues</h2>
         {this.renderMedicationCards()}
+      </div>
+    }
+    if (selectedIssue == 'improvement') {
+      return <div>
+        <h2>Text about overall improvement</h2>
+        {this.renderDataByMeasure(measures)}
+      </div>
+    }
+    if (selectedIssue == 'pain') {
+      return <div>
+        <h2>Text about pain</h2>
+        {this.renderDataByMeasure(measures)}
+      </div>
+    }
+    if (selectedIssue == 'work') {
+      return <div>
+        <h2>Text about work</h2>
+        {this.renderDataByMeasure(measures)}
+      </div>
+    }
+    if (selectedIssue == 'side_effects') {
+      return <div>
+        <h2>Text about side effects</h2>
+        {this.renderDataByMeasure(measures)}
       </div>
     }
     return <div>

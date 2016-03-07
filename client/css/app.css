@@ -11076,6 +11076,13 @@ html:hover [class^="ss-"] {
 .vertical-align-bottom {
   vertical-align: bottom;
 }
+.flex {
+  display: flex;
+}
+.flex-row {
+  flex-direction: row;
+  flex-flow: row wrap;
+}
 .border-b-1 {
   border-bottom: 1px solid #444;
 }

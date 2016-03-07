@@ -158,8 +158,6 @@ var AbsoluteRiskComparison = React.createClass({
     items.forEach(function(item) {
       position = item.value.value;
 
-      console.log(position)
-
       // No previous position
       if (!previousPosition) {
         groups[position] = [];
