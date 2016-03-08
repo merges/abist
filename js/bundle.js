@@ -1563,7 +1563,7 @@ var Navigator = React.createClass({displayName: "Navigator",
               ), 
             
 
-            React.createElement("p", {className: "pad-t-2"}, React.createElement("small", null, "This prototype is based on the ", React.createElement("a", {href: "http://www.ncbi.nlm.nih.gov/pubmed/25649726", target: "_new"}, "RA Choice decision aid"), " by Barton, et al. and employs dozens of other data sources."))
+            React.createElement("p", {className: "pad-t-2"}, React.createElement("small", null, "This prototype is based on the ", React.createElement("a", {href: "http://www.ncbi.nlm.nih.gov/pubmed/25649726", target: "_new"}, "RA Choice decision aid"), " by Barton, et al. and shows ", React.createElement("a", {href: "https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=302670246", target: "_new"}, "data from dozens of sources.")))
           ), 
           React.createElement("div", {className: detailsClasses}, 
             this.renderIssueNavigationBar(this.state.selectedIssue), 

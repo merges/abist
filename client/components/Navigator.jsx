@@ -1425,7 +1425,7 @@ var Navigator = React.createClass({
               </p>
             }
 
-            <p className='pad-t-2'><small>This prototype is based on the <a href='http://www.ncbi.nlm.nih.gov/pubmed/25649726' target='_new'>RA Choice decision aid</a> by Barton, et al. and employs dozens of other data sources.</small></p>
+            <p className='pad-t-2'><small>This prototype is based on the <a href='http://www.ncbi.nlm.nih.gov/pubmed/25649726' target='_new'>RA Choice decision aid</a> by Barton, et al. and shows <a href='https://docs.google.com/spreadsheets/d/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/edit#gid=302670246' target='_new'>data from dozens of sources.</a></small></p>
           </div>
           <div className={detailsClasses}>
             {this.renderIssueNavigationBar(this.state.selectedIssue)}

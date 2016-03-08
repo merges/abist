@@ -11733,6 +11733,7 @@ html:hover [class^="ss-"] {
   max-width: 750px;
   font-size: 19px;
   color: #888;
+  min-height: 9em;
 }
 .navigator .explanatory h1 {
   @font-size- 4;
