@@ -107,7 +107,6 @@ var Intervention = React.createClass({
     var html = []
 
     if (intervention) {
-
       for (i = 0; i < intervention.length; i++) {
         var part = intervention[i]
         var interventionHtml = []

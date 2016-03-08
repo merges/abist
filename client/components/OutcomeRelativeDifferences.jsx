@@ -12,7 +12,7 @@ var Population = require('./visualizations/Population.jsx');
 var RelativeChangeBlocks = require('./visualizations/RelativeChangeBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
-// Outcome relative difference blocks (i.e. change in pain)
+// Relative change e.g. change in pain
 
 var OutcomeRelativeDifferences = React.createClass({
   propTypes: {
@@ -219,12 +219,6 @@ var OutcomeRelativeDifferences = React.createClass({
     var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
     // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
 
-
-
-
-
-
-
     // Populate data into natural medication presentation order
     var dataByIntervention = {
       placebo: []
@@ -331,17 +325,19 @@ var OutcomeRelativeDifferences = React.createClass({
       if (disabledMedications[key]) {
         return
       }
+      // No data
       if (dataByIntervention[key].length == 0) {
         rows.push(
           <tr key={key}>
             <td className='pad-t-4 pad-b-1 text-right opacity-3'>
-              <small>No {measure.name_friendly} info for</small> <Intervention interventionName={key} />
+              <small>No {measure.name_friendly} info for</small> <Intervention intervention={[key]} />
             </td>
             <td></td>
             <td></td>
           </tr>
         )
       }
+      // Data
       _.each(dataByIntervention[key], function(row) {
         rows.push(row)
       })

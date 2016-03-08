@@ -117,8 +117,6 @@ var OutcomeAdverseEvents = React.createClass({
     var tag = this.props.selectedTag
     var measureData = dataByTag[tag][selectedMeasure].data
 
-    // debugger
-
     if (measureData) {
       var medications = this.props.medications
       var disabledMedications = this.props.disabledMedications
@@ -278,7 +276,7 @@ var OutcomeAdverseEvents = React.createClass({
           hyphens: 'auto'
         }
 
-        // There is a data
+        // There is data
         if (val) {
           html.push(
             <span key={key + selectedDetail} className='pad-b-4' style={inlineStyle}>

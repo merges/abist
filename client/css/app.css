@@ -11710,6 +11710,9 @@ html:hover [class^="ss-"] {
   position: relative;
   transition: box-shadow 0.2s ease;
 }
+.outcome-timeline.horizontal .first {
+  max-width: 300px;
+}
 .navigator {
   background: #222;
   color: white;

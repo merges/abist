@@ -1711,8 +1711,6 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
     var tag = this.props.selectedTag
     var measureData = dataByTag[tag][selectedMeasure].data
 
-    // debugger
-
     if (measureData) {
       var medications = this.props.medications
       var disabledMedications = this.props.disabledMedications
@@ -1872,7 +1870,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
           hyphens: 'auto'
         }
 
-        // There is a data
+        // There is data
         if (val) {
           html.push(
             React.createElement("span", {key: key + selectedDetail, className: "pad-b-4", style: inlineStyle}, 
@@ -2366,7 +2364,7 @@ var Population = require('./visualizations/Population.jsx');
 var RelativeChangeBlocks = require('./visualizations/RelativeChangeBlocks.jsx');
 var Source = require('./visualizations/Source.jsx');
 
-// Outcome relative difference blocks (i.e. change in pain)
+// Relative change e.g. change in pain
 
 var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativeDifferences",
   propTypes: {
@@ -2573,12 +2571,6 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
     // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
 
-
-
-
-
-
-
     // Populate data into natural medication presentation order
     var dataByIntervention = {
       placebo: []
@@ -2685,17 +2677,19 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
       if (disabledMedications[key]) {
         return
       }
+      // No data
       if (dataByIntervention[key].length == 0) {
         rows.push(
           React.createElement("tr", {key: key}, 
             React.createElement("td", {className: "pad-t-4 pad-b-1 text-right opacity-3"}, 
-              React.createElement("small", null, "No ", measure.name_friendly, " info for"), " ", React.createElement(Intervention, {interventionName: key})
+              React.createElement("small", null, "No ", measure.name_friendly, " info for"), " ", React.createElement(Intervention, {intervention: [key]})
             ), 
             React.createElement("td", null), 
             React.createElement("td", null)
           )
         )
       }
+      // Data
       _.each(dataByIntervention[key], function(row) {
         rows.push(row)
       })
@@ -2858,7 +2852,6 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       }
     	// Otherwise terate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
       return Object.keys(results).map(function (metric) {
-        // console.log('looping')
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
@@ -2998,7 +2991,7 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     return (null)
 	},
 
-  getDurationInPlainLanguageTerms: function (durationInWeeks) {
+  getDurationNatural: function (durationInWeeks) {
     if (durationInWeeks === 'null' || durationInWeeks === null) {
       return {
         duration: 'who knows',
@@ -3023,15 +3016,15 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         interval: 'year'
       }
     }
-    if (56 <= durationInWeeks && durationInWeeks <= 99) {
+    if (56 <= durationInWeeks && durationInWeeks <= 95) {
       return {
         duration: Math.floor(durationInWeeks / 4),
         interval: 'months'
       }
     }
-    if (100 <= durationInWeeks) {
+    if (durationInWeeks >= 96) {
       return {
-        duration: (Math.floor(durationInWeeks / 52) * 2) / 2,
+        duration: (Math.round(durationInWeeks / 52) * 2) / 2,
         interval: 'years'
       }
     }
@@ -3049,6 +3042,27 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     return _.keys(durations)
   },
 
+  getDurationsNaturalFromEntries: function(entries) {
+    var getDurationNatural = this.getDurationNatural
+
+    // Sort durations by week in ascending order
+    var durationsInWeeks = this.getDurationsFromEntries(entries).sort(function (a, b) {
+      return a - b
+    })
+
+    // Convert durations in weeks to plain language duration keys
+    // mindful that there may be items in [durationsInWeeks]
+    // that convert to duplicate plain language keys
+    // e.g. '48 weeks' and '52 weeks' both become '1 year'
+    var durations = {}
+    _.each(durationsInWeeks, function (numberOfWeeks) {
+      var durationNatural = getDurationNatural(numberOfWeeks)
+      var key = durationNatural.duration + ' ' + durationNatural.interval
+      durations[key] = true
+    })
+    return _.keys(durations)
+  },
+
   getInterventionAsString: function(entry) {
     if (entry.intervention) {
       return entry.intervention.parts.join(' + ')
@@ -3058,9 +3072,19 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   getInterventionsFromEntries: function(entries) {
     var getInterventionAsString = this.getInterventionAsString
     var interventions = {}
-    _.each(entries, function (entry) {
+    _.each(entries, function (entry) { 
       if (entry.intervention) {
         interventions[getInterventionAsString(entry)] = entry
+      }
+    })
+    return interventions
+  },
+
+  getPrimaryInterventionsFromEntries: function(entries) {
+    var interventions = {}
+    _.each(entries, function (entry) {
+      if (entry.intervention) {
+        interventions[entry.intervention.parts[0]] = entry
       }
     })
     return interventions
@@ -3086,6 +3110,14 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var getInterventionAsString = this.getInterventionAsString
     return _.groupBy(entries, function (entry) {
       return getInterventionAsString(entry)
+    })
+  },
+
+  groupEntriesByPrimaryIntervention: function(entries) {
+    return _.groupBy(entries, function (entry) {
+      if (entry.intervention) {
+        return entry.intervention.parts[0]
+      }
     })
   },
 
@@ -3132,18 +3164,18 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     })
   },
 
-  groupEntriesByDurationInPlainLanguageTerms: function (entries) {
+  groupEntriesByDurationNatural: function (entries) {
     var getDurationInWeeks = this.getDurationInWeeks
-    var getDurationInPlainLanguageTerms = this.getDurationInPlainLanguageTerms
+    var getDurationNatural = this.getDurationNatural
     return _.groupBy(entries, function (entry) {
-      var durationPlain = getDurationInPlainLanguageTerms(getDurationInWeeks(entry.duration))
-      var key = durationPlain.duration + durationPlain.interval
+      var durationNatural = getDurationNatural(getDurationInWeeks(entry.duration))
+      var key = durationNatural.duration + ' ' + durationNatural.interval
       return key
     })
   },
 
   groupEntriesByDuration: function (entries) {
-    // return this.groupEntriesByDurationInPlainLanguageTerms(entries)
+    // return this.groupEntriesByDurationNatural(entries)
     var getDurationInWeeks = this.getDurationInWeeks
     return _.groupBy(entries, function (entry) {
       return getDurationInWeeks(entry.duration)
@@ -3151,17 +3183,31 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
   },
 
   groupEntriesByInterventionAndDuration: function (entries) {
-    var groupEntriesByDuration = this.groupEntriesByDuration
+    var groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
     var groupEntriesByIntervention = this.groupEntriesByIntervention
   
-    var entriesByInterventionAndDuration = {}
+    var results = {}
     var entriesByIntervention = groupEntriesByIntervention(entries)
     _.each(entriesByIntervention, function (val, key) {
-      var byDuration = groupEntriesByDuration(val)
-      entriesByInterventionAndDuration[key] = byDuration
+      var byDuration = groupEntriesByDurationNatural(val)
+      results[key] = byDuration
     })
 
-    return entriesByInterventionAndDuration
+    return results
+  },
+
+  groupEntriesByPrimaryInterventionAndDuration: function (entries) {
+    var groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
+    var groupEntriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention
+  
+    var results = {}
+    var entriesByIntervention = groupEntriesByPrimaryIntervention(entries)
+    _.each(entriesByIntervention, function (val, key) {
+      var byDuration = groupEntriesByDurationNatural(val)
+      results[key] = byDuration
+    })
+
+    return results
   },
 
   groupEntriesByWhichAndDuration: function (entries) {
@@ -3221,25 +3267,24 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       'results': true
     })
 
-    var data = this.props.data
-    var dataFiltered = this.props.dataFiltered
+    var data                = this.props.data
+    var dataFiltered        = this.props.dataFiltered
     var disabledMedications = this.props.disabledMedications
-    var measure = this.props.measure
-    var medications = this.props.medications
-    var medicationsMap = this.props.medicationsMap
+    var measure             = this.props.measure
+    var medications         = this.props.medications
+    var medicationsMap      = this.props.medicationsMap
     
-    var grades          = data.grades
-    var measures        = data.measures
-    var metrics         = data.metrics
-    var tags            = data.tags
-    var tagDescriptions = data.tagDescriptions
-    var allData         = data.data
+    var grades              = data.grades
+    var measures            = data.measures
+    var metrics             = data.metrics
+    var tags                = data.tags
+    var tagDescriptions     = data.tagDescriptions
+    var selectedTag         = this.props.selectedTag
 
-    var selectedTag     = this.props.selectedTag
-
+    var handleMomentDataCellHover = this.handleMomentDataCellHover
     var getInterventionAsString = this.getInterventionAsString
     var getDurationInWeeks = this.getDurationInWeeks
-    var getDurationInPlainLanguageTerms = this.getDurationInPlainLanguageTerms
+    var getDurationNatural = this.getDurationNatural
     var groupEntriesByDuration = this.groupEntriesByDuration
     var renderEntry = this.renderEntry
     var renderValue = this.renderValue
@@ -3325,172 +3370,182 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
       })
     }
 
-    // var measureData = measure && measures[measure].data
-    var measureData = dataFiltered
-    
     // Render a timeline
-    if (measure && measureData) {
-      // console.log('rendering a timeline')
+    if (measure && dataFiltered) {
+      // Filter to entries for non-disabled medications only
+      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications)
+      var populationEntries = get.filterEntriesToPopulationOnly(get.getEntriesForMeasure(dataFiltered))
 
-      var medications = this.props.medications
-      var disabledMedications = this.props.disabledMedications
-      
-      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications)
-      var populationEntries = get.filterEntriesToPopulationOnly(get.getEntriesForMeasure(measureData))
-
+      // If there are no medication entries, use population entries
       if (entries.length == 0) {
         entries = populationEntries
-        var entriesByDuration = groupEntriesByDuration(entries)
-        var entriesByIntervention = this.groupEntriesByWhich(entries)
-        var durations = this.getDurationsFromEntries(entries)
         var interventions = this.getWhichesFromEntries(entries)
-        var interventionsSorted = _.keys(interventions).sort()
+        var entriesByIntervention = this.groupEntriesByWhich(entries)
         var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
       }
       else {
-        var entriesByDuration = groupEntriesByDuration(entries)
-        var entriesByIntervention = this.groupEntriesByWhich(entries)
-        var durations = this.getDurationsFromEntries(entries)
-        var interventions = this.getInterventionsFromEntries(entries)
-        var interventionsSorted = _.keys(interventions).sort()
-        var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
+        var interventions = this.getPrimaryInterventionsFromEntries(entries)
+        var entriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention(entries)
+        var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
       }
+      var durations = this.getDurationsNaturalFromEntries(entries)
 
-      // console.log('------------GROUPED ENTRIES------------')
-      // _.each(entriesByInterventionAndDuration, function(val, key) {
-      //   _.each(val, function(val, key) {
-      //     console.log(val[0].intervention.parts.join(' + '), val[0].duration)
-      //   })
-      // })
+      // Populate data into natural medication presentation order
+      var dataByIntervention = {}
+      _.each(medications, function(medication) {
+        // Make a row for each unique intervention
+        var rows = []
+        var entries = _.get(entriesByPrimaryIntervention, medication.name_generic, [])
 
-      // console.log('------------ORIGINAL ENTRIES-------------')
-      // _.each(entries, function(val, key) {
-      //   console.log(val.intervention.parts.join(' + '), val.duration)
-      // })
+        // No data
+        if (entries.length == 0) {
+          rows.push(
+            React.createElement("section", {key: medication.name_generic, className: "t-row"}, 
+              React.createElement("div", {className: "t-cell subject"}, 
+                React.createElement("small", null, "No ", measure.name_friendly, " info for"), 
+                React.createElement(Intervention, {
+                  intervention: [medication.name_generic], 
+                  interventionName: medication.name_generic, 
+                  medicationsMap: medicationsMap})
+              )
+              /*durations.map(function (timepoint, i) {
+                return <div key={intervention + timepoint} className='t-cell moment empty'><span className=
+                    'light'>not sure</span>
+                </div>
+              })*/
+            )
+          )
+        }
+        // Data
+        else {
+          _.each(entries, function (entry, i) {
+            var rowClasses = cx({
+              't-row': true
+            })
 
-      // console.log('------------DURATIONS------------')
-      // console.log(durations)
+            var intervention = getInterventionAsString(entry)
 
-      // console.log(entriesByInterventionAndDuration)
-
-      // console.log(interventionsSorted)
-
-      var handleMomentDataCellHover = this.handleMomentDataCellHover
-
-      return (
-        React.createElement("div", {key: 'outcome-timeline' + measure}, 
-          /*
-          <section className='measure-description'>
-            <h3>{measures[measure].name_long}</h3>
-            <h4>Researchers measure this and call it <strong>{measures[measure].name_short}</strong>: {measures[measure].description && measures[measure].description}</h4>
-            <h5>
-              <strong>About this timeline.</strong><br />
-              When researchers study RA medications, they look at how people are doing a certain number of weeks after starting treatment. Each study checks in with people at a different time. This timeline shows the best guess of each treatment’s effects at whatever time the researchers followed up.
-            </h5>
-          </section>
-          */
-
-          React.createElement("section", {className: "outcome-timeline horizontal"}, 
-            /* TODO: Separately and specially handle population. */
-
-          /* TODO: Have text at top that says "best performer, worst performer!" SUMMARIES! */
-
-            _.map(interventionsSorted, function (intervention) {
-              var entry = interventions[intervention];
-              var rowClasses = cx({
-                't-row': true
-              })
-              return (
-                React.createElement("section", {key: intervention, className: "chunk"}, 
-                  React.createElement("section", {className: "t-row timeline-labels"}, 
-                    React.createElement("div", {className: "t-cell moment"}, 
-                      React.createElement("section", null, 
-                        measures[measure].name_friendly, " for people taking"
+            rows.push(
+              React.createElement("section", {key: intervention + i, className: "chunk"}, 
+                React.createElement("section", {className: "t-row timeline-labels"}, 
+                  React.createElement("div", {className: "t-cell moment first"}, 
+                    React.createElement("section", null, 
+                      measures[measure].name_friendly, " for people taking"
+                    )
+                  ), 
+                  durations.map(function (timepoint) {
+                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
+                      return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment"}, 
+                        "…by about ", timepoint
                       )
-                    ), 
-                    durations.map(function (timepoint) {
-                      if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                        return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment"}, 
-                            "…at about ", getDurationInPlainLanguageTerms(timepoint).duration, " ", getDurationInPlainLanguageTerms(timepoint).interval
+                    }
+                    return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, 
+                      "…by about ", timepoint
+                    )
+                  })
+                ), 
+                
+                React.createElement("section", {className: "t-row"}, 
+                  React.createElement("div", {className: "t-cell subject first"}, 
+                    entry.which !== 'population' && entry.intervention &&
+                      React.createElement(Intervention, {
+                        intervention: entry.intervention.parts, 
+                        interventionName: entry.intervention.parts.join(' + '), 
+                        dosage: entry.intervention.dosage, 
+                        medicationsMap: medicationsMap}), 
+                    
+                    entry.which == 'population' &&
+                      React.createElement(Population, {
+                        population: entry.population.parts.join(' + '), 
+                        dosage: entry.dosage}), 
+                    
+                    entry.comparison &&
+                      {/*<div className='pull-tab light'>
+                        vs.<br />
+                        {entry.comparison.parts.join(' + ')}
+                      </div>
+                      TODO: display comparison appropriately */}
+                    
+                  ), 
+                  durations.map(function (timepoint, i) {
+                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
+                      var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
+                      if (entry.which !== 'population' && entry.intervention) {
+                        return (
+                          React.createElement("div", {
+                            key: intervention + timepoint, 
+                            className: "t-cell moment-data"}, 
+                              React.createElement("section", null, 
+                                renderValue(entry.intervention), 
+                                React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
+                                React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                              )
+                          )
                         )
                       }
-                      return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, 
-                          "…at about ", getDurationInPlainLanguageTerms(timepoint).duration, " ", getDurationInPlainLanguageTerms(timepoint).interval
-                      )
-                    })
-                  ), 
-                  
-                  React.createElement("section", {className: "t-row"}, 
-                    React.createElement("div", {className: "t-cell subject"}, 
-                      entry.which !== 'population' &&
-                        React.createElement(Intervention, {
-                          intervention: entry.intervention.parts, 
-                          interventionName: entry.intervention.parts.join(' + '), 
-                          dosage: entry.intervention.dosage, 
-                          medicationsMap: medicationsMap}), 
-                      
-                      entry.which == 'population' &&
-                        React.createElement(Population, {
-                          population: entry.population.parts.join(' + '), 
-                          dosage: entry.dosage}), 
-                      
-                      entry.comparison &&
-                        {/*<div className='pull-tab light'>
-                          vs.<br />
-                          {entry.comparison.parts.join(' + ')}
-                        </div>
-                        TODO: display comparison appropriately */}
-                      
-                    ), 
-                    durations.map(function (timepoint, i) {
-                      if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                        var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
-                        if (entry.which !== 'population' && entry.intervention) {
-                          return (
-                            React.createElement("div", {
-                              key: intervention + timepoint, 
-                              className: "t-cell moment-data"}, 
-                                React.createElement("section", null, 
-                                  renderValue(entry.intervention), 
-                                  React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
-                                  React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
-                                )
+                      if (entry.which == 'population') {
+                        return (
+                          React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
+                            React.createElement("section", null, 
+                              renderValue(entry.population)
                             )
                           )
-                        }
-                        if (entry.which == 'population') {
-                          return (
-                            React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
-                              React.createElement("section", null, 
-                                renderValue(entry.population)
-                              )
-                            )
-                          )
-                        }
+                        )
                       }
-                      return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, React.createElement("span", {className: 
-"light"}, "not sure")
-                      )
-                    })
-                  )
+                    }
+                    return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, React.createElement("span", {className: 
+"light font-size-1"}, "no research that looked into this at ", timepoint)
+                    )
+                  })
                 )
               )
-            })
-          )
-        )
-      )
-    }
-    if (measure) {
+            )
+          })
+        }
+
+        // [rows] may contain a row for multiple variations of interventions
+        // e.g. 'methotrexate', 'methotrexate + infliximab', etc.
+        // All should be pushed into the rows belonging to this medication,
+        // which is the primary intervention.
+        dataByIntervention[medication.name_generic] = rows
+      })
+
+      // Enforce natural presentation order
+      var resultHtml = []
+      _.each(dataByIntervention, function(val, key) {
+        // key == 'methotrexate'
+        // val == [entries]
+
+        // If this med is disabled, don't show anything
+        if (disabledMedications[key]) {
+          return
+        }
+        _.each(dataByIntervention[key], function (row) {
+          resultHtml.push(row) 
+        })
+      })
+
       return (
         React.createElement("div", {key: 'outcome-timeline' + measure}, 
-          React.createElement("section", {className: "measure-description"}, 
-            React.createElement("h3", null, measures[measure].name_long), 
-            React.createElement("h4", null, "Researchers measure this and call it ", React.createElement("strong", null, measures[measure].name_short), ": ", measures[measure].description && measures[measure].description), 
-            React.createElement("h4", null, React.createElement("strong", null, "This prototype doesn’t have enough data in it yet to show information for the medications you’ve selected."))
+          React.createElement("section", {className: "outcome-timeline horizontal"}, 
+            /* TODO: Separately and specially handle population. */
+            /* TODO: Have text at top that says "best performer, worst performer!" SUMMARIES! */
+            resultHtml
           )
         )
       )
     }
+    // if (measure) {
+    //   return (
+    //     <div key={'outcome-timeline' + measure}>
+    //       <section className='measure-description'>
+    //         <h3>{measures[measure].name_long}</h3>
+    //         <h4>Researchers measure this and call it <strong>{measures[measure].name_short}</strong>: {measures[measure].description && measures[measure].description}</h4>
+    //         <h4><strong>This prototype doesn’t have enough data in it yet to show information for the medications you’ve selected.</strong></h4>
+    //       </section>
+    //     </div>
+    //   )
+    // }
   }
 })
 
@@ -7254,7 +7309,6 @@ var Intervention = React.createClass({displayName: "Intervention",
     var html = []
 
     if (intervention) {
-
       for (i = 0; i < intervention.length; i++) {
         var part = intervention[i]
         var interventionHtml = []
@@ -7715,13 +7769,14 @@ module.exports = RelativeRiskComparison;
 },{"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],26:[function(require,module,exports){
 /** @jsx React.DOM */
 
-var React = require('react/addons');
+var React = require('react/addons')
+var _ = require('lodash')
 
-var AbsoluteFrequency = require('./AbsoluteFrequency.jsx');
+var AbsoluteFrequency = require('./AbsoluteFrequency.jsx')
 
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Popover = require('react-bootstrap').Popover;
-var Tooltip = require('react-bootstrap').Tooltip;
+var OverlayTrigger = require('react-bootstrap').OverlayTrigger
+var Popover = require('react-bootstrap').Popover
+var Tooltip = require('react-bootstrap').Tooltip
 
 // Intervention display with tooltip
 
@@ -7849,14 +7904,14 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       ],
       measure: 'acr_50',
       measures: {"tjc":{"name":"tjc","name_short":"TJC","name_long":"ACR tender joint count","name_friendly":"tender joint count","description":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\"","tags":["pain","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"sjc":{"name":"sjc","name_short":"SJC","name_long":"ACR swollen joint count","name_friendly":"swollen joint count","description":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\"","tags":["swelling","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"acr_tjc":{"name":"acr_tjc","name_short":"TJC","name_long":"ACR tender joint count","name_friendly":"tender joint count","description":"\"An assessment of 28 or more joints. The joint count should be done by scoring several different aspects of tenderness, as assessed by pressure and joint manipulation on physical examination. The information on various types of tenderness should then be collapsed into a single tender-versus-nontender dichotomy.\"","tags":["pain","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"acr_sjc":{"name":"acr_sjc","name_short":"SJC","name_long":"ACR swollen joint count","name_friendly":"swollen joint count","description":"\"An assessment of 28 or more joints. Joints are classified as swollen or not swollen.\"","tags":["swelling","function"],"kind":"examination","variable":"interval","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_pain":{"name":"patient_pain","name_short":"pain","name_long":"Patient's assessment of pain","name_friendly":"patient's assessment of pain","description":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale assessment of the patient's current level of pain.\"","tags":["pain"],"kind":"scale","variable":"continuous","assessor":"patient","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_global_das":{"name":"patient_global_das","name_short":"patient global assessment","name_long":"Patient's global assessment of disease activity","name_friendly":"patient's global assessment of disease activity","description":"\"The patient's overall assessment of how the arthritis is doing. One acceptable method for determining this is the question from the AIMS instrument: \"Considering all the ways your arthritis affects you, mark 'X' on the scale for how well you are doing.\" An anchored, horizontal, visual analog scale (usually 10 cm) should be provided. A Likert scale response is also acceptable.\"","tags":["well being"],"kind":"scale","variable":"continuous","assessor":"patient","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"physician_global_das":{"name":"physician_global_das","name_short":"physician global assessment","name_long":"Physician's global assessent of disease activity","name_friendly":"physician's global assessent of disease activity","description":"\"A horizontal visual analog scale (usually 10 cm) or Likert scale measure of the physician's assessment of the patient's current disease activity.\"","tags":["well being"],"kind":"scale","variable":"continuous","assessor":"clinician","related_measures":"","included_measures":"","source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"patient_physical_function":{"name":"patient_physical_function","name_short":"physical function","name_long":"Patient's assessment of physical function","name_friendly":"patient's assessment of physical function","description":"\"Any patient self-assessment instrument which has been validated, has reliability, has been proven in RA trials to be sensitive to change, and which measures physical function in RA patients is acceptable. Instruments which have been demonstrated to be sensitive in RA trials include the AIMS, the HAQ, the Quality (or Index) of Well Being, the MHIQ, and the MACTAR.","tags":["function"],"kind":"composite","variable":"","assessor":"patient","related_measures":"","included_measures":["aims","haq","qwb","iwb","mhiq","mactar"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/7779114","notes":""},"apr":{"name":"apr","name_short":"acute-phase reactant","name_long":"Laboratory test, an acute-phase reactant value","name_friendly":"acute-phase reactant value","description":"\"A Westergren erythrocyte sedimentation rate or a C-reactive protein level.\"","tags":["biomarker"],"kind":"assay","variable":"","assessor":"laboratory","related_measures":"","included_measures":["esr","crp"],"source":"","notes":""},"esr":{"name":"esr","name_short":"sed rate","name_long":"Laboratory test, erythrocyte sedimentation rate","name_friendly":"erythrocyte sedimentation rate","description":"A general laboratory test for inflammation, from any cause—including rheumatoid arthritis, infection, and even cancer","tags":["biomarker"],"kind":"assay","variable":"","assessor":"laboratory","related_measures":"","included_measures":"","source":"","notes":""},"sub_acr_20":{"name":"sub_acr_20","name_short":"less than ACR 20","name_long":"less than 20% improvement in RA symptoms","name_friendly":"less than 20% improvement","description":"less than 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"","variable":"","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"acr_20":{"name":"acr_20","name_short":"ACR 20","name_long":"20% improvement in RA symptoms","name_friendly":"20% improvement","description":"At least a 20% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"acr_50":{"name":"acr_50","name_short":"ACR 50","name_long":"50% improvement in RA symptoms","name_friendly":"50% improvement","description":"At least a 50% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"acr_70":{"name":"acr_70","name_short":"ACR 70","name_long":"70% improvement in RA symptoms","name_friendly":"70% improvement","description":"At least a 70% improvement in tender and swollen joint counts, and in at least three of five measures of disease activity or pain.","tags":["improvement"],"kind":"composite","variable":"dichotomous","assessor":"","related_measures":"","included_measures":["acr_tjc","acr_sjc","patient_pain","patient_global_das","physician_global_das","patient_physical_function","apr"],"source":"http://www.ncbi.nlm.nih.gov/pubmed/16273794","notes":""},"discontinued_ae":{"name":"discontinued_ae","name_short":"withdrawal","name_long":"withdrawal from a trial due to an adverse event or side effect","name_friendly":"discontinued due to an adverse event","description":"A participant left a study because of a side effect or \"adverse\" event","tags":["adverse event","well being"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"discontinued_efficacy":{"name":"discontinued_efficacy","name_short":"withdrawal","name_long":"withdrawal from a trial due to lack of treatment efficacy","name_friendly":"discontinued due to lack of efficacy","description":"A participant left a study because they felt the medication wasn't working well","tags":["satisfaction"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"serious_ae":{"name":"serious_ae","name_short":"adverse event","name_long":"","name_friendly":"serious adverse event","description":"","tags":["adverse event"],"kind":"event","variable":"dichotomous","assessor":"clinician","related_measures":"","included_measures":"","source":"","notes":""},"haq":{"name":"haq","name_short":"HAQ","name_long":"score on the Health Assessment Questionnaire","name_friendly":"Health Assessment Questionnaire","description":"","tags":["well being"],"kind":"questionnaire","variable":"","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"sf36_physical_20":{"name":"sf36_physical_20","name_short":"SF-36","name_long":"20% improvement on the SF-36 health questionnaire physical component","name_friendly":"SF-36 physical 20% improvement","description":"","tags":["function","improvement"],"kind":"questionnaire","variable":"dichotomous","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"sf36_mental_20":{"name":"sf36_mental_20","name_short":"SF-36","name_long":"20% improvement on the SF-36 health questionnaire mental component","name_friendly":"SF-36 mental 20% improvement","description":"","tags":["well being","improvement"],"kind":"questionnaire","variable":"dichotomous","assessor":"patient","related_measures":"","included_measures":"","source":"","notes":""},"remission":{"name":"remission","name_short":"remission","name_long":"disease remission","name_friendly":"remission","description":"","tags":["remission","improvement"],"kind":"event","variable":"dichotomous","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"permanent_work_disability":{"name":"permanent_work_disability","name_short":"permanent work disability","name_long":"RA-related permanent work disability","name_friendly":"permanent work disability","description":"","tags":["work","function"],"kind":"event","variable":"dichotomous","assessor":"","related_measures":"","included_measures":"","source":"","notes":""},"median_work_disability_days":{"name":"median_work_disability_days","name_short":"days off work","name_long":"days off work due to RA (median)","name_friendly":"days off work due to RA","description":"","tags":["work","function"],"kind":"count","variable":"interval","assessor":"","related_measures":"","included_measures":"","source":"","notes":""}}
-    };
+    }
   },
 
   getInitialState: function() {
     return {
       iconArrayHoverRiskValue: null,
       pillHoverRiskValue: null
-    };
+    }
   },
 
   getTooltip: function(value) {
@@ -7864,32 +7919,32 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       React.createElement(Tooltip, null, 
         React.createElement("strong", null, value)
       )
-    );
+    )
   },
 
   getPopover: function(item, baselineFrequency) {
-    var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
+    var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency)
 
     return (
       React.createElement(Popover, {title: item.parts}, 
         "Estimated risk ", React.createElement("span", {className: "ss-icon ss-user"}), " ", React.createElement("strong", null, riskFrequency), " of 100", 
         React.createElement(AbsoluteFrequency, {frequency: riskFrequency, metric: 'ar_100', denominator: 100, breakpoint: 20, baseline: baselineFrequency})
       )
-    );
+    )
   },
 
   makePill: function(item, baselineFrequency) {
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
 
-    var handlePillHover = this.handlePillHover;
-    var handlePillHoverLeave = this.handlePillHoverLeave;
+    var handlePillHover = this.handlePillHover
+    var handlePillHoverLeave = this.handlePillHoverLeave
 
-    var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency);
+    var riskFrequency = this.getRiskFrequencyFromBaseline(item, baselineFrequency)
 
     var classes = cx({
       'pill': true,
       'active': riskFrequency <= this.state.iconArrayHoverRiskValue
-    });
+    })
 
     return (
       React.createElement(OverlayTrigger, {
@@ -7904,32 +7959,32 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
               item.parts
           )
       )
-    );
+    )
   },
 
   getRiskFrequencyAsFrequencyPer100: function(item) {
-    var riskFrequency;
+    var riskFrequency
     if (item.ar_1000) {
-      riskFrequency = Math.round(item.ar_1000.value.value / 10);
+      riskFrequency = Math.round(item.ar_1000.value.value / 10)
     }
     else if (item.ar_100) {
-      riskFrequency = item.ar_100.value.value;
+      riskFrequency = item.ar_100.value.value
     }
-    return riskFrequency;
+    return riskFrequency
   },
 
   getRiskFrequencyFromBaseline: function(item, baselineFrequency) {
-    var relativeRisk;
+    var relativeRisk
     if (item.rr) {
-      relativeRisk = item.rr.value.value;
+      relativeRisk = item.rr.value.value
     }
     else if (item.or) {
-      relativeRisk = item.or.value.value;
+      relativeRisk = item.or.value.value
     }
     else if (!item.or || !item.rr) {
-      return baselineFrequency;
+      return baselineFrequency
     }
-    return Math.round(relativeRisk * baselineFrequency);
+    return Math.round(relativeRisk * baselineFrequency)
   },
 
   /*
@@ -7945,33 +8000,33 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
   handlePillHover: function(value) {
     this.setState({
       pillHoverRiskValue: value
-    });
+    })
   },
 
   handlePillHoverLeave: function(value) {
     this.setState({
       pillHoverRiskValue: null
-    });
+    })
   },
 
   handleIconArrayHover: function(value) {
     this.setState({
       iconArrayHoverRiskValue: value
-    });
+    })
   },
 
   handleIconArrayHoverLeave: function(value) {
     this.setState({
       iconArrayHoverRiskValue: null
-    });
+    })
   },
 
   renderIconArray: function() {
-    var cx = React.addons.classSet;
-    var handleIconArrayHover = this.handleIconArrayHover;
-    var handleIconArrayHoverLeave = this.handleIconArrayHoverLeave;
+    var cx = React.addons.classSet
+    var handleIconArrayHover = this.handleIconArrayHover
+    var handleIconArrayHoverLeave = this.handleIconArrayHoverLeave
 
-    var iconArray = [];
+    var iconArray = []
     for (var i = 1; i <= 100; i++) {
       var classes = cx({
         'ss-icon ss-user': true,
@@ -7993,95 +8048,95 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
       React.createElement("div", {className: "icon-array"}, 
         iconArray
       )
-    );
+    )
   },
 
   render: function() {
 
-    var cx = React.addons.classSet;
+    var cx = React.addons.classSet
     var visualizationClasses = cx({
       'visualization risk-relative-to-baseline': true
-    });
+    })
 
-    var comparison = this.props.comparison;
-    var items = this.props.items;
-    var measure = this.props.measure;
-    var measures = this.props.measures;
-    var baselineFrequency = this.getRiskFrequencyAsFrequencyPer100(comparison);
+    var comparison = this.props.comparison
+    var items = this.props.items
+    var measure = this.props.measure
+    var measures = this.props.measures
+    var baselineFrequency = this.getRiskFrequencyAsFrequencyPer100(comparison)
 
-    var showValues = this.props.showValues;
+    var showValues = this.props.showValues
 
     // Get values from the supplied 'interventions'
     // and calculate the range.
-    var values = [];
+    var values = []
     items.forEach(function(item) {
-      values.push(item.rr.value.value);
-    });
-    // var range = 1;
+      values.push(item.rr.value.value)
+    })
+    // var range = 1
 
     var getPosition = function(value) {
-      return Math.round(value * baselineFrequency);
-    };
+      return Math.round(value * baselineFrequency)
+    }
 
     // Sort entries
     var sortedItems = items.sort(function(a, b) {
-      return a.rr.value.value - b.rr.value.value;
-    });
+      return a.rr.value.value - b.rr.value.value
+    })
 
-    var makePill = this.makePill;
-    var pill;
-    var groups = {};
-    var previousPosition;
-    var position;
-    var threshold = 5;
+    var makePill = this.makePill
+    var pill
+    var groups = {}
+    var previousPosition
+    var position
+    var threshold = 5
 
     // Put comparison / placebo into the first group
-    previousPosition = getPosition(1);
+    previousPosition = getPosition(1)
     groups[previousPosition] = [makePill(comparison, baselineFrequency)]
-
 
     // Make the rest of the pills
     items.forEach(function(item) {
-      var value = item.rr.value.value;
-      position = getPosition(value);
+      var value = item.rr.value.value
+      position = getPosition(value)
 
       // No previous position
       if (!previousPosition) {
         // console.log('first')
-        groups[position] = [];
-        pill = makePill(item, baselineFrequency);
-        groups[position].push(pill);
-        previousPosition = position;
+        groups[position] = []
+        pill = makePill(item, baselineFrequency)
+        groups[position].push(pill)
+        previousPosition = position
       }
       // Very close (within threshold range) to previous position
       else if (previousPosition && ((position - previousPosition) <= threshold)) {
         // console.log('value below threshold', position, previousPosition)
-        pill = makePill(item, baselineFrequency);
-        groups[previousPosition].push(pill);
+        pill = makePill(item, baselineFrequency)
+        groups[previousPosition].push(pill)
       }
       // Significantly different
       else {
         // console.log('significantly different', position)
-        groups[position] = [];
-        pill = makePill(item, baselineFrequency);
-        groups[position].push(pill);
-        previousPosition = position;
+        groups[position] = []
+        pill = makePill(item, baselineFrequency)
+        groups[position].push(pill)
+        previousPosition = position
       }
-    });
+    })
 
-    var pillGroups = [];
+    var pillGroups = []
+    var pillGroupCounts = []
     Object.keys(groups).forEach(function(group, i) {
       var style = {
         // Subtract one to get more accurat position in markup
         left: (group - 1) + '%'
       }
 
-      var legend;
+      var legend
       if (i == 0) {
-        legend = group + ' (baseline)';
+        legend = group + ' (baseline)'
       }
       else {
-        legend = group;
+        legend = group
       }
 
       pillGroups.push(
@@ -8090,22 +8145,27 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
           React.createElement("div", {className: "line"}), 
           showValues && React.createElement("div", {className: "legend"}, legend)
         )
-      );
-    });
+      )
+      pillGroupCounts.push(groups[group].length)
+    })
+
+    // Visualization needs heigh based on number of pills in highest pillgroup
+    var maxPills = _.max(pillGroupCounts)
+    var height = {
+      minHeight: maxPills * 5 + 'em'
+    }
 
     return (
       React.createElement("div", null, 
         this.props.showTitle &&
           React.createElement("div", {className: "title"}, 
             React.createElement("h3", null, 
-              "Estimated risk of ", React.createElement("strong", null, measures[measure].name_short, " - ", measures[measure].name_friendly), React.createElement("br", null), 
-              "(compared with ", comparison.parts, ")"
+              "Chance of ", React.createElement("strong", null, measures[measure].name_friendly)
             ), 
-            React.createElement("p", null, measures[measure].description), 
-            React.createElement("p", null, "RR of intervention * baseline of comparison (", comparison.parts, ")")
+            React.createElement("p", {className: "font-size-1"}, "Meaning ", measures[measure].description.toLowerCase(), ". ", React.createElement("span", {className: "light"}, "Calculated as the relative risk of intervention * baseline of comparison"))
           ), 
         
-        React.createElement("div", {className: visualizationClasses}, 
+        React.createElement("div", {style: height, className: visualizationClasses}, 
           React.createElement("div", {className: "chart-holder"}, 
             React.createElement("ul", null, 
               pillGroups
@@ -8115,25 +8175,25 @@ var RiskRelativeToBaseline = React.createClass({displayName: "RiskRelativeToBase
               React.createElement("div", {className: "axis-label left"}, 
                 React.createElement("strong", null, "0 of 100"), 
                 React.createElement("p", null, 
-                  "At this end, no one is expected to experience ", React.createElement("strong", null, measures[measure].name_friendly)
+                  "No one would be expected to: ", React.createElement("strong", null, measures[measure].name_short)
                 )
               ), 
               React.createElement("div", {className: "axis-label right"}, 
                 React.createElement("strong", null, "100 of 100"), 
                 React.createElement("p", null, 
-                  "At this end, almost everyone is expected to experience ", React.createElement("strong", null, measures[measure].name_friendly)
+                  "Everyone would be expected to: ", React.createElement("strong", null, measures[measure].name_short)
                 )
               )
             )
           )
         )
       )
-    );
+    )
   }
-});
+})
 
-module.exports = RiskRelativeToBaseline;
-},{"./AbsoluteFrequency.jsx":18,"react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
+module.exports = RiskRelativeToBaseline
+},{"./AbsoluteFrequency.jsx":18,"lodash":"lodash","react-bootstrap":"react-bootstrap","react/addons":"react/addons"}],27:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require('react/addons')
