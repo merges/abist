@@ -13,6 +13,7 @@
     "gulp-less": "~3.0.0",
     "gulp-rename": "~1.2.0",
     "install": "~0.1.7",
+    "ionicons": "^3.0.0-alpha.3",
     "ismobilejs": "~0.3.5",
     "iso": "~4.0.2",
     "jade": "~1.8.2",

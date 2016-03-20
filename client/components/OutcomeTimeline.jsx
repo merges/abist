@@ -351,7 +351,19 @@ var OutcomeTimeline = React.createClass({
 
   getInterventionAsString: function(entry) {
     if (entry.intervention) {
-      return entry.intervention.parts.join(' + ')
+      var intervention = _.cloneDeep(entry.intervention.parts)
+
+      // Find dosage string, if available
+      var dosage = _.chain(entry)
+                    .get('intervention.dosage.dosage')
+                    .value()
+
+      // Append dosage to first part of intervention
+      if (dosage) {
+        intervention[0] += ' (' + dosage + ')'
+      }
+      // e.g. methotrexate (5 mg) + prednisolone
+      return intervention.join(' + ')
     }
   },
 
@@ -383,10 +395,10 @@ var OutcomeTimeline = React.createClass({
     var whiches = {}
     _.each(entries, function (entry) {
       if (entry.which == 'population' && entry.population) {
-        whiches[getPopulationAsString(entry)] = entry
+        whiches[getPopulationAsString(entry)] = {}
       }
       if (entry.which == 'intervention' && entry.intervention) {
-        whiches[getInterventionAsString(entry)] = entry
+        whiches[getInterventionAsString(entry)] = {}
       }
     })
     return whiches
@@ -673,8 +685,40 @@ var OutcomeTimeline = React.createClass({
         var interventions = this.getPrimaryInterventionsFromEntries(entries)
         var entriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention(entries)
         var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
+
+        var groupEntriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration
+        _.each(entriesByPrimaryIntervention, function (val, key) {
+          // val == [entry, entry, entry]
+          // key == 'methotrexate'
+          interventions[key] = groupEntriesByInterventionAndDuration(val)
+        })
       }
       var durations = this.getDurationsNaturalFromEntries(entries)
+
+
+
+      //
+      // Console logging fun
+      //
+      // console.log('dataFiltered', dataFiltered.length)
+      // console.log('entries', entries.length)
+      // console.log(entriesByPrimaryIntervention)
+      // console.log(entriesByInterventionAndDuration)
+
+      // _.each(dataFiltered, function (entry) {
+      //   if (entry.which == 'intervention' && entry.metric == 'ar_1000') {
+      //     console.log(entry.intervention, entry.dosage, entry.value.value)
+      //   }
+      // })
+
+      // _.each(entries, function (entry) {
+      //   console.log(entry)
+      // })
+
+      // console.log(interventions)
+      // console.log(durations)
+
+
 
       // Populate data into natural medication presentation order
       var dataByIntervention = {}
@@ -683,8 +727,10 @@ var OutcomeTimeline = React.createClass({
         var rows = []
         var entries = _.get(entriesByPrimaryIntervention, medication.name_generic, [])
 
+        var individualInterventions = _.get(interventions, medication.name_generic, {})
+
         // No data
-        if (entries.length == 0) {
+        if (_.isEmpty(individualInterventions)) {
           rows.push(
             <section key={medication.name_generic} className='t-row'>
               <div className='t-cell subject'>
@@ -694,38 +740,34 @@ var OutcomeTimeline = React.createClass({
                   interventionName={medication.name_generic}
                   medicationsMap={medicationsMap} />
               </div>
-              {/*durations.map(function (timepoint, i) {
-                return <div key={intervention + timepoint} className='t-cell moment empty'><span className=
-                    'light'>not sure</span>
-                </div>
-              })*/}
             </section>
           )
         }
         // Data
         else {
-          _.each(entries, function (entry, i) {
+          _.each(individualInterventions, function (moments, key) {
+            // moments == '{'6 months': [entry, entry]}
+            // key == 'methotrexate (5 mg)'
             var rowClasses = cx({
               't-row': true
             })
 
-            var intervention = getInterventionAsString(entry)
+            // var intervention = getInterventionAsString(entry)
+            // console.log(key, moments)
+
+            // Get first entry for basic data
+            var firstEntry = moments[_.keys(moments)[0]][0]
 
             rows.push(
-              <section key={intervention + i} className='chunk'>
+              <section key={key} className='chunk'>
                 <section className='t-row timeline-labels'>
                   <div className='t-cell moment first'>
                     <section>
                       {measures[measure].name_friendly} for people taking
                     </section>
                   </div>
-                  {durations.map(function (timepoint) {
-                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                      return <div key={intervention + timepoint} className='t-cell moment'>
-                        …by about {timepoint}
-                      </div>
-                    }
-                    return <div key={intervention + timepoint} className='t-cell moment empty'>
+                  {_.map(durations, function (timepoint) {
+                    return <div key={key + timepoint} className='t-cell moment'>
                       …by about {timepoint}
                     </div>
                   })}
@@ -733,53 +775,47 @@ var OutcomeTimeline = React.createClass({
                 
                 <section className='t-row'>
                   <div className='t-cell subject first'>
-                    {entry.which !== 'population' && entry.intervention &&
+                    {firstEntry.which !== 'population' && firstEntry.intervention &&
                       <Intervention
-                        intervention={entry.intervention.parts}
-                        interventionName={entry.intervention.parts.join(' + ')}
-                        dosage={entry.intervention.dosage}
+                        intervention={firstEntry.intervention.parts}
+                        interventionName={firstEntry.intervention.parts.join(' + ')}
+                        dosage={firstEntry.intervention.dosage}
                         medicationsMap={medicationsMap} />
                     }
-                    {entry.which == 'population' &&
+                    {firstEntry.which == 'population' &&
                       <Population
-                        population={entry.population.parts.join(' + ')}
-                        dosage={entry.dosage} />
+                        population={firstEntry.population.parts.join(' + ')}
+                        dosage={firstEntry.dosage} />
                     }
-                    {entry.comparison &&
-                      {/*<div className='pull-tab light'>
-                        vs.<br />
-                        {entry.comparison.parts.join(' + ')}
-                      </div>
-                      TODO: display comparison appropriately */}
-                    }
+                    {/*TODO: display comparison */}
                   </div>
-                  {durations.map(function (timepoint, i) {
-                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                      var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
+
+                  {_.map(durations, function (timepoint, i) {
+                    var entries = _.get(moments, timepoint, [])
+
+                    if (entries.length > 0) {
+                      // Could have multiple entries for this timpoint; take the first for now
+                      var entry = entries[0]
                       if (entry.which !== 'population' && entry.intervention) {
-                        return (
-                          <div
-                            key={intervention + timepoint}
-                            className='t-cell moment-data'>
-                              <section>
-                                {renderValue(entry.intervention)}
-                                <Source source={entry.source} kind={entry.kind} /><br />
-                                <GradeQuality grade={entry.quality} gradeMap={grades} />
-                              </section>
-                          </div>
-                        )
+                        return <div
+                          key={key + timepoint}
+                          className='t-cell moment-data'>
+                            <section>
+                              {renderValue(entry.intervention)}
+                              <Source source={entry.source} kind={entry.kind} /><br />
+                              <GradeQuality grade={entry.quality} gradeMap={grades} />
+                            </section>
+                        </div>
                       }
                       if (entry.which == 'population') {
-                        return (
-                          <div key={intervention + timepoint} className='t-cell moment-data'>
-                            <section>
-                              {renderValue(entry.population)}
-                            </section>
-                          </div>
-                        )
+                        return <div key={key + timepoint} className='t-cell moment-data'>
+                          <section>
+                            {renderValue(entry.population)}
+                          </section>
+                        </div>
                       }
                     }
-                    return <div key={intervention + timepoint} className='t-cell moment empty'><span className=
+                    return <div key={key + timepoint} className='t-cell moment empty'><span className=
                         'light font-size-1'>no research that looked into this at {timepoint}</span>
                     </div>
                   })}

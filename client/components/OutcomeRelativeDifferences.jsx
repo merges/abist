@@ -28,16 +28,14 @@ var OutcomeRelativeDifferences = React.createClass({
     var means = []
     sortedEntries.map(function(entry) {
       // Ignore this entry if it doesn't involve comparison with placebo
-      if (!entry.comparison || entry.comparison && !('value' in entry.comparison)) {
+      if (!entry.comparison) {
         return
       }
       // Check to see whether this entry has an appropriate metric
       var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
-      if (metricToUse) {
+      if (metricToUse && entry.comparison[metricToUse]) {
         var value = entry.comparison[metricToUse].value.value
-        if (value) {
-          means.push(value)
-        }
+        means.push(value)
       }
     })
 
@@ -58,6 +56,44 @@ var OutcomeRelativeDifferences = React.createClass({
     }
 
     // No mean? Assume the baseline change is 0.
+    return 0
+  },
+
+  // Get the mean of values
+  getMeanValue: function(entries) {
+    var values = []
+
+    entries.map(function(entry) {
+      // console.log(entry.intervention[0] + entry.dosage.dosage + ' ' + entry.comparison[0])
+      var value
+      if (entry.metric == 'ar_1000') {
+        value = entry.value.value / 10
+      }
+      else {
+        value = entry.value.value
+      }
+      if (value) {
+        values.push(value)
+      }
+    })
+
+    if (values.length > 0) {
+      var sum = _.sum(values)
+      var mean = sum/values.length
+      var valuesSubtractedSquared = _.map(values, function(val) {
+        return Math.pow((val - mean), 2)
+      })
+      var deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
+      var roundedMean = Math.round(mean)
+
+      // console.log('mean of values:', mean)
+      // console.log('deviation of values:', deviation)
+      // console.log('rounded mean:', roundedMean)
+      
+      return roundedMean
+    }
+
+    // No mean? Assume the mean is 0.
     return 0
   },
 
@@ -113,6 +149,25 @@ var OutcomeRelativeDifferences = React.createClass({
     // UNUSED
     // Calculate difference in stdDevs and round
     // var difference = Math.round((value - placeboMean) / deviation) * 10
+  },
+
+  // Group entries by intervention and dosage
+  groupEntriesByInterventionAndDosage: function (entries) {
+    return _.chain(entries)
+            .groupBy(function (entry) {
+              // Group entries by intervention + dosage
+              if (entry.intervention) {
+                var intervention = _.cloneDeep(entry.intervention.parts)
+                if (entry.intervention.dosage.dosage) {
+                  intervention[0] += ' (' + entry.intervention.dosage.dosage + ')'
+                }
+                return intervention.join(' + ')
+              }
+              return 'other'
+            })
+            // If we have populations or other types of entries, discard them
+            .omit('other')
+            .value()
   },
 
   render: function() {
@@ -202,6 +257,11 @@ var OutcomeRelativeDifferences = React.createClass({
         </td>
       </tr>
     )
+
+    var entriesGroupedByInterventionAndDosage = this.groupEntriesByInterventionAndDosage(entries)
+    // TODO switch to using the entriesGroupedByInterventionAndDosage,
+    // and get the means when there is more than one entry
+
 
     sortedEntries.forEach(function(entry, i) {
       // Ignore this entry if it does not report an outcome for an intervention

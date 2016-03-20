@@ -2522,16 +2522,14 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     var means = []
     sortedEntries.map(function(entry) {
       // Ignore this entry if it doesn't involve comparison with placebo
-      if (!entry.comparison || entry.comparison && !('value' in entry.comparison)) {
+      if (!entry.comparison) {
         return
       }
       // Check to see whether this entry has an appropriate metric
       var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
-      if (metricToUse) {
+      if (metricToUse && entry.comparison[metricToUse]) {
         var value = entry.comparison[metricToUse].value.value
-        if (value) {
-          means.push(value)
-        }
+        means.push(value)
       }
     })
 
@@ -2552,6 +2550,44 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     }
 
     // No mean? Assume the baseline change is 0.
+    return 0
+  },
+
+  // Get the mean of values
+  getMeanValue: function(entries) {
+    var values = []
+
+    entries.map(function(entry) {
+      // console.log(entry.intervention[0] + entry.dosage.dosage + ' ' + entry.comparison[0])
+      var value
+      if (entry.metric == 'ar_1000') {
+        value = entry.value.value / 10
+      }
+      else {
+        value = entry.value.value
+      }
+      if (value) {
+        values.push(value)
+      }
+    })
+
+    if (values.length > 0) {
+      var sum = _.sum(values)
+      var mean = sum/values.length
+      var valuesSubtractedSquared = _.map(values, function(val) {
+        return Math.pow((val - mean), 2)
+      })
+      var deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
+      var roundedMean = Math.round(mean)
+
+      // console.log('mean of values:', mean)
+      // console.log('deviation of values:', deviation)
+      // console.log('rounded mean:', roundedMean)
+      
+      return roundedMean
+    }
+
+    // No mean? Assume the mean is 0.
     return 0
   },
 
@@ -2607,6 +2643,25 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
     // UNUSED
     // Calculate difference in stdDevs and round
     // var difference = Math.round((value - placeboMean) / deviation) * 10
+  },
+
+  // Group entries by intervention and dosage
+  groupEntriesByInterventionAndDosage: function (entries) {
+    return _.chain(entries)
+            .groupBy(function (entry) {
+              // Group entries by intervention + dosage
+              if (entry.intervention) {
+                var intervention = _.cloneDeep(entry.intervention.parts)
+                if (entry.intervention.dosage.dosage) {
+                  intervention[0] += ' (' + entry.intervention.dosage.dosage + ')'
+                }
+                return intervention.join(' + ')
+              }
+              return 'other'
+            })
+            // If we have populations or other types of entries, discard them
+            .omit('other')
+            .value()
   },
 
   render: function() {
@@ -2696,6 +2751,11 @@ var OutcomeRelativeDifferences = React.createClass({displayName: "OutcomeRelativ
         )
       )
     )
+
+    var entriesGroupedByInterventionAndDosage = this.groupEntriesByInterventionAndDosage(entries)
+    // TODO switch to using the entriesGroupedByInterventionAndDosage,
+    // and get the means when there is more than one entry
+
 
     sortedEntries.forEach(function(entry, i) {
       // Ignore this entry if it does not report an outcome for an intervention
@@ -3151,7 +3211,19 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
 
   getInterventionAsString: function(entry) {
     if (entry.intervention) {
-      return entry.intervention.parts.join(' + ')
+      var intervention = _.cloneDeep(entry.intervention.parts)
+
+      // Find dosage string, if available
+      var dosage = _.chain(entry)
+                    .get('intervention.dosage.dosage')
+                    .value()
+
+      // Append dosage to first part of intervention
+      if (dosage) {
+        intervention[0] += ' (' + dosage + ')'
+      }
+      // e.g. methotrexate (5 mg) + prednisolone
+      return intervention.join(' + ')
     }
   },
 
@@ -3183,10 +3255,10 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
     var whiches = {}
     _.each(entries, function (entry) {
       if (entry.which == 'population' && entry.population) {
-        whiches[getPopulationAsString(entry)] = entry
+        whiches[getPopulationAsString(entry)] = {}
       }
       if (entry.which == 'intervention' && entry.intervention) {
-        whiches[getInterventionAsString(entry)] = entry
+        whiches[getInterventionAsString(entry)] = {}
       }
     })
     return whiches
@@ -3473,8 +3545,40 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         var interventions = this.getPrimaryInterventionsFromEntries(entries)
         var entriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention(entries)
         var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
+
+        var groupEntriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration
+        _.each(entriesByPrimaryIntervention, function (val, key) {
+          // val == [entry, entry, entry]
+          // key == 'methotrexate'
+          interventions[key] = groupEntriesByInterventionAndDuration(val)
+        })
       }
       var durations = this.getDurationsNaturalFromEntries(entries)
+
+
+
+      //
+      // Console logging fun
+      //
+      // console.log('dataFiltered', dataFiltered.length)
+      // console.log('entries', entries.length)
+      // console.log(entriesByPrimaryIntervention)
+      // console.log(entriesByInterventionAndDuration)
+
+      // _.each(dataFiltered, function (entry) {
+      //   if (entry.which == 'intervention' && entry.metric == 'ar_1000') {
+      //     console.log(entry.intervention, entry.dosage, entry.value.value)
+      //   }
+      // })
+
+      // _.each(entries, function (entry) {
+      //   console.log(entry)
+      // })
+
+      // console.log(interventions)
+      // console.log(durations)
+
+
 
       // Populate data into natural medication presentation order
       var dataByIntervention = {}
@@ -3483,8 +3587,10 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
         var rows = []
         var entries = _.get(entriesByPrimaryIntervention, medication.name_generic, [])
 
+        var individualInterventions = _.get(interventions, medication.name_generic, {})
+
         // No data
-        if (entries.length == 0) {
+        if (_.isEmpty(individualInterventions)) {
           rows.push(
             React.createElement("section", {key: medication.name_generic, className: "t-row"}, 
               React.createElement("div", {className: "t-cell subject"}, 
@@ -3494,38 +3600,34 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                   interventionName: medication.name_generic, 
                   medicationsMap: medicationsMap})
               )
-              /*durations.map(function (timepoint, i) {
-                return <div key={intervention + timepoint} className='t-cell moment empty'><span className=
-                    'light'>not sure</span>
-                </div>
-              })*/
             )
           )
         }
         // Data
         else {
-          _.each(entries, function (entry, i) {
+          _.each(individualInterventions, function (moments, key) {
+            // moments == '{'6 months': [entry, entry]}
+            // key == 'methotrexate (5 mg)'
             var rowClasses = cx({
               't-row': true
             })
 
-            var intervention = getInterventionAsString(entry)
+            // var intervention = getInterventionAsString(entry)
+            // console.log(key, moments)
+
+            // Get first entry for basic data
+            var firstEntry = moments[_.keys(moments)[0]][0]
 
             rows.push(
-              React.createElement("section", {key: intervention + i, className: "chunk"}, 
+              React.createElement("section", {key: key, className: "chunk"}, 
                 React.createElement("section", {className: "t-row timeline-labels"}, 
                   React.createElement("div", {className: "t-cell moment first"}, 
                     React.createElement("section", null, 
                       measures[measure].name_friendly, " for people taking"
                     )
                   ), 
-                  durations.map(function (timepoint) {
-                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                      return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment"}, 
-                        "…by about ", timepoint
-                      )
-                    }
-                    return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, 
+                  _.map(durations, function (timepoint) {
+                    return React.createElement("div", {key: key + timepoint, className: "t-cell moment"}, 
                       "…by about ", timepoint
                     )
                   })
@@ -3533,53 +3635,47 @@ var OutcomeTimeline = React.createClass({displayName: "OutcomeTimeline",
                 
                 React.createElement("section", {className: "t-row"}, 
                   React.createElement("div", {className: "t-cell subject first"}, 
-                    entry.which !== 'population' && entry.intervention &&
+                    firstEntry.which !== 'population' && firstEntry.intervention &&
                       React.createElement(Intervention, {
-                        intervention: entry.intervention.parts, 
-                        interventionName: entry.intervention.parts.join(' + '), 
-                        dosage: entry.intervention.dosage, 
+                        intervention: firstEntry.intervention.parts, 
+                        interventionName: firstEntry.intervention.parts.join(' + '), 
+                        dosage: firstEntry.intervention.dosage, 
                         medicationsMap: medicationsMap}), 
                     
-                    entry.which == 'population' &&
+                    firstEntry.which == 'population' &&
                       React.createElement(Population, {
-                        population: entry.population.parts.join(' + '), 
-                        dosage: entry.dosage}), 
+                        population: firstEntry.population.parts.join(' + '), 
+                        dosage: firstEntry.dosage})
                     
-                    entry.comparison &&
-                      {/*<div className='pull-tab light'>
-                        vs.<br />
-                        {entry.comparison.parts.join(' + ')}
-                      </div>
-                      TODO: display comparison appropriately */}
-                    
+                    /*TODO: display comparison */
                   ), 
-                  durations.map(function (timepoint, i) {
-                    if (entriesByInterventionAndDuration[intervention][timepoint]) {
-                      var entry = entriesByInterventionAndDuration[intervention][timepoint][0]
+
+                  _.map(durations, function (timepoint, i) {
+                    var entries = _.get(moments, timepoint, [])
+
+                    if (entries.length > 0) {
+                      // Could have multiple entries for this timpoint; take the first for now
+                      var entry = entries[0]
                       if (entry.which !== 'population' && entry.intervention) {
-                        return (
-                          React.createElement("div", {
-                            key: intervention + timepoint, 
-                            className: "t-cell moment-data"}, 
-                              React.createElement("section", null, 
-                                renderValue(entry.intervention), 
-                                React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
-                                React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
-                              )
-                          )
+                        return React.createElement("div", {
+                          key: key + timepoint, 
+                          className: "t-cell moment-data"}, 
+                            React.createElement("section", null, 
+                              renderValue(entry.intervention), 
+                              React.createElement(Source, {source: entry.source, kind: entry.kind}), React.createElement("br", null), 
+                              React.createElement(GradeQuality, {grade: entry.quality, gradeMap: grades})
+                            )
                         )
                       }
                       if (entry.which == 'population') {
-                        return (
-                          React.createElement("div", {key: intervention + timepoint, className: "t-cell moment-data"}, 
-                            React.createElement("section", null, 
-                              renderValue(entry.population)
-                            )
+                        return React.createElement("div", {key: key + timepoint, className: "t-cell moment-data"}, 
+                          React.createElement("section", null, 
+                            renderValue(entry.population)
                           )
                         )
                       }
                     }
-                    return React.createElement("div", {key: intervention + timepoint, className: "t-cell moment empty"}, React.createElement("span", {className: 
+                    return React.createElement("div", {key: key + timepoint, className: "t-cell moment empty"}, React.createElement("span", {className: 
 "light font-size-1"}, "no research that looked into this at ", timepoint)
                     )
                   })
@@ -9033,9 +9129,9 @@ var get = {
               + entry.measure_detail
               + entry.comparison
               + entry.intervention
-              // + entry.dosage && entry.dosage.dosage
+              + (entry.dosage && entry.dosage.dosage)
               + entry.population
-              + entry.duration_low + entry.duration_high + entry.duration_interval
+              + (entry.duration && entry.duration.low + entry.duration.high + entry.duration.interval)
               + entry.source
 
       // Check to see if we already have an object for this key a.k.a. 'finding group.' This will be true when:
@@ -9043,8 +9139,10 @@ var get = {
       // - We already encountered a row for the 'comparison'
       // - We already saw an entry for this measure, reported with a different metric
       //
+
       // It's a new object.
       //
+
       if (!reprojected[key]) {
         // Set up an empty object to hold the data
         //
@@ -9081,7 +9179,7 @@ var get = {
       if (!reprojected[key][entry.which]) {
         reprojected[key][entry.which]                     = {}
       }
-      reprojected[key][entry.which]['which']                = entry.which
+      // reprojected[key][entry.which]['which']                = entry.which
       reprojected[key][entry.which]['parts']                = entry[entry.which]       // Array    // = entry.comparison.join(' + ')
       reprojected[key][entry.which]['dosage']               = entry.dosage
       reprojected[key][entry.which]['notes']                = entry.notes

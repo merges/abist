@@ -507,9 +507,9 @@ var get = {
               + entry.measure_detail
               + entry.comparison
               + entry.intervention
-              // + entry.dosage && entry.dosage.dosage
+              + (entry.dosage && entry.dosage.dosage)
               + entry.population
-              + entry.duration_low + entry.duration_high + entry.duration_interval
+              + (entry.duration && entry.duration.low + entry.duration.high + entry.duration.interval)
               + entry.source
 
       // Check to see if we already have an object for this key a.k.a. 'finding group.' This will be true when:
@@ -517,8 +517,10 @@ var get = {
       // - We already encountered a row for the 'comparison'
       // - We already saw an entry for this measure, reported with a different metric
       //
+
       // It's a new object.
       //
+
       if (!reprojected[key]) {
         // Set up an empty object to hold the data
         //
@@ -555,7 +557,7 @@ var get = {
       if (!reprojected[key][entry.which]) {
         reprojected[key][entry.which]                     = {}
       }
-      reprojected[key][entry.which]['which']                = entry.which
+      // reprojected[key][entry.which]['which']                = entry.which
       reprojected[key][entry.which]['parts']                = entry[entry.which]       // Array    // = entry.comparison.join(' + ')
       reprojected[key][entry.which]['dosage']               = entry.dosage
       reprojected[key][entry.which]['notes']                = entry.notes
