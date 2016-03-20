@@ -28,7 +28,7 @@ var OutcomeRelativeDifferences = React.createClass({
     var means = []
     sortedEntries.map(function(entry) {
       // Ignore this entry if it doesn't involve comparison with placebo
-      if (!entry.comparison) {
+      if (!entry.comparison || entry.comparison && !('value' in entry.comparison)) {
         return
       }
       // Check to see whether this entry has an appropriate metric
@@ -60,66 +60,6 @@ var OutcomeRelativeDifferences = React.createClass({
     // No mean? Assume the baseline change is 0.
     return 0
   },
-
-  // getInterventionValues: function(acceptableMetrics, sortedEntries, placeboMean) {
-  //   function Med (drug, score, normalized, difference) {
-  //     this.drug = drug
-  //     this.score = score
-  //     this.normalized = normalized
-  //     this.difference = difference
-  //   }
-  //   var Meds = {}
-  //   var means = []
-
-  //   newEntries = []
-    
-  //   var counter = 0;
-  //   sortedEntries.map(function(entry) {
-  //     // Return if this entry doesn’t have an intervention
-  //     if (!entry.intervention) {
-  //       return
-  //     }
-  //     // Check to see whether this entry has an appropriate metric
-  //     var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
-  //     if (metricToUse) {
-  //       var value = entry.intervention[metricToUse].value.value
-  //       if (value) {
-  //         newEntries.push(_.cloneDeep(entry))
-
-  //         value && means.push(value)
-  //         Meds[counter] = new Med(entry.intervention.parts.join(' + '), value, null, null)
-  //         var difference = (value - placeboMean).toFixedNumber(2)
-  //         Meds[counter].difference = difference
-  //         counter++   
-  //       }
-  //     }
-  //   })
-
-  //   if (counter !== 0) {
-  //     var sum = _.sum(means)
-  //     var mean = sum/means.length
-  //     var meansSubtractedSquared = _.map(means, function(val) {
-  //       return Math.pow((val - mean), 2)
-  //     })
-  //     var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length).toFixedNumber(2)
-  //     var meansNormalized = _.map(means, function(val, i) {
-  //       var normalized = (val - mean) / deviation
-  //       Meds[i].normalized = normalized
-  //       return normalized
-  //     })
-
-  //     // Normalized difference? # of stdDevs better than placebo
-  //     _.each(newEntries, function (entry, i) {
-  //       var differenceInDeviations = Meds[i].difference / deviation
-  //       Meds[i]['differenceNormalized'] = Math.round(differenceInDeviations)
-  //     })
-
-  //     // console.log('mean', mean, '-----', 'deviation', deviation)
-  //     // console.table(Meds, ['drug', 'score', 'normalized', 'difference', 'differenceNormalized'])
-  //   }
-
-  //   return deviation
-  // },
 
   getChangeValue: function(value, metricToUse, placeboMean) {
     /*
@@ -184,7 +124,7 @@ var OutcomeRelativeDifferences = React.createClass({
     var measures            = this.props.data.measures
     var measure             = this.props.measure
     var grades              = data.grades
-
+    
     /*
 
     Filter out entries where the comparison was not placebo, and the entry reports
@@ -204,6 +144,10 @@ var OutcomeRelativeDifferences = React.createClass({
         return entry.intervention.parts[0]
       }
     })
+
+    // _.each(entries, function (entry) {
+    //   console.log(entry.intervention.parts)
+    // })
 
     // Acceptable metrics for comparison
     var acceptableMetrics = [

@@ -1,9 +1,9 @@
-var $ = require('jquery');
-var _ = require('lodash');
+var $ = require('jquery')
+var _ = require('lodash')
 
 Number.prototype.toFixedNumber = function(x, base){
-  var pow = Math.pow(base||10,x);
-  return +(Math.round(this*pow) / pow);
+  var pow = Math.pow(base||10,x)
+  return +(Math.round(this*pow) / pow)
 }
 
 var get = {
@@ -28,81 +28,81 @@ var get = {
 
   getSheetUrl: function(sheet) {
     // Visit this with a browser to get the worksheet unique IDs
-    xmlListing = 'https://spreadsheets.google.com/feeds/worksheets/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/private/full';
+    xmlListing = 'https://spreadsheets.google.com/feeds/worksheets/1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0/private/full'
 
-    key  = '1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0';
+    key  = '1AR88Qq6YzOFdVPgl9nWspLJrZXEBMBINHSjGADJ6ph0'
     base = 'https://spreadsheets.google.com/feeds/list/'
          + key
-         + '/';
-    end  = '/public/values?alt=json';
+         + '/'
+    end  = '/public/values?alt=json'
 
-    return base + sheet + end;
+    return base + sheet + end
   },
 
   processTagDescriptions: function(data) {
-    var tagDescriptions = {};
+    var tagDescriptions = {}
 
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
-        return;
+        return
       }
-      var key = value.gsx$name.$t;
-      var entry = {};
-          entry['name'] = key;
-          entry['description'] = value.gsx$description.$t;
-          entry['name_friendly'] = value.gsx$namefriendly.$t;
-          entry['name_short'] = value.gsx$nameshort.$t;
-      tagDescriptions[key] = entry;
-    });
+      var key = value.gsx$name.$t
+      var entry = {}
+          entry['name'] = key
+          entry['description'] = value.gsx$description.$t
+          entry['name_friendly'] = value.gsx$namefriendly.$t
+          entry['name_short'] = value.gsx$nameshort.$t
+      tagDescriptions[key] = entry
+    })
 
     // this.setState({
     //   tagDescriptions: tagDescriptions
-    // });
-    return tagDescriptions;
+    // })
+    return tagDescriptions
 
-    // this.tempTags = data;
+    // this.tempTags = data
   },
 
   processData: function(data) {
 
     var getNumber = function(value) {
       if (!isNaN(parseFloat(value))) {
-        return parseFloat(value);
+        return parseFloat(value)
       }
-      return null;
-    };
+      return null
+    }
 
-    var processedData = [];
+    var processedData = []
 
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
-        return;
+        return
       }
-      var entry = {};
+      var entry = {}
           // Key
-          entry['which']                          = value.gsx$which ? value.gsx$which.$t : null;
+          entry['which']                          = value.gsx$which ? value.gsx$which.$t : null
 
           // Population / intervention / comparison
-          entry['population']                     = value.gsx$population ? value.gsx$population.$t.split(',') : null;
-          entry['intervention']                   = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null;
-          entry['comparison']                     = value.gsx$comparison ? value.gsx$comparison.$t.split(',') : null;
-          entry['n']                              = value.gsx$ntotal && getNumber(value.gsx$ntotal.$t);
-          entry['n_type']                         = value.gsx$type && value.gsx$ntype.$t;
+          entry['population']                     = value.gsx$population ? value.gsx$population.$t.split(',') : null
+          entry['intervention']                   = value.gsx$intervention ? value.gsx$intervention.$t.split(',') : null
+          entry['comparison']                     = value.gsx$comparison ? value.gsx$comparison.$t.split(',') : null
+          entry['n']                              = value.gsx$ntotal && getNumber(value.gsx$ntotal.$t)
+          entry['n_type']                         = value.gsx$type && value.gsx$ntype.$t
 
           // Outcome
-          entry['measure_detail']                 = value.gsx$measuredetail ? value.gsx$measuredetail.$t : null;
-          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null;
-          entry['metric']                         = value.gsx$metric ? value.gsx$metric.$t : null;
-          entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null;
+          entry['measure_detail']                 = value.gsx$measuredetail ? value.gsx$measuredetail.$t : null
+          entry['measure']                        = value.gsx$measure ? value.gsx$measure.$t : null
+          entry['metric']                         = value.gsx$metric ? value.gsx$metric.$t : null
+          entry['grade']                          = value.gsx$grade ? value.gsx$grade.$t : null
 
           // Value
-          entry['value']                          = {};
-          entry['value']['value']                   = value.gsx$value && getNumber(value.gsx$value.$t);
-          entry['value']['value_ci_low']            = value.gsx$valuecilow && getNumber(value.gsx$valuecilow.$t);
-          entry['value']['value_ci_high']           = value.gsx$valuecihigh && getNumber(value.gsx$valuecihigh.$t);
-          entry['value']['value_sd']                = value.gsx$valuesd && getNumber(value.gsx$valuesd.$t);
-          entry['value']['value_iqr_low']           = value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t);
-          entry['value']['value_iqr_high']          = value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t);
+          entry['value']                          = {}
+          entry['value']['value']                   = value.gsx$value && getNumber(value.gsx$value.$t)
+          entry['value']['value_ci_low']            = value.gsx$valuecilow && getNumber(value.gsx$valuecilow.$t)
+          entry['value']['value_ci_high']           = value.gsx$valuecihigh && getNumber(value.gsx$valuecihigh.$t)
+          entry['value']['value_sd']                = value.gsx$valuesd && getNumber(value.gsx$valuesd.$t)
+          entry['value']['value_iqr_low']           = value.gsx$valueiqrlow && getNumber(value.gsx$valueiqrlow.$t)
+          entry['value']['value_iqr_high']          = value.gsx$valueiqrhigh && getNumber(value.gsx$valueiqrhigh.$t)
 
           // If there is no value, but there is a ci_low and ci_high, we insert the mean of those two values
           // so that we can later perform calculations with it. This is a hack.
@@ -112,91 +112,91 @@ var get = {
           }
 
           // Duration
-          entry['duration']                       = {};
-          entry['duration']['low']                  = value.gsx$durationlow ? value.gsx$durationlow.$t : null;
-          entry['duration']['high']                 = value.gsx$durationhigh ? value.gsx$durationhigh.$t : null;
-          entry['duration']['interval']             = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null;
+          entry['duration']                       = {}
+          entry['duration']['low']                  = value.gsx$durationlow ? value.gsx$durationlow.$t : null
+          entry['duration']['high']                 = value.gsx$durationhigh ? value.gsx$durationhigh.$t : null
+          entry['duration']['interval']             = value.gsx$durationinterval ? value.gsx$durationinterval.$t : null
 
           // Dosage
-          entry['dosage']                         = {};
-          entry['dosage']['dosage']                 = value.gsx$dosage ? value.gsx$dosage.$t : null;
-          entry['dosage']['dosage_form']            = value.gsx$dosageform ? value.gsx$dosageform.$t.split(',') : null;
-          entry['dosage']['dosage_frequency']       = value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null;
-          entry['dosage']['dosage_multiple']        = value.gsx$dosagemultiple ? value.gsx$dosagemultiple.$t : null;
-          entry['dosage']['dosage_interval']        = value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null;
+          entry['dosage']                         = {}
+          entry['dosage']['dosage']                 = value.gsx$dosage ? value.gsx$dosage.$t : null
+          entry['dosage']['dosage_form']            = value.gsx$dosageform ? value.gsx$dosageform.$t.split(',') : null
+          entry['dosage']['dosage_frequency']       = value.gsx$dosagefrequency ? value.gsx$dosagefrequency.$t : null
+          entry['dosage']['dosage_multiple']        = value.gsx$dosagemultiple ? value.gsx$dosagemultiple.$t : null
+          entry['dosage']['dosage_interval']        = value.gsx$dosageinterval ? value.gsx$dosageinterval.$t : null
 
           // Evidence source and notes
-          entry['source']                         = value.gsx$source ? value.gsx$source.$t : null;
-          entry['notes']                          = value.gsx$notes ? value.gsx$notes.$t : null;
-          entry['kind']                           = value.gsx$kind ? value.gsx$kind.$t : null;
+          entry['source']                         = value.gsx$source ? value.gsx$source.$t : null
+          entry['notes']                          = value.gsx$notes ? value.gsx$notes.$t : null
+          entry['kind']                           = value.gsx$kind ? value.gsx$kind.$t : null
       
-      processedData.push(entry);
-    });
+      processedData.push(entry)
+    })
 
     // Get the sheet title, which will be used as its unique key
     // e.g. 'CSR biologics'
-    var title = data.feed.title.$t;
-    // var newData = oldData;
-    //     newData[title] = processedData;
+    var title = data.feed.title.$t
+    // var newData = oldData
+    //     newData[title] = processedData
 
     // this.setState({
     //   data: newData
-    // });
-    return processedData;
+    // })
+    return processedData
 
-    // this.tempData = data;
+    // this.tempData = data
   },
 
   processGrades: function(data) {
-    var grades = {};
+    var grades = {}
 
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
-        return;
+        return
       }
-      var key = value.gsx$grade.$t;
-      var entry = {};
-          entry['grade'] = key;
-          entry['description'] = value.gsx$description.$t;
-          entry['description_friendly'] = value.gsx$descriptionfriendly.$t;
-          entry['name_friendly'] = value.gsx$namefriendly.$t;
-          entry['notes'] = value.gsx$namefriendly.$t;
-          entry['source'] = value.gsx$source.$t;
-      grades[key] = entry;
-    });
+      var key = value.gsx$grade.$t
+      var entry = {}
+          entry['grade'] = key
+          entry['description'] = value.gsx$description.$t
+          entry['description_friendly'] = value.gsx$descriptionfriendly.$t
+          entry['name_friendly'] = value.gsx$namefriendly.$t
+          entry['notes'] = value.gsx$namefriendly.$t
+          entry['source'] = value.gsx$source.$t
+      grades[key] = entry
+    })
 
     // this.setState({
     //   grades: grades
-    // });
-    return grades;
+    // })
+    return grades
 
-    // this.tempGrades = data;
+    // this.tempGrades = data
   },
 
   processMeasures: function(data) {
-    var measures = {};
-    var tagMap = {};
+    var measures = {}
+    var tagMap = {}
 
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
-        return;
+        return
       }
-      var key = value.gsx$name.$t;
-      var entry = {};
-          entry['name']                 = key;
-          entry['name_short']           = value.gsx$nameshort.$t;
-          entry['name_long']            = value.gsx$namelong.$t;
-          entry['name_friendly']        = value.gsx$namefriendly.$t;
-          entry['description']          = value.gsx$description.$t;
-          entry['tags']                 = value.gsx$tags.$t && value.gsx$tags.$t.split(',');
-          entry['kind']                 = value.gsx$kind.$t;
-          entry['variable']             = value.gsx$variable.$t;
-          entry['assessor']             = value.gsx$assessor.$t;
-          entry['related_measures']     = value.gsx$relatedmeasures.$t && value.gsx$relatedmeasures.$t.split(',');
-          entry['included_measures']    = value.gsx$includedmeasures.$t && value.gsx$includedmeasures.$t.split(',');
-          entry['source']               = value.gsx$source.$t;
-          entry['notes']                = value.gsx$notes.$t;
-      measures[key] = entry;
+      var key = value.gsx$name.$t
+      var entry = {}
+          entry['name']                 = key
+          entry['name_short']           = value.gsx$nameshort.$t
+          entry['name_long']            = value.gsx$namelong.$t
+          entry['name_friendly']        = value.gsx$namefriendly.$t
+          entry['description']          = value.gsx$description.$t
+          entry['tags']                 = value.gsx$tags.$t && value.gsx$tags.$t.split(',')
+          entry['kind']                 = value.gsx$kind.$t
+          entry['variable']             = value.gsx$variable.$t
+          entry['assessor']             = value.gsx$assessor.$t
+          entry['related_measures']     = value.gsx$relatedmeasures.$t && value.gsx$relatedmeasures.$t.split(',')
+          entry['included_measures']    = value.gsx$includedmeasures.$t && value.gsx$includedmeasures.$t.split(',')
+          entry['source']               = value.gsx$source.$t
+          entry['notes']                = value.gsx$notes.$t
+      measures[key] = entry
 
       // Populate tags object based on any applied to this measure
       if (measures[key]['tags'].length > 0) {
@@ -204,52 +204,52 @@ var get = {
           // If there's no entry for this particular tag, create an object to house
           // corresponding measures and data that match that tag.
           if (!tagMap[tag]) {
-            tagMap[tag] = {};
-            // tagMap[tag]['data'] = [];
+            tagMap[tag] = {}
+            // tagMap[tag]['data'] = []
           }
-          tagMap[tag][key] = true;
-        });
+          tagMap[tag][key] = true
+        })
       }
-    });
+    })
 
     // this.setState({
     //   measures: measures,
     //   tags: tagMap
-    // });
+    // })
     return {
       measures: measures,
       tags: tagMap
-    };
+    }
 
-    // this.tempMeasures = measures;
+    // this.tempMeasures = measures
   },
 
   processMetrics: function(data) {
-    var metrics = {};
+    var metrics = {}
 
     $.each(data.feed.entry, function (index, value) {
       if (index == 0) {
-        return;
+        return
       }
-      var key = value.gsx$name.$t;
-      var entry = {};
-          entry['name']                 = key;
-          entry['name_short']           = value.gsx$nameshort.$t;
-          entry['name_friendly']        = value.gsx$namefriendly.$t;
-          entry['description']          = value.gsx$description.$t;
-          entry['presentation']         = value.gsx$presentation.$t;
-          entry['kind']                 = value.gsx$kind.$t;
-          entry['source']               = value.gsx$source.$t;
-          entry['notes']                = value.gsx$notes.$t;
-      metrics[key] = entry;
-    });
+      var key = value.gsx$name.$t
+      var entry = {}
+          entry['name']                 = key
+          entry['name_short']           = value.gsx$nameshort.$t
+          entry['name_friendly']        = value.gsx$namefriendly.$t
+          entry['description']          = value.gsx$description.$t
+          entry['presentation']         = value.gsx$presentation.$t
+          entry['kind']                 = value.gsx$kind.$t
+          entry['source']               = value.gsx$source.$t
+          entry['notes']                = value.gsx$notes.$t
+      metrics[key] = entry
+    })
 
     // this.setState({
     //   metrics: metrics
-    // });
-    return metrics;
+    // })
+    return metrics
 
-    // this.tempMetrics = data;
+    // this.tempMetrics = data
   },
 
   getEntriesForMeasure: function(entries) {
@@ -495,25 +495,22 @@ var get = {
     */
 
     // If there are no entries for this measure, stop.
-    //
     if (!entries || entries.length == 0) {
-      return;
+      return
     }
 
-    var reprojected = {};
+    var reprojected = {}
 
     entries.forEach(function (entry, i) {
-
       // Construct a key based on the properties of this entry.
-      //
       var key = entry.measure
               + entry.measure_detail
               + entry.comparison
               + entry.intervention
+              // + entry.dosage && entry.dosage.dosage
               + entry.population
               + entry.duration_low + entry.duration_high + entry.duration_interval
-              + entry.source;
-
+              + entry.source
 
       // Check to see if we already have an object for this key a.k.a. 'finding group.' This will be true when:
       //
@@ -525,21 +522,21 @@ var get = {
       if (!reprojected[key]) {
         // Set up an empty object to hold the data
         //
-        reprojected[key] = {};
+        reprojected[key] = {}
 
         // Populate Basic details of the 'finding group'
         //
-        // reprojected[key]['n']                          = entry.n_total;
-        reprojected[key]['measure']                       = entry.measure;          // Repeated for later convenience of use
-        reprojected[key]['measure_detail']                = entry.measure_detail;          // Repeated for later convenience of use
-        reprojected[key]['quality']                       = entry.grade;
-        reprojected[key]['source']                        = entry.source;
-        reprojected[key]['kind']                          = entry.kind;
+        // reprojected[key]['n']                          = entry.n_total
+        reprojected[key]['measure']                       = entry.measure          // Repeated for later convenience of use
+        reprojected[key]['measure_detail']                = entry.measure_detail          // Repeated for later convenience of use
+        reprojected[key]['quality']                       = entry.grade
+        reprojected[key]['source']                        = entry.source
+        reprojected[key]['kind']                          = entry.kind
 
         // Duration / follow-up
         //
-        reprojected[key]['duration']                      = entry.duration;
-        // reprojected[key]['follow_up']                  = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
+        reprojected[key]['duration']                      = entry.duration
+        // reprojected[key]['follow_up']                  = renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval)
       }
 
       // Describe what kind of 'finding group' this is—a high level distinction
@@ -550,40 +547,40 @@ var get = {
       // and can mark this 'finding group' as such.
       //
       if (entry.which == 'comparison' || entry.which == 'population') {
-        reprojected[key]['which'] = entry.which;
+        reprojected[key]['which'] = entry.which
       }
 
       // Details of the comparison, intervention, or population
       //
       if (!reprojected[key][entry.which]) {
-        reprojected[key][entry.which]                     = {};
+        reprojected[key][entry.which]                     = {}
       }
-      reprojected[key][entry.which]['which']                = entry.which;
-      reprojected[key][entry.which]['parts']                = entry[entry.which];       // Array    // = entry.comparison.join(' + ');
-      reprojected[key][entry.which]['dosage']               = entry.dosage;
-      reprojected[key][entry.which]['notes']                = entry.notes;
+      reprojected[key][entry.which]['which']                = entry.which
+      reprojected[key][entry.which]['parts']                = entry[entry.which]       // Array    // = entry.comparison.join(' + ')
+      reprojected[key][entry.which]['dosage']               = entry.dosage
+      reprojected[key][entry.which]['notes']                = entry.notes
 
       // If there is a comparison listed for the entry, but there are no
       // comparison data (such as dosage, details, and so forth), we must
       // at least capture the basic comparison parts. This check ensures that
       // we do so.
       if (entry['comparison'][0].length > 0 && !reprojected[key]['comparison']) {
-        reprojected[key]['comparison'] = {};
-        reprojected[key]['comparison']['parts']             = entry['comparison'];
+        reprojected[key]['comparison'] = {}
+        reprojected[key]['comparison']['parts']             = entry['comparison']
       }
-
 
       // Metrics and values
       //
       if (!reprojected[key][entry.which][entry.metric]) {
-        reprojected[key][entry.which][entry.metric] = {};
+        reprojected[key][entry.which][entry.metric] = {}
       }
-      reprojected[key][entry.which][entry.metric]['value']  = entry.value;          // Object with all confidence bounds, etc. if reported.
-      reprojected[key][entry.which][entry.metric]['which']  = entry.which;          // Repeated here because they're useful and can be passed to UI elements
-      reprojected[key][entry.which][entry.metric]['measure']= entry.measure;        // Repeated here because they're useful and can be passed to UI elements
-    });
+      reprojected[key][entry.which][entry.metric]['value']  = entry.value          // Object with all confidence bounds, etc. if reported.
+      reprojected[key][entry.which][entry.metric]['which']  = entry.which          // Repeated here because they're useful and can be passed to UI elements
+      reprojected[key][entry.which][entry.metric]['measure']= entry.measure        // Repeated here because they're useful and can be passed to UI elements
+    
+    })
 
-    return reprojected;
+    return reprojected
   },
 
   filterEntriesByMedication: function(entries, medications, disabledMedications) {
@@ -598,7 +595,7 @@ var get = {
     This function gets a simple list of medications that are not disabled,
     i.e. whose value is false.
     */
-    var enabledMedicationNames = [];
+    var enabledMedicationNames = []
     Object.keys(disabledMedications).forEach(function(key) {
       if (disabledMedications[key] === false) {
 
@@ -608,44 +605,44 @@ var get = {
         // but this is more comprehensive.
 
         var medicationObject = _.find(medications, function(medication) {
-          return medication.name_generic == key;
-        });
+          return medication.name_generic == key
+        })
 
-        enabledMedicationNames.push(medicationObject.name_generic.toLowerCase());
+        enabledMedicationNames.push(medicationObject.name_generic.toLowerCase())
         _.each(medicationObject.names_brand, function(nameBrand) {
-          enabledMedicationNames.push(nameBrand.toLowerCase());
-        });
+          enabledMedicationNames.push(nameBrand.toLowerCase())
+        })
       }
-    });
+    })
 
     // Filter entries to only those in which the intervention included one of the
     // enabled medications.
-    var filteredEntries = _.filter(entries, function(entry) {
+    var filteredEntries = _.filter(entries, function (entry) {
       if (entry.intervention && entry.intervention.parts) {
-        var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames);
-        return intersection.length > 0;
+        var intersection = _.intersection(entry.intervention.parts, enabledMedicationNames)
+        return intersection.length > 0
       }
       else if (entry.intervention) {
-        var intersection = _.intersection(entry.intervention, enabledMedicationNames);
-        return intersection.length > 0;
+        var intersection = _.intersection(entry.intervention, enabledMedicationNames)
+        return intersection.length > 0
       }
-    });
-    return filteredEntries;
+    })
+    return filteredEntries
   },
 
   filterEntriesToPopulationOnly: function(entries) {
     // Filter entries to only those which are about populations.
-    var filteredEntries = _.filter(entries, function(entry) {
+    var filteredEntries = _.filter(entries, function (entry) {
       if (entry.which == 'population' && entry.population) {
         return true
       }
     })
-    return filteredEntries;
+    return filteredEntries
   },
 
   filterEntriesWithNonPlaceboComparisons: function(entries) {
     // Filter out entries where the comparison was not placebo
-    var filteredEntries = _.filter(entries, function(entry) {
+    var filteredEntries = _.filter(entries, function (entry) {
       // If this comparison was with something other than placebo, discard it
       if (entry.comparison) {
         if (entry.comparison.parts && entry.comparison.parts[0].toLowerCase() != 'placebo') {
@@ -657,6 +654,6 @@ var get = {
     return filteredEntries
   }
 
-};
+}
 
-module.exports = get;
+module.exports = get

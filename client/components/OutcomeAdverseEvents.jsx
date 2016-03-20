@@ -271,11 +271,15 @@ var OutcomeAdverseEvents = React.createClass({
     var measure             = this.props.measure
     var disabledMedications = this.props.disabledMedications
 
+    // Function shortcuts
     var getMeanValue = this.getMeanValue
+    var groupEntriesByWhich = this.groupEntriesByWhich
+    var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
 
+    // Filter entries to only those with metrics that are used for the visualizations here
     var filteredEntries = this.filterEntriesToThoseWithAcceptableMetrics(entries)
-    console.log('# of side effect entries', entries.length)
-    console.log('# of side effect entries ar_100 or ar_1000', filteredEntries.length)
+    // console.log('# of side effect entries', entries.length)
+    // console.log('# of side effect entries ar_100 or ar_1000', filteredEntries.length)
 
     // Data by comparison + intervention
     var groupedData = _.groupBy(filteredEntries, function (entry) {
@@ -286,6 +290,7 @@ var OutcomeAdverseEvents = React.createClass({
     var entriesByDetail = this.groupEntriesByDetail(filteredEntries)
     var selectedDetail = this.state.selectedDetail
 
+    // Container for results of processing
     var resultHtml = []
     
     // If an outcome detail (e.g. 'headache') is selected, we can get results
@@ -294,18 +299,9 @@ var OutcomeAdverseEvents = React.createClass({
 
       // Get data for this detail
       var entriesForSelectedDetail = entriesByDetail[selectedDetail]
-      var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
+      var entriesByWhichForSelectedDetail = groupEntriesByWhich(entriesForSelectedDetail)
 
-      console.log(entriesByWhichForSelectedDetail)
-      
-      // var means = {}
-      // _.each(entriesByWhichForSelectedDetail, function (val, key) {
-      //   // key == e.g. 'certolizumab (200 mg)'
-      //   // val == entries e.g. [entry, entry, entry]
-      //   var mean = getMeanValue(val)
-      //   means[key] = mean
-      // })
-
+      // console.log(entriesByWhichForSelectedDetail)
       
       var cellStyle = {
         minWidth: '210px'
@@ -376,7 +372,6 @@ var OutcomeAdverseEvents = React.createClass({
       </div>
 
       // Make the same for all other interventions
-      var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
       _.each(medications, function(medication) {
         var medHtml = []
 
@@ -460,72 +455,6 @@ var OutcomeAdverseEvents = React.createClass({
           {medHtml}
         </div>
       })
-      // console.log(dataByIntervention)
-
-
-      // Enforce natural presentation order
-      // _.each(dataByIntervention, function(val, key) {
-      //   // key == 'methotrexate'
-      //   // val == meanValue || empty
-
-      //   // If this med is disabled, don't show anything
-      //   if (disabledMedications[key]) {
-      //     return
-      //   }
-
-      //   var inlineStyle = {
-      //     width: '210px',
-      //     flex: '0 1 auto',
-      //     marginRight: '10px',
-      //     hyphens: 'auto'
-      //   }
-
-      //   // There is data
-      //   if (val) {
-      //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4'>
-      //         <Intervention interventionName={key.capitalizeFirstletter()} />
-      //         <div className='pad-t-1 pad-b-2 font-size-2'>
-      //           <strong>{val} people</strong> <span className='light'>out of 100</span><br />
-      //           <span className='small'>
-      //             would be expected to experience<br />
-      //             {selectedDetail}
-      //           </span>
-      //         </div>
-      //         <AbsoluteFrequency
-      //           frequency={val}
-      //           metric={'ar_100'}
-      //           denominator={100} 
-      //           breakpoint={10}
-      //           baseline={null} />
-      //       </span>
-      //     )
-      //   }
-      //   // There is no data
-      //   else {
-      //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3'>
-      //         <Intervention
-      //           interventionName={key.capitalizeFirstletter()} />
-      //         <div className='pad-t-1 pad-b-2 font-size-2'>
-      //           <span>No information</span><br />
-      //           <span className='small'>
-      //             about how common<br />
-      //             {selectedDetail} is
-      //           </span>
-      //         </div>
-      //         <div className='opacity-5'>
-      //           <AbsoluteFrequency
-      //             frequency={0}
-      //             metric={'ar_100'}
-      //             denominator={100} 
-      //             breakpoint={10}
-      //             baseline={null} />
-      //         </div>
-      //       </span>
-      //     )
-      //   }
-      // })
 
       // Get data in natural presentation order
       _.each(dataByIntervention, function (val, key) {
