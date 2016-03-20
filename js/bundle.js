@@ -1726,28 +1726,34 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
   // Get the mean of values
   getMeanValue: function(entries) {
-    var means = []
+    var values = []
 
     entries.map(function(entry) {
-      console.log(entry.intervention[0] + ' vs ' + entry.comparison[0], entry.value.value, entry.duration.high, entry.duration.interval)
-      var value = entry.value.value
+      // console.log(entry.intervention[0] + entry.dosage.dosage + ' ' + entry.comparison[0])
+      var value
+      if (entry.metric == 'ar_1000') {
+        value = entry.value.value / 10
+      }
+      else {
+        value = entry.value.value
+      }
       if (value) {
-        means.push(value)
+        values.push(value)
       }
     })
 
-    if (means.length > 0) {
-      var sum = _.sum(means)
-      var mean = sum/means.length
-      var meansSubtractedSquared = _.map(means, function(val) {
+    if (values.length > 0) {
+      var sum = _.sum(values)
+      var mean = sum/values.length
+      var valuesSubtractedSquared = _.map(values, function(val) {
         return Math.pow((val - mean), 2)
       })
-      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
+      var deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
       var roundedMean = Math.round(mean)
 
-      console.log('mean of means:', mean)
-      console.log('deviation of means:', deviation)
-      console.log('rounded mean:', roundedMean)
+      // console.log('mean of values:', mean)
+      // console.log('deviation of values:', deviation)
+      // console.log('rounded mean:', roundedMean)
       
       return roundedMean
     }
@@ -1766,17 +1772,39 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
   },
 
   // Group entries into placebo and intervention groups
-  groupEntriesByWhich: function(entries) {
+  groupEntriesByWhich: function (entries) {
     return _.chain(entries)
             .groupBy(function (entry) {
+              // Group entries by primary intervention
               if (entry.which === 'intervention') {
-                return entry.intervention.join(' + ')
+                return entry.intervention[0]
               }
+              // Group all the placebo values
               else if (entry.which === 'comparison' && entry.comparison.join() === 'placebo') {
                 return 'placebo'
               }
               return 'other'
             })
+            // If we have populations or other types of entries, discard them
+            .omit('other')
+            .value()
+  },
+
+  // Group entries by intervention and dosage
+  groupEntriesByInterventionAndDosage: function (entries) {
+    return _.chain(entries)
+            .groupBy(function (entry) {
+              // Group entries by intervention + dosage
+              if (entry.which === 'intervention') {
+                var intervention = _.cloneDeep(entry.intervention)
+                if (entry.dosage.dosage) {
+                  intervention[0] += ' (' + entry.dosage.dosage + ')'
+                }
+                return intervention.join(' + ')
+              }
+              return 'other'
+            })
+            // If we have populations or other types of entries, discard them
             .omit('other')
             .value()
   },
@@ -1809,11 +1837,29 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
     )
   },
 
+  filterEntriesToThoseWithAcceptableMetrics: function (entries) {
+    var acceptableMetrics = [
+      'ar_100',
+      'ar_1000'
+    ]
+    return entries.filter(function (entry) {
+      // Check to see whether this entry has an appropriate metric
+      var metricToUse = _.find(acceptableMetrics, function (val, key) {
+        if (entry.metric === val) {
+          return entry.metric
+        }
+      })
+      if (metricToUse) {
+        return entry
+      }
+    })
+  },
+
   render: function() {
     var cx = React.addons.classSet
 
     var data                = this.props.data
-    var entries        = this.props.dataFiltered
+    var entries             = this.props.dataFiltered
     var medications         = this.props.medications
     var medicationsMap      = this.props.medicationsMap
     var measure             = this.props.measure
@@ -1821,82 +1867,60 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
     var getMeanValue = this.getMeanValue
 
+    var filteredEntries = this.filterEntriesToThoseWithAcceptableMetrics(entries)
+    console.log('# of side effect entries', entries.length)
+    console.log('# of side effect entries ar_100 or ar_1000', filteredEntries.length)
+
     // Data by comparison + intervention
-    var groupedData = _.groupBy(entries, function (entry) {
+    var groupedData = _.groupBy(filteredEntries, function (entry) {
       return entry.comparison + entry.intervention
     })
 
-    var outcomeDetails = this.getOutcomeDetails(entries)
-    var entriesByDetail = this.groupEntriesByDetail(entries)
+    var outcomeDetails = this.getOutcomeDetails(filteredEntries)
+    var entriesByDetail = this.groupEntriesByDetail(filteredEntries)
     var selectedDetail = this.state.selectedDetail
 
     var resultHtml = []
     
-    // If an outcome detail is selected, we can get results
+    // If an outcome detail (e.g. 'headache') is selected, we can get results
     if (selectedDetail) {
       var html =[]
 
       // Get data for this detail
       var entriesForSelectedDetail = entriesByDetail[selectedDetail]
       var entriesByWhichForSelectedDetail = this.groupEntriesByWhich(entriesForSelectedDetail)
-      var means = {}
-      _.each(entriesByWhichForSelectedDetail, function (value, key) {
-        var mean = getMeanValue(value)
-        means[key] = mean
-      })
+
+      console.log(entriesByWhichForSelectedDetail)
       
-      // Populate data into natural medication presentation order
-      var dataByIntervention = {
-        placebo: _.get(means, 'placebo')
+      // var means = {}
+      // _.each(entriesByWhichForSelectedDetail, function (val, key) {
+      //   // key == e.g. 'certolizumab (200 mg)'
+      //   // val == entries e.g. [entry, entry, entry]
+      //   var mean = getMeanValue(val)
+      //   means[key] = mean
+      // })
+
+      // A style we need
+      var inlineStyle = {
+        width: '210px',
+        flex: '0 1 auto',
+        marginRight: '10px',
+        hyphens: 'auto'
       }
-      _.each(medications, function(medication) {
-        dataByIntervention[medication.name_generic] = _.get(means, medication.name_generic)
-      })
-
-      // Enforce natural presentation order
-      _.each(dataByIntervention, function(val, key) {
-        // key == 'methotrexate'
-        // val == meanValue || empty
-
-        // If this med is disabled, don't show anything
-        if (disabledMedications[key]) {
-          return
-        }
-
-        var inlineStyle = {
-          width: '210px',
-          flex: '0 1 auto',
-          marginRight: '10px',
-          hyphens: 'auto'
-        }
-
-        // There is data
-        if (val) {
-          html.push(
-            React.createElement("span", {key: key + selectedDetail, className: "pad-b-4", style: inlineStyle}, 
-              React.createElement(Intervention, {interventionName: key.capitalizeFirstletter()}), 
-              React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
-                React.createElement("strong", null, val, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
-                React.createElement("span", {className: "small"}, 
-                  "would be expected to experience", React.createElement("br", null), 
-                  selectedDetail
-                )
-              ), 
-              React.createElement(AbsoluteFrequency, {
-                frequency: val, 
-                metric: 'ar_100', 
-                denominator: 100, 
-                breakpoint: 10, 
-                baseline: null})
-            )
-          )
-        }
-        // There is no data
-        else {
-          html.push(
-            React.createElement("span", {key: key + selectedDetail, className: "pad-b-4 opacity-3", style: inlineStyle}, 
+      
+      // Populate data into natural medication presentation order, starting with placebo
+      var dataByIntervention = {
+        placebo: []
+      }
+      // No placebo data
+      if (!entriesByWhichForSelectedDetail['placebo']) {
+        dataByIntervention['placebo'].push(
+          React.createElement("div", {key: 'placebo' + selectedDetail, className: "pad-b-4 opacity-3"}, 
+            React.createElement("span", {style: inlineStyle}, 
               React.createElement(Intervention, {
-                interventionName: key.capitalizeFirstletter()}), 
+              interventionName: 'Placebo'})
+            ), 
+            React.createElement("span", {style: inlineStyle}, 
               React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
                 React.createElement("span", null, "No information"), React.createElement("br", null), 
                 React.createElement("span", {className: "small"}, 
@@ -1914,13 +1938,194 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
               )
             )
           )
+        )
+      }
+      // Placebo data
+      else {
+        var placeboMean = getMeanValue(entriesByWhichForSelectedDetail['placebo'])
+        dataByIntervention['placebo'].push(
+          React.createElement("div", {key: 'placebo' + selectedDetail, className: "pad-b-4"}, 
+            React.createElement("span", {style: inlineStyle}, 
+              React.createElement(Intervention, {
+                interventionName: 'Placebo'})
+            ), 
+            React.createElement("span", {style: inlineStyle}, 
+              React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
+                React.createElement("strong", null, placeboMean, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
+                React.createElement("span", {className: "small"}, 
+                  "would be expected to experience", React.createElement("br", null), 
+                  selectedDetail
+                )
+              ), 
+              React.createElement(AbsoluteFrequency, {
+                frequency: placeboMean, 
+                metric: 'ar_100', 
+                denominator: 100, 
+                breakpoint: 10, 
+                baseline: null})
+            )
+          )
+        )
+      }
+
+      // Make the same for all other interventions
+      var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
+      _.each(medications, function(medication) {
+        // Make a space for returned HTML elements for this medication
+        dataByIntervention[medication.name_generic] = []
+
+        // If this med is disabled, don't show anything or bother proceeding
+        if (disabledMedications[medication.name]) {
+          return
         }
+        
+        // Group entries for this medication, by intervention + dose
+        var entries = entriesByWhichForSelectedDetail[medication.name_generic]
+        var grouped = groupEntriesByInterventionAndDosage(entries)
+
+        // No data, so push a 'no data' visualization for this medication
+        if (_.isEmpty(grouped)) {
+          dataByIntervention[medication.name_generic].push(
+            React.createElement("div", {key: medication.name_generic + selectedDetail, className: "pad-b-4 opacity-3"}, 
+              React.createElement("span", {style: inlineStyle}, 
+                React.createElement(Intervention, {
+                  intervention: [medication.name_generic], 
+                  medicationsMap: medicationsMap})
+              ), 
+              React.createElement("span", {style: inlineStyle}, 
+                React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
+                  React.createElement("span", null, "No information"), React.createElement("br", null), 
+                  React.createElement("span", {className: "small"}, 
+                    "about how common", React.createElement("br", null), 
+                    selectedDetail, " is"
+                  )
+                ), 
+                React.createElement("div", {className: "opacity-5"}, 
+                  React.createElement(AbsoluteFrequency, {
+                    frequency: 0, 
+                    metric: 'ar_100', 
+                    denominator: 100, 
+                    breakpoint: 10, 
+                    baseline: null})
+                )
+              )
+            )
+          )
+        }
+        // Otherwise, we have data and want to get the mean values for all dosages, and display those as separate visualizations
+        else {
+          _.each(grouped, function (val, key) {
+            var entries = val
+            var mean = getMeanValue(entries)
+            // There is a mean value for this side effect
+            if (mean) {
+              // Use the first entry as the source of information about the intervention
+              var entry = entries[0]
+              dataByIntervention[medication.name_generic].push(
+                React.createElement("div", {key: key + selectedDetail, className: "pad-b-4"}, 
+                  React.createElement("span", {style: inlineStyle}, 
+                    React.createElement(Intervention, {
+                      intervention: entry.intervention, 
+                      dosage: entry.dosage, 
+                      medicationsMap: medicationsMap})
+                  ), 
+                  React.createElement("span", {style: inlineStyle}, 
+                    React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
+                      React.createElement("strong", null, mean, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
+                      React.createElement("span", {className: "small"}, 
+                        "would be expected to experience", React.createElement("br", null), 
+                        selectedDetail
+                      )
+                    ), 
+                    React.createElement(AbsoluteFrequency, {
+                      frequency: mean, 
+                      metric: 'ar_100', 
+                      denominator: 100, 
+                      breakpoint: 10, 
+                      baseline: null})
+                  )
+                )
+              )
+            }
+          })
+        }
+      })
+      // console.log(dataByIntervention)
+
+
+      // Enforce natural presentation order
+      // _.each(dataByIntervention, function(val, key) {
+      //   // key == 'methotrexate'
+      //   // val == meanValue || empty
+
+      //   // If this med is disabled, don't show anything
+      //   if (disabledMedications[key]) {
+      //     return
+      //   }
+
+      //   var inlineStyle = {
+      //     width: '210px',
+      //     flex: '0 1 auto',
+      //     marginRight: '10px',
+      //     hyphens: 'auto'
+      //   }
+
+      //   // There is data
+      //   if (val) {
+      //     html.push(
+      //       <span key={key + selectedDetail} className='pad-b-4' style={inlineStyle}>
+      //         <Intervention interventionName={key.capitalizeFirstletter()} />
+      //         <div className='pad-t-1 pad-b-2 font-size-2'>
+      //           <strong>{val} people</strong> <span className='light'>out of 100</span><br />
+      //           <span className='small'>
+      //             would be expected to experience<br />
+      //             {selectedDetail}
+      //           </span>
+      //         </div>
+      //         <AbsoluteFrequency
+      //           frequency={val}
+      //           metric={'ar_100'}
+      //           denominator={100} 
+      //           breakpoint={10}
+      //           baseline={null} />
+      //       </span>
+      //     )
+      //   }
+      //   // There is no data
+      //   else {
+      //     html.push(
+      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3' style={inlineStyle}>
+      //         <Intervention
+      //           interventionName={key.capitalizeFirstletter()} />
+      //         <div className='pad-t-1 pad-b-2 font-size-2'>
+      //           <span>No information</span><br />
+      //           <span className='small'>
+      //             about how common<br />
+      //             {selectedDetail} is
+      //           </span>
+      //         </div>
+      //         <div className='opacity-5'>
+      //           <AbsoluteFrequency
+      //             frequency={0}
+      //             metric={'ar_100'}
+      //             denominator={100} 
+      //             breakpoint={10}
+      //             baseline={null} />
+      //         </div>
+      //       </span>
+      //     )
+      //   }
+      // })
+
+      // Get data in natural presentation order
+      _.each(dataByIntervention, function (val, key) {
+        html.push(val)
       })
 
       resultHtml.push(
         React.createElement("div", {key: selectedDetail + 'ae', className: "pad-b-5"}, 
           React.createElement("h2", {className: "font-size-7 font-lighter light pad-b-3"}, selectedDetail), 
-          React.createElement("div", {className: "flex flex-row"}, html)
+          React.createElement("div", {className: ""}, html)
         )
       )
     }
@@ -7328,7 +7533,7 @@ var Intervention = React.createClass({displayName: "Intervention",
         }
         else {
           interventionHtml = (
-            React.createElement("span", {key: part, className: "name text-left"}, 
+            React.createElement("span", {key: part, className: "name text-left small"}, 
               intervention.length > 0 && i > 0 && '+ ', part.capitalizeFirstletter()
             )
           )
@@ -7337,7 +7542,7 @@ var Intervention = React.createClass({displayName: "Intervention",
       }
     }
     else {
-      html.push(React.createElement("span", {className: "name"}, interventionName))
+      html.push(React.createElement("span", {className: "name text-left small"}, interventionName))
     }
     return React.createElement("span", null, html)
   },

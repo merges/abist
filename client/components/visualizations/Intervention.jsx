@@ -126,7 +126,7 @@ var Intervention = React.createClass({
         }
         else {
           interventionHtml = (
-            <span key={part} className='name text-left'>
+            <span key={part} className='name text-left small'>
               {intervention.length > 0 && i > 0 && '+ '}{part.capitalizeFirstletter()}
             </span>
           )
@@ -135,7 +135,7 @@ var Intervention = React.createClass({
       }
     }
     else {
-      html.push(<span className='name'>{interventionName}</span>)
+      html.push(<span className='name text-left small'>{interventionName}</span>)
     }
     return <span>{html}</span>
   },
