@@ -1900,27 +1900,25 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       //   means[key] = mean
       // })
 
-      // A style we need
-      var inlineStyle = {
-        width: '210px',
-        flex: '0 1 auto',
-        marginRight: '10px',
-        hyphens: 'auto'
+      
+      var cellStyle = {
+        minWidth: '210px'
       }
       
       // Populate data into natural medication presentation order, starting with placebo
       var dataByIntervention = {
         placebo: []
       }
+      var placeboHtml = []
       // No placebo data
       if (!entriesByWhichForSelectedDetail['placebo']) {
-        dataByIntervention['placebo'].push(
+        placeboHtml.push(
           React.createElement("div", {key: 'placebo' + selectedDetail, className: "pad-b-4 opacity-3"}, 
-            React.createElement("span", {style: inlineStyle}, 
+            React.createElement("span", null, 
               React.createElement(Intervention, {
               interventionName: 'Placebo'})
             ), 
-            React.createElement("span", {style: inlineStyle}, 
+            React.createElement("span", null, 
               React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
                 React.createElement("span", null, "No information"), React.createElement("br", null), 
                 React.createElement("span", {className: "small"}, 
@@ -1943,13 +1941,13 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       // Placebo data
       else {
         var placeboMean = getMeanValue(entriesByWhichForSelectedDetail['placebo'])
-        dataByIntervention['placebo'].push(
+        placeboHtml.push(
           React.createElement("div", {key: 'placebo' + selectedDetail, className: "pad-b-4"}, 
-            React.createElement("span", {style: inlineStyle}, 
+            React.createElement("span", null, 
               React.createElement(Intervention, {
                 interventionName: 'Placebo'})
             ), 
-            React.createElement("span", {style: inlineStyle}, 
+            React.createElement("span", null, 
               React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
                 React.createElement("strong", null, placeboMean, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
                 React.createElement("span", {className: "small"}, 
@@ -1967,12 +1965,14 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
           )
         )
       }
+      dataByIntervention['placebo'] = React.createElement("div", {className: "t-cell pad-r-2", style: cellStyle}, 
+        placeboHtml
+      )
 
       // Make the same for all other interventions
       var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
       _.each(medications, function(medication) {
-        // Make a space for returned HTML elements for this medication
-        dataByIntervention[medication.name_generic] = []
+        var medHtml = []
 
         // If this med is disabled, don't show anything or bother proceeding
         if (disabledMedications[medication.name]) {
@@ -1985,14 +1985,14 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
 
         // No data, so push a 'no data' visualization for this medication
         if (_.isEmpty(grouped)) {
-          dataByIntervention[medication.name_generic].push(
+          medHtml.push(
             React.createElement("div", {key: medication.name_generic + selectedDetail, className: "pad-b-4 opacity-3"}, 
-              React.createElement("span", {style: inlineStyle}, 
+              React.createElement("span", null, 
                 React.createElement(Intervention, {
                   intervention: [medication.name_generic], 
                   medicationsMap: medicationsMap})
               ), 
-              React.createElement("span", {style: inlineStyle}, 
+              React.createElement("span", null, 
                 React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
                   React.createElement("span", null, "No information"), React.createElement("br", null), 
                   React.createElement("span", {className: "small"}, 
@@ -2021,15 +2021,15 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
             if (mean) {
               // Use the first entry as the source of information about the intervention
               var entry = entries[0]
-              dataByIntervention[medication.name_generic].push(
+              medHtml.push(
                 React.createElement("div", {key: key + selectedDetail, className: "pad-b-4"}, 
-                  React.createElement("span", {style: inlineStyle}, 
+                  React.createElement("span", null, 
                     React.createElement(Intervention, {
                       intervention: entry.intervention, 
                       dosage: entry.dosage, 
                       medicationsMap: medicationsMap})
                   ), 
-                  React.createElement("span", {style: inlineStyle}, 
+                  React.createElement("span", null, 
                     React.createElement("div", {className: "pad-t-1 pad-b-2 font-size-2"}, 
                       React.createElement("strong", null, mean, " people"), " ", React.createElement("span", {className: "light"}, "out of 100"), React.createElement("br", null), 
                       React.createElement("span", {className: "small"}, 
@@ -2049,6 +2049,10 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
             }
           })
         }
+
+        dataByIntervention[medication.name_generic] = React.createElement("div", {className: "t-cell pad-r-2", style: cellStyle}, 
+          medHtml
+        )
       })
       // console.log(dataByIntervention)
 
@@ -2073,7 +2077,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       //   // There is data
       //   if (val) {
       //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4' style={inlineStyle}>
+      //       <span key={key + selectedDetail} className='pad-b-4'>
       //         <Intervention interventionName={key.capitalizeFirstletter()} />
       //         <div className='pad-t-1 pad-b-2 font-size-2'>
       //           <strong>{val} people</strong> <span className='light'>out of 100</span><br />
@@ -2094,7 +2098,7 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       //   // There is no data
       //   else {
       //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3' style={inlineStyle}>
+      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3'>
       //         <Intervention
       //           interventionName={key.capitalizeFirstletter()} />
       //         <div className='pad-t-1 pad-b-2 font-size-2'>
@@ -2125,7 +2129,11 @@ var OutcomeAdverseEvents = React.createClass({displayName: "OutcomeAdverseEvents
       resultHtml.push(
         React.createElement("div", {key: selectedDetail + 'ae', className: "pad-b-5"}, 
           React.createElement("h2", {className: "font-size-7 font-lighter light pad-b-3"}, selectedDetail), 
-          React.createElement("div", {className: ""}, html)
+          React.createElement("div", {className: "t-table table-layout-fixed"}, 
+            React.createElement("div", {className: "t-row"}, 
+              html
+            )
+          )
         )
       )
     }

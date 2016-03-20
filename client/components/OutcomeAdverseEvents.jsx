@@ -306,27 +306,25 @@ var OutcomeAdverseEvents = React.createClass({
       //   means[key] = mean
       // })
 
-      // A style we need
-      var inlineStyle = {
-        width: '210px',
-        flex: '0 1 auto',
-        marginRight: '10px',
-        hyphens: 'auto'
+      
+      var cellStyle = {
+        minWidth: '210px'
       }
       
       // Populate data into natural medication presentation order, starting with placebo
       var dataByIntervention = {
         placebo: []
       }
+      var placeboHtml = []
       // No placebo data
       if (!entriesByWhichForSelectedDetail['placebo']) {
-        dataByIntervention['placebo'].push(
+        placeboHtml.push(
           <div key={'placebo' + selectedDetail} className='pad-b-4 opacity-3'>
-            <span style={inlineStyle}>
+            <span>
               <Intervention
               interventionName={'Placebo'} />
             </span>
-            <span style={inlineStyle}>
+            <span>
               <div className='pad-t-1 pad-b-2 font-size-2'>
                 <span>No information</span><br />
                 <span className='small'>
@@ -349,13 +347,13 @@ var OutcomeAdverseEvents = React.createClass({
       // Placebo data
       else {
         var placeboMean = getMeanValue(entriesByWhichForSelectedDetail['placebo'])
-        dataByIntervention['placebo'].push(
+        placeboHtml.push(
           <div key={'placebo' + selectedDetail} className='pad-b-4'>
-            <span style={inlineStyle}>
+            <span>
               <Intervention
                 interventionName={'Placebo'} />
             </span>
-            <span style={inlineStyle}>
+            <span>
               <div className='pad-t-1 pad-b-2 font-size-2'>
                 <strong>{placeboMean} people</strong> <span className='light'>out of 100</span><br />
                 <span className='small'>
@@ -373,12 +371,14 @@ var OutcomeAdverseEvents = React.createClass({
           </div>
         )
       }
+      dataByIntervention['placebo'] = <div className='t-cell pad-r-2' style={cellStyle}>
+        {placeboHtml}
+      </div>
 
       // Make the same for all other interventions
       var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
       _.each(medications, function(medication) {
-        // Make a space for returned HTML elements for this medication
-        dataByIntervention[medication.name_generic] = []
+        var medHtml = []
 
         // If this med is disabled, don't show anything or bother proceeding
         if (disabledMedications[medication.name]) {
@@ -391,14 +391,14 @@ var OutcomeAdverseEvents = React.createClass({
 
         // No data, so push a 'no data' visualization for this medication
         if (_.isEmpty(grouped)) {
-          dataByIntervention[medication.name_generic].push(
+          medHtml.push(
             <div key={medication.name_generic + selectedDetail} className='pad-b-4 opacity-3'>
-              <span style={inlineStyle}>
+              <span>
                 <Intervention
                   intervention={[medication.name_generic]}
                   medicationsMap={medicationsMap} />
               </span>
-              <span style={inlineStyle}>
+              <span>
                 <div className='pad-t-1 pad-b-2 font-size-2'>
                   <span>No information</span><br />
                   <span className='small'>
@@ -427,15 +427,15 @@ var OutcomeAdverseEvents = React.createClass({
             if (mean) {
               // Use the first entry as the source of information about the intervention
               var entry = entries[0]
-              dataByIntervention[medication.name_generic].push(
+              medHtml.push(
                 <div key={key + selectedDetail} className='pad-b-4'>
-                  <span style={inlineStyle}>
+                  <span>
                     <Intervention
                       intervention={entry.intervention}
                       dosage={entry.dosage}
                       medicationsMap={medicationsMap} />
                   </span>
-                  <span style={inlineStyle}>
+                  <span>
                     <div className='pad-t-1 pad-b-2 font-size-2'>
                       <strong>{mean} people</strong> <span className='light'>out of 100</span><br />
                       <span className='small'>
@@ -455,6 +455,10 @@ var OutcomeAdverseEvents = React.createClass({
             }
           })
         }
+
+        dataByIntervention[medication.name_generic] = <div className='t-cell pad-r-2' style={cellStyle}>
+          {medHtml}
+        </div>
       })
       // console.log(dataByIntervention)
 
@@ -479,7 +483,7 @@ var OutcomeAdverseEvents = React.createClass({
       //   // There is data
       //   if (val) {
       //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4' style={inlineStyle}>
+      //       <span key={key + selectedDetail} className='pad-b-4'>
       //         <Intervention interventionName={key.capitalizeFirstletter()} />
       //         <div className='pad-t-1 pad-b-2 font-size-2'>
       //           <strong>{val} people</strong> <span className='light'>out of 100</span><br />
@@ -500,7 +504,7 @@ var OutcomeAdverseEvents = React.createClass({
       //   // There is no data
       //   else {
       //     html.push(
-      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3' style={inlineStyle}>
+      //       <span key={key + selectedDetail} className='pad-b-4 opacity-3'>
       //         <Intervention
       //           interventionName={key.capitalizeFirstletter()} />
       //         <div className='pad-t-1 pad-b-2 font-size-2'>
@@ -531,7 +535,11 @@ var OutcomeAdverseEvents = React.createClass({
       resultHtml.push(
         <div key={selectedDetail + 'ae'} className='pad-b-5'>
           <h2 className='font-size-7 font-lighter light pad-b-3'>{selectedDetail}</h2>
-          <div className=''>{html}</div>
+          <div className='t-table table-layout-fixed'>
+            <div className='t-row'>
+              {html}
+            </div>
+          </div>
         </div>
       )
     }
