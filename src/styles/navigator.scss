@@ -1,0 +1,825 @@
+// Navigator
+
+.navigator {
+	background: $color-base-1;
+	color: $color-body;
+	font-weight: lighter;
+	font-size: $font-size-3;
+
+	min-height: 100vh;
+	min-width: 100vw;
+	position: relative;
+	overflow: auto;
+
+	h1 {
+		margin: 0;
+		font-weight: lighter;
+		font-size: $font-size-3;
+	}
+	.explanatory {
+		padding: $space-3 $space-3 $space-5 $space-5;
+		max-width: 750px;
+		font-size: $font-size-3;
+		color: $color-base-4;
+		min-height: 9em;
+
+		h1 {
+			font-size: $font-size-4;
+			font-weight: bold;
+
+			strong {
+				color: $color-accent-1;
+			}
+		}
+		p {
+			margin: $space-1 0 0 0;
+		}
+	}
+	.color-link {
+		color: $color-link-2;
+	}
+
+	// Basic layout
+	.sidebar {
+		padding: $space-4;
+		height: 100vh;
+		background: $color-base-1;
+		border-right: 1px solid $color-base-2;
+		z-index: 1;
+		position: fixed;
+		top: 0;
+		left: 0;
+		max-width: 99999px;
+		transition: width .5s ease;
+		overflow-y: scroll;
+		-webkit-overflow-scrolling: touch;
+
+		h1 {
+			padding-top: $space-1;
+			font-size: $font-size-4;
+		}
+		&.compact {
+			// @include hidden-xs;
+			// @include hidden-sm;
+			width: 360px;
+		}
+		&.open {
+			width: 100vw;
+		}
+	}
+	.details {
+		padding: $space-4;
+		max-width: 99999px;
+		overflow: scroll;
+		-webkit-overflow-scrolling: touch;
+
+		&.compact {
+			width: 0;
+		}
+		&.open {
+			@media (max-width: $screen-xs-max) {
+				padding: $space-1 0;
+			}
+			@media (min-width: $screen-md-min) {
+				margin-left: 360px;
+			}
+		}
+	}
+	.evidence-panel {
+		width: 100%;
+	}
+
+	// Medication cards
+	.medication-cards {
+		font-size: $font-size-2;
+
+    .medication-card {
+      transition: background .5s ease,
+                border .5s ease,
+                color .5s ease;
+    }
+
+		.mini  {
+			.dosage-forms{
+				font-size: $font-size-1;
+
+				.form-name {
+					display: none;
+				}
+			}
+		}
+
+		.large {
+      color: $color-accent-4;
+      background: $color-base-2;
+      border: 1px solid $color-base-2;
+			padding: $space-5;
+			margin: $space-3 0;
+
+			.caption {
+        font-size: $font-size-3;
+        padding-bottom: $space-2;
+        // @include light;
+      }
+      .names {
+				width: 100%;
+				border-bottom: 1px solid $color-base-3;
+				color: $color-body;
+				padding-bottom: 2px;
+
+				.generic {
+					font-size: $font-size-7;
+					padding-right: $space-5;
+					width: 1px;
+				}
+				.brand {
+					font-size: $font-size-5;
+				}
+			}
+			.dosage-forms {
+				float: none;
+				font-size: $font-size-4;
+
+				.dosage-form {
+					display: inline-block;
+					float: none;
+
+					.ss-icon {
+						display: inline;
+						margin-right: $space-2;
+						vertical-align: text-bottom;
+					}
+				}
+			}
+      .cost {
+      	font-size: $font-size-4;
+      }
+      // TODO flexbox
+      .preferences {
+        .preference {
+        	opacity: .5;
+        	padding: 0 $space-1;
+        	text-align: center;
+	        transition: color .3s ease,
+	                    opacity .3s ease;
+
+	        .ss-icon {
+	        	font-size: $font-size-5;
+	        }
+
+	        &.active {
+	          color: white;
+	          opacity: 1;
+	        }
+	      }
+      }
+
+			@media (max-width: $screen-xs-max) {
+				padding: $space-1;
+
+				.caption {
+					font-size: $font-size-1;
+				}
+				.generic {
+					font-size: $font-size-4 !important;
+				}
+				.brand {
+					font-size: $font-size-2 !important;
+				}
+				.preferences {
+					font-size: $font-size-1;
+				}
+			}
+		}
+
+		> ul {
+			margin: 0;
+			padding: 0;
+			list-style-type: none;
+
+			> li {
+				padding-bottom: $space-1;
+
+				> a {
+					padding: $space-1 $space-1 $space-1 $space-1;
+					color: $color-body;
+					display: block;
+					background: $color-base-2;
+					border: 1px solid $color-base-2;
+					word-wrap: break-word;
+					transition: box-shadow .1s ease,
+											color .1s ease,
+											background .1s ease;
+
+					&:hover {
+						text-decoration: none;
+					}
+				}
+				&.disabled {
+					> a,
+					.large {
+						border: 1px dotted $color-base-2;
+						color: $color-base-2;
+						background: none;
+					}
+          .preferences .active {
+            color: white;
+            opacity: 1;
+          }
+				}
+			}
+		}
+	}
+
+	// Bootstrap stuff
+	.checkbox {
+		font-size: $font-size-2;
+	}
+	.btn {
+		color: white;
+		background: $color-link-2;
+
+		&:hover {
+			color: white;
+			background: $color-link-3;
+		}
+	}
+}
+
+.tag-navigation {
+	display: inline-block;
+
+	> ul {
+		> li {
+			> a {
+				padding: $space-3 0;
+				border: none;
+				border-radius: 0;
+				text-decoration: none;
+
+				width: 190px;
+				color: $color-base-4;
+				background: $color-base-2 !important;
+				text-align: center;
+				white-space: nowrap;
+
+				transition: color .1s ease,
+										border .1s ease,
+										background .1s ease;
+
+				&:hover {
+					color: $color-blue;
+				}
+			}
+			&.active {
+				> a {
+					color: white !important;
+					background: $color-link-2 !important;
+
+					&:hover {
+						background: $color-grey-xxxxxxxl;
+						border-color: $color-blue;
+					}
+				}
+			}
+		}
+
+		@media (max-width: $screen-xs-max) {
+			> li {
+				float: none;
+				display: block;
+				margin: 0;
+
+				> a {
+					display: block;
+					padding: .1em 15px;
+				}
+			}
+		}
+	}
+
+	@media (max-width: $screen-xs-max) {
+		display: block;
+
+		> ul {
+			> li {
+				> a {
+					padding: $space-1;
+					width: 100%;
+				}
+			}
+		}
+	}
+}
+
+// Special visualization adjustments
+.visualization {
+
+	&.absolute {
+		font-size: $font-size-1;
+	}
+}
+
+.intervention {
+	.name {
+		color: $color-accent-2 !important;
+		font-size: $font-size-4 !important;
+	}
+}
+
+.outcome-timeline {
+	.empty {
+		// @include hidden-md;
+		// @include hidden-sm;
+		// @include hidden-xs;
+	}
+}
+
+
+// Navigator old
+
+.navigator-old {
+	h1,
+	h2 {
+		margin: 0 0 .51em 0;
+		max-width: 50vw;
+		text-align: left;
+		font-weight: lighter;
+		letter-spacing: -.01em;
+		line-height: 1.2;
+	}
+	h1 {
+		color: $color-grey-xl;
+	}
+	h2 {
+		font-size: 21px;
+		color: white;
+	}
+	.results {
+		padding: 3em 0;
+		min-height: 100vh;
+	}
+	.adverse-events {
+		> div + div {
+			margin-top: 5em;
+		}
+	}
+}
+
+.sticky-holder {
+	z-index: 5;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	display: none;
+	// background: white;
+	// @include shadow-l;
+}
+
+.sticky-filter-controls {
+	display: none;
+	opacity: 0;
+	transition: opacity 1s ease;
+	background: #8C8496;
+
+	&.stuck {
+		display: block;
+		opacity: 1;
+
+		.filter-controls {
+			font-size: 11px;
+			padding: 10px;
+
+			h3 {
+				display: none;
+			}
+			> section {
+				flex: 1;
+				min-width: 120px;
+				max-height: 80px;
+				overflow: hidden;
+			}
+		}
+	}
+}
+
+.sticky-medications {
+	display: none;
+	opacity: 0;
+	transition: opacity 1s ease;
+	background: #64606A;
+
+	&.stuck {
+		display: block;
+		opacity: 1;
+
+		.medication-cards {
+			font-size: 11px;
+			padding: 10px;
+
+			h3 {
+				display: none;
+			}
+			ul {
+				display: flex;
+				flex-flow: row wrap;
+				align-items: stretch;
+
+				> li {
+					flex: 1;
+					min-width: 120px;
+					max-height: 80px;
+				}
+			}
+
+			.dosage-forms,
+			.cost,
+			.frequency,
+			.preferences {
+				display: none;
+			}
+		}
+	}
+}
+
+.full-screen {
+	position: relative;
+	padding-bottom: 60px;
+
+	> div {
+		padding-left: 	2em;
+		padding-right: 	2em;
+	}
+	h1 {
+		color: white;
+	}
+
+	@media ( min-width: $screen-md-min ) {
+		min-height: 100vh;
+
+		> div {
+			padding-left: 	10em;
+			padding-right: 	10em;
+		}
+	}
+	&.intro {
+		background: #64606A;
+	}
+	&.controls {
+		background: #8C8496;
+	}
+	&.medications {
+		background: #64606A;
+	}
+	&.results {
+		background: white;
+
+		h1 {
+			color: $color-grey-l;
+		}
+	}
+}
+
+.spread {
+	display: table;
+	width: 100vw;
+	height: 100vh;
+
+	> div {
+		padding: 6em 0;
+		display: table-cell;
+		vertical-align: middle;
+	}
+}
+
+// .scroll-down {
+// 	color: white;
+// 	padding: 1em 0;
+// 	background: $color-blue;
+// 	position: absolute;
+// 	bottom: 0;
+// 	display: block;
+// 	width: 100%;
+// 	text-align: center;
+
+// 	.ss-icon {
+// 		font-size: 1.3em;
+// 	}
+// 	&:hover {
+// 		text-decoration: none;
+// 		color: white;
+// 	}
+// }
+
+.scroll-down {
+	color: white;
+	padding: 0.5em 6em;
+	margin-top: 2em;
+	background: $color-orange;
+	display: inline-block;
+	margin: 1em 0 0 0;
+	text-align: center;
+	border-radius: 32px;
+	@include shadow-l;
+
+	.ss-icon {
+		display: block;
+		font-size: 1.3em;
+	}
+	&:hover {
+		text-decoration: none;
+		color: white;
+	}
+}
+
+.dev {
+	.drug-picker,
+	.medication-list {
+		font-size: $font-s;
+		border-right: 5px solid $color-grey-xxxxl;
+	}
+
+	.details {
+		transition: opacity .2s ease-out;
+		border-right: 5px solid $color-grey-xxxxl;
+
+		&.open {
+			opacity: 1;
+		}
+		&.closed {
+			opacity: .4;
+		}
+	}
+}
+
+.brief-header {
+	color: $color-grey-xl;
+	font-weight: bolder;
+	font-size: 13px;
+	padding-bottom: 1em;
+	margin: 0 0 1em 0;
+	border-bottom: 15px solid $color-grey-xxxl;
+	line-height: 1.25;
+
+	@media (max-width: $screen-sm-max) {
+		padding-top: 2em;
+		border-bottom: none;
+	}
+
+	a {
+		font-weight: normal;
+		color: $color-orange;
+	}
+}
+
+.flex-container {
+	display: flex;
+
+	> a,
+	> div,
+	> span {
+		flex: auto;
+		align-items: stretch;
+	}
+}
+
+// .filter-controls-old {
+// 	display: flex;
+// 	flex-flow: row wrap;
+// 	margin: -5px;
+
+// 	> section {
+// 		display: block;
+// 		flex: auto;
+// 		flex-basis: 33%;
+// 		align-self: stretch;
+// 		padding: 5px;
+
+// 		@media (max-width: $screen-xs-max) {
+// 			flex-basis: 100%;
+// 		}
+// 		@media (min-width: $screen-sm-min) and (max-width: $screen-md-max) {
+// 			flex-basis: 50%;
+// 		}
+// 	}
+// 	a.button {
+// 		display: block;
+
+// 		&.option {
+// 			display: inline-block;
+
+// 			+.option {
+// 				margin-left: 10px;
+// 			}
+// 		}
+// 	}
+// 	.description {
+// 		display: block;
+// 	}
+// 	input {
+// 		margin-right: .25em;
+// 	}
+// 	.dosage-form {
+// 		> .ss-icon {
+// 			display: block;
+// 		}
+// 	}
+// }
+
+// Dosage forms in medication cards
+.dosage-forms {
+	float: right;
+	position: relative;
+
+  > .dosage-form {
+		text-align: center;
+		display: inline-block;
+		// width: 48px;
+		vertical-align: text-top;
+		font-size: 1.2em;
+
+		> span {
+			display: block;
+		}
+
+		.form-name {
+			font-style: normal;
+			font-size: 10px;
+			line-height: 1.2;
+		}
+
+		+ .dosage-form {
+			margin-left: 5px;
+		}
+	}
+}
+
+// .medication-cards-old {
+// 	padding-bottom: 1em;
+
+// 	> ul {
+// 		margin: -5px;
+// 		padding: 0;
+// 		list-style-type: none;
+// 		display: flex;
+// 		flex-flow: row wrap;
+// 		align-items: stretch;
+// 		// justify-content: space-between;
+
+// 		> li {
+// 			// display: block;
+// 			padding: 5px;
+// 			flex: auto;
+// 			flex-basis: 33%;
+
+// 			@media (max-width: $screen-xs-max) {
+// 				flex-basis: 100%;
+// 			}
+// 			@media (min-width: $screen-sm-min) and (max-width: $screen-md-max) {
+// 				flex-basis: 50%;
+// 			}
+
+// 			> a {
+// 				position: relative;
+// 				line-height: 1.25;
+// 				color: white;
+// 				display: block;
+// 				border-radius: 2px;
+// 				padding: 8px 8px 24px 8px;
+// 				background: $color-blue;
+// 				border: 1px solid $color-blue;
+// 				word-wrap: break-word;
+// 				@include shadow-l;
+
+// 				transition: box-shadow .15s ease,
+// 										color .15s ease,
+// 										background .15s ease;
+
+// 				&:hover {
+// 					text-decoration: none;
+// 				}
+// 			}
+
+// 			&.disabled {
+// 				> a {
+// 					border: 1px dotted $color-grey-l;
+// 					color: $color-grey-l;
+// 					background: none;
+// 					.shadow-xl;
+// 				}
+// 			}
+
+// 			.cost,
+// 			.frequency,
+// 			.preferences {
+// 				padding: 4px 0;
+// 			}
+// 			.preferences p {
+// 				margin: 0;
+// 			}
+// 		}
+// 	}
+// }
+
+
+.panel {
+	padding: 5em 0 0 0;
+}
+
+.tag-description {
+	font-size: 1.5em;
+	margin: 0;
+	padding-right: 20%;
+	color: $color-grey-l;
+	line-height: 1.2;
+
+	strong {
+		color: $color-grey-d;
+	}
+}
+
+.tag-navigation-old {
+
+	> ul {
+		padding-top: 1em;
+		padding-bottom: 1em;
+
+		> li {
+			> a {
+				color: $color-grey-l;
+				background: white !important;
+				text-align: center;
+				padding: 1.5em 15px 5px 15px;
+				border-radius: 0;
+				border-bottom: 5px solid $color-grey-xxxxl;
+			  text-decoration: none;
+			  background: #f6f6f6;
+				transition: color .1s ease,
+										border .1s ease,
+										background .1s ease;
+
+				&:hover {
+					color: $color-blue;
+					background: #efefef;
+				}
+			}
+			&.active {
+				> a {
+					color: $color-blue !important;
+					border-color: $color-blue;
+					background: $color-grey-xxxxxxxl;
+
+					&:hover {
+						background: $color-grey-xxxxxxxl;
+						border-color: $color-blue;
+					}
+				}
+			}
+		}
+
+		@media (max-width: $screen-xs-max) {
+			> li {
+				float: none;
+				display: block;
+				margin: 0;
+
+				> a {
+					display: block;
+					padding: .1em 15px;
+				}
+			}
+		}
+	}
+
+	&.large {
+		> ul > li > a {
+			font-weight: bold;
+		}
+	}
+}
+
+.measure-description {
+	padding: 15px 15px 15px 15px;
+
+	h3,
+	h4,
+	h5 {
+		margin: 0 0 5px 0;
+		line-height: 1.25;
+	}
+	h3 {
+		color: $color-blue;
+	}
+	h4 {
+		font-weight: lighter;
+		color: $color-blue;
+	}
+	h5 {
+		font-size: $font-s;
+		color: $color-ui;
+		margin: 15px -15px;
+		padding: 5px 15px;
+		background: $color-grey-xxxxxxxl;
+	}
+}

@@ -1,0 +1,289 @@
+// Processing data experiment
+
+.processing {
+	// @include container-fluid;
+	padding: 0 2em 12em 2em;  
+
+	h2 {
+		font-weight: 300;
+		font-size: 2em;
+		margin: 0 0 1em 0;
+	}
+	h3 {
+		font-weight: 300;
+
+		strong {
+			font-weight: 500;
+		}
+	}
+	p {
+		line-height: 1.3;
+	}
+
+	> section {
+		// .make-row();
+		
+		> h2 {
+			padding: 1.5em 15px .5em 15px;
+			color: $color-grey-xl;
+		}
+		> p {
+			// .make-lg-column(4);
+		}
+		> ul {
+			// .make-sm-column(12);
+			margin: 0;
+			list-style-type: none;
+
+			> li {
+				// .make-row();
+				cursor: pointer;
+				padding-top: .25em;
+				padding-bottom: 4em;
+				transition: color .3s,
+										background .3s;
+
+				> h3 {
+					// .make-sm-column(4);
+				}
+				> h3 + div {
+					// .make-sm-column(6);
+				}
+				> p + div {
+					// .make-sm-column(6);
+				}
+				> div {
+					> ul {
+						// .make-row();
+						margin: 0;
+						list-style-type: none;
+
+						> li {
+							// .make-sm-column(4);
+							padding-bottom: 1em;
+						}
+					}
+				}
+
+				h3,
+				p {
+					margin: 0;
+				}
+				p {
+					font-weight: 600;
+				}
+				a {
+					transition: color .3s;
+				}
+
+				&:hover {
+					color: white !important;
+					background: $color-blue !important;
+
+					a {
+						color: white;
+					}
+				}
+			}
+		}
+
+		&.grades {
+			> ul {
+				> li {
+					&:nth-of-type(1) {
+						background: $color-grey-xxxxxxl;
+					}
+					&:nth-of-type(2) {
+						background: $color-grey-xxxxxl;
+					}
+					&:nth-of-type(3) {
+						background: $color-grey-xxxxl;
+					}
+					&:nth-of-type(4) {
+						background: $color-grey-xxxl;
+					}
+					&:nth-of-type(5) {
+						color: $color-grey-xl;
+						background: $color-grey-xxl;
+					}
+				}
+			}
+		}
+
+		&.measures {
+			> ul {
+				> li {
+					+ li {
+						border-top: 1px solid $color-grey-xxxl;
+					}
+					> h3 {
+						// .make-sm-column(12);
+						padding-bottom: .5em;
+					}
+					> p {
+						// .make-sm-column(4);
+					}
+					small {
+            display: block;
+						font-size: 1em;
+						color: $color-grey-xxl;
+					}
+				}
+			}
+			p {
+				font-weight: 400;
+			}
+		}
+
+		&.data {
+			color: $color-grey-xd;
+
+			> h2 {
+				margin: 0;
+				line-height: 1.2;
+				color: $color-grey-xxl;
+				background: $color-grey-xd;
+
+				> p {
+					color: $color-grey-xxxl;
+					font-size: .65em;
+					line-height: 1.1;
+				}
+			}
+			> div > div {
+				padding-bottom: 8em;
+
+				> h3 {
+					width: 100%;
+					color: white;
+					display: block;
+					background: $color-blue;
+					padding: 1.5em 15px .5em 15px;
+					margin: 0;
+					font-size: 1.2em;
+					font-weight: normal;
+					line-height: 1.1;
+					
+					> strong {
+						font-weight: bolder;
+					}
+					> p {
+						font-size: .8em;
+						min-width: 400px;
+						max-width: 66%;
+						margin: .15em 0 0 0;
+						line-height: 1.25;
+					}
+				}
+			}
+			> div > div > ul {
+				width: 100%;
+				display: table;
+				border-collapse: collapse;
+				margin: 0;
+				padding: 0;
+
+				> li {
+					background: white;
+					display: table-row;
+					opacity: .6;
+					transition: opacity .3s ease,
+											box-shadow .3s ease;
+
+					&:hover {
+						opacity: 1;
+						box-shadow: 0 0 8px rgba(0,0,0,.4);
+					}
+
+					+ li {
+						border-top: 1px solid $color-grey-xxxxl;
+					}
+					> h3,
+					> h4 {
+						padding: .75em 15px;
+						display: table-cell;
+						font-size: 11pt !important;
+						line-height: 1.2;
+						
+						> small {
+							line-height: .8;
+						}
+
+						// &.text {
+						// 	max-width: 200px;
+						// }
+					}
+					> h3 {
+						background: $color-grey-xxxxxl;
+					}
+					> h3 + h3 {
+						border-left: 1px solid white;
+					}
+					> h4 {
+						padding-bottom: 5em;
+
+						.light {
+							color: $color-grey-m;
+						}
+						.intervention {
+							cursor: pointer;
+
+							.name {
+								background: $color-grey-xxxxl;
+							}
+							.title {
+								font-weight: lighter;
+								font-size: .75em;
+							}
+							.ss-icon + strong,
+							.ss-icon + span {
+								margin-left: .5em;
+							}
+						}
+						.dosage {
+							color: $color-grey-m;
+						}
+					}
+				}
+
+				&.visualization-rr {
+					background: $color-grey-xxxl;
+					margin-bottom: 5em;
+					border-bottom: 1px solid $color-grey-xl;
+
+					> li {
+						background: $color-grey-xxxxxl;
+						display: block;
+						padding: 2em !important;
+					}
+				}
+			}
+		}
+	}
+	.header {
+		position: relative;
+		box-shadow: none;
+		// .make-row();
+
+		> h1 {
+			// .make-xs-column(8);
+		}
+		> a {
+			// .make-xs-column(4);
+			text-align: right;
+
+			@media (min-width: $screen-sm-min) {
+				display: none;
+			}
+		}
+	}
+	.preference-controls {
+		margin-top: 0;
+		padding-top: 0;
+		@include shadow-h-right;
+
+		> h2 {
+			@include shadow-h-right;
+		}
+	}
+}

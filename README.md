@@ -2,27 +2,28 @@
 
 adam baker's independent studies thesis.
 
-## Basics
+## Developing
 
-This is a Node.js-based application, written in JavaScript with front-end in JSX/HTML, and LESS/CSS. It primarily uses the following frameworks and tools:
+`npm start`
 
- - Node.js (platform/environment)
- - Browserify (JavaScript bundling)
- - Gulp (build & compile system)
- - Express.js (web server)
- - React.js (front-end application framework)
- - LESS (look and feel language & system)
- - Bootstrap (UI framework)
- - d3, c3 (visualization frameworks)
+## Deploying
 
-The app is deployed to Heroku at [https://abist.herokuapp.com](https://abist.herokuapp.com).
+`npm run:build`
+`node server.js`
+
+## Technology
+
+This is a Node-based JavaScript React app. It employs these major tools:
+
+ - Node
+ - Webpack
+ - React
+ - React-router
+ - Redux
+ - Google apps (spreadsheets as a data source)
+
+The app is deployed to Heroku at [http://thesis.merges.net](http://thesis.merges.net).
 
 ## Support
 
 I’m trying to make this a widely-usable app (and open source), so [BrowserStack](http://www.browserstack.com/) has been kind enough to give me a free account to test it across all kinds of browsers and platforms. Check them out, their tools are super useful.
-
-## Helpful documentation
-
-[https://blog.engineyard.com/2015/client-side-javascript-project-gulp-and-browserify](https://blog.engineyard.com/2015/client-side-javascript-project-gulp-and-browserify)
-
-
