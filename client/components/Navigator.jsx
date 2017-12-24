@@ -1172,9 +1172,9 @@ var Navigator = React.createClass({
     if (selectedIssue == 'pain') {
       return <div>
         <div className='explanatory'>
-          <h1>How well do these medications <strong>lower pain?</strong></h1>
+          <h1>How well do these medications <strong>lessen pain?</strong></h1>
           <p>This is hard to answer, partly because these medications aren’t pain relievers themselves. They slow down RA, which can help reduce pain.</p>
-          <p>Lowering pain by 1 box is considered the minimum amount most people can feel.</p>
+          <p>Reducing pain by 1 box is considered the minimum amount most people can feel.</p>
         </div>
         {this.renderDataByMeasure(measures)}
       </div>
