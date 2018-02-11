@@ -7,12 +7,12 @@ import Sticky from 'react-sticky'
 // import { Nav } from 'react-bootstrap'
 // import { NavItem } from 'react-bootstrap'
 
-import OutcomeAdverseEvents from './OutcomeAdverseEvents'
+import OutcomeAdverseEvents from '  ./OutcomeAdverseEvents'
 import OutcomeRelativeDifferences from './OutcomeRelativeDifferences'
 import OutcomeRelativeComparison from './OutcomeRelativeComparison'
 import OutcomeTimeline from './OutcomeTimeline'
 
-import get from '../data/get'
+import * as EvidenceApi from '../data/api/Evidence'
 import medications from '../data/medications'
 import preferences from '../data/preferences'
 import mockData from '../data/mock'
@@ -85,7 +85,7 @@ class Navigator extends React.Component {
       // offline: props.query.offline ? true : false,
       dev: false,
       full: false,
-      offline: false,
+      offline: true,
 
       // Medication filtering-related
       disabledMedications: getDisabledMedications(medications),
@@ -102,7 +102,7 @@ class Navigator extends React.Component {
     }
   }
 
-  componentDidMount = () => {
+  componentDidMount () {
     let instance = this
 
     if (this.state.offline) {
@@ -186,10 +186,10 @@ class Navigator extends React.Component {
   getData = async () => {
     console.log('getData')
 
-    let urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
-    let urlMeasures = get.getSheetUrl(get.sheets.measures)
-    let urlMetrics = get.getSheetUrl(get.sheets.metrics)
-    let urlGrades = get.getSheetUrl(get.sheets.grades)
+    let urlTagDescriptions = EvidenceApi.getSheetUrl(Sheets.tagDescriptions)
+    let urlMeasures = EvidenceApi.getSheetUrl(Sheets.measures)
+    let urlMetrics = EvidenceApi.getSheetUrl(Sheets.metrics)
+    let urlGrades = EvidenceApi.getSheetUrl(Sheets.grades)
 
     let allData = {}
     // let deferred = new $.Deferred
@@ -197,32 +197,32 @@ class Navigator extends React.Component {
     // $.when(
     //   // Get GRADE
     //   $.getJSON(urlGrades + '&callback=?').done((data) {
-    //     allData['grades'] = get.processGrades(data)
+    //     allData['grades'] = EvidenceApi.processGrades(data)
     //   }),
 
     //   // Get measures & tags
     //   $.getJSON(urlMeasures + '&callback=?').done((data) {
-    //     // let newStateItems = get.processMeasures(data)
-    //     allData['measures'] = get.processMeasures(data).measures
-    //     allData['tags'] = get.processMeasures(data).tags
+    //     // let newStateItems = EvidenceApi.processMeasures(data)
+    //     allData['measures'] = EvidenceApi.processMeasures(data).measures
+    //     allData['tags'] = EvidenceApi.processMeasures(data).tags
     //   }),
 
     //   // Get metrics
     //   $.getJSON(urlMetrics + '&callback=?').done((data) {
-    //     allData['metrics'] = get.processMetrics(data)
+    //     allData['metrics'] = EvidenceApi.processMetrics(data)
     //   }),
 
     //   // Get tag descriptions
     //   $.getJSON(urlTagDescriptions + '&callback=?').done((data) {
-    //     allData['tagDescriptions'] = get.processTagDescriptions(data)
+    //     allData['tagDescriptions'] = EvidenceApi.processTagDescriptions(data)
     //   }),
 
     //   // Get data
-    //   $.when(Object.keys(get.sheets.data).forEach((source) {
-    //     let url = get.getSheetUrl(get.sheets.data[source])
+    //   $.when(Object.keys(Sheets.data).forEach((source) {
+    //     let url = EvidenceApi.getSheetUrl(Sheets.data[source])
     //     $.getJSON(url + '&callback=?').done((data) {
     //       !allData['data'] && (allData['data'] = {})
-    //       allData['data'][source] = get.processData(data)
+    //       allData['data'][source] = EvidenceApi.processData(data)
     //     })
     //   })
     //   ).done(() {
@@ -230,7 +230,7 @@ class Navigator extends React.Component {
     //   })
     let test = await fetch(urlGrades)
     let testGrades = await test.json()
-    console.log('testGrades', get.processGrades(testGrades))
+    console.log('testGrades', EvidenceApi.processGrades(testGrades))
 
     let gradesQuery = fetch(urlGrades).then(response => response.json())
     let measuresAndTagsQuery = fetch(urlGrades).then(response => response.json())
