@@ -1,126 +1,92 @@
+import cx from 'classnames'
+import React from 'react'
+import {
+  OverlayTrigger,
+  Popover,
+  Tooltip,
+} from 'react-bootstrap'
 
+import AbsoluteFrequency from './AbsoluteFrequency'
 
-var React = require('react');
+class AbsoluteRiskComparison extends React.Component {
+  state = {
+    iconArrayHoverRiskValue: null,
+    pillHoverRiskValue: null,
+  }
 
-var AbsoluteFrequency = require('./AbsoluteFrequency');
-
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Popover = require('react-bootstrap').Popover;
-var Tooltip = require('react-bootstrap').Tooltip;
-
-// Absolute risk comparison
-
-var AbsoluteRiskComparison = React.createClass({
-
-  propTypes: {
-    items: React.PropTypes.array.isRequired,
-    mesaure: React.PropTypes.string
-  },
-
-  getDefaultProps: function() {
-  	return {
-      measure: null,
-      showTitle: true,
-      showValues: false
-    };
-  },
-
-  getInitialState: function() {
-    return {
-      iconArrayHoverRiskValue: null,
-      pillHoverRiskValue: null
-    };
-  },
-
-  getPopover: function(item) {
-  	// console.log(item)
-    var measure =  item.measure_detail
-        // name += ' (';
-    var name = ''
+  getPopover = (item: Object) => {
+  	// console.log(item: Object)
+    let measure =  item.measure_detail
+        // name += ' ('
+    let name = ''
     item.which == 'comparison' ?
           name += item.comparison.join(' + ')
           :
           name += item.intervention.join(' + ')
-        // name += ')';
+        // name += ')'
 
     return (
       <Popover title={measure}>
         {name} <span className='ss-icon ss-user'></span> <strong>{item.value.value}</strong> of 100 people
       </Popover>
-    );
-  },
+    )
+  }
 
-  makePill: function(item) {
-    var cx = require('classnames');
-
-    var handlePillHover = this.handlePillHover;
-    var handlePillHoverLeave = this.handlePillHoverLeave;
-
-    var riskFrequency = item.value.value;
-
-    var classes = cx({
+  makePill = (item: Object) => {
+    let riskFrequency = item.value.value
+    let classes = cx({
       'pill': true,
       'active': riskFrequency <= this.state.iconArrayHoverRiskValue
-    });
+    })
 
     // Include measure_detail?
-    // var name =  item.measure_detail;
-    //     name += ' (';
-    var name = ''
+    // let name =  item.measure_detail
+    //     name += ' ('
+    let name = ''
     item.which == 'comparison' ?
           name += item.comparison.join(' + ')
           :
           name += item.intervention.join(' + ')
-        // name += ')';
+        // name += ')'
 
     return (
       <OverlayTrigger
         delayHide={300}
+        key={name}
+        overlay={this.getPopover(item: Object)}
         placement='right'
-        overlay={this.getPopover(item)}
-        key={name}>
+      >
           <div
             className={classes}
-            onMouseEnter={handlePillHover.bind(null, riskFrequency)}
-            onMouseLeave={handlePillHoverLeave}>
-              {name}
+            onMouseEnter={() => this.handlePillHover(riskFrequency)}
+            onMouseLeave={() => this.handlePillHoverLeave()}
+          >
+            {name}
           </div>
       </OverlayTrigger>
-    );
-  },
+    )
+  }
 
-  handlePillHover: function(value) {
-    this.setState({
-      pillHoverRiskValue: value
-    });
-  },
+  handlePillHover = (value) => {
+    this.setState({ pillHoverRiskValue: value })
+  }
 
-  handlePillHoverLeave: function(value) {
-    this.setState({
-      pillHoverRiskValue: null
-    });
-  },
+  handlePillHoverLeave = (value) => {
+    this.setState({ pillHoverRiskValue: null })
+  }
 
-  handleIconArrayHover: function(value) {
-    this.setState({
-      iconArrayHoverRiskValue: value
-    });
-  },
+  handleIconArrayHover = (value) => {
+    this.setState({ iconArrayHoverRiskValue: value })
+  }
 
-  handleIconArrayHoverLeave: function(value) {
-    this.setState({
-      iconArrayHoverRiskValue: null
-    });
-  },
+  handleIconArrayHoverLeave = (value) => {
+    this.setState({ iconArrayHoverRiskValue: null })
+  }
 
-  renderIconArray: function() {
-    var cx = require('classnames');
-    var handleIconArrayHover = this.handleIconArrayHover;
-    var handleIconArrayHoverLeave = this.handleIconArrayHoverLeave;
-
-    var iconArray = [];
-    for (var i = 1; i <= 100; i++) {
-      var classes = cx({
+  renderIconArray = () => {
+    let iconArray = []
+    for (let i = 1; i <= 100; i++) {
+      const classes = cx({
         'ss-icon ss-user': true,
         'tenth': i % 10 == 0,
         'active': i <= this.state.iconArrayHoverRiskValue || i <= this.state.pillHoverRiskValue
@@ -129,59 +95,66 @@ var AbsoluteRiskComparison = React.createClass({
         <span
           key={i}
           className={classes}
-          onMouseEnter={handleIconArrayHover.bind(null, i)}
-          onMouseLeave={handleIconArrayHoverLeave}>
-            <span className='number'>{i}</span>
-        </span>)
+          onMouseEnter={() => this.handleIconArrayHover(i)}
+          onMouseLeave={() => this.handleIconArrayHoverLeave()}
+        >
+          <span className='number'>{i}</span>
+        </span>
+      )
     }
 
-    return <div className='icon-array'>
-      {iconArray}
-    </div>
-  },
+    return (
+      <div className='icon-array'>
+        {iconArray}
+      </div>
+    )
+  }
 
-  render: function() {
-    var showValues = this.props.showValues;
+  render () {
+    let {
+      items,
+      measure,
+      showValues,
+    } = this.props
+    
+    let itemsSorted = items.sort((a, b) => {
+      return a.value.value - b.value.value
+    })
 
-    var items = this.props.items.sort(function(a, b) {
-      return a.value.value - b.value.value;
-    });
-
-    var makePill = this.makePill;
-    var pill;
-    var groups = {};
-    var previousPosition;
-    var position;
-    var threshold = 5;
+    let pill = null
+    let groups = {}
+    let previousPosition = null
+    let position = null
+    let threshold = 5
 
     // Make the pills
-    items.forEach(function(item) {
-      position = item.value.value;
+    itemsSorted.forEach(item => {
+      position = item.value.value
 
       // No previous position
       if (!previousPosition) {
-        groups[position] = [];
-        pill = makePill(item);
-        groups[position].push(pill);
-        previousPosition = position;
+        groups[position] = []
+        pill = this.makePill(item)
+        groups[position].push(pill)
+        previousPosition = position
       }
       // Very close (within threshold range) to previous position
       else if (previousPosition && ((position - previousPosition) <= threshold)) {
-        pill = makePill(item);
-        groups[previousPosition].push(pill);
+        pill = this.makePill(item)
+        groups[previousPosition].push(pill)
       }
       // Significantly different
       else {
-        groups[position] = [];
-        pill = makePill(item);
-        groups[position].push(pill);
-        previousPosition = position;
+        groups[position] = []
+        pill = this.makePill(item)
+        groups[position].push(pill)
+        previousPosition = position
       }
-    });
+    })
 
-    var pillGroups = [];
-    Object.keys(groups).forEach(function(pos, i) {
-      var style = {
+    let pillGroups = []
+    Object.keys(groups).forEach((pos, i) => {
+      let style = {
         left: pos + '%'
       }
 
@@ -191,10 +164,10 @@ var AbsoluteRiskComparison = React.createClass({
           <div className='line'></div>
           {showValues && <div className='legend'>{pos}</div>}
         </li>
-      );
-    });
+      )
+    })
 
-    var giantLabelsStyle = {
+    let giantLabelsStyle = {
     	display: 'table',
     	tableLayout: 'fixed',
     	position: 'absolute',
@@ -202,12 +175,10 @@ var AbsoluteRiskComparison = React.createClass({
     	width: '100%',
     	height: '65%'
     }
-    var bigRightStyle = {
+    let bigRightStyle = {
       textAlign: 'right',
     }
-
-    var measure = this.props.measure
-
+    
     return (
       <div>
         <div className='visualization absolute-risk-comparison'>
@@ -239,9 +210,21 @@ var AbsoluteRiskComparison = React.createClass({
           </div>
         </div>
       </div>
-    );
+    )
   }
+}
 
-});
+AbsoluteRiskComparison.defaultProps = {
+  measure: null,
+  showTitle: true,
+  showValues: false,
+}
 
-module.exports = AbsoluteRiskComparison;
+AbsoluteRiskComparison.propTypes = {
+  items: React.PropTypes.array.isRequired,
+  mesaure: React.PropTypes.string,
+  showTitle: React.PropTypes.boolean,
+  showValues: React.PropTypes.boolean,
+}
+
+export default AbsoluteRiskComparison

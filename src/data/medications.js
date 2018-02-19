@@ -1,4 +1,4 @@
-var drugs = [
+var Medications = [
   {
     "name": "Methotrexate",
     "name_generic": "methotrexate",
@@ -1169,6 +1169,6 @@ var drugs = [
   //     }
   //   }
   // }
-];
+]
 
-module.exports = drugs;
+export default Medications

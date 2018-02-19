@@ -1,12 +1,12 @@
 
 
-var React = require('react');
+import React from 'react'
 
 var PtdaMedicationSquare = require('./PtdaMedicationSquare');
 
 // PtDA onset card
 
-var PtdaOnset = React.createClass({
+var PtdaOnset extends React.Component {
   propTypes: {
     active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
@@ -100,4 +100,4 @@ var PtdaOnset = React.createClass({
   }
 });
 
-module.exports = PtdaOnset;
+export default PtdaOnset;

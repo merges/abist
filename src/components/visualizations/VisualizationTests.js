@@ -1,25 +1,23 @@
+import React from 'react'
 
-
-var React = require('react');
-
-var AbsoluteFrequency = require('./AbsoluteFrequency');
-var RelativeRiskComparison = require('./RelativeRiskComparison');
-var RiskRelativeToBaseline = require('./RiskRelativeToBaseline');
-var RelativeChangeBlocks = require('./RelativeChangeBlocks');
+import AbsoluteFrequency from './AbsoluteFrequency'
+import RelativeRiskComparison from './RelativeRiskComparison'
+import RiskRelativeToBaseline from './RiskRelativeToBaseline'
+import RelativeChangeBlocks from './RelativeChangeBlocks'
 
 // Visualization tests
 
-var VisualizationTests = React.createClass({
+class VisualizationTests extends React.Component {
 
   render: function() {
-    var cx = require('classnames');
+    var cx = require('classnames')
     var classes = cx({
       'processing': true
-    });
+    })
 
     var sectionStyle = {
       marginBottom: '45px'
-    };
+    }
 
     return (
       <div className={classes}>
@@ -54,7 +52,7 @@ var VisualizationTests = React.createClass({
 
         </div>
       </div>
-    );
+    )
   },
 
   renderAbsoluteFrequency: function() {
@@ -112,8 +110,8 @@ var VisualizationTests = React.createClass({
           <AbsoluteFrequency frequency={17} denominator={75} />
         </section>
       </div>
-    );
+    )
   }
-});
+})
 
-module.exports = VisualizationTests;
+export default VisualizationTests

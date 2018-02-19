@@ -1,21 +1,25 @@
-// import $ from 'jquery'
 import _ from 'lodash'
 import cx from 'classnames'
 import React from 'react'
 import Sticky from 'react-sticky'
+import { Nav, NavItem } from 'react-bootstrap'
 
-// import { Nav } from 'react-bootstrap'
-// import { NavItem } from 'react-bootstrap'
-
-import OutcomeAdverseEvents from '  ./OutcomeAdverseEvents'
-import OutcomeRelativeDifferences from './OutcomeRelativeDifferences'
+import * as Evidence from '../api/Evidence'
+import AbsoluteFrequency from './visualizations/AbsoluteFrequency'
+import Difference from './visualizations/Difference'
+import GradeQuality from './visualizations/GradeQuality'
+import Intervention from './visualizations/Intervention'
+import Medications from '../data/Medications'
+import MockData from '../data/MockData'
+import OutcomeAdverseEvents from './OutcomeAdverseEvents'
 import OutcomeRelativeComparison from './OutcomeRelativeComparison'
+import OutcomeRelativeDifferences from './OutcomeRelativeDifferences'
 import OutcomeTimeline from './OutcomeTimeline'
-
-import * as EvidenceApi from '../data/api/Evidence'
-import medications from '../data/medications'
-import preferences from '../data/preferences'
-import mockData from '../data/mock'
+import Population from './visualizations/Population'
+import Preferences from '../data/Preferences'
+import RelativeRiskComparison from './visualizations/RelativeRiskComparison'
+import RiskRelativeToBaseline from './visualizations/RiskRelativeToBaseline'
+import Source from './visualizations/Source'
 
 let medicationsMap = _.groupBy(medications, 'name_generic')
 medicationsMap['dmard'] = {
@@ -167,13 +171,13 @@ class Navigator extends React.Component {
   //   return this.getOffsetTop() + this.state.stickyHolderHeight
   // },
 
-  getOffsetTop = (ref) => {
-    if (this.refs[ref]) {
-      let element = this.refs[ref].getDOMNode()
-      return Math.ceil($(element).offset().top)
-    }
-    return 99999
-  }
+  // getOffsetTop = (ref) => {
+  //   if (this.refs[ref]) {
+  //     let element = this.refs[ref].getDOMNode()
+  //     return Math.ceil($(element).offset().top)
+  //   }
+  //   return 99999
+  // }
 
   scrollSmoothlyToElement = (ref) => {
     let stickyHolderHeight = this.refs['stickyHolder'].getDOMNode().offsetHeight

@@ -1,29 +1,18 @@
-
-
-var React = require('react')
-
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger
-var Tooltip = require('react-bootstrap').Tooltip
+import React from 'react'
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 // Source tag
 
-var Source = React.createClass({
-  
-  propTypes: {
-    source: React.PropTypes.string,
-    kind: React.PropTypes.string,
-    label: React.PropTypes.string,
-  },
-
-  getTooltip: function(kind) {
-    var sourceToDescriptionMap = {
+class Source extends React.Component {
+  getTooltip = (kind) => {
+    let sourceToDescriptionMap = {
       'systematic review': 'A systematic review is a high-quality source. Researchers do a consistent review of as much evidence as they can find, looking at the big picture formed by all that research.',
       'randomized trial': 'A randomized clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
       'clinical trial': 'A clinical trial is an okay-quality source. Researchers usually study a small number of treatments in small groups of people, for a relatively short time. Each group gets a different treatment, and they are compared.',
       'meta-analysis': 'A meta-analysis is a high-quality source. Researchers do a consistent review of as much evidence as they can find, using statistics to compare treatments to one another, and then looking at the big picture formed by those statistics.'
     }
     
-    var tooltip = (<Tooltip>Click to see more information about the source.</Tooltip>)
+    let tooltip = (<Tooltip>Click to see more information about the source.</Tooltip>)
     if (sourceToDescriptionMap[kind]) {
       tooltip = (
         <Tooltip>
@@ -32,13 +21,13 @@ var Source = React.createClass({
       )
     }
     return tooltip
-  },
+  }
 
-  render: function() {
-    var source = this.props.source
-    var kind = this.props.kind
-    var label = this.props.label
-    var getTooltip = this.getTooltip
+  render () {
+    let source = this.props.source
+    let kind = this.props.kind
+    let label = this.props.label
+    let getTooltip = this.getTooltip
     
     if (source) {
       return (
@@ -63,8 +52,14 @@ var Source = React.createClass({
         </span>
       )
     }
-    return (<noscript />)
+    return null
   }
-})
+}
 
-module.exports = Source
+Source.propTypes = {
+  kind: React.PropTypes.string,
+  label: React.PropTypes.string,
+  source: React.PropTypes.string,
+}
+
+export default Source

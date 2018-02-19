@@ -1,45 +1,39 @@
+import React from 'react'
+import { Nav, NavItem } from 'react-bootstrap'
 
-
-var React = require('react');
-
-// Data
-var get = require('../data/get');
-var medications = require('../data/medications');
-var mockData = require('../data/mock');
-
-var Nav = require('react-bootstrap').Nav;
-var NavItem = require('react-bootstrap').NavItem;
-
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency');
-var Difference = require('./visualizations/Difference');
-var GradeQuality = require('./visualizations/GradeQuality');
-var Intervention = require('./visualizations/Intervention');
-var Population = require('./visualizations/Population');
-var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison');
-var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline');
-var Source = require('./visualizations/Source');
+import Evidence from '../api/Evidence'
+import medications from '../data/medications'
+import mockData from '../data/mock'
+import AbsoluteFrequency from './visualizations/AbsoluteFrequency'
+import Difference from './visualizations/Difference'
+import GradeQuality from './visualizations/GradeQuality'
+import Intervention from './visualizations/Intervention'
+import Population from './visualizations/Population'
+import RelativeRiskComparison from './visualizations/RelativeRiskComparison'
+import RiskRelativeToBaseline from './visualizations/RiskRelativeToBaseline'
+import Source from './visualizations/Source'
 
 // Processing / data processing tests
 
 String.prototype.capitalizeFirstletter = function() {
-  return this.charAt(0).toUpperCase() + this.slice(1);
-};
+  return this.charAt(0).toUpperCase() + this.slice(1)
+}
 
 var getNumber = function(value) {
 	if (!isNaN(parseFloat(value))) {
-		return parseFloat(value);
+		return parseFloat(value)
 	}
-	return null;
-};
+	return null
+}
 
-var Processing = React.createClass({
+var Processing extends React.Component {
 
 	componentDidUpdate: function() {
-		// React.findDOMNode(this.refs['data']).innerHTML = JSON.stringify(this.tempData, undefined, 0);
-		// React.findDOMNode(this.refs['grades']).innerHTML = JSON.stringify(this.tempGrades, undefined, 0);
-		// React.findDOMNode(this.refs['metrics']).innerHTML = JSON.stringify(this.tempMetrics, undefined, 0);
-		// React.findDOMNode(this.refs['measures']).innerHTML = JSON.stringify(this.tempMeasures, undefined, 0);
-		// React.findDOMNode(this.refs['tags']).innerHTML = JSON.stringify(this.tempTags, undefined, 0);
+		// React.findDOMNode(this.refs['data']).innerHTML = JSON.stringify(this.tempData, undefined, 0)
+		// React.findDOMNode(this.refs['grades']).innerHTML = JSON.stringify(this.tempGrades, undefined, 0)
+		// React.findDOMNode(this.refs['metrics']).innerHTML = JSON.stringify(this.tempMetrics, undefined, 0)
+		// React.findDOMNode(this.refs['measures']).innerHTML = JSON.stringify(this.tempMeasures, undefined, 0)
+		// React.findDOMNode(this.refs['tags']).innerHTML = JSON.stringify(this.tempTags, undefined, 0)
 	},
 
   getDefaultProps: function () {
@@ -107,38 +101,38 @@ var Processing = React.createClass({
         "liver_disease": "Liver disease",
         "alcohol": "Alcohol"
       }
-    };
+    }
   },
 
   getInitialState: function () {
-  	var medicationMap = {};
+  	var medicationMap = {}
     this.props.medications.forEach(function(medication, index) {
-    	medicationMap[medication.name] = index;
-    });
+    	medicationMap[medication.name] = index
+    })
 
     var getDosageForms = function(medications) {
-      var dosageForms = {};
+      var dosageForms = {}
       medications.map(function(medication) {
         if (medication.forms) {
           medication.forms.forEach(function(form) {
-            dosageForms[form.name] = false;
-          });
+            dosageForms[form.name] = false
+          })
         }
-      });
-      return dosageForms;
-    };
+      })
+      return dosageForms
+    }
 
     var getClasses = function(medications) {
-      var classes = {};
+      var classes = {}
       medications.map(function(medication) {
         if (medication.class) {
           medication.class.forEach(function(name) {
-            classes[name] = false;
-          });
+            classes[name] = false
+          })
         }
-      });
-      return classes;
-    };
+      })
+      return classes
+    }
 
     return {
       data: {},
@@ -164,52 +158,52 @@ var Processing = React.createClass({
   },
 
   componentDidMount: function() {
-    var instance = this;
+    var instance = this
 
     // Get tag descriptions
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
     $.getJSON(urlTagDescriptions).done(function (data) {
-      instance.setState({grades: get.processTagDescriptions(data)});
-    });
+      instance.setState({grades: get.processTagDescriptions(data)})
+    })
 
     // Get measures & tags
-    var urlMeasures = get.getSheetUrl(get.sheets.measures);
+    var urlMeasures = get.getSheetUrl(get.sheets.measures)
     $.getJSON(urlMeasures).done(function (data) {
-      var newStateItems = get.processMeasures(data);
+      var newStateItems = get.processMeasures(data)
       instance.setState({
         measures: newStateItems.measures,
         tags: newStateItems.tags
-      });
-    });
+      })
+    })
 
     // Get metrics
-    var urlMetrics = get.getSheetUrl(get.sheets.metrics);
+    var urlMetrics = get.getSheetUrl(get.sheets.metrics)
     $.getJSON(urlMetrics).done(function (data) {
-      instance.setState({metrics: get.processMetrics(data)});
-    });
+      instance.setState({metrics: get.processMetrics(data)})
+    })
 
     // Get GRADE levels
-    // var processGrades = this.processGrades;
-    var urlGrades = get.getSheetUrl(get.sheets.grades);
+    // var processGrades = this.processGrades
+    var urlGrades = get.getSheetUrl(get.sheets.grades)
     $.getJSON(urlGrades).done(function (data) {
-      instance.setState({grades: get.processGrades(data)});
-    });
+      instance.setState({grades: get.processGrades(data)})
+    })
 
     // Get tag descriptions
-    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions);
+    var urlTagDescriptions = get.getSheetUrl(get.sheets.tagDescriptions)
     $.getJSON(urlTagDescriptions).done(function (data) {
-      instance.setState({tagDescriptions: get.processTagDescriptions(data)});
-    });
+      instance.setState({tagDescriptions: get.processTagDescriptions(data)})
+    })
 
     // Get data
     Object.keys(get.sheets.data).forEach(function (source) {
-      var url = get.getSheetUrl(get.sheets.data[source]);
+      var url = get.getSheetUrl(get.sheets.data[source])
       $.getJSON(url).done(function (data) {
-        var existingData = instance.state.data;
-        existingData[source] = get.processData(data);
-        instance.setState({data: existingData});
-      });
-    });
+        var existingData = instance.state.data
+        existingData[source] = get.processData(data)
+        instance.setState({data: existingData})
+      })
+    })
   },
 
   renderDataBySource: function(data) {
@@ -231,84 +225,84 @@ var Processing = React.createClass({
                             <small>{key}</small>
                             {entry[key]}
                           </li>
-                        );
+                        )
                       })}
                     </ul>
                   </div>
                 </li>
-              );
+              )
             })}
           </ul>
         </section>
-      );
-    });
+      )
+    })
   },
 
   renderFollowUpTime: function(duration, measure) {
-  	var low = duration.low;
-  	var high = duration.high;
-  	var interval = duration.interval;
+  	var low = duration.low
+  	var high = duration.high
+  	var interval = duration.interval
 
-  	(low && !high) && (high = low);
-  	(!low && high) && (low = high);
+  	(low && !high) && (high = low)
+  	(!low && high) && (low = high)
 
-  	var durationString = low == high ? low : low + ' to ' + high;
-  	var intervalString = low > 1 ? interval + 's' : interval;
+  	var durationString = low == high ? low : low + ' to ' + high
+  	var intervalString = low > 1 ? interval + 's' : interval
 
   	return (
   		<div>
   			<strong>{durationString} {intervalString}</strong><br />
 				<span className='light'>Researchers looked at {measure ? measure : 'this'} {durationString} {intervalString} after people started treatment.</span>
 			</div>
-  	);
+  	)
   },
 
   renderValue: function(results, metric, comparisonResults) {
-  	var grades = this.state.grades;
-    var measures = this.state.measures;
-    var metrics = this.state.metrics;
-    var tags = this.state.tags;
-    var selectedTag = this.state.selectedTag;
+  	var grades = this.state.grades
+    var measures = this.state.measures
+    var metrics = this.state.metrics
+    var tags = this.state.tags
+    var selectedTag = this.state.selectedTag
 
-    var renderAbsoluteRisk = this.renderAbsoluteRisk;
-    var renderDifference = this.renderDifference;
-    var renderPercentage = this.renderPercentage;
-    var renderNumber = this.renderNumber;
+    var renderAbsoluteRisk = this.renderAbsoluteRisk
+    var renderDifference = this.renderDifference
+    var renderPercentage = this.renderPercentage
+    var renderNumber = this.renderNumber
 
     var renderAppropriateVisualization = function(results, metric, measure) {
     	if (metrics[metric]) {
 	  		if (metrics[metric].presentation == 'frequency') {
-	  			return renderAbsoluteRisk(results, metric, measure, comparisonResults);
+	  			return renderAbsoluteRisk(results, metric, measure, comparisonResults)
 	  		}
 	  		if (metrics[metric].presentation == 'percentage') {
-	    		return renderPercentage(results, metric, measure);
+	    		return renderPercentage(results, metric, measure)
 	    	}
 	    	if (metrics[metric].presentation == 'difference') {
-	    		return renderDifference(results, metric, measure);
+	    		return renderDifference(results, metric, measure)
 	    	}
 	  		else {
-	  			return renderNumber(results, metric, measure);
+	  			return renderNumber(results, metric, measure)
 	  		}
 	  	}
-    };
+    }
 
     if (metric) {
     	if (results[metric]) {
-    		return renderAppropriateVisualization(results, metric, results[metric].measure);
+    		return renderAppropriateVisualization(results, metric, results[metric].measure)
 	  	}
     }
     else {
 	    return Object.keys(results).map(function (metric) {
 	    	if (metrics[metric]) {
-	    		return renderAppropriateVisualization(results, metric, results[metric].measure);
+	    		return renderAppropriateVisualization(results, metric, results[metric].measure)
 		  	}
-	  	});
+	  	})
 	  }
   },
 
   renderNumber: function(results, metric, measure) {
-  	var metrics = this.state.metrics;
-  	var data = results[metric];
+  	var metrics = this.state.metrics
+  	var data = results[metric]
 
   	return (
 			<div>
@@ -319,12 +313,12 @@ var Processing = React.createClass({
 	      	<span>({data.value.value_ci_low} to {data.value.value_ci_high})</span>
 	      }
 	    </div>
-		);
+		)
   },
 
   renderPercentage: function(results, metric, measure) {
-  	var metrics = this.state.metrics;
-  	var data = results[metric];
+  	var metrics = this.state.metrics
+  	var data = results[metric]
 
   	return (
   		<div>
@@ -335,16 +329,16 @@ var Processing = React.createClass({
 	      	<span>({Math.round(data.value.value_ci_low * 100) + '%'} to {Math.round(data.value.value_ci_high * 100) + '%'})</span>
 	      }
 	    </div>
-  	);
+  	)
   },
 
   renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
-  	var measures = this.state.measures;
+  	var measures = this.state.measures
 
-  	var measure = results[metric].measure;
-  	var data = results[metric].value;
+  	var measure = results[metric].measure
+  	var data = results[metric].value
 
-  	var baseline = comparisonResults ? comparisonResults[metric].value.value : null;
+  	var baseline = comparisonResults ? comparisonResults[metric].value.value : null
 
 		return (
   		<div>
@@ -356,15 +350,15 @@ var Processing = React.createClass({
 	      	<span>({data.value_ci_low} to {data.value_ci_high})</span>
 	      }
       </div>
-  	);
+  	)
   },
 
   renderDifference: function(results, metric, measure) {
-  	var measures = this.state.measures;
-  	var metrics = this.state.metrics;
+  	var measures = this.state.measures
+  	var metrics = this.state.metrics
 
-  	var measure = results[metric].measure;
-  	var data = results[metric].value;
+  	var measure = results[metric].measure
+  	var data = results[metric].value
 
     return (
     	<div>
@@ -376,11 +370,11 @@ var Processing = React.createClass({
           <span>({data.value_ci_low} to {data.value_ci_high})</span>
         }
       </div>
-    );
+    )
   },
 
   getDataByTag: function(tags, data) {
-  	var dataByTag = JSON.parse(JSON.stringify(tags));
+  	var dataByTag = JSON.parse(JSON.stringify(tags))
 
     // Each tag (pain, function, etc.)
     Object.keys(tags).map(function (tag) {
@@ -392,16 +386,16 @@ var Processing = React.createClass({
           // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
           if (tags[tag][entry.measure]) {
             // Create a place for data about each measure
-            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {});
-            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = []);
+            dataByTag[tag][entry.measure] === true && (dataByTag[tag][entry.measure] = {})
+            !dataByTag[tag][entry.measure]['data'] && (dataByTag[tag][entry.measure]['data'] = [])
 
-            dataByTag[tag][entry.measure]['data'].push(entry);
+            dataByTag[tag][entry.measure]['data'].push(entry)
           }
-        });
-      });
-    });
+        })
+      })
+    })
 
-    return dataByTag;
+    return dataByTag
   },
 
   getEntriesForMeasure: function(entries) {
@@ -649,10 +643,10 @@ var Processing = React.createClass({
     // If there are no entries for this measure, stop.
     //
   	if (!entries || entries.length == 0) {
-  		return;
+  		return
   	}
 
-    var reprojected = {};
+    var reprojected = {}
 
    	entries.forEach(function (entry, i) {
 
@@ -663,7 +657,7 @@ var Processing = React.createClass({
       				+ entry.intervention
       				+ entry.population
       				+ entry.duration_low + entry.duration_high + entry.duration_interval
-      				+ entry.source;
+      				+ entry.source
 
 
      	// Check to see if we already have an object for this key a.k.a. 'finding group.' This will be true when:
@@ -676,20 +670,20 @@ var Processing = React.createClass({
       if (!reprojected[key]) {
       	// Set up an empty object to hold the data
 	     	//
-      	reprojected[key] = {};
+      	reprojected[key] = {}
 
 	      // Populate Basic details of the 'finding group'
 	      //
-	      // reprojected[key]['n']                   				= entry.n_total;
-	      reprojected[key]['measure']             					= entry.measure;					// Repeated for later convenience of use
-	      reprojected[key]['quality']             					= entry.grade;
-	    	reprojected[key]['source']												= entry.source;
-	      reprojected[key]['kind']                					= entry.kind;
+	      // reprojected[key]['n']                   				= entry.n_total
+	      reprojected[key]['measure']             					= entry.measure					// Repeated for later convenience of use
+	      reprojected[key]['quality']             					= entry.grade
+	    	reprojected[key]['source']												= entry.source
+	      reprojected[key]['kind']                					= entry.kind
 
 	      // Duration / follow-up
 	      //
-	      reprojected[key]['duration']											= entry.duration;
-	      // reprojected[key]['follow_up']          		 		= renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval);
+	      reprojected[key]['duration']											= entry.duration
+	      // reprojected[key]['follow_up']          		 		= renderFollowUpTime(entry.duration_low, entry.duration_high, entry.duration_interval)
       }
 
       // Describe what kind of 'finding group' this is—a high level distinction
@@ -700,45 +694,45 @@ var Processing = React.createClass({
       // and can mark this 'finding group' as such.
       //
       if (entry.which == 'comparison' || entry.which == 'population') {
-	      reprojected[key]['which'] = entry.which;
+	      reprojected[key]['which'] = entry.which
       }
 
       // Details of the comparison, intervention, or population
       //
       if (!reprojected[key][entry.which]) {
-      	reprojected[key][entry.which]          						= {};
+      	reprojected[key][entry.which]          						= {}
       }
-      reprojected[key][entry.which]['which']								= entry.which;
-      reprojected[key][entry.which]['parts']								= entry[entry.which]; 			// Array 		// = entry.comparison.join(' + ');
-      reprojected[key][entry.which]['dosage']								= entry.dosage;
-      reprojected[key][entry.which]['notes']								= entry.notes;
+      reprojected[key][entry.which]['which']								= entry.which
+      reprojected[key][entry.which]['parts']								= entry[entry.which] 			// Array 		// = entry.comparison.join(' + ')
+      reprojected[key][entry.which]['dosage']								= entry.dosage
+      reprojected[key][entry.which]['notes']								= entry.notes
 
 
       // Metrics and values
       //
       if (!reprojected[key][entry.which][entry.metric]) {
-    		reprojected[key][entry.which][entry.metric]	= {};
+    		reprojected[key][entry.which][entry.metric]	= {}
     	}
-			reprojected[key][entry.which][entry.metric]['value']	= entry.value;					// Object with all confidence bounds, etc. if reported.
-      reprojected[key][entry.which][entry.metric]['which']	= entry.which;					// Repeated here because they're useful and can be passed to UI elements
-      reprojected[key][entry.which][entry.metric]['measure']= entry.measure;				// Repeated here because they're useful and can be passed to UI elements
-    });
+			reprojected[key][entry.which][entry.metric]['value']	= entry.value					// Object with all confidence bounds, etc. if reported.
+      reprojected[key][entry.which][entry.metric]['which']	= entry.which					// Repeated here because they're useful and can be passed to UI elements
+      reprojected[key][entry.which][entry.metric]['measure']= entry.measure				// Repeated here because they're useful and can be passed to UI elements
+    })
 
-		return reprojected;
+		return reprojected
   },
 
   renderEntry: function(entry, uniqueKey) {
-  	var grades = this.state.grades;
-    var measures = this.state.measures;
-    var metrics = this.state.metrics;
-    var tags = this.state.tags;
-    var selectedTag = this.state.selectedTag;
+  	var grades = this.state.grades
+    var measures = this.state.measures
+    var metrics = this.state.metrics
+    var tags = this.state.tags
+    var selectedTag = this.state.selectedTag
 
-		var cx = require('classnames');
+		var cx = require('classnames')
     var entryClasses = cx({
       'entry': true,
       'population': entry.which == 'population'
-    });
+    })
 
     if (entry.which == 'comparison') {
     	return (
@@ -768,7 +762,7 @@ var Processing = React.createClass({
 	        <h4>{this.renderValue(entry.intervention, 'rel_difference')}</h4>
 	        <h4><GradeQuality grade={entry.quality} gradeMap={grades} /></h4>
 	      </li>
-    	);
+    	)
     }
     if (entry.which == 'population') {
     	return (
@@ -791,7 +785,7 @@ var Processing = React.createClass({
 	        <h4>{this.renderValue(entry.population, 'rel_difference')}</h4>
 	        <h4><GradeQuality grade={entry.quality} gradeMap={grades} /></h4>
 	      </li>
-	    );
+	    )
     }
     return (
       <li key={uniqueKey} className={entryClasses}>
@@ -813,33 +807,33 @@ var Processing = React.createClass({
         <h4>{this.renderValue(entry.intervention, 'rel_difference')}</h4>
         <h4><GradeQuality grade={entry.quality} gradeMap={grades} /></h4>
       </li>
-    );
+    )
   },
 
   renderDataByMeasure: function(measures) {
-  	var measureMap = this.state.measures;
-  	var getEntriesForMeasure = this.getEntriesForMeasure;
-  	var renderEntry = this.renderEntry;
+  	var measureMap = this.state.measures
+  	var getEntriesForMeasure = this.getEntriesForMeasure
+  	var renderEntry = this.renderEntry
 
   	var renderRelativeRiskComparison = function(entries, measure) {
-	  	var sources = {};
+	  	var sources = {}
 
   		Object.keys(entries).map(function (key) {
-  			var entry = entries[key];
+  			var entry = entries[key]
 
 	      if (entry.which == 'comparison') {
 	      	if (!sources[entry.comparison.parts]) {
-	      		sources[entry.comparison.parts] = {};
-	      		sources[entry.comparison.parts]['items'] = [];
+	      		sources[entry.comparison.parts] = {}
+	      		sources[entry.comparison.parts]['items'] = []
 	      	}
-	      	sources[entry.comparison.parts]['baseline'] = entry.comparison;
+	      	sources[entry.comparison.parts]['baseline'] = entry.comparison
 
 	      	// Check to see that we have relative risk
 	      	if (entry.intervention.rr) {
-	      		sources[entry.comparison.parts].items.push(entry.intervention);
+	      		sources[entry.comparison.parts].items.push(entry.intervention)
 	      	}
 	      }
-	    });
+	    })
 
 	    return Object.keys(sources).map(function (comparison) {
 	    	if (sources[comparison].items.length > 1) {
@@ -855,30 +849,30 @@ var Processing = React.createClass({
 			    				measure={measure} />
 			    		</li>
 			    	</ul>
-	    		);
+	    		)
 	    	}
 	    })
-		};
+		}
 
 		var renderRiskRelativeToBaselineComparison = function(entries, measure) {
-	  	var sources = {};
+	  	var sources = {}
 
   		Object.keys(entries).map(function (key) {
-  			var entry = entries[key];
+  			var entry = entries[key]
 
 	      if (entry.which == 'comparison') {
 	      	if (!sources[entry.comparison.parts]) {
-	      		sources[entry.comparison.parts] = {};
-	      		sources[entry.comparison.parts]['items'] = [];
+	      		sources[entry.comparison.parts] = {}
+	      		sources[entry.comparison.parts]['items'] = []
 	      	}
-	      	sources[entry.comparison.parts]['comparison'] = entry.comparison;
+	      	sources[entry.comparison.parts]['comparison'] = entry.comparison
 
 	      	// Check to see that we have relative risk
 	      	if (entry.intervention.rr) {
-	      		sources[entry.comparison.parts].items.push(entry.intervention);
+	      		sources[entry.comparison.parts].items.push(entry.intervention)
 	      	}
 	      }
-	    });
+	    })
 
 	    return Object.keys(sources).map(function (comparison) {
 	    	if (sources[comparison].items.length > 1) {
@@ -895,16 +889,16 @@ var Processing = React.createClass({
 			    				measures={measureMap} />
 			    		</li>
 			    	</ul>
-	    		);
+	    		)
 	    	}
 	    })
-		};
+		}
 
   	return Object.keys(measures).map(function (measure) {
-  		var measureData = measures[measure].data;
+  		var measureData = measures[measure].data
 
   		if (measureData) {
-  			var entries = getEntriesForMeasure(measureData);
+  			var entries = getEntriesForMeasure(measureData)
 
   			return (
 	  			<div key={measure}>
@@ -936,18 +930,18 @@ var Processing = React.createClass({
 		          </li>
 
 		          {Object.keys(entries).map(function (entry, i) {
-		          	return renderEntry(entries[entry], entry + i);
+		          	return renderEntry(entries[entry], entry + i)
 		          })}
 		        </ul>
 		    	</div>
-	  		);
+	  		)
 			}
-		});
+		})
   },
 
   renderDataByTag: function(data, tags, tag) {
-		var dataByTag = this.getDataByTag(tags, data);
-		var tagDescriptions = this.state.tagDescriptions;
+		var dataByTag = this.getDataByTag(tags, data)
+		var tagDescriptions = this.state.tagDescriptions
 
 		return (
       <section key={tag} className='data'>
@@ -959,7 +953,7 @@ var Processing = React.createClass({
         	{this.renderDataByMeasure(dataByTag[tag])}
         </div>
       </section>
-    );
+    )
   },
 
   renderGrades: function(grades) {
@@ -968,7 +962,7 @@ var Processing = React.createClass({
         <h2>GRADE working group levels of evidence</h2>
         <ul>
           {Object.keys(grades).map(function (key, i) {
-            var item = grades[key];
+            var item = grades[key]
             return (
               <li key={i}>
                 <h3>{item.grade} <strong>{item.name_friendly}</strong></h3>
@@ -976,11 +970,11 @@ var Processing = React.createClass({
                   <p>{item.description} {item.source && <a href={item.source}>Source</a>}</p>
                 </div>
               </li>
-            );
+            )
           })}
         </ul>
       </section>
-  	);
+  	)
   },
 
   renderMeasures: function(measures) {
@@ -989,7 +983,7 @@ var Processing = React.createClass({
         <h2>Measures</h2>
         <ul>
           {Object.keys(measures).map(function (key, i) {
-            var item = measures[key];
+            var item = measures[key]
             return (
               <li key={i}>
                 <h3>
@@ -1047,55 +1041,55 @@ var Processing = React.createClass({
                   </ul>
                 </div>
               </li>
-            );
+            )
           })}
         </ul>
       </section>
-  	);
+  	)
   },
 
 	handleTagSelect: function(key) {
 		this.setState({
 			selectedTag: key
-		});
+		})
 	},
 
   renderTagBar: function(tags) {
-  	var selectedTag = this.state.selectedTag;
-  	var tagDescriptions = this.state.tagDescriptions;
+  	var selectedTag = this.state.selectedTag
+  	var tagDescriptions = this.state.tagDescriptions
 
   	if (tagDescriptions) {
 	  	return (
 		  	<Nav className='tag-navigation' bsStyle="pills" activeKey={selectedTag && selectedTag} onSelect={this.handleTagSelect}>
 		  		{Object.keys(tags).map(function (tag, i) {
-		  			return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>);
+		  			return (<NavItem key={i} eventKey={tag}>{tagDescriptions[tag] ? tagDescriptions[tag].name_short : tag}</NavItem>)
 		  		})}
 		    </Nav>
-		  );
+		  )
 	  }
   },
 
   togglePreferenceControls: function () {
-    var isOpen = this.state.menuOpen;
-    isOpen = !isOpen;
+    var isOpen = this.state.menuOpen
+    isOpen = !isOpen
     this.setState({
       menuOpen: isOpen
     })
   },
 
   renderPreferenceControls: function (preferences) {
-    var filterPreference = this.filterPreference;
-    var togglePreferenceControls = this.togglePreferenceControls;
+    var filterPreference = this.filterPreference
+    var togglePreferenceControls = this.togglePreferenceControls
 
-    var preferences = this.props.preferences;
-    var preferencesSelected = this.state.preferencesSelected;
+    var preferences = this.props.preferences
+    var preferencesSelected = this.state.preferencesSelected
 
-    var cx = require('classnames');
+    var cx = require('classnames')
     var preferenceControlClasses = cx({
       'preference-controls': true,
       'open': this.state.menuOpen == true,
       'closed': this.state.menuOpen == false
-    });
+    })
 
     return (
       <div className={preferenceControlClasses}>
@@ -1105,27 +1099,27 @@ var Processing = React.createClass({
         </h2>
 
         {Object.keys(preferences).map(function(key) {
-          var preference = preferences[key];
+          var preference = preferences[key]
 
           // Boolean preferences become a push button
           if (preference.type == 'boolean') {
             var preferenceClasses = cx({
               'preference': true,
               'active': preferencesSelected[key]
-            });
+            })
             return (
               <section className={preferenceClasses} key={key} onClick={filterPreference.bind(null, key, false)}>
                 {preference.name}
                 <span className='description'>{preference.description}</span>
               </section>
-            );
+            )
           }
           // List preferences become a list
           else if (preference.type == 'list') {
             // Get the possible options for this preference from this.state.preferencesSelected.
             // There is a function in getInitialState() that iterates through the provided medications,
             // collecting the "options" they provide for vis à vis this preference.
-            var options = Object.keys(preferencesSelected[key]);
+            var options = Object.keys(preferencesSelected[key])
 
             return (
               <section key={key}>
@@ -1136,7 +1130,7 @@ var Processing = React.createClass({
                   var optionClasses = cx({
                     'option': true,
                     'active': !preferencesSelected[key][option]
-                  });
+                  })
                   return (
                     <div
                       className={optionClasses}
@@ -1144,10 +1138,10 @@ var Processing = React.createClass({
                       onClick={filterPreference.bind(null, key, option)}>
                         <strong>› </strong>{option}
                     </div>
-                  );
+                  )
                 })}
               </section>
-            );
+            )
           }
           else {
             return (
@@ -1155,21 +1149,21 @@ var Processing = React.createClass({
                 {preference.name}
                 <span className='description'>{preference.description}</span>
               </section>
-            );
+            )
           }
         })}
       </div>
-    );
+    )
   },
 
   filterPreference: function (preferenceKey, optionKey, event) {
     if (this.state.menuOpen) {
-      event.stopPropagation();
+      event.stopPropagation()
     }
 
-    var disabledMedications = {};
-    var medications = this.props.medications;
-    var preferencesSelected = this.state.preferencesSelected;
+    var disabledMedications = {}
+    var medications = this.props.medications
+    var preferencesSelected = this.state.preferencesSelected
 
     // Toggle the preference. If there's an 'option' provided, the preference is a list type,
     // for example dosage form. So we use the 'preference' to access the dosage forms object,
@@ -1183,17 +1177,17 @@ var Processing = React.createClass({
 
     // TOGGLE PREFERENCES
     if (optionKey) {
-      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey];
+      preferencesSelected[preferenceKey][optionKey] = !preferencesSelected[preferenceKey][optionKey]
     }
     else {
-      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey];
+      preferencesSelected[preferenceKey] = !preferencesSelected[preferenceKey]
     }
 
     // Check each medication against the selected preferences and options,
     // disabling any that doesn't satisfy.
     //
     medications.forEach(function(medication, i) {
-      var medicationMatchingPreferences = {};
+      var medicationMatchingPreferences = {}
 
       // 1. Examine all the preferences for a match.
       //
@@ -1206,15 +1200,15 @@ var Processing = React.createClass({
             // Look for a matching key in the medication object
             // Boolean? e.g. 'generic_available' -- inverse match
             if (medication[preference] == false) {
-              medicationMatchingPreferences[preference] = true;
-              // disabledMedications[medication.name] = true;
+              medicationMatchingPreferences[preference] = true
+              // disabledMedications[medication.name] = true
             }
             // Not a key in medication object, so check ptda.risks
             else {
               for (var risk in medication.ptda.risks) {
                 if (medication.ptda.risks[risk].name.toLowerCase() == preference.toLowerCase() && medication.ptda.risks[risk].risk == 2) {
-                  medicationMatchingPreferences[preference] = true;
-                  // disabledMedications[medication.name] = true;
+                  medicationMatchingPreferences[preference] = true
+                  // disabledMedications[medication.name] = true
                 }
               }
             }
@@ -1225,15 +1219,15 @@ var Processing = React.createClass({
 
             // The user chose one or more options (to avoid), so the medication must match
             // each option in order to get disabled.
-            var selectedOptions = {};
-            var medicationMatchingOptions = {};
+            var selectedOptions = {}
+            var medicationMatchingOptions = {}
 
             // Check each option for a match
             for (var option in preferencesSelected[preference]) {
 
               // Option is selected
               if (preferencesSelected[preference][option]) {
-                selectedOptions[option] = true;
+                selectedOptions[option] = true
 
                 // Look for a matching key in the medication object
                 if (medication[preference]) {
@@ -1243,26 +1237,26 @@ var Processing = React.createClass({
 
                     // Array
                     if (Array.isArray(medication[preference])) {
-                      var list = medication[preference];
+                      var list = medication[preference]
 
                       // Check for our option in the list
                       for (var item in list) {
                         // Straight up list item?
                         if (typeof list[item] === 'string') {
                           if (list[item].toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].toLowerCase()] = true
                           }
                         }
                         // Object? Look for a 'name' that we'll check against
                         else if (list[item].hasOwnProperty('name')) {
                           if (list[item].name.toLowerCase() == option.toLowerCase()) {
-                            medicationMatchingOptions[option] = true;
+                            medicationMatchingOptions[option] = true
                           }
                           else {
-                            medicationMatchingOptions[list[item].name.toLowerCase()] = true;
+                            medicationMatchingOptions[list[item].name.toLowerCase()] = true
                           }
                         }
                       }
@@ -1271,15 +1265,15 @@ var Processing = React.createClass({
                     else {
                       for (var item in Object.keys(medication[preference])) {
                         if (list[item].toLowerCase() == option.toLowerCase()) {
-                          medicationMatchingOptions[option] = true;
+                          medicationMatchingOptions[option] = true
                         }
                         else {
-                          medicationMatchingOptions[list[item].toLowerCase()] = true;
+                          medicationMatchingOptions[list[item].toLowerCase()] = true
                         }
                       }
                       // // Check for our option in the object
                       // if (medication[preference][optionKey]) {
-                      //   medicationMatchingOptions[option] = true;
+                      //   medicationMatchingOptions[option] = true
                       // }
                     }
                   }
@@ -1293,14 +1287,14 @@ var Processing = React.createClass({
               for (var selected in selectedOptions) {
                 for (var option in medicationMatchingOptions) {
                   if (medicationMatchingOptions[option] && selectedOptions[option]) {
-                    medicationMatchingPreferences[preference] = true;
+                    medicationMatchingPreferences[preference] = true
                   }
                 }
               }
               // Wait! Does the drug have other options that are NOT disabled? Don't disable it!
               for (var option in medicationMatchingOptions) {
                 if (medicationMatchingOptions[option] && !selectedOptions[option]) {
-                  medicationMatchingPreferences[preference] = false;
+                  medicationMatchingPreferences[preference] = false
                 }
               }
             }
@@ -1311,62 +1305,62 @@ var Processing = React.createClass({
       // 2. Check if the drug should be disabled.
       //
       if (Object.keys(preferencesSelected).length > 0) {
-        var disableMedication = false;
+        var disableMedication = false
 
         // Disabled options present in the drug? Disable it.
         for (var selected in preferencesSelected) {
           for (var preference in medicationMatchingPreferences) {
             if (medicationMatchingPreferences[preference] && preferencesSelected[preference]) {
-              disableMedication = true;
+              disableMedication = true
             }
           }
         }
         // Wait! Does the drug have other preferences that are NOT disabled? Don't disable it!
         for (var preference in medicationMatchingPreferences) {
           if (medicationMatchingPreferences[preference] && !preferencesSelected[preference]) {
-            disableMedication = false;
+            disableMedication = false
           }
         }
 
         // Add the medication to disabledMedications.
         if (disableMedication) {
-          disabledMedications[medication.name] = true;
+          disabledMedications[medication.name] = true
         }
         else {
-          disabledMedications[medication.name] = false;
+          disabledMedications[medication.name] = false
         }
       }
-    });
+    })
 
     this.setState({
       disabledMedications: disabledMedications,
       preferencesSelected: preferencesSelected
-    });
+    })
   },
 
   render: function() {
-  	var cx = require('classnames');
+  	var cx = require('classnames')
 
     // Data-related
-    var grades = this.state.grades;
-    var measures = this.state.measures;
-    var metrics = this.state.metrics;
-    var tags = this.state.tags;
-    var data = this.state.data;
-    var selectedTag = this.state.selectedTag;
+    var grades = this.state.grades
+    var measures = this.state.measures
+    var metrics = this.state.metrics
+    var tags = this.state.tags
+    var data = this.state.data
+    var selectedTag = this.state.selectedTag
 
     // Medication filtering-related
-    var medications = this.props.medications;
-    var preferences = this.props.preferences;
-    var risks = this.props.risks;
-    var risksFriendly = this.props.risksFriendly;
-    var disabledMedications = this.state.disabledMedications;
-    var selectedMedication = this.state.selectedMedication;
-    var medicationMap = this.state.medicationMap;
+    var medications = this.props.medications
+    var preferences = this.props.preferences
+    var risks = this.props.risks
+    var risksFriendly = this.props.risksFriendly
+    var disabledMedications = this.state.disabledMedications
+    var selectedMedication = this.state.selectedMedication
+    var medicationMap = this.state.medicationMap
 
     var classes = cx({
       'processing': true
-    });
+    })
 
     if (grades && measures && tags && data != {}) {
       return (
@@ -1409,10 +1403,10 @@ var Processing = React.createClass({
 	          </section>
 	         */}
         </div>
-      );
+      )
     }
-    return (<noscript />);
+    return (<noscript />)
   }
-});
+})
 
-module.exports = Processing;
+export default Processing

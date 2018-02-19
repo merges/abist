@@ -1,12 +1,12 @@
 
 
-var React = require('react');
+import React from 'react'
 
 var PtdaMedicationSquare = require('./PtdaMedicationSquare');
 
 // PtDA frequency card
 
-var PtdaFrequency = React.createClass({
+var PtdaFrequency extends React.Component {
   propTypes: {
     active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
@@ -101,4 +101,4 @@ var PtdaFrequency = React.createClass({
   }
 });
 
-module.exports = PtdaFrequency;
+export default PtdaFrequency;

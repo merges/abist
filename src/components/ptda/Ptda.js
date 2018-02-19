@@ -1,6 +1,6 @@
 
 
-var React = require('react');
+import React from 'react'
 
 // Data
 var get = require('../../data/get');
@@ -28,7 +28,7 @@ var Modal = require('react-bootstrap').Modal;
 
 // PtDA option
 
-var PtdaOption = React.createClass({
+var PtdaOption extends React.Component {
 	propTypes: {
   	medication: React.PropTypes.object.isRequired,
     risks: React.PropTypes.object.isRequired,
@@ -171,7 +171,7 @@ var PtdaOption = React.createClass({
 
 // PtDA options list
 
-var PtdaOptions = React.createClass({
+var PtdaOptions extends React.Component {
 	propTypes: {
   	active: React.PropTypes.bool,
     medications: React.PropTypes.array.isRequired,
@@ -222,7 +222,7 @@ var PtdaOptions = React.createClass({
 
 // PtDA
 
-var Ptda = React.createClass({
+var Ptda extends React.Component {
 
   getDefaultProps: function () {
     return {
@@ -741,4 +741,4 @@ var Ptda = React.createClass({
 
 });
 
-module.exports = Ptda;
+export default Ptda;

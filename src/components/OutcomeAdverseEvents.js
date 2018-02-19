@@ -1,54 +1,37 @@
+import _ from 'lodash'
+import React from 'react'
+import { DropdownButton, MenuItem } from 'react-bootstrap'
 
+import * as Evidence from '../api/Evidence'
+import AbsoluteFrequency from './visualizations/AbsoluteFrequency'
+import AbsoluteRiskComparison from './visualizations/AbsoluteRiskComparison'
+import Difference from './visualizations/Difference'
+import GradeQuality from './visualizations/GradeQuality'
+import Intervention from './visualizations/Intervention'
+import Population from './visualizations/Population'
+import RelativeRiskComparison from './visualizations/RelativeRiskComparison'
+import RiskRelativeToBaseline from './visualizations/RiskRelativeToBaseline'
+import Source from './visualizations/Source'
 
-var React = require('react')
-var _ = require('lodash')
-
-// Data
-var get = require('../data/get')
-
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency')
-var AbsoluteRiskComparison = require('./visualizations/AbsoluteRiskComparison')
-var Difference = require('./visualizations/Difference')
-var GradeQuality = require('./visualizations/GradeQuality')
-var Intervention = require('./visualizations/Intervention')
-var Population = require('./visualizations/Population')
-var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison')
-var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline')
-var Source = require('./visualizations/Source')
-
-var DropdownButton = require('react-bootstrap').DropdownButton
-var MenuItem = require('react-bootstrap').MenuItem
-
-String.prototype.capitalizeFirstletter = function() {
+String.prototype.capitalizeFirstletter = () => {
   return this.charAt(0).toUpperCase() + this.slice(1)
 }
+
 // Outcome adverse events
 
-var OutcomeAdverseEvents = React.createClass({
-  propTypes: {
-    data: React.PropTypes.object.isRequired,
-    dataFiltered: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired,
-    measure: React.PropTypes.string
-  },
+class OutcomeAdverseEvents extends React.Component {
+  state = { selectedDetail: null }
+  
+  renderDataByMeasure = (selectedMeasure) => {
+    let measures = this.props.data.measures
+    let dataByTag = this.props.dataByTag
+    let renderEntry = this.renderEntry
 
-  getInitialState: function() {
-    return {
-      selectedDetail: null
-    }
-  },
-
-  renderDataByMeasure: function(selectedMeasure) {
-    var measures = this.props.data.measures
-    var dataByTag = this.props.dataByTag
-    var renderEntry = this.renderEntry
-
-    var renderAbsoluteRiskComparison = function(entries, measure) {
-      var sources = {}
+    let renderAbsoluteRiskComparison = function(entries, measure) {
+      let sources = {}
 
       Object.keys(entries).map(function (key) {
-        var entry = entries[key]
+        let entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
@@ -78,11 +61,11 @@ var OutcomeAdverseEvents = React.createClass({
       })
     }
 
-    var renderRiskRelativeToBaselineComparison = function(entries, measure) {
-      var sources = {}
+    let renderRiskRelativeToBaselineComparison = function(entries, measure) {
+      let sources = {}
 
       Object.keys(entries).map(function (key) {
-        var entry = entries[key]
+        let entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
@@ -113,14 +96,14 @@ var OutcomeAdverseEvents = React.createClass({
       })
     }
 
-    var measure = selectedMeasure
-    var tag = this.props.selectedTag
-    var measureData = dataByTag[tag][selectedMeasure].data
+    let measure = selectedMeasure
+    let tag = this.props.selectedTag
+    let measureData = dataByTag[tag][selectedMeasure].data
 
     if (measureData) {
-      var medications = this.props.medications
-      var disabledMedications = this.props.disabledMedications
-      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications)
+      let medications = this.props.medications
+      let disabledMedications = this.props.disabledMedications
+      let entries = get.filterEntriesByMedication(get.getEntriesForMeasure(measureData), medications, disabledMedications)
 
       return (
         <div key={measure}>
@@ -128,15 +111,15 @@ var OutcomeAdverseEvents = React.createClass({
         </div>
       )
     }
-  },
+  }
 
   // Get the mean of values
-  getMeanValue: function(entries) {
-    var values = []
+  getMeanValue = (entries) => {
+    let values = []
 
     entries.map(function(entry) {
       // console.log(entry.intervention[0] + entry.dosage.dosage + ' ' + entry.comparison[0])
-      var value
+      let value
       if (entry.metric == 'ar_1000') {
         value = entry.value.value / 10
       }
@@ -149,13 +132,13 @@ var OutcomeAdverseEvents = React.createClass({
     })
 
     if (values.length > 0) {
-      var sum = _.sum(values)
-      var mean = sum/values.length
-      var valuesSubtractedSquared = _.map(values, function(val) {
+      let sum = _.sum(values)
+      let mean = sum/values.length
+      let valuesSubtractedSquared = _.map(values, function(val) {
         return Math.pow((val - mean), 2)
       })
-      var deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
-      var roundedMean = Math.round(mean)
+      let deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
+      let roundedMean = Math.round(mean)
 
       // console.log('mean of values:', mean)
       // console.log('deviation of values:', deviation)
@@ -166,19 +149,19 @@ var OutcomeAdverseEvents = React.createClass({
 
     // No mean? Assume the mean is 0.
     return 0
-  },
+  }
 
   // Group entries by outcome detail (adverse event name)
-  groupEntriesByDetail: function (entries) {
+  groupEntriesByDetail = (entries) => {
     return _.chain(entries)
             .groupBy(function (entry) {
               return entry.measure_detail
             })
             .value()
-  },
+  }
 
   // Group entries into placebo and intervention groups
-  groupEntriesByWhich: function (entries) {
+  groupEntriesByWhich = (entries) => {
     return _.chain(entries)
             .groupBy(function (entry) {
               // Group entries by primary intervention
@@ -194,15 +177,15 @@ var OutcomeAdverseEvents = React.createClass({
             // If we have populations or other types of entries, discard them
             .omit('other')
             .value()
-  },
+  }
 
   // Group entries by intervention and dosage
-  groupEntriesByInterventionAndDosage: function (entries) {
+  groupEntriesByInterventionAndDosage = (entries) => {
     return _.chain(entries)
             .groupBy(function (entry) {
               // Group entries by intervention + dosage
               if (entry.which === 'intervention') {
-                var intervention = _.cloneDeep(entry.intervention)
+                let intervention = _.cloneDeep(entry.intervention)
                 if (entry.dosage.dosage) {
                   intervention[0] += ' (' + entry.dosage.dosage + ')'
                 }
@@ -213,24 +196,24 @@ var OutcomeAdverseEvents = React.createClass({
             // If we have populations or other types of entries, discard them
             .omit('other')
             .value()
-  },
+  }
 
   // Get outcome details as list
-  getOutcomeDetails: function (entries) {
+  getOutcomeDetails = (entries) => {
     return _.chain(entries)
             .map('measure_detail')
             .unique()
             .value()
             .sort()
-  },
+  }
 
-  handleAdverseEventChange: function (name) {
+  handleAdverseEventChange = (name) => {
     this.setState({
       selectedDetail: name
     })
-  },
+  }
 
-  renderOutcomeDetailMenu: function (names) {
+  renderOutcomeDetailMenu = (names) => {
     return <DropdownButton
             bsStyle={null}
             title={'Choose a side effect'}
@@ -241,16 +224,16 @@ var OutcomeAdverseEvents = React.createClass({
                 return <MenuItem eventKey={name}>{name}</MenuItem>
               })}
     </DropdownButton>
-  },
+  }
 
-  filterEntriesToThoseWithAcceptableMetrics: function (entries) {
-    var acceptableMetrics = [
+  filterEntriesToThoseWithAcceptableMetrics = (entries) => {
+    let acceptableMetrics = [
       'ar_100',
       'ar_1000'
     ]
     return entries.filter(function (entry) {
       // Check to see whether this entry has an appropriate metric
-      var metricToUse = _.find(acceptableMetrics, function (val, key) {
+      let metricToUse = _.find(acceptableMetrics, function (val, key) {
         if (entry.metric === val) {
           return entry.metric
         }
@@ -259,59 +242,57 @@ var OutcomeAdverseEvents = React.createClass({
         return entry
       }
     })
-  },
+  }
 
-  render: function() {
-    var cx = require('classnames')
-
-    var data                = this.props.data
-    var entries             = this.props.dataFiltered
-    var medications         = this.props.medications
-    var medicationsMap      = this.props.medicationsMap
-    var measure             = this.props.measure
-    var disabledMedications = this.props.disabledMedications
+  render () {
+    let data                = this.props.data
+    let entries             = this.props.dataFiltered
+    let medications         = this.props.medications
+    let medicationsMap      = this.props.medicationsMap
+    let measure             = this.props.measure
+    let disabledMedications = this.props.disabledMedications
 
     // Function shortcuts
-    var getMeanValue = this.getMeanValue
-    var groupEntriesByWhich = this.groupEntriesByWhich
-    var groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
+    let getMeanValue = this.getMeanValue
+    let groupEntriesByWhich = this.groupEntriesByWhich
+    let groupEntriesByInterventionAndDosage = this.groupEntriesByInterventionAndDosage
 
     // Filter entries to only those with metrics that are used for the visualizations here
-    var filteredEntries = this.filterEntriesToThoseWithAcceptableMetrics(entries)
+    let filteredEntries = this.filterEntriesToThoseWithAcceptableMetrics(entries)
     // console.log('# of side effect entries', entries.length)
     // console.log('# of side effect entries ar_100 or ar_1000', filteredEntries.length)
 
     // Data by comparison + intervention
-    var groupedData = _.groupBy(filteredEntries, function (entry) {
+    let groupedData = _.groupBy(filteredEntries, function (entry) {
       return entry.comparison + entry.intervention
     })
 
-    var outcomeDetails = this.getOutcomeDetails(filteredEntries)
-    var entriesByDetail = this.groupEntriesByDetail(filteredEntries)
-    var selectedDetail = this.state.selectedDetail
+    let outcomeDetails = this.getOutcomeDetails(filteredEntries)
+    let entriesByDetail = this.groupEntriesByDetail(filteredEntries)
+    let selectedDetail = this.state.selectedDetail
 
     // Container for results of processing
-    var resultHtml = []
+    let resultHtml = []
     
     // If an outcome detail (e.g. 'headache') is selected, we can get results
     if (selectedDetail) {
-      var html =[]
+      let html =[]
 
       // Get data for this detail
-      var entriesForSelectedDetail = entriesByDetail[selectedDetail]
-      var entriesByWhichForSelectedDetail = groupEntriesByWhich(entriesForSelectedDetail)
+      let entriesForSelectedDetail = entriesByDetail[selectedDetail]
+      let entriesByWhichForSelectedDetail = groupEntriesByWhich(entriesForSelectedDetail)
 
       // console.log(entriesByWhichForSelectedDetail)
       
-      var cellStyle = {
+      let cellStyle = {
         minWidth: '210px'
       }
       
       // Populate data into natural medication presentation order, starting with placebo
-      var dataByIntervention = {
+      let dataByIntervention = {
         placebo: []
       }
-      var placeboHtml = []
+      let placeboHtml = []
       // No placebo data
       if (!entriesByWhichForSelectedDetail['placebo']) {
         placeboHtml.push(
@@ -342,7 +323,7 @@ var OutcomeAdverseEvents = React.createClass({
       }
       // Placebo data
       else {
-        var placeboMean = getMeanValue(entriesByWhichForSelectedDetail['placebo'])
+        let placeboMean = getMeanValue(entriesByWhichForSelectedDetail['placebo'])
         placeboHtml.push(
           <div key={'placebo' + selectedDetail} className='pad-b-4'>
             <span>
@@ -373,7 +354,7 @@ var OutcomeAdverseEvents = React.createClass({
 
       // Make the same for all other interventions
       _.each(medications, function(medication) {
-        var medHtml = []
+        let medHtml = []
 
         // If this med is disabled, don't show anything or bother proceeding
         if (disabledMedications[medication.name]) {
@@ -381,8 +362,8 @@ var OutcomeAdverseEvents = React.createClass({
         }
         
         // Group entries for this medication, by intervention + dose
-        var entries = entriesByWhichForSelectedDetail[medication.name_generic]
-        var grouped = groupEntriesByInterventionAndDosage(entries)
+        let entries = entriesByWhichForSelectedDetail[medication.name_generic]
+        let grouped = groupEntriesByInterventionAndDosage(entries)
 
         // No data, so push a 'no data' visualization for this medication
         if (_.isEmpty(grouped)) {
@@ -416,12 +397,12 @@ var OutcomeAdverseEvents = React.createClass({
         // Otherwise, we have data and want to get the mean values for all dosages, and display those as separate visualizations
         else {
           _.each(grouped, function (val, key) {
-            var entries = val
-            var mean = getMeanValue(entries)
+            let entries = val
+            let mean = getMeanValue(entries)
             // There is a mean value for this side effect
             if (mean) {
               // Use the first entry as the source of information about the intervention
-              var entry = entries[0]
+              let entry = entries[0]
               medHtml.push(
                 <div key={key + selectedDetail} className='pad-b-4'>
                   <span>
@@ -473,10 +454,10 @@ var OutcomeAdverseEvents = React.createClass({
       )
     }
 
-    var classes = cx({
+    let classes = cx({
       'adverse-events results pad-l-5 pad-r-5': true,
     })
-    var style = {
+    let style = {
       minHeight: '300px'
     }
 
@@ -485,15 +466,15 @@ var OutcomeAdverseEvents = React.createClass({
       {resultHtml}
     </section>
   }
-})
+}
 
 /*
       {_.map(groupedData, function (group) {
-        var firstEntry = group[0]
-        var comparison = firstEntry.comparison.join(' + ')
-        var intervention = firstEntry.intervention.join(' + ')
+        let firstEntry = group[0]
+        let comparison = firstEntry.comparison.join(' + ')
+        let intervention = firstEntry.intervention.join(' + ')
         
-        var groupedByDetail = _.chain(group)
+        let groupedByDetail = _.chain(group)
                               .groupBy(function (entry) {
                                 return entry.measure_detail
                               })
@@ -520,7 +501,7 @@ var OutcomeAdverseEvents = React.createClass({
                 return
               }
 
-              var name = clump[0].measure_detail
+              let name = clump[0].measure_detail
 
               // ABSOLUTE FREQUENCY (ICON ARRAY) VISUALIZATION
               return <div key={name + i} className='pad-b-5'>
@@ -556,4 +537,12 @@ var OutcomeAdverseEvents = React.createClass({
       })}
 */
 
-module.exports = OutcomeAdverseEvents
+OutcomeAdverseEvents.propTypes = {
+  data: React.PropTypes.object.isRequired,
+  dataFiltered: React.PropTypes.array.isRequired,
+  disabledMedications: React.PropTypes.object,
+  measure: React.PropTypes.string,
+  medications: React.PropTypes.array.isRequired,
+}
+
+export default OutcomeAdverseEvents

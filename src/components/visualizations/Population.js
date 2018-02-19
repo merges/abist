@@ -1,36 +1,27 @@
-
-
-var React = require('react');
-
-var OverlayTrigger = require('react-bootstrap').OverlayTrigger;
-var Tooltip = require('react-bootstrap').Tooltip;
+import cx from 'classnames'
+import React from 'react'
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 // Intervention display with tooltip
 
-var Population = React.createClass({
-  
-  propTypes: {
-    population: React.PropTypes.string.isRequired,
-    dosage: React.PropTypes.string
-  },
-
-  getTooltip: function(population, dosage) {
+class Population extends React.Component {
+  getTooltip = (population, dosage) => {
     return (
       <Tooltip>
         <strong>{population}</strong><br />
         {dosage}
       </Tooltip>
-    );
-  },
+    )
+  }
 
-  render: function() {
-    var cx = require('classnames');
+  render () {
+    var cx = require('classnames')
     var visualizationClasses = cx({
       'population': true
-    });
+    })
 
-    var population = this.props.population;
-    var dosage = this.props.dosage;
+    var population = this.props.population
+    var dosage = this.props.dosage
 
     return (
       <div className={visualizationClasses}>
@@ -42,8 +33,13 @@ var Population = React.createClass({
           </span>
         </OverlayTrigger>
       </div>
-    );
+    )
   }
-});
+}
 
-module.exports = Population;
+Population.defaultProps = {
+  population: React.PropTypes.string.isRequired,
+  dosage: React.PropTypes.string,
+}
+
+export default Population

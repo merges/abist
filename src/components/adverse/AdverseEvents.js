@@ -1,12 +1,12 @@
 
 
-var React = require('react');
+import React from 'react'
 
 var medications = require('../../data/medications');
 
 // Adverse events
 
-var AdverseEvents = React.createClass({
+var AdverseEvents extends React.Component {
 
   getDefaultProps: function () {
     return {
@@ -295,4 +295,4 @@ var AdverseEvents = React.createClass({
 
 });
 
-module.exports = AdverseEvents;
+export default AdverseEvents;

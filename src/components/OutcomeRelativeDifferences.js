@@ -1,20 +1,18 @@
+import _ from 'lodash'
+import cx from 'classnames'
+import React from 'react'
 
-
-var React = require('react')
-var cx = require('classnames')
-var _ = require('lodash')
-var get = require('../data/get')
-
-var Difference = require('./visualizations/Difference')
-var GradeQuality = require('./visualizations/GradeQuality')
-var Intervention = require('./visualizations/Intervention')
-var Population = require('./visualizations/Population')
-var RelativeChangeBlocks = require('./visualizations/RelativeChangeBlocks')
-var Source = require('./visualizations/Source')
+import * as Evidence from '../api/Evidence'
+import Difference from './visualizations/Difference'
+import GradeQuality from './visualizations/GradeQuality'
+import Intervention from './visualizations/Intervention'
+import Population from './visualizations/Population'
+import RelativeChangeBlocks from './visualizations/RelativeChangeBlocks'
+import Source from './visualizations/Source'
 
 // Relative change e.g. change in pain
 
-var OutcomeRelativeDifferences = React.createClass({
+var OutcomeRelativeDifferences extends React.Component {
   propTypes: {
     data: React.PropTypes.object.isRequired,
     dataFiltered: React.PropTypes.array.isRequired,
@@ -360,6 +358,6 @@ var OutcomeRelativeDifferences = React.createClass({
       </tbody>
     </table>
   }
-})
+}
 
-module.exports = OutcomeRelativeDifferences
+export default OutcomeRelativeDifferences

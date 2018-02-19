@@ -1,10 +1,10 @@
 
 
-var React = require('react');
+import React from 'react'
 
 // Ptda medication square
 
-var PtdaMedicationSquare = React.createClass({
+var PtdaMedicationSquare extends React.Component {
   propTypes: {
     content: React.PropTypes.object.isRequired,
     disabled: React.PropTypes.bool,
@@ -46,4 +46,4 @@ var PtdaMedicationSquare = React.createClass({
   }
 });
 
-module.exports = PtdaMedicationSquare;
+export default PtdaMedicationSquare;

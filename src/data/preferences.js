@@ -1,6 +1,6 @@
-var _ = require('lodash');
+import _ from 'lodash'
 
-var preferences = {
+const Preferences = {
   'forms': {
     'key': 'forms',
     'name': 'Dosage form',
@@ -8,15 +8,15 @@ var preferences = {
     'type': 'list',
     'icon': null,
     'description': 'preferred way of taking your medicine',
-    isMatch: function(drugForms, selectedForms) {
+    isMatch: (drugForms, selectedForms) => {
       if (drugForms) {
-        _.each(drugForms, function(form) {
+        _.each(drugForms, (form) => {
           if (selectedForms[form.name] == true) {
-            return false;
+            return false
           }
         })
       }
-      return true;
+      return true
     },
   },
   'alcohol': {
@@ -26,19 +26,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-cocktail',
     'description': 'If you drink alcohol',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   // 'cost': {
@@ -60,12 +60,12 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-moneybag',
     'description': 'A cheaper, generic version is available',
-    isMatch: function(genericAvailable) {
+    isMatch: (genericAvailable) => {
       if (genericAvailable === true) {
-        return true;
+        return true
       }
       if (genericAvailable === false) {
-        return false;
+        return false
       }
     }
   },
@@ -76,19 +76,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-dna',
     'description': 'If you’re undergoing cancer treatment with surgery, chemotherapy, or radiation therapy',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   'heart_failure': {
@@ -98,19 +98,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-anatomicalheart',
     'description': 'if you have level III or IV heart failure',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   'kidney_disease': {
@@ -120,19 +120,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-steak',
     'description': 'if you have kidney disease',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   'liver_disease': {
@@ -142,19 +142,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-steak',
     'description': 'if you have liver disease',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   'pregnancy': {
@@ -164,19 +164,19 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-bbqapron',
     'description': 'if you’re pregnant or considering it',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   },
   'tb': {
@@ -186,21 +186,21 @@ var preferences = {
     'type': 'boolean',
     'icon': 'ss-snowflake',
     'description': 'if you have or might be exposed to tuberculosis',
-    isMatch: function(object) {
+    isMatch: (object) => {
       if (object) {
         if (object.risk == 2) {
-          return 'unsafe';
+          return 'unsafe'
         }
         if (object.risk == 1) {
-          return 'possibly unsafe';
+          return 'possibly unsafe'
         }
         if (object.risk == 0) {
-          return 'safe';
+          return 'safe'
         }
       }
-      return 'unknown';
+      return 'unknown'
     }
   }
-};
+}
 
-module.exports = preferences;
+export default Preferences

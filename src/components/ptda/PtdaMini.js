@@ -1,10 +1,10 @@
 
 
-var React = require('react');
+import React from 'react'
 
 // PtDA medication mini-card
 
-var PtdaMini = React.createClass({
+var PtdaMini extends React.Component {
   propTypes: {
     medication: React.PropTypes.object.isRequired,
     risks: React.PropTypes.object.isRequired,
@@ -103,4 +103,4 @@ var PtdaMini = React.createClass({
   }
 });
 
-module.exports = PtdaMini;
+export default PtdaMini;

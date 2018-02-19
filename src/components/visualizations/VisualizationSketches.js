@@ -1,18 +1,14 @@
-
-
-var React = require('react');
+import cx from 'classnames'
+import React from 'react'
 
 // Visualization sketches
 
-var VisualizationSketches = React.createClass({
-
-  render: function() {
-    var medications = this.props.medications;
-
-    var cx = require('classnames');
+class VisualizationSketches extends React.Component {
+  render () {
+    var medications = this.props.medications
     var classes = cx({
       'processing': true
-    });
+    })
 
     return (
       <div className={classes}>
@@ -43,10 +39,9 @@ var VisualizationSketches = React.createClass({
           <p>This visualization shows absolute risk (frequency) estimate of effect (treatment benefit) data from two systematic reviews, on <a href='http://www.ncbi.nlm.nih.gov/pubmed/24916606' target='_new'>methotrexate for RA</a> and <a href='http://www.ncbi.nlm.nih.gov/pubmed/19821440' target='_new'>biologic DMARDs for RA.</a></p>
           <img src='./images/visualizations/sketch_comparativeRiskFrequencyDMARDsACR50.png' className='img-responsive' />
         </section>
-
       </div>
-    );
+    )
   }
-});
+}
 
-module.exports = VisualizationSketches;
+export default VisualizationSketches

@@ -1,57 +1,40 @@
+import _ from 'lodash'
+import cx from 'classnames'
+import React from 'react'
 
-
-var React = require('react')
-var cx = require('classnames')
-var _ = require('lodash')
-var get = require('../data/get')
-
-var AbsoluteFrequency = require('./visualizations/AbsoluteFrequency')
-var Difference = require('./visualizations/Difference')
-var GradeQuality = require('./visualizations/GradeQuality')
-var Intervention = require('./visualizations/Intervention')
-var Population = require('./visualizations/Population')
-var RelativeRiskComparison = require('./visualizations/RelativeRiskComparison')
-var RiskRelativeToBaseline = require('./visualizations/RiskRelativeToBaseline')
-var Source = require('./visualizations/Source')
+import * as Evidence from '../api/Evidence'
+import AbsoluteFrequency from './visualizations/AbsoluteFrequency'
+import Difference from './visualizations/Difference'
+import GradeQuality from './visualizations/GradeQuality'
+import Intervention from './visualizations/Intervention'
+import Population from './visualizations/Population'
+import RelativeRiskComparison from './visualizations/RelativeRiskComparison'
+import RiskRelativeToBaseline from './visualizations/RiskRelativeToBaseline'
+import Source from './visualizations/Source'
 
 // Outcome timeline i.e. outcomes at certain timepoints
 
-var OutcomeTimeline = React.createClass({
-	propTypes: {
-    data: React.PropTypes.object.isRequired,
-    dataFiltered: React.PropTypes.array.isRequired,
-		disabledMedications: React.PropTypes.object,
-    measure: React.PropTypes.string.isRequired,
-    medications: React.PropTypes.array.isRequired,
-    medicationsMap: React.PropTypes.object,
-	},
+class OutcomeTimeline extends React.Component {
+  state = { keyMedication: null }
 
-  getInitialState: function() {
-    return {
-      keyMedication: null
-    }
-  },
+  componentWillReceiveProps () {
+    this.setState({ keyMedication: null })
+  }
 
-  componentWillReceiveProps: function() {
-    this.setState({
-      keyMedication: null
-    })
-  },
-
-  renderDataBySource: function(data) {
-    Object.keys(data).map(function (source) {
+  renderDataBySource = (data) => {
+    Object.keys(data).map(source => {
       return (
         <section className='data'>
           <h2>{source} data</h2>
           <ul>
-            {data[source].map(function (entry, i) {
+            {data[source].map((entry, i) => {
               return (
                 <li key={i}>
                   <h3>{i}</h3>
                   <p>{entry.which}</p>
                   <div>
                     <ul>
-                      {Object.keys(entry).map(function (key, i) {
+                      {Object.keys(entry).map((key, i) => {
                         return (
                           <li key={i}>
                             <small>{key}</small>
@@ -68,18 +51,18 @@ var OutcomeTimeline = React.createClass({
         </section>
       )
     })
-  },
+  }
 
-  renderFollowUpTime: function(duration, measure) {
-    var low = duration.low
-    var high = duration.high
-    var interval = duration.interval
+  renderFollowUpTime = (duration, measure) => {
+    let low = duration.low
+    let high = duration.high
+    let interval = duration.interval
 
     (low && !high) && (high = low)
     (!low && high) && (low = high)
 
-    var durationString = low == high ? low : low + ' to ' + high
-    var intervalString = low > 1 ? interval + 's' : interval
+    let durationString = low == high ? low : low + ' to ' + high
+    let intervalString = low > 1 ? interval + 's' : interval
 
     return (
       <div>
@@ -87,26 +70,26 @@ var OutcomeTimeline = React.createClass({
         <span className='light'>Researchers looked at {measure ? measure : 'this'} {durationString} {intervalString} after people started treatment.</span>
       </div>
     )
-  },
+  }
 
-  renderValue: function(results, metric, comparisonResults) {
+  renderValue = (results, metric, comparisonResults) => {
     // results = the data/finding, passed as part of an entry as population / intervention / comparison
     // metric (optional) = the preferred metric to render. often helpful if a specific metric is required. otherwise there's logic to render all of them.
     // comparisonResults = a pair dataset used for relative comparisons, i.e. the "comparison" to an intervention
     // preferredKind = what kind of value to show — a difference/comparison…
 
-    var grades = this.props.data.grades
-    var measures = this.props.data.measures
-    var metrics = this.props.data.metrics
-    var tags = this.props.data.tags
-    var selectedTag = this.props.data.selectedTag
+    let grades = this.props.data.grades
+    let measures = this.props.data.measures
+    let metrics = this.props.data.metrics
+    let tags = this.props.data.tags
+    let selectedTag = this.props.data.selectedTag
 
-    var renderAbsoluteRisk = this.renderAbsoluteRisk
-    var renderDifference = this.renderDifference
-    var renderPercentage = this.renderPercentage
-    var renderNumber = this.renderNumber
+    let renderAbsoluteRisk = this.renderAbsoluteRisk
+    let renderDifference = this.renderDifference
+    let renderPercentage = this.renderPercentage
+    let renderNumber = this.renderNumber
 
-    var renderAppropriateVisualization = function(results, metric, measure) {
+    const renderAppropriateVisualization = (results, metric, measure) => {
       if (metrics[metric]) {
         if (metrics[metric].presentation == 'frequency') {
           return renderAbsoluteRisk(results, metric, measure, comparisonResults)
@@ -137,7 +120,7 @@ var OutcomeTimeline = React.createClass({
         return renderAppropriateVisualization(results, 'ar_1000', results['ar_1000'].measure)
       }
     	// Otherwise terate through all the keys (ar_1000, ar_100, etc.) to see whether we can render a value for each
-      return Object.keys(results).map(function (metric) {
+      return Object.keys(results).map((metric) => {
         // If we know how to render this kind of metric
         if (metrics[metric]) {
           // For now, only render absolute-kind of metrics
@@ -152,11 +135,11 @@ var OutcomeTimeline = React.createClass({
         }
       })
     }
-  },
+  }
 
-  renderNumber: function(results, metric, measure) {
-    var metrics = this.props.data.metrics
-    var data = results[metric]
+  renderNumber = (results, metric, measure) => {
+    let metrics = this.props.data.metrics
+    let data = results[metric]
 
     return (
       <div>
@@ -167,11 +150,11 @@ var OutcomeTimeline = React.createClass({
         }
       </div>
     )
-  },
+  }
 
-  renderPercentage: function(results, metric, measure) {
-    var metrics = this.props.data.metrics
-    var data = results[metric]
+  renderPercentage = (results, metric, measure) => {
+    let metrics = this.props.data.metrics
+    let data = results[metric]
 
     return (
       <div>
@@ -183,13 +166,13 @@ var OutcomeTimeline = React.createClass({
         }
       </div>
     )
-  },
+  }
 
-  renderAbsoluteRisk: function(results, metric, measure, comparisonResults) {
-    var measures = this.props.data.measures
-    var measure = results[metric].measure
-    var data = results[metric].value
-    var baseline = comparisonResults ? comparisonResults[metric].value.value : null
+  renderAbsoluteRisk = (results, metric, comparisonResults) => {
+    let measures = this.props.data.measures
+    let measure = results[metric].measure
+    let data = results[metric].value
+    let baseline = comparisonResults ? comparisonResults[metric].value.value : null
 
     return (
       <div>
@@ -204,14 +187,14 @@ var OutcomeTimeline = React.createClass({
         </div>
       </div>
     )
-  },
+  }
 
-  renderDifference: function(results, metric, measure) {
-    var measures = this.props.data.measures
-    var metrics = this.props.data.metrics
+  renderDifference = (results, metric) => {
+    let measures = this.props.data.measures
+    let metrics = this.props.data.metrics
 
-    var measure = results[metric].measure
-    var data = results[metric].value
+    let measure = results[metric].measure
+    let data = results[metric].value
 
     return (
       <div>
@@ -224,17 +207,17 @@ var OutcomeTimeline = React.createClass({
         }
       </div>
     )
-  },
+  }
 
-  getDataByTag: function(tags, data) {
-    var dataByTag = JSON.parse(JSON.stringify(tags))
+  getDataByTag = (tags, data) => {
+    let dataByTag = JSON.parse(JSON.stringify(tags))
 
     // Each tag (pain, function, etc.)
-    Object.keys(tags).map(function (tag) {
+    Object.keys(tags).map((tag) => {
       // Each source (sheet of data)
-      Object.keys(data).map(function (source) {
+      Object.keys(data).map((source) => {
         // Each entry in the source data (line of sheet)
-        data[source].map(function (entry) {
+        data[source].map((entry) => {
           // Entry records an outcome in a measure that is associated with one of the tags?
           // e.g. tags['pain']['patient_pain'] or ['improvement']['acr_50']
           if (tags[tag][entry.measure]) {
@@ -249,9 +232,9 @@ var OutcomeTimeline = React.createClass({
     })
 
     return dataByTag
-  },
+  }
 
-  getDurationInWeeks: function (durationObject) {
+  getDurationInWeeks = (durationObject) => {
     if (durationObject.high) {
       if (durationObject.interval == 'year') {
         return durationObject.high * 52
@@ -275,9 +258,9 @@ var OutcomeTimeline = React.createClass({
       }
     }
     return (null)
-	},
+	}
 
-  getDurationNatural: function (durationInWeeks) {
+  getDurationNatural = (durationInWeeks) => {
     if (durationInWeeks === 'null' || durationInWeeks === null) {
       return {
         duration: 'who knows',
@@ -314,25 +297,25 @@ var OutcomeTimeline = React.createClass({
         interval: 'years'
       }
     }
-  },
+  }
 
-  getDurationsFromEntries: function(entries) {
-    var getDurationInWeeks = this.getDurationInWeeks
-    var durations = {}
-    _.each(entries, function (entry) {
+  getDurationsFromEntries = (entries) => {
+    let getDurationInWeeks = this.getDurationInWeeks
+    let durations = {}
+    _.each(entries, (entry) => {
       if (entry.duration) {
-        var numberOfWeeks = getDurationInWeeks(entry.duration)
+        let numberOfWeeks = getDurationInWeeks(entry.duration)
         durations[numberOfWeeks] = true
       }
     })
     return _.keys(durations)
-  },
+  }
 
-  getDurationsNaturalFromEntries: function(entries) {
-    var getDurationNatural = this.getDurationNatural
+  getDurationsNaturalFromEntries = (entries) => {
+    let getDurationNatural = this.getDurationNatural
 
     // Sort durations by week in ascending order
-    var durationsInWeeks = this.getDurationsFromEntries(entries).sort(function (a, b) {
+    let durationsInWeeks = this.getDurationsFromEntries(entries).sort((a, b) => {
       return a - b
     })
 
@@ -340,21 +323,21 @@ var OutcomeTimeline = React.createClass({
     // mindful that there may be items in [durationsInWeeks]
     // that convert to duplicate plain language keys
     // e.g. '48 weeks' and '52 weeks' both become '1 year'
-    var durations = {}
-    _.each(durationsInWeeks, function (numberOfWeeks) {
-      var durationNatural = getDurationNatural(numberOfWeeks)
-      var key = durationNatural.duration + ' ' + durationNatural.interval
+    let durations = {}
+    _.each(durationsInWeeks, (numberOfWeeks) => {
+      let durationNatural = getDurationNatural(numberOfWeeks)
+      let key = durationNatural.duration + ' ' + durationNatural.interval
       durations[key] = true
     })
     return _.keys(durations)
-  },
+  }
 
-  getInterventionAsString: function(entry) {
+  getInterventionAsString = (entry) => {
     if (entry.intervention) {
-      var intervention = _.cloneDeep(entry.intervention.parts)
+      let intervention = _.cloneDeep(entry.intervention.parts)
 
       // Find dosage string, if available
-      var dosage = _.chain(entry)
+      let dosage = _.chain(entry)
                     .get('intervention.dosage.dosage')
                     .value()
 
@@ -365,35 +348,35 @@ var OutcomeTimeline = React.createClass({
       // e.g. methotrexate (5 mg) + prednisolone
       return intervention.join(' + ')
     }
-  },
+  }
 
-  getInterventionsFromEntries: function(entries) {
-    var getInterventionAsString = this.getInterventionAsString
-    var interventions = {}
-    _.each(entries, function (entry) { 
+  getInterventionsFromEntries = (entries) => {
+    let getInterventionAsString = this.getInterventionAsString
+    let interventions = {}
+    _.each(entries, (entry) => { 
       if (entry.intervention) {
         interventions[getInterventionAsString(entry)] = entry
       }
     })
     return interventions
-  },
+  }
 
-  getPrimaryInterventionsFromEntries: function(entries) {
-    var interventions = {}
-    _.each(entries, function (entry) {
+  getPrimaryInterventionsFromEntries = (entries) => {
+    let interventions = {}
+    _.each(entries, (entry) => {
       if (entry.intervention) {
         interventions[entry.intervention.parts[0]] = entry
       }
     })
     return interventions
-  },
+  }
 
-  getWhichesFromEntries: function(entries) {
-    var getPopulationAsString = this.getPopulationAsString
-    var getInterventionAsString = this.getInterventionAsString
+  getWhichesFromEntries = (entries) => {
+    let getPopulationAsString = this.getPopulationAsString
+    let getInterventionAsString = this.getInterventionAsString
 
-    var whiches = {}
-    _.each(entries, function (entry) {
+    let whiches = {}
+    _.each(entries, (entry) => {
       if (entry.which == 'population' && entry.population) {
         whiches[getPopulationAsString(entry)] = {}
       }
@@ -402,50 +385,50 @@ var OutcomeTimeline = React.createClass({
       }
     })
     return whiches
-  },
+  }
 
-  groupEntriesByIntervention: function(entries) {
-    var getInterventionAsString = this.getInterventionAsString
-    return _.groupBy(entries, function (entry) {
+  groupEntriesByIntervention = (entries) => {
+    let getInterventionAsString = this.getInterventionAsString
+    return _.groupBy(entries, (entry) => {
       return getInterventionAsString(entry)
     })
-  },
+  }
 
-  groupEntriesByPrimaryIntervention: function(entries) {
-    return _.groupBy(entries, function (entry) {
+  groupEntriesByPrimaryIntervention = (entries) => {
+    return _.groupBy(entries, (entry) => {
       if (entry.intervention) {
         return entry.intervention.parts[0]
       }
     })
-  },
+  }
 
-  getPopulationsFromEntries: function(entries) {
-    var getPopulationAsString = this.getPopulationAsString
-    var populations = {}
-    _.each(entries, function (entry) {
+  getPopulationsFromEntries = (entries) => {
+    let getPopulationAsString = this.getPopulationAsString
+    let populations = {}
+    _.each(entries, (entry) => {
       if (entry.population) {
         populations[getPopulationAsString(entry)] = entry
       }
     })
     return populations
-  },
+  }
 
-  getPopulationAsString: function(entry) {
+  getPopulationAsString = (entry) => {
     if (entry.population) {
       return entry.population.parts.join(' + ')
     }
-  },
+  }
 
-  groupEntriesByPopulation: function(entries) {
-    var getPopulationAsString = this.getPopulationAsString
-    return _.groupBy(entries, function (entry) {
+  groupEntriesByPopulation = (entries) => {
+    let getPopulationAsString = this.getPopulationAsString
+    return _.groupBy(entries, (entry) => {
       return getPopulationAsString(entry)
     })
-  },
+  }
 
-  getWhichAsString: function(entry) {
-    var getPopulationAsString = this.getPopulationAsString
-    var getInterventionAsString = this.getInterventionAsString
+  getWhichAsString = (entry) => {
+    let getPopulationAsString = this.getPopulationAsString
+    let getInterventionAsString = this.getInterventionAsString
 
     if (entry.which == 'population' || entry.population) {
       return getPopulationAsString(entry)
@@ -453,85 +436,85 @@ var OutcomeTimeline = React.createClass({
     if (entry.which == 'intervention' || entry.intervention) {
       return getInterventionAsString(entry)
     }
-  },
+  }
 
-  groupEntriesByWhich: function (entries) {
-    var getWhichAsString = this.getWhichAsString
-    return _.groupBy(entries, function (entry) {
+  groupEntriesByWhich = (entries) => {
+    let getWhichAsString = this.getWhichAsString
+    return _.groupBy(entries, (entry) => {
       return getWhichAsString(entry)
     })
-  },
+  }
 
-  groupEntriesByDurationNatural: function (entries) {
-    var getDurationInWeeks = this.getDurationInWeeks
-    var getDurationNatural = this.getDurationNatural
-    return _.groupBy(entries, function (entry) {
-      var durationNatural = getDurationNatural(getDurationInWeeks(entry.duration))
-      var key = durationNatural.duration + ' ' + durationNatural.interval
+  groupEntriesByDurationNatural = (entries) => {
+    let getDurationInWeeks = this.getDurationInWeeks
+    let getDurationNatural = this.getDurationNatural
+    return _.groupBy(entries, (entry) => {
+      let durationNatural = getDurationNatural(getDurationInWeeks(entry.duration))
+      let key = durationNatural.duration + ' ' + durationNatural.interval
       return key
     })
-  },
+  }
 
-  groupEntriesByDuration: function (entries) {
+  groupEntriesByDuration = (entries) => {
     // return this.groupEntriesByDurationNatural(entries)
-    var getDurationInWeeks = this.getDurationInWeeks
-    return _.groupBy(entries, function (entry) {
+    let getDurationInWeeks = this.getDurationInWeeks
+    return _.groupBy(entries, (entry) => {
       return getDurationInWeeks(entry.duration)
     })
-  },
+  }
 
-  groupEntriesByInterventionAndDuration: function (entries) {
-    var groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
-    var groupEntriesByIntervention = this.groupEntriesByIntervention
+  groupEntriesByInterventionAndDuration = (entries) => {
+    let groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
+    let groupEntriesByIntervention = this.groupEntriesByIntervention
   
-    var results = {}
-    var entriesByIntervention = groupEntriesByIntervention(entries)
-    _.each(entriesByIntervention, function (val, key) {
-      var byDuration = groupEntriesByDurationNatural(val)
+    let results = {}
+    let entriesByIntervention = groupEntriesByIntervention(entries)
+    _.each(entriesByIntervention, (val, key) => {
+      let byDuration = groupEntriesByDurationNatural(val)
       results[key] = byDuration
     })
 
     return results
-  },
+  }
 
-  groupEntriesByPrimaryInterventionAndDuration: function (entries) {
-    var groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
-    var groupEntriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention
+  groupEntriesByPrimaryInterventionAndDuration = (entries) => {
+    let groupEntriesByDurationNatural = this.groupEntriesByDurationNatural
+    let groupEntriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention
   
-    var results = {}
-    var entriesByIntervention = groupEntriesByPrimaryIntervention(entries)
-    _.each(entriesByIntervention, function (val, key) {
-      var byDuration = groupEntriesByDurationNatural(val)
+    let results = {}
+    let entriesByIntervention = groupEntriesByPrimaryIntervention(entries)
+    _.each(entriesByIntervention, (val, key) => {
+      let byDuration = groupEntriesByDurationNatural(val)
       results[key] = byDuration
     })
 
     return results
-  },
+  }
 
-  groupEntriesByWhichAndDuration: function (entries) {
-    var groupEntriesByDuration = this.groupEntriesByDuration
-    var groupEntriesByWhich = this.groupEntriesByWhich
+  groupEntriesByWhichAndDuration = (entries) => {
+    let groupEntriesByDuration = this.groupEntriesByDuration
+    let groupEntriesByWhich = this.groupEntriesByWhich
   
-    var entriesByWhichAndDuration = {}
-    var entriesByWhich = groupEntriesByWhich(entries)
-    _.each(entriesByWhich, function (val, key) {
-      var byDuration = groupEntriesByDuration(val)
+    let entriesByWhichAndDuration = {}
+    let entriesByWhich = groupEntriesByWhich(entries)
+    _.each(entriesByWhich, (val, key) => {
+      let byDuration = groupEntriesByDuration(val)
       entriesByWhichAndDuration[key] = byDuration
     })
 
     return entriesByWhichAndDuration
-  },
+  }
 
-  // groupEntriesByDuration: function(entries, boundary) {
-  // 	var getDurationInWeeks = this.getDurationInWeeks
+  // groupEntriesByDuration = (entries, boundary) {
+  // 	let getDurationInWeeks = this.getDurationInWeeks
 
-  // 	var entriesByDuration = {}
+  // 	let entriesByDuration = {}
 
-  // 	Object.keys(entries).forEach(function (entry) {
-  // 		var currentEntry = entries[entry]
+  // 	Object.keys(entries).forEach((entry) {
+  // 		let currentEntry = entries[entry]
 
   // 		if (currentEntry.duration) {
-  // 			var numberOfWeeks = getDurationInWeeks(currentEntry.duration)
+  // 			let numberOfWeeks = getDurationInWeeks(currentEntry.duration)
 
   // 			if (!entriesByDuration[numberOfWeeks]) {
   // 				entriesByDuration[numberOfWeeks] = []
@@ -542,58 +525,56 @@ var OutcomeTimeline = React.createClass({
   // 	return entriesByDuration
   // },
 
-  handleMomentDataCellHover: function(medicationName) {
-    this.setState({
-      keyMedication: medicationName
-    })
-  },
+  handleMomentDataCellHover = (medicationName) => {
+    this.setState({ keyMedication: medicationName })
+  }
 
-  renderTimelineByTag: function(data, tags, tag) {
-    var dataByTag = this.getDataByTag(tags, data)
-    var tagDescriptions = this.props.data.tagDescriptions
+  renderTimelineByTag = (data, tags, tag) => {
+    let dataByTag = this.getDataByTag(tags, data)
+    let tagDescriptions = this.props.data.tagDescriptions
 
     return (
 			<div>
 				{this.renderTimelineByMeasure(dataByTag[tag])}
 	    </div>
 		)
-  },
+  }
 
-  render: function() {
-    var classes = cx({
+  render () {
+    let classes = cx({
       'processing': true,
       'results': true
     })
 
-    var data                = this.props.data
-    var dataFiltered        = this.props.dataFiltered
-    var disabledMedications = this.props.disabledMedications
-    var measure             = this.props.measure
-    var medications         = this.props.medications
-    var medicationsMap      = this.props.medicationsMap
+    let data                = this.props.data
+    let dataFiltered        = this.props.dataFiltered
+    let disabledMedications = this.props.disabledMedications
+    let measure             = this.props.measure
+    let medications         = this.props.medications
+    let medicationsMap      = this.props.medicationsMap
     
-    var grades              = data.grades
-    var measures            = data.measures
-    var metrics             = data.metrics
-    var tags                = data.tags
-    var tagDescriptions     = data.tagDescriptions
-    var selectedTag         = this.props.selectedTag
+    let grades              = data.grades
+    let measures            = data.measures
+    let metrics             = data.metrics
+    let tags                = data.tags
+    let tagDescriptions     = data.tagDescriptions
+    let selectedTag         = this.props.selectedTag
 
-    var handleMomentDataCellHover = this.handleMomentDataCellHover
-    var getInterventionAsString = this.getInterventionAsString
-    var getDurationInWeeks = this.getDurationInWeeks
-    var getDurationNatural = this.getDurationNatural
-    var groupEntriesByDuration = this.groupEntriesByDuration
-    var renderEntry = this.renderEntry
-    var renderValue = this.renderValue
+    let handleMomentDataCellHover = this.handleMomentDataCellHover
+    let getInterventionAsString = this.getInterventionAsString
+    let getDurationInWeeks = this.getDurationInWeeks
+    let getDurationNatural = this.getDurationNatural
+    let groupEntriesByDuration = this.groupEntriesByDuration
+    let renderEntry = this.renderEntry
+    let renderValue = this.renderValue
 
-    var keyMedication = this.state.keyMedication
+    let keyMedication = this.state.keyMedication
 
-    var renderRelativeRiskComparison = function(entries, measure) {
-      var sources = {}
+    const renderRelativeRiskComparison = (entries, measure) => {
+      let sources = {}
 
-      Object.keys(entries).map(function (key) {
-        var entry = entries[key]
+      Object.keys(entries).map((key) => {
+        let entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
@@ -609,7 +590,7 @@ var OutcomeTimeline = React.createClass({
         }
       })
 
-      return Object.keys(sources).map(function (comparison) {
+      return Object.keys(sources).map((comparison) => {
         if (sources[comparison].items.length > 1) {
           return (
             <ul className='visualization-rr'>
@@ -628,11 +609,11 @@ var OutcomeTimeline = React.createClass({
       })
     }
 
-    var renderRiskRelativeToBaselineComparison = function(entries, measure) {
-      var sources = {}
+    let renderRiskRelativeToBaselineComparison = (entries, measure) => {
+      let sources = {}
 
-      Object.keys(entries).map(function (key) {
-        var entry = entries[key]
+      Object.keys(entries).map((key) => {
+        let entry = entries[key]
 
         if (entry.which == 'comparison') {
           if (!sources[entry.comparison.parts]) {
@@ -648,7 +629,7 @@ var OutcomeTimeline = React.createClass({
         }
       })
 
-      return Object.keys(sources).map(function (comparison) {
+      return Object.keys(sources).map((comparison) => {
         if (sources[comparison].items.length > 1) {
           return (
             <ul className='visualization-rr'>
@@ -671,29 +652,29 @@ var OutcomeTimeline = React.createClass({
     // Render a timeline
     if (measure && dataFiltered) {
       // Filter to entries for non-disabled medications only
-      var entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications)
-      var populationEntries = get.filterEntriesToPopulationOnly(get.getEntriesForMeasure(dataFiltered))
+      let entries = get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications)
+      let populationEntries = get.filterEntriesToPopulationOnly(get.getEntriesForMeasure(dataFiltered))
 
       // If there are no medication entries, use population entries
       if (entries.length == 0) {
         entries = populationEntries
-        var interventions = this.getWhichesFromEntries(entries)
-        var entriesByIntervention = this.groupEntriesByWhich(entries)
-        var entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
+        let interventions = this.getWhichesFromEntries(entries)
+        let entriesByIntervention = this.groupEntriesByWhich(entries)
+        let entriesByInterventionAndDuration = this.groupEntriesByWhichAndDuration(entries)
       }
       else {
-        var interventions = this.getPrimaryInterventionsFromEntries(entries)
-        var entriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention(entries)
-        var entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
+        let interventions = this.getPrimaryInterventionsFromEntries(entries)
+        let entriesByPrimaryIntervention = this.groupEntriesByPrimaryIntervention(entries)
+        let entriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration(entries)
 
-        var groupEntriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration
-        _.each(entriesByPrimaryIntervention, function (val, key) {
+        let groupEntriesByInterventionAndDuration = this.groupEntriesByInterventionAndDuration
+        _.each(entriesByPrimaryIntervention, (val, key) => {
           // val == [entry, entry, entry]
           // key == 'methotrexate'
           interventions[key] = groupEntriesByInterventionAndDuration(val)
         })
       }
-      var durations = this.getDurationsNaturalFromEntries(entries)
+      let durations = this.getDurationsNaturalFromEntries(entries)
 
 
 
@@ -705,13 +686,13 @@ var OutcomeTimeline = React.createClass({
       // console.log(entriesByPrimaryIntervention)
       // console.log(entriesByInterventionAndDuration)
 
-      // _.each(dataFiltered, function (entry) {
+      // _.each(dataFiltered, (entry) {
       //   if (entry.which == 'intervention' && entry.metric == 'ar_1000') {
       //     console.log(entry.intervention, entry.dosage, entry.value.value)
       //   }
       // })
 
-      // _.each(entries, function (entry) {
+      // _.each(entries, (entry) {
       //   console.log(entry)
       // })
 
@@ -721,13 +702,13 @@ var OutcomeTimeline = React.createClass({
 
 
       // Populate data into natural medication presentation order
-      var dataByIntervention = {}
-      _.each(medications, function(medication) {
+      let dataByIntervention = {}
+      _.each(medications, (medication) => {
         // Make a row for each unique intervention
-        var rows = []
-        var entries = _.get(entriesByPrimaryIntervention, medication.name_generic, [])
+        let rows = []
+        let entries = _.get(entriesByPrimaryIntervention, medication.name_generic, [])
 
-        var individualInterventions = _.get(interventions, medication.name_generic, {})
+        let individualInterventions = _.get(interventions, medication.name_generic, {})
 
         // No data
         if (_.isEmpty(individualInterventions)) {
@@ -745,18 +726,18 @@ var OutcomeTimeline = React.createClass({
         }
         // Data
         else {
-          _.each(individualInterventions, function (moments, key) {
+          _.each(individualInterventions, (moments, key) => {
             // moments == '{'6 months': [entry, entry]}
             // key == 'methotrexate (5 mg)'
-            var rowClasses = cx({
+            let rowClasses = cx({
               't-row': true
             })
 
-            // var intervention = getInterventionAsString(entry)
+            // let intervention = getInterventionAsString(entry)
             // console.log(key, moments)
 
             // Get first entry for basic data
-            var firstEntry = moments[_.keys(moments)[0]][0]
+            let firstEntry = moments[_.keys(moments)[0]][0]
 
             rows.push(
               <section key={key} className='chunk'>
@@ -766,7 +747,7 @@ var OutcomeTimeline = React.createClass({
                       {measures[measure].name_friendly} for people taking
                     </section>
                   </div>
-                  {_.map(durations, function (timepoint) {
+                  {_.map(durations, (timepoint) => {
                     return <div key={key + timepoint} className='t-cell moment'>
                       …by about {timepoint}
                     </div>
@@ -790,12 +771,12 @@ var OutcomeTimeline = React.createClass({
                     {/*TODO: display comparison */}
                   </div>
 
-                  {_.map(durations, function (timepoint, i) {
-                    var entries = _.get(moments, timepoint, [])
+                  {_.map(durations, (timepoint, i) => {
+                    let entries = _.get(moments, timepoint, [])
 
                     if (entries.length > 0) {
                       // Could have multiple entries for this timpoint; take the first for now
-                      var entry = entries[0]
+                      let entry = entries[0]
                       if (entry.which !== 'population' && entry.intervention) {
                         return <div
                           key={key + timepoint}
@@ -825,7 +806,7 @@ var OutcomeTimeline = React.createClass({
           })
         }
 
-        // [rows] may contain a row for multiple variations of interventions
+        // [rows] may contain a row for multiple letiations of interventions
         // e.g. 'methotrexate', 'methotrexate + infliximab', etc.
         // All should be pushed into the rows belonging to this medication,
         // which is the primary intervention.
@@ -833,8 +814,8 @@ var OutcomeTimeline = React.createClass({
       })
 
       // Enforce natural presentation order
-      var resultHtml = []
-      _.each(dataByIntervention, function(val, key) {
+      let resultHtml = []
+      _.each(dataByIntervention, (val, key) => {
         // key == 'methotrexate'
         // val == [entries]
 
@@ -842,7 +823,7 @@ var OutcomeTimeline = React.createClass({
         if (disabledMedications[key]) {
           return
         }
-        _.each(dataByIntervention[key], function (row) {
+        _.each(dataByIntervention[key], (row) => {
           resultHtml.push(row) 
         })
       })
@@ -869,6 +850,15 @@ var OutcomeTimeline = React.createClass({
     //   )
     // }
   }
-})
+}
 
-module.exports = OutcomeTimeline
+OutcomeTimeline.propTypes = {
+  disabledMedications: React.PropTypes.object,
+  data: React.PropTypes.object.isRequired,
+  dataFiltered: React.PropTypes.array.isRequired,
+  measure: React.PropTypes.string.isRequired,
+  medications: React.PropTypes.array.isRequired,
+  medicationsMap: React.PropTypes.object,
+}
+
+export default OutcomeTimeline

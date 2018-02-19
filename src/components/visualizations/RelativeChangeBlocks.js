@@ -1,35 +1,25 @@
-
-
-var React = require('react');
-var _ = require('lodash');
-var cx = require('classnames')
+import _ from 'lodash'
+import cx from 'classnames'
+import React from 'react'
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 // Relative change blocks (a la Mayo Clinic DAs)
 
-var RelativeChangeBlocks = React.createClass({
-
-  propTypes: {
-    // value should be on a 100 point scale
-    value: React.PropTypes.number,
-    // If range is specified, there will be at least that many blocks (e.g. 10)
-    // but ordinarily, we just let there be as many blocks as necessary.
-    range: React.PropTypes.number
-  },
-
-  renderBlocks: function(value, range) {
-    var labelStyle = {
-      position: 'absolute',
-      width: '100%',
-      textAlign: 'center',
+class RelativeChangeBlocks extends React.Component {
+  renderBlocks = (value, range) => {
+    let labelStyle = {
+      color: 'white',
       lineHeight: '36px',
-      color: 'white'
+      position: 'absolute',
+      textAlign: 'center',
+      width: '100%',
     }
 
-    var roundedValue = Math.round(value / 10)
+    let roundedValue = Math.round(value / 10)
     
-    var html = []
+    let html = []
     _.times(range, function(n) {
-      var isFilledIn = function(n, value) {
+      let isFilledIn = function(n, value) {
         // If roundedValue == range, it means we're only supposed
         // to render just enough blocks.
         if (Math.abs(roundedValue) == range) {
@@ -43,11 +33,11 @@ var RelativeChangeBlocks = React.createClass({
         return (n + 1) <= roundedValue
       }
 
-      var blockClass = cx({
+      let blockClass = cx({
         'relative-change-block': true,
         'highlight': isFilledIn(n, value)
       })
-      var blockStyle = {
+      let blockStyle = {
         background: 'rgba(165,165,165,' + (1 - ((range - n) / 6)) + ')'
       }
 
@@ -60,7 +50,7 @@ var RelativeChangeBlocks = React.createClass({
 
     // 0 / no change block
     if (range < 1) {
-      var blockStyle = {
+      let blockStyle = {
         width: '75px',
         background: 'none',
         border: '1px solid #333',
@@ -73,24 +63,32 @@ var RelativeChangeBlocks = React.createClass({
     }
 
     return html
-  },
+  }
 
-  render: function() {
-    var visualizationClasses = cx({
+  render () {
+    let visualizationClasses = cx({
       'visualization relative-change-blocks': true,
       'up': value > 0,
-      'down': value < 0
+      'down': value < 0,
     })
 
-    var value = this.props.value
-    var range = this.props.range ? this.props.range : Math.abs(value / 10)
+    let value = this.props.value
+    let range = this.props.range ? this.props.range : Math.abs(value / 10)
 
     return (
       <div className={visualizationClasses}>
         {this.renderBlocks(value, range)}
       </div>
-    );
+    )
   }
-});
+}
 
-module.exports = RelativeChangeBlocks;
+RelativeChangeBlocks.propTypes = {
+  // value should be on a 100 point scale
+  value: React.PropTypes.number,
+  // If range is specified, there will be at least that many blocks (e.g. 10)
+  // but ordinarily, we just let there be as many blocks as necessary.
+  range: React.PropTypes.number,
+}
+
+export default RelativeChangeBlocks
