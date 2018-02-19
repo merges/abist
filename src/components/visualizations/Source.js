@@ -12,10 +12,10 @@ class Source extends React.Component {
       'meta-analysis': 'A meta-analysis is a high-quality source. Researchers do a consistent review of as much evidence as they can find, using statistics to compare treatments to one another, and then looking at the big picture formed by those statistics.'
     }
     
-    let tooltip = (<Tooltip>Click to see more information about the source.</Tooltip>)
+    let tooltip = (<Tooltip id={kind}>Click to see more information about the source.</Tooltip>)
     if (sourceToDescriptionMap[kind]) {
       tooltip = (
-        <Tooltip>
+        <Tooltip id={kind}>
           {sourceToDescriptionMap[kind]}
         </Tooltip>
       )

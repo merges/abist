@@ -1,5 +1,8 @@
+import cx from 'classnames'
 import React from 'react'
 import PropTypes from 'prop-types'
+
+import DosageForm from './DosageForm'
 
 class MedicationCard extends React.Component {
   renderPreferredMedicationName = (medication: Object) => {
@@ -95,7 +98,7 @@ class MedicationCard extends React.Component {
     if (this.props.mini) {
       return <div className='medication-card mini'>
         <div className='dosage-forms'>
-          {medication.forms.map(function (form, i) {
+          {medication.forms.map((form, i) => {
             return (
               <DosageForm key={i} form={form.name} />
             )
@@ -117,17 +120,9 @@ class MedicationCard extends React.Component {
             <div className='t-cell generic'>{medication.name_generic.capitalizeFirstletter()}</div>
             <div className='t-cell brand'>
               {medication.names_brand.length > 1 ?
-                <span>
-                  {medication.names_brand.map(function (item, i) {
-                    return <span className={i}>
-                      {item}{i < medication.names_brand.length - 1 && ', '}
-                    </span>
-                  })}
-                </span>
+                <span>{medication.names_brand.map((item, i) => (<span key={i}>{item}{i < medication.names_brand.length - 1 && ', '}</span>))}</span>
                 :
-                <span>
-                  {medication.names_brand[0]}
-                </span>
+                <span>{medication.names_brand[0]}</span>
               }
             </div>
           </div>
@@ -138,10 +133,12 @@ class MedicationCard extends React.Component {
           <span className='font-size-1 light pad-r-5'>
             {medication.class.length > 1 ?
               <span>
-                {medication.class.map(function (item, i) {
-                  return <span key={i} className={i}>
-                    {item}{i < medication.class.length - 1 && ', '}
-                  </span>
+                {medication.class.map((item, i) => {
+                  return (
+                    <span key={i} className={i}>
+                      {item}{i < medication.class.length - 1 && ', '}
+                    </span>
+                  )
                 })}
               </span>
               :
@@ -159,17 +156,15 @@ class MedicationCard extends React.Component {
           </div>
           <div className='t-row'>
             <div className='t-cell dosage-forms pad-r-5'>
-              {medication.forms.map(function (form, i) {
-                numberOfForms = medication.forms.length
+              {medication.forms.map((form, i) => {
+                const numberOfForms = medication.forms.length
                 if (numberOfForms > 1 && i < numberOfForms - 1) {
                   return <span key={i} className={i}>
                     <DosageForm key={i} form={form.name} />
                     <span> or </span>
                   </span>
                 }
-                return <span key={i}>
-                  <DosageForm key={i} form={form.name} />
-                </span>
+                return (<span key={i}><DosageForm key={i} form={form.name} /></span>)
               })}
               <div className='frequency'>
                 {medication.ptda.frequency.dose &&

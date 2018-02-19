@@ -10,9 +10,9 @@ String.prototype.capitalizeFirstletter = function() {
 
 class Intervention extends React.Component {
   getDosageDescription = (dosage) => {
-    var dosageDescription = ''
-    var dosageInterval = parseInt(dosage['dosage_interval'])
-    var dosageMultiple = dosage['dosage_multiple'] && parseInt(dosage['dosage_multiple'])
+    let dosageDescription = ''
+    let dosageInterval = parseInt(dosage['dosage_interval'])
+    let dosageMultiple = dosage['dosage_multiple'] && parseInt(dosage['dosage_multiple'])
 
     // Quantity
     // e.g. 25 mg
@@ -62,7 +62,7 @@ class Intervention extends React.Component {
   }
 
   getDosageFormDescription = (dosage) => {
-    var dosageFormTranslationMap = {
+    let dosageFormTranslationMap = {
       'iv': 'infusion (at a hospital or clinic)',
       'parenteral': 'injection (at home or at a clinic)',
       'subcutaneous': 'injection (at home or at a clinic)',
@@ -70,7 +70,7 @@ class Intervention extends React.Component {
       'tablet': 'pill, by mouth'
     }
 
-    var translated = dosage['dosage_form'].map(function (form) {
+    let translated = dosage['dosage_form'].map(function (form) {
       return dosageFormTranslationMap[form]
     })
 
@@ -79,7 +79,7 @@ class Intervention extends React.Component {
 
   getTooltip = (intervention, dosage) => {
     return (
-      <Tooltip>
+      <Tooltip id={JSON.stringify(intervention + dosage)}>
         <strong>{intervention}</strong><br />
         {this.getDosageFormDescription(dosage)}<br />
         {this.getDosageDescription(dosage)}
@@ -88,20 +88,21 @@ class Intervention extends React.Component {
   }
 
   renderInterventionName = () => {
-    var intervention = this.props.intervention
-    var interventionName = this.props.interventionName
-    var medicationsMap = this.props.medicationsMap
-    var dosage = this.props.dosage
+    let intervention = this.props.intervention
+    let interventionName = this.props.interventionName
+    let medicationsMap = this.props.medicationsMap
+    let dosage = this.props.dosage
 
-    var html = []
+    let html = []
 
     if (intervention) {
-      for (i = 0; i < intervention.length; i++) {
-        var part = intervention[i]
-        var interventionHtml = []
+      for (let i = 0; i < intervention.length; i++) {
+        let part = intervention[i]
+        let interventionHtml = []
 
         if (medicationsMap && medicationsMap[part]) {
-          var med = medicationsMap[part]
+          let med = medicationsMap[part][0]
+
           interventionHtml = (
             <span key={part} className='name text-left'>
               <div className='generic'>
@@ -130,15 +131,15 @@ class Intervention extends React.Component {
   }
 
   render () {
-    var cx = require('classnames')
-    var visualizationClasses = cx({
+    let cx = require('classnames')
+    let visualizationClasses = cx({
       'intervention': true
     })
 
-    var intervention = this.props.intervention
-    var interventionName = this.props.interventionName
-    var medicationsMap = this.props.medicationsMap
-    var dosage = this.props.dosage
+    let intervention = this.props.intervention
+    let interventionName = this.props.interventionName
+    let medicationsMap = this.props.medicationsMap
+    let dosage = this.props.dosage
 
     if (dosage) {
       return (
@@ -159,7 +160,7 @@ class Intervention extends React.Component {
 
 Intervention.propTypes = {
   dosage: React.PropTypes.object,
-  intervention: React.PropTypes.object,
+  // intervention: React.PropTypes.object,
   interventionName: React.PropTypes.string,
   medicationsMap: React.PropTypes.object
 }

@@ -90,7 +90,7 @@ const AbsoluteFrequency = ({ baseline, breakpoint, className, denominator, frequ
   )
 }
 
-AbsoluteFrquency.propTypes = {
+AbsoluteFrequency.propTypes = {
   baseline: React.PropTypes.number,
   breakpoint: React.PropTypes.number,
   classNames: React.PropTypes.string,

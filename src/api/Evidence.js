@@ -1,9 +1,16 @@
 import _ from 'lodash'
 
-Number.prototype.toFixedNumber = (x, base) => {
-  const pow = Math.pow(base || 10, x)
-  return +(Math.round(this * pow) / pow)
-}
+// Number.prototype.toFixedNumber = (x, base) => {
+//   const pow = Math.pow(base || 10, x)
+//   return +(Math.round(this * pow) / pow)
+// }
+
+Object.assign(Number.prototype, {
+  toFixedNumber (x, base) {
+    const pow = Math.pow(base || 10, x)
+    return +(Math.round(this * pow) / pow)
+  }
+})
 
 function filterEntriesByMedication (entries, medications, disabledMedications) {
   /*
@@ -636,7 +643,7 @@ function processTagDescriptions (data) {
   // this.tempTags = data
 }
 
-export default {
+export {
   filterEntriesByMedication,
   filterEntriesToPopulationOnly,
   filterEntriesWithNonPlaceboComparisons,

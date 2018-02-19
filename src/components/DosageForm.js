@@ -1,6 +1,6 @@
 import cx from 'classnames'
 import PropTypes from 'prop-types'
-import React form 'react'
+import React from 'react'
 
 class DosageForm extends React.Component {
   checkForSubstring = (form: string, canonical: string) => {

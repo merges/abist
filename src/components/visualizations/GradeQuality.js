@@ -21,17 +21,17 @@ const GradeQuality = ({ className, grade, gradeMap, style }) => {
       let iconClass = 'ss-icon ss-navigateright'
       let iconStyle = { opacity: '.1' }
       icons.push(
-        <i style={iconStyle} className={iconClass}></i>,
-        <i style={iconStyle} className={iconClass}></i>,
-        <i style={iconStyle} className={iconClass}></i>,
-        <i style={iconStyle} className={iconClass}></i>
+        <i key={1} style={iconStyle} className={iconClass}></i>,
+        <i key={2} style={iconStyle} className={iconClass}></i>,
+        <i key={3} style={iconStyle} className={iconClass}></i>,
+        <i key={4} style={iconStyle} className={iconClass}></i>
       )
     }
     return icons
   }
 
   const getTooltip = (grade: string) => {
-    let tooltip
+    let tooltip = null
     if (grade == 'X' || !grade) {
       tooltip = (
         <Tooltip>
@@ -42,8 +42,8 @@ const GradeQuality = ({ className, grade, gradeMap, style }) => {
     else {
       tooltip = (
         <Tooltip>
-          <strong>{grades[grade].name_friendly}.</strong><br />
-          {grades[grade].description_friendly}
+          <strong>{gradeMap[grade].name_friendly}.</strong><br />
+          {gradeMap[grade].description_friendly}
         </Tooltip>
       )
     }

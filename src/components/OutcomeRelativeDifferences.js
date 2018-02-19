@@ -12,39 +12,31 @@ import Source from './visualizations/Source'
 
 // Relative change e.g. change in pain
 
-var OutcomeRelativeDifferences extends React.Component {
-  propTypes: {
-    data: React.PropTypes.object.isRequired,
-    dataFiltered: React.PropTypes.array.isRequired,
-    disabledMedications: React.PropTypes.object,
-    medications: React.PropTypes.array.isRequired,
-    measure: React.PropTypes.string
-  },
-
+class OutcomeRelativeDifferences extends React.Component {
   // This function gets the mean of placebo values
-  getMeanPlaceboChange: function(acceptableMetrics, sortedEntries) {
-    var means = []
+  getMeanPlaceboChange = (acceptableMetrics, sortedEntries) => {
+    let means = []
     sortedEntries.map(function(entry) {
       // Ignore this entry if it doesn't involve comparison with placebo
       if (!entry.comparison) {
         return
       }
       // Check to see whether this entry has an appropriate metric
-      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      let metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
       if (metricToUse && entry.comparison[metricToUse]) {
-        var value = entry.comparison[metricToUse].value.value
+        let value = entry.comparison[metricToUse].value.value
         means.push(value)
       }
     })
 
     if (means.length > 0) {
-      var sum = _.sum(means)
-      var mean = sum/means.length
-      var meansSubtractedSquared = _.map(means, function(val) {
+      let sum = _.sum(means)
+      let mean = sum/means.length
+      let meansSubtractedSquared = _.map(means, function(val) {
         return Math.pow((val - mean), 2)
       })
-      var deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
-      var roundedMean = mean.toFixedNumber(2)
+      let deviation = Math.sqrt(_.sum(meansSubtractedSquared)/meansSubtractedSquared.length)
+      let roundedMean = mean.toFixedNumber(2)
 
       // console.log('mean of means:', mean)
       // console.log('deviation of means:', deviation)
@@ -55,15 +47,15 @@ var OutcomeRelativeDifferences extends React.Component {
 
     // No mean? Assume the baseline change is 0.
     return 0
-  },
+  }
 
   // Get the mean of values
-  getMeanValue: function(entries) {
-    var values = []
+  getMeanValue = (entries) => {
+    let values = []
 
     entries.map(function(entry) {
       // console.log(entry.intervention[0] + entry.dosage.dosage + ' ' + entry.comparison[0])
-      var value
+      let value
       if (entry.metric == 'ar_1000') {
         value = entry.value.value / 10
       }
@@ -76,13 +68,13 @@ var OutcomeRelativeDifferences extends React.Component {
     })
 
     if (values.length > 0) {
-      var sum = _.sum(values)
-      var mean = sum/values.length
-      var valuesSubtractedSquared = _.map(values, function(val) {
+      let sum = _.sum(values)
+      let mean = sum/values.length
+      let valuesSubtractedSquared = _.map(values, function(val) {
         return Math.pow((val - mean), 2)
       })
-      var deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
-      var roundedMean = Math.round(mean)
+      let deviation = Math.sqrt(_.sum(valuesSubtractedSquared)/valuesSubtractedSquared.length)
+      let roundedMean = Math.round(mean)
 
       // console.log('mean of values:', mean)
       // console.log('deviation of values:', deviation)
@@ -93,9 +85,9 @@ var OutcomeRelativeDifferences extends React.Component {
 
     // No mean? Assume the mean is 0.
     return 0
-  },
+  }
 
-  getChangeValue: function(value, metricToUse, placeboMean) {
+  getChangeValue = (value, metricToUse, placeboMean) => {
     /*
     
     Get the value as a change metric. placeboMean is the unweighted pooled placebo change
@@ -127,35 +119,35 @@ var OutcomeRelativeDifferences extends React.Component {
     
     */
     
-    var metrics = this.props.data.metrics
-    var kind = metrics[metricToUse].kind
+    let metrics = this.props.data.metrics
+    let kind = metrics[metricToUse].kind
     if (kind == 'difference') {
       value = value + placeboMean
     }
 
     // Now transform this into minimally important difference (MID) units.
     // For 100 mm scale, which this is limited to right now, it's 10.
-    var mid = 10 // Minimally important difference
-    var value = Math.round(value / mid) * 10
+    let mid = 10 // Minimally important difference
+    value = Math.round(value / mid) * 10
     
     return value
 
     // UNUSED
     // Calculate the mean_score_difference based on the pooled placeboMean
-    // var difference = (value - placeboMean).toFixedNumber(2)
+    // let difference = (value - placeboMean).toFixedNumber(2)
 
     // UNUSED
     // Calculate difference in stdDevs and round
-    // var difference = Math.round((value - placeboMean) / deviation) * 10
-  },
+    // let difference = Math.round((value - placeboMean) / deviation) * 10
+  }
 
   // Group entries by intervention and dosage
-  groupEntriesByInterventionAndDosage: function (entries) {
+  groupEntriesByInterventionAndDosage = (entries) => {
     return _.chain(entries)
             .groupBy(function (entry) {
               // Group entries by intervention + dosage
               if (entry.intervention) {
-                var intervention = _.cloneDeep(entry.intervention.parts)
+                let intervention = _.cloneDeep(entry.intervention.parts)
                 if (entry.intervention.dosage.dosage) {
                   intervention[0] += ' (' + entry.intervention.dosage.dosage + ')'
                 }
@@ -166,17 +158,17 @@ var OutcomeRelativeDifferences extends React.Component {
             // If we have populations or other types of entries, discard them
             .omit('other')
             .value()
-  },
+  }
 
-  render: function() {
-    var data                = this.props.data
-    var dataFiltered        = this.props.dataFiltered
-    var disabledMedications = this.props.disabledMedications
-    var medications         = this.props.medications
-    var medicationsMap      = this.props.medicationsMap
-    var measures            = this.props.data.measures
-    var measure             = this.props.measure
-    var grades              = data.grades
+  render () {
+    let data                = this.props.data
+    let dataFiltered        = this.props.dataFiltered
+    let disabledMedications = this.props.disabledMedications
+    let medications         = this.props.medications
+    let medicationsMap      = this.props.medicationsMap
+    let measures            = this.props.data.measures
+    let measure             = this.props.measure
+    let grades              = data.grades
     
     /*
 
@@ -191,8 +183,8 @@ var OutcomeRelativeDifferences extends React.Component {
     minimally important difference (MID) units.
     
     */
-    var entries = get.filterEntriesWithNonPlaceboComparisons(get.filterEntriesByMedication(get.getEntriesForMeasure(dataFiltered), medications, disabledMedications))
-    var sortedEntries = _.sortBy(entries, function(entry) {
+    let entries = Evidence.filterEntriesWithNonPlaceboComparisons(Evidence.filterEntriesByMedication(Evidence.getEntriesForMeasure(dataFiltered), medications, disabledMedications))
+    let sortedEntries = _.sortBy(entries, function(entry) {
       if (entry.intervention) {
         return entry.intervention.parts[0]
       }
@@ -203,7 +195,7 @@ var OutcomeRelativeDifferences extends React.Component {
     // })
 
     // Acceptable metrics for comparison
-    var acceptableMetrics = [
+    let acceptableMetrics = [
       'mean_difference_100',
       'mean_difference_10',
       'mean_change_100',
@@ -212,19 +204,19 @@ var OutcomeRelativeDifferences extends React.Component {
 
     // This function gets the value in just the way we want it,
     // as a change statistic and expressed in the units we want
-    var getChangeValue = this.getChangeValue
-    var placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
-    // var deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
+    let getChangeValue = this.getChangeValue
+    let placeboMean = this.getMeanPlaceboChange(acceptableMetrics, sortedEntries)
+    // let deviation = this.getInterventionValues(acceptableMetrics, sortedEntries, placeboMean)
 
     // Populate data into natural medication presentation order
-    var dataByIntervention = {
+    let dataByIntervention = {
       placebo: []
     }
     _.each(medications, function(medication) {
       dataByIntervention[medication.name_generic] = []
     })
 
-    var inlineStyle = {
+    let inlineStyle = {
       display: 'inline-block',
       verticalAlign: 'text-bottom'
     }
@@ -256,7 +248,7 @@ var OutcomeRelativeDifferences extends React.Component {
       </tr>
     )
 
-    var entriesGroupedByInterventionAndDosage = this.groupEntriesByInterventionAndDosage(entries)
+    let entriesGroupedByInterventionAndDosage = this.groupEntriesByInterventionAndDosage(entries)
     // TODO switch to using the entriesGroupedByInterventionAndDosage,
     // and get the means when there is more than one entry
 
@@ -268,9 +260,9 @@ var OutcomeRelativeDifferences extends React.Component {
       }
       
       // Check to see whether this entry has an appropriate metric
-      var metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
+      let metricToUse = _.find(acceptableMetrics, _.partial(_.has, entry.intervention))
       if (metricToUse) {
-        var value = entry.intervention[metricToUse].value.value
+        let value = entry.intervention[metricToUse].value.value
         
         // Ignore this entry if it's for a drug we don't support
         if (!dataByIntervention[entry.intervention.parts[0]]) {
@@ -283,7 +275,7 @@ var OutcomeRelativeDifferences extends React.Component {
 
         // Get the value as change from baseline, which may involve a little math
         // depending on the metric being used
-        var changeValue = getChangeValue(value, metricToUse, placeboMean)
+        let changeValue = getChangeValue(value, metricToUse, placeboMean)
 
         dataByIntervention[entry.intervention.parts[0]].push(
           <tr key={entry.intervention.parts.join(' + ') + i}>
@@ -318,7 +310,7 @@ var OutcomeRelativeDifferences extends React.Component {
     })
 
     // Enforce natural presentation order
-    var rows = []
+    let rows = []
     _.each(dataByIntervention, function(val, key) {
       // key == 'methotrexate'
       // val == meanValue || empty
@@ -358,6 +350,14 @@ var OutcomeRelativeDifferences extends React.Component {
       </tbody>
     </table>
   }
+}
+
+OutcomeRelativeDifferences.propTypes = {
+  data: React.PropTypes.object.isRequired,
+  dataFiltered: React.PropTypes.array.isRequired,
+  disabledMedications: React.PropTypes.object,
+  medications: React.PropTypes.array.isRequired,
+  measure: React.PropTypes.string
 }
 
 export default OutcomeRelativeDifferences
