@@ -570,7 +570,7 @@ class OutcomeTimeline extends React.Component {
       })
     }
 
-    let renderRiskRelativeToBaselineComparison = (entries, measure) => {
+    const renderRiskRelativeToBaselineComparison = (entries, measure) => {
       let sources = {}
 
       Object.keys(entries).map((key) => {
@@ -590,10 +590,10 @@ class OutcomeTimeline extends React.Component {
         }
       })
 
-      return Object.keys(sources).map((comparison) => {
+      return Object.keys(sources).map((comparison, c) => {
         if (sources[comparison].items.length > 1) {
           return (
-            <ul className='visualization-rr'>
+            <ul key='c' className='visualization-rr'>
               <li>
                 <h3><strong>relative risk</strong> › {measures[measure].name_friendly}</h3>
               </li>
@@ -763,9 +763,7 @@ class OutcomeTimeline extends React.Component {
         if (disabledMedications[key]) {
           return
         }
-        _.each(dataByIntervention[key], (row) => {
-          resultHtml.push(row) 
-        })
+        _.each(dataByIntervention[key], row => resultHtml.push(row) })
       })
 
       return (
