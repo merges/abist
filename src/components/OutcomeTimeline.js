@@ -763,7 +763,7 @@ class OutcomeTimeline extends React.Component {
         if (disabledMedications[key]) {
           return
         }
-        _.each(dataByIntervention[key], row => resultHtml.push(row) })
+        _.each(dataByIntervention[key], row => resultHtml.push(row))
       })
 
       return (
