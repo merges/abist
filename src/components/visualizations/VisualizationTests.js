@@ -1,3 +1,4 @@
+import cx from 'classnames'
 import React from 'react'
 
 import AbsoluteFrequency from './AbsoluteFrequency'
@@ -8,54 +9,7 @@ import RelativeChangeBlocks from './RelativeChangeBlocks'
 // Visualization tests
 
 class VisualizationTests extends React.Component {
-
-  render: function() {
-    var cx = require('classnames')
-    var classes = cx({
-      'processing': true
-    })
-
-    var sectionStyle = {
-      marginBottom: '45px'
-    }
-
-    return (
-      <div className={classes}>
-        <div className='header'>
-          <h1>Visualization tests</h1>
-        </div>
-
-        <div className='container'>
-
-          <section style={sectionStyle}>
-            <h2>Visual analog scale</h2>
-            <RelativeChangeBlocks value={-30.1} />
-            <RelativeChangeBlocks value={-46.9} />
-            <RelativeChangeBlocks value={24.6} />
-          </section>
-
-          {/*
-          <section style={sectionStyle}>
-            <h2>Absolute risk, relative to baseline</h2>
-            <RiskRelativeToBaseline />
-          </section>
-          */}
-
-          {/*
-            <section style={sectionStyle}>
-              <h2>Relative risk comparison</h2>
-              <RelativeRiskComparison />
-            </section>
-          */}
-
-          {/*this.renderAbsoluteFrequency()*/}
-
-        </div>
-      </div>
-    )
-  },
-
-  renderAbsoluteFrequency: function() {
+  renderAbsoluteFrequency = () => {
     return (
       <div>
         <section>
@@ -112,6 +66,51 @@ class VisualizationTests extends React.Component {
       </div>
     )
   }
-})
+
+  render () {
+    var classes = cx({
+      'processing': true
+    })
+
+    var sectionStyle = {
+      marginBottom: '45px'
+    }
+
+    return (
+      <div className={classes}>
+        <div className='header'>
+          <h1>Visualization tests</h1>
+        </div>
+
+        <div className='container'>
+
+          <section style={sectionStyle}>
+            <h2>Visual analog scale</h2>
+            <RelativeChangeBlocks value={-30.1} />
+            <RelativeChangeBlocks value={-46.9} />
+            <RelativeChangeBlocks value={24.6} />
+          </section>
+
+          {/*
+          <section style={sectionStyle}>
+            <h2>Absolute risk, relative to baseline</h2>
+            <RiskRelativeToBaseline />
+          </section>
+          */}
+
+          {/*
+            <section style={sectionStyle}>
+              <h2>Relative risk comparison</h2>
+              <RelativeRiskComparison />
+            </section>
+          */}
+
+          {this.renderAbsoluteFrequency()}
+
+        </div>
+      </div>
+    )
+  }
+}
 
 export default VisualizationTests

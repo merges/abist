@@ -1,4 +1,5 @@
 import cx from 'classnames'
+import Icon from 'react-ionicons'
 import React from 'react'
 
 // Absolute risk frequency icon array
@@ -46,13 +47,13 @@ const AbsoluteFrequency = ({ baseline, breakpoint, className, denominator, frequ
   let counter = 0
   for (let i = 1; i <= denominator; i++) {
     const iconClasses = cx({
-      'ss-icon ss-user': true,
+      'icon-array-icon': true,
       'highlight': i <= frequency,
       'lower': baseline && (frequency < baseline) && (i > frequency && i <= baseline),
       'higher': baseline && (i > baseline && i <= frequency)
     })
 
-    icons.push(<td key={i}><i className={iconClasses}></i></td>)
+    icons.push(<td key={i}><Icon className={iconClasses} icon="ios-person" style={{ height: 16, width: 16 }} /></td>)
     counter++
     
     if (counter % breakpoint == 0) {
@@ -67,7 +68,7 @@ const AbsoluteFrequency = ({ baseline, breakpoint, className, denominator, frequ
   }
 
   const visualizationClasses = cx({
-    'visualization absolute': true,
+    'visualization absolute-frequency': true,
     [className]: className,
   })
 

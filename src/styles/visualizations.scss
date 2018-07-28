@@ -2,7 +2,7 @@
 
 .visualization {
 
-  &.absolute {
+  &.absolute-frequency {
     cursor: pointer;
     font-size: 6.5pt;
     color: $color-accent-1;
@@ -22,11 +22,9 @@
         text-shadow: 0 0 4px rgba(0,0,0,.7);
       }
     }
-    .ss-icon {
+    .icon-array-icon {
       opacity: .17;
-      transition: color .12s ease,
-                  opacity .12s ease,
-                  text-shadow .12s ease;
+      transition: all .12s ease;
 
       &.highlight {
         opacity: 1;

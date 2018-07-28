@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  NavLink,
-  Route,
-  Switch,
-} from 'react-router-dom'
+import { NavLink, Route, Switch } from 'react-router-dom'
 
 // import AdverseEvents from './adverse/AdverseEvents'
 import Experiment from './Experiment'
@@ -11,8 +7,8 @@ import Navigator from './Navigator'
 // import OutcomeTimeline from './OutcomeTimeline'
 // import Processing from './Processing'
 // import Ptda from './ptda/Ptda'
-// import VisualizationSketches from './visualizations/VisualizationSketches'
-// import VisualizationTests from './visualizations/VisualizationTests'
+import VisualizationSketches from './visualizations/VisualizationSketches'
+import VisualizationTests from './visualizations/VisualizationTests'
 
 // This is a "pure" or stateless React component. In the browser,
 // it is wrapped in a React Router "BrowserRouter" component and
@@ -32,8 +28,8 @@ const App = () => {
 		    {/* <Route name='outcometimeline' path='/outcometimeline' component={OutcomeTimeline} /> */}
 		    {/* <Route name='processing' path='/processing' component={Processing} /> */}
 		    {/* <Route name='ptda' path='/ptda' component={Ptda} /> */}
-		    {/* <Route name='visualization-sketches' path='/visualization-sketches' component={VisualizationSketches} />
-		    <Route name='visualization-tests' path='/visualization-tests' component={VisualizationTests} /> */}
+		    <Route name='visualization-sketches' path='/visualization-sketches' component={VisualizationSketches} />
+		    <Route name='visualization-tests' path='/visualization-tests' component={VisualizationTests} />
         {/* <Route component={Experiment} /> {/* Not found */}
       </Switch>
     </main>
